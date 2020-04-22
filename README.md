@@ -5,3 +5,8 @@ API for encode, decode, and video processing that works across a wide range of
 accelerators.
 
 It comes with bindings for C, C++, and Python.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
