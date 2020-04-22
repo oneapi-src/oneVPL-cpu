@@ -1,0 +1,6 @@
+CodecID             MaxCodecLevel           BiDirectionalPrediction    Profile                      MemHandleType                    W-Min  W-Max   W-Step   H-Min  H-Max  H-Step   ColorFormat
+MFX_CODEC_HEVC,     MFX_LEVEL_HEVC_51,      1,                         MFX_PROFILE_HEVC_MAIN,       MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420
+MFX_CODEC_HEVC,     MFX_LEVEL_HEVC_51,      1,                         MFX_PROFILE_HEVC_MAIN10,     MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010
+MFX_CODEC_AV1,      MFX_LEVEL_UNKNOWN,      1,                         MFX_PROFILE_UNKNOWN,         MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420
+MFX_CODEC_AV1,      MFX_LEVEL_UNKNOWN,      1,                         MFX_PROFILE_UNKNOWN,         MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010
+MFX_CODEC_JPEG,     MFX_LEVEL_UNKNOWN,      0,                         MFX_PROFILE_JPEG_BASELINE,   MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420
