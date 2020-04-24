@@ -9,8 +9,5 @@ These are designed around the model described by
 
 # Scripts
 
-Many scripts have both native and python versions. In that case the python
-version is simply a wrapper that calls the most appropriate native script.
-
 - `lint` - Analyze project source for potential issues. Requires Python modules
   in `requirements-dev.txt`.
