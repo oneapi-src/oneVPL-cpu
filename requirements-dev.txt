@@ -1,1 +1,3 @@
 gitlint
+pre-commit
+pylint

@@ -10,3 +10,4 @@ cd ${proj_dir}
 set -o errexit
 ################################################################################
 gitlint --commits master..HEAD
+pre-commit run --all-files

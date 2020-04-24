@@ -11,4 +11,5 @@ FOR /D %%i IN ("%~dp0\..") DO (
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
-gitlint --commits master..HEAD
+gitlint --commits master..HEAD || exit /b
+pre-commit run --all-files
