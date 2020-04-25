@@ -11,3 +11,6 @@ These are designed around the model described by
 
 - `lint` - Analyze project source for potential issues. Requires Python modules
   in `requirements-dev.txt`.
+
+- `cibuild` - Run CI steps. This is the script CI calls when it is triggered on
+  a merge request.

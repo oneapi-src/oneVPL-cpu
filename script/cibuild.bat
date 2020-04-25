@@ -11,5 +11,4 @@ FOR /D %%i IN ("%~dp0\..") DO (
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
-gitlint || exit /b 1
-pre-commit run --all-files
+call "script/lint" || exit /b 1 
