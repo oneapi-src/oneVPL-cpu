@@ -56,7 +56,16 @@ Further reading:
 #### Automated style checking
 
 Use `script/lint` to assist with style conformance checking. To install its
-prerequisites do:
+python prerequisites do:
+
 ```
 pip3 install -r requirements-dev.txt
 ```
+
+Version 11.0.0 of `clang-format` also needs to be in the path.
+
+[Windows binary](https://commondatastorage.googleapis.com/chromium-clang-format/d4afd4eba27022f5f6d518133aebde57281677c9)
+(sha1: d4afd4eba27022f5f6d518133aebde57281677c9)
+
+[Linux binary](https://commondatastorage.googleapis.com/chromium-clang-format/1baf0089e895c989a311b6a38ed94d0e8be4c0a7)
+(sha1: 1baf0089e895c989a311b6a38ed94d0e8be4c0a7)
