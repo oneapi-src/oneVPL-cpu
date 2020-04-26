@@ -12,3 +12,8 @@ script/cibuild eol=lf
 
 # force encoding for json
 *.json encoding=utf-8
+
+# force lf endings for CMake files
+CMakeLists.* eol=lf
+*.cmake eol=lf
+*.cmake.in eol=lf
