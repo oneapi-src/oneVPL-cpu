@@ -1,2 +1,9 @@
+# build dirs
+/.*/
+/_*/
+/build
+
 # auto-generated files
 *.pyc
+*.pyo
+*.pyd

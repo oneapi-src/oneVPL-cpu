@@ -1,11 +1,11 @@
 # do not rely on windows users to remember to set core.autocrlf=true
 * text=auto
 
-# force lf endings for scripts
+# force line endings for scripts
 *.sh eol=lf
 *.py eol=lf
-script/lint eol=lf
-script/cibuild eol=lf
+script/* eol=lf
+*.bat eol=crlf
 
 # force lf endings for yaml
 *.yaml eol=lf
