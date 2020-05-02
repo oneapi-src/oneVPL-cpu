@@ -12,5 +12,10 @@ FOR /D %%i IN ("%~dp0\..") DO (
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
-call "script/lint.bat" || exit /b 1
-call "script/package.bat" || exit /b 1 
+set CMAKE_BINARY_DIR=_build
+
+mkdir %CMAKE_BINARY_DIR%
+cd %CMAKE_BINARY_DIR%
+
+cmake -A x64 ..
+cmake --build . --config Release --target package

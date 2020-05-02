@@ -6,11 +6,15 @@
 :: start of boilerplate to switch to project root ------------------------------
 @echo off
 SETLOCAL
-:: switch cd to repo root
 FOR /D %%i IN ("%~dp0\..") DO (
 	set PROJ_DIR=%%~fi
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
-call "script/lint.bat" || exit /b 1
-call "script/package.bat" || exit /b 1 
+set CMAKE_BINARY_DIR=_build
+
+mkdir %CMAKE_BINARY_DIR%
+cd %CMAKE_BINARY_DIR%
+
+cmake -A x64 ..
+cmake --build . --config Release

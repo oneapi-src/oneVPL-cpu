@@ -3,6 +3,7 @@
 ::
 :: SPDX-License-Identifier: MIT
 ::------------------------------------------------------------------------------
+:: start of boilerplate to switch to project root ------------------------------
 @echo off
 SETLOCAL
 :: switch cd to repo root
