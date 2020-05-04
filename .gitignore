@@ -7,3 +7,6 @@
 *.pyc
 *.pyo
 *.pyd
+
+# ignore Editor files
+*.code-workspace
