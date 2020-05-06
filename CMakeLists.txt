@@ -5,7 +5,8 @@
 # ##############################################################################
 cmake_minimum_required(VERSION 3.10.2)
 
-project(oneVPL VERSION 2021.1.7)
+file(STRINGS "version.txt" version_txt)
+project(oneVPL VERSION ${version_txt})
 
 #
 # Project configuration options
