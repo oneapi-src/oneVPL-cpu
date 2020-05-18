@@ -33,4 +33,9 @@ include(cmake/CompileOptions.cmake)
 add_subdirectory(libvpl)
 add_subdirectory(examples)
 
+install(
+  FILES third-party-programs.txt LICENSE
+  DESTINATION ${CMAKE_INSTALL_LICENSEDIR}
+  COMPONENT runtime)
+
 include(cmake/PackageTarget.cmake)
