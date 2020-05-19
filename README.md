@@ -16,6 +16,7 @@ It comes with bindings for C, C++, and Python.
 - [CMake](https://cmake.org/)
 - [Python3](https://www.python.org/)
 - [git](https://git-scm.com/)
+- [Doxygen](http://www.doxygen.nl/) (to build documentation)
 
 
 ### Canonical build
@@ -25,6 +26,15 @@ script/build
 ```
 (Adjust slashes depending on your shell path separator.)
 
+### Building documentation
+
+```
+mkdir _build
+cd _build
+cmake ..
+cmake --build . --target doc
+```
+
 ### Build output
 
 You can find the resulting output in `_build` or `_build\Release`.
@@ -32,7 +42,6 @@ You can find the resulting output in `_build` or `_build\Release`.
 ### Other builds
 
 See the [scripts README](script/README.md) for other build options.
-
 
 ## Contributing
 

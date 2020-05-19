@@ -5,13 +5,6 @@
   ############################################################################*/
 
 ///
-/// C API for the oneAPI Video Processing Library (oneVPL).
+/// @example vpl-app.cpp
 ///
-/// @file
 
-#ifndef LIBVPL_INCLUDE_VPL_VPL_H_
-#define LIBVPL_INCLUDE_VPL_VPL_H_
-
-#incllude "vpl/version.h"
-
-#endif // LIBVPL_INCLUDE_VPL_VPL_H_

@@ -4,20 +4,20 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-/// @file
 ///
 /// Version API implementation for vpl.
 ///
+/// @file
 
+/// Export symbols
 #define VPL_ENABLE_EXPORTS
 
 #include "vpl/version.hpp"
-#define V1 VPL_VERSION_MAJOR
-#define V2 VPL_VERSION_MINOR
-#define V3 VPL_VERSION_PATCH
 namespace vpl {
 
-static constexpr vpl_library_version_t version = { V1, V2, V3 };
+static constexpr vpl_library_version_t version = { VPL_VERSION_MAJOR,
+                                                   VPL_VERSION_MINOR,
+                                                   VPL_VERSION_PATCH };
 
 } // namespace vpl
 extern "C" {

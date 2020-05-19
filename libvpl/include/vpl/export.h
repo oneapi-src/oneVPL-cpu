@@ -4,10 +4,10 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-/// @file
 ///
 /// Shared library export macros.
 ///
+/// @file
 
 #ifndef LIBVPL_INCLUDE_VPL_EXPORT_H_
 #define LIBVPL_INCLUDE_VPL_EXPORT_H_

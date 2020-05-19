@@ -4,10 +4,10 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-/// @file
 ///
 /// C++ version API for the oneAPI Video Processing Library (oneVPL).
 ///
+/// @file
 
 #ifndef LIBVPL_INCLUDE_VPL_VERSION_HPP_
 #define LIBVPL_INCLUDE_VPL_VERSION_HPP_
@@ -17,6 +17,7 @@
 #include "vpl/version.h"
 
 namespace vpl {
+/// The library version
 typedef struct vpl_library_version library_version_t;
 
 /// Get the library version

@@ -4,15 +4,16 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-/// @file
 ///
 /// Example of a minimal oneAPI Video Processing Library (oneVPL) application.
 ///
+/// @file
 
 #include <iostream>
 
 #include "vpl/vpl.hpp"
 
+/// Main entry point.
 int main(int argc, char* argv[]) {
     try {
         auto version = vpl::get_library_version();

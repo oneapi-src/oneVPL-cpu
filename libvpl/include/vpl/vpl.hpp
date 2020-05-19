@@ -4,10 +4,10 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-/// @file
 ///
 /// C++ API for the oneAPI Video Processing Library (oneVPL).
 ///
+/// @file
 
 #ifndef LIBVPL_INCLUDE_VPL_VPL_HPP_
 #define LIBVPL_INCLUDE_VPL_VPL_HPP_

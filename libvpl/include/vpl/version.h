@@ -4,10 +4,10 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-/// @file
 ///
 /// C version API for the oneAPI Video Processing Library (oneVPL).
 ///
+/// @file
 
 #ifndef LIBVPL_INCLUDE_VPL_VERSION_H_
 #define LIBVPL_INCLUDE_VPL_VERSION_H_
@@ -16,10 +16,11 @@
 
 #include "vpl/export.h"
 
+/// The library version
 typedef struct vpl_library_version {
-    uint32_t major;
-    uint32_t minor;
-    uint32_t patch;
+    uint32_t major; ///< Major version.
+    uint32_t minor; ///< Minor version.
+    uint32_t patch; ///< Patch version.
 } vpl_library_version_t;
 
 #ifdef __cplusplus
