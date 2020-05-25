@@ -10,7 +10,7 @@ set(SOURCES vpl-app.cpp)
 
 set(DEPENDENCIES vpl)
 
-add_executable(${TARGET} ${SOURCES})
-add_dependencies(${TARGET} ${DEPENDENCIES})
+# add_executable(${TARGET} ${SOURCES}) add_dependencies(${TARGET}
+# ${DEPENDENCIES})
 
-target_link_libraries(${TARGET} ${DEPENDENCIES})
+# target_link_libraries(${TARGET} ${DEPENDENCIES})

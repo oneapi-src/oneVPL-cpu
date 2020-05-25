@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "video_decoder", "video_decoder.vcxproj", "{8969A3E3-D1F2-4274-8291-2A9A6292E356}"
+	ProjectSection(ProjectDependencies) = postProject
+		{954C522F-1DD8-4A37-AF0C-2D6E1127ED48} = {954C522F-1DD8-4A37-AF0C-2D6E1127ED48}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmfxvplsw", "..\..\libvpl\src\libmfxvplsw.vcxproj", "{954C522F-1DD8-4A37-AF0C-2D6E1127ED48}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8969A3E3-D1F2-4274-8291-2A9A6292E356}.Debug|x64.ActiveCfg = Debug|x64
+		{8969A3E3-D1F2-4274-8291-2A9A6292E356}.Debug|x64.Build.0 = Debug|x64
+		{8969A3E3-D1F2-4274-8291-2A9A6292E356}.Release|x64.ActiveCfg = Release|x64
+		{8969A3E3-D1F2-4274-8291-2A9A6292E356}.Release|x64.Build.0 = Release|x64
+		{954C522F-1DD8-4A37-AF0C-2D6E1127ED48}.Debug|x64.ActiveCfg = Debug|x64
+		{954C522F-1DD8-4A37-AF0C-2D6E1127ED48}.Debug|x64.Build.0 = Debug|x64
+		{954C522F-1DD8-4A37-AF0C-2D6E1127ED48}.Release|x64.ActiveCfg = Release|x64
+		{954C522F-1DD8-4A37-AF0C-2D6E1127ED48}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA4D7D5A-AD78-4C30-BE53-D3688227EF99}
+	EndGlobalSection
+EndGlobal
