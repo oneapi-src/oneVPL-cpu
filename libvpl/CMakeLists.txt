@@ -10,6 +10,9 @@ project(vpl VERSION ${version_txt})
 
 set(TARGET mfxvplsw64)
 
+# TMP - define this to build stub library without ffmpeg
+set(DISABLE_LIBAV TRUE)
+
 if(DEFINED ENV{VPL_BUILD_CACHE_DIR})
     set(VPL_BUILD_CACHE_DIR $ENV{VPL_BUILD_CACHE_DIR})
 else()
@@ -46,35 +49,39 @@ target_include_directories(
     $<BUILD_INTERFACE:${VPL_BUILD_CACHE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-set(FFMPEG_LIBS
-    ${VPL_BUILD_CACHE_DIR}/lib/libavcodec.a
-    ${VPL_BUILD_CACHE_DIR}/lib/libavfilter.a
-    ${VPL_BUILD_CACHE_DIR}/lib/libavformat.a
-    ${VPL_BUILD_CACHE_DIR}/lib/libavutil.a
-    ${VPL_BUILD_CACHE_DIR}/lib/libswscale.a)
-
-if(UNIX)
-  # Linux
-  set(FFMPEG_LIBS ${FFMPEG_LIBS}
-      ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1)
-
-  SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic)
+if(DEFINED DISABLE_LIBAV)
+    target_compile_definitions(${TARGET} PRIVATE -DDISABLE_LIBAV)
 else()
-  # Windows
-  set(FFMPEG_LIBS ${FFMPEG_LIBS}
-      ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll.a)
+    set(FFMPEG_LIBS
+        ${VPL_BUILD_CACHE_DIR}/lib/libavcodec.a
+        ${VPL_BUILD_CACHE_DIR}/lib/libavfilter.a
+        ${VPL_BUILD_CACHE_DIR}/lib/libavformat.a
+        ${VPL_BUILD_CACHE_DIR}/lib/libavutil.a
+        ${VPL_BUILD_CACHE_DIR}/lib/libswscale.a)
 
-  # temporary workaround for bootstrap link errors on Windows
-  set(ENABLE_MINGW_WORKAROUND TRUE)
-  if (ENABLE_MINGW_WORKAROUND)
-    set(SOURCES ${SOURCES}
-        src/mingw_wa.cpp)
+    if(UNIX)
+      # Linux
+      set(FFMPEG_LIBS ${FFMPEG_LIBS}
+          ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1)
 
-    set(FFMPEG_LIBS ${FFMPEG_LIBS}
-        ${VPL_BUILD_CACHE_DIR}/lib/libgcc.a
-        ${VPL_BUILD_CACHE_DIR}/lib/libmingwex.a
-        ${VPL_BUILD_CACHE_DIR}/lib/libmingw32.a)
-  endif()
+      SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic)
+    else()
+      # Windows
+      set(FFMPEG_LIBS ${FFMPEG_LIBS}
+          ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll.a)
+
+      # temporary workaround for bootstrap link errors on Windows
+      set(ENABLE_MINGW_WORKAROUND TRUE)
+      if (ENABLE_MINGW_WORKAROUND)
+        set(SOURCES ${SOURCES}
+            src/mingw_wa.cpp)
+
+        set(FFMPEG_LIBS ${FFMPEG_LIBS}
+            ${VPL_BUILD_CACHE_DIR}/lib/libgcc.a
+            ${VPL_BUILD_CACHE_DIR}/lib/libmingwex.a
+            ${VPL_BUILD_CACHE_DIR}/lib/libmingw32.a)
+      endif()
+    endif()
 endif()
 
 target_sources(${TARGET} PRIVATE ${SOURCES})
@@ -87,20 +94,22 @@ target_compile_definitions(
           -DVPL_VERSION_MINOR=${PROJECT_VERSION_MINOR}
           -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
-if(WIN32)
-  set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-  add_custom_command(
-    TARGET ${TARGET}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll ${OUTPATH})
-else()
-  set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+if(NOT DEFINED DISABLE_LIBAV)
+    if(WIN32)
+      set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+      add_custom_command(
+        TARGET ${TARGET}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll ${OUTPATH})
+    else()
+      set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-  add_custom_command(
-    TARGET ${TARGET}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so   ${OUTPATH}
-    COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1 ${OUTPATH})
+      add_custom_command(
+        TARGET ${TARGET}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so   ${OUTPATH}
+        COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1 ${OUTPATH})
+    endif()
 endif()
 
 install(

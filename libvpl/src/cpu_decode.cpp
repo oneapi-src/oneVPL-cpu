@@ -1,5 +1,7 @@
 #include "cpu_workstream.h"
 
+#ifdef ENABLE_DECODE
+
 #define DEFAULT_MAX_DEC_BITSTREAM_SIZE (1024 * 1024 * 64)
 
 // callback:
@@ -249,3 +251,26 @@ mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par)
 
     return MFX_ERR_NONE;
 }
+
+#else  // ENABLE_DECODE
+
+mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC)
+{
+    return MFX_ERR_UNSUPPORTED;
+}
+
+void CpuWorkstream::FreeDecode()
+{
+}
+
+mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out)
+{
+    return MFX_ERR_UNSUPPORTED;
+}
+
+mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par)
+{
+    return MFX_ERR_UNSUPPORTED;
+}
+
+#endif  // ENABLE_DECODE

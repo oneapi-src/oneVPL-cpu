@@ -1,12 +1,19 @@
 #ifndef _CPU_WORKSTREAM_H
 #define _CPU_WORKSTREAM_H
 
+#include <string.h>
+
 #include "mfxstructures.h"
 #include "mfxjpeg.h"
+
+// TMP - define this to build stub library without ffmpeg
+#ifndef DISABLE_LIBAV
 
 #define ENABLE_DECODE
 //#define ENABLE_VPP
 #define ENABLE_ENCODE
+
+#endif  // !DISABLE_LIBAV
 
 #define ENABLE_LIBAV_AUTO_THREADS
 
@@ -14,6 +21,7 @@
 #define memcpy_s(dest, destsz, src, count) memcpy(dest, src, count)
 #endif
 
+#ifndef DISABLE_LIBAV
 
 extern "C"
 {
@@ -22,6 +30,8 @@ extern "C"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 }
+
+#endif  // !DISABLE_LIBAV
 
 #define ERR_EXIT(ws)  { /* optional logging, etc. here */ return MFX_ERR_UNKNOWN; }
 
@@ -55,6 +65,8 @@ private:
   CpuWorkstream(const CpuWorkstream&){ /* copy not allowed */ }
   CpuWorkstream& operator=(const CpuWorkstream&){ return *this; /* copy not allowed */ }
   
+#ifndef DISABLE_LIBAV
+
   // libav objects - Decode
   const AVCodec         * m_avDecCodec;
   AVCodecContext        * m_avDecContext;
@@ -82,6 +94,9 @@ private:
 
   // other internal state
   mfxU32 m_encCodecId;
+
+#endif  // !DISABLE_LIBAV
+
 };
 
 #endif // _CPU_WORKSTREAM_H
