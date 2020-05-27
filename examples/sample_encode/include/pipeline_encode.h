@@ -20,7 +20,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef __PIPELINE_ENCODE_H__
 #define __PIPELINE_ENCODE_H__
 
-#include "hw_device.h"
+//#include "hw_device.h"
 #include "sample_defs.h"
 
 #ifdef D3D_SURFACES_SUPPORT
@@ -45,9 +45,10 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #endif
 
 #if (MFX_VERSION >= 1024)
-    #include "brc_routines.h"
+    #ifndef DISABLE_NON_VPL
+        #include "brc_routines.h"
+    #endif
 #endif
-
 #ifndef MFX_VERSION
     #error MFX_VERSION not defined
 #endif
@@ -427,7 +428,9 @@ protected:
     mfxExtCodingOptionSPSPPS m_CodingOptionSPSPPS;
 
 #if (MFX_VERSION >= 1024)
+    #ifndef DISABLE_NON_VPL
     mfxExtBRC m_ExtBRC;
+    #endif
 #endif
 
     // external parameters for each component are stored in a vector
@@ -436,7 +439,9 @@ protected:
 
     std::vector<mfxPayload*> m_UserDataUnregSEI;
 
+#ifndef DISABLE_NON_VPL
     CHWDevice* m_hwdev;
+#endif
 
     bool isV4L2InputEnabled;
     bufList m_encExtBufs;

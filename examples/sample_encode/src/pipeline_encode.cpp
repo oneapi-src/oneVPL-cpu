@@ -19,16 +19,20 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #include "mfx_samples_config.h"
 
-#include "parameters_dumper.h"
+#ifndef DISABLE_NON_VPL
+    #include "parameters_dumper.h"
+#endif
 #include "pipeline_encode.h"
 #include "sysmem_allocator.h"
 
-#if D3D_SURFACES_SUPPORT
-    #include "d3d11_allocator.h"
-    #include "d3d_allocator.h"
+#ifndef DISABLE_NON_VPL
+    #if D3D_SURFACES_SUPPORT
+        #include "d3d11_allocator.h"
+        #include "d3d_allocator.h"
 
-    #include "d3d11_device.h"
-    #include "d3d_device.h"
+        #include "d3d11_device.h"
+        #include "d3d_device.h"
+    #endif
 #endif
 
 #ifdef LIBVA_SUPPORT
@@ -594,6 +598,7 @@ mfxStatus CEncodingPipeline::InitMfxEncParams(sInputParams *pInParams) {
     }
 
 #if (MFX_VERSION >= 1024)
+    #ifndef DISABLE_NON_VPL
     // This is for explicit extbrc only. In case of implicit (built-into-library) version - we don't need this extended buffer
     if (pInParams->nExtBRC == EXTBRC_ON &&
         (pInParams->CodecId == MFX_CODEC_HEVC ||
@@ -601,6 +606,7 @@ mfxStatus CEncodingPipeline::InitMfxEncParams(sInputParams *pInParams) {
         HEVCExtBRC::Create(m_ExtBRC);
         m_EncExtParams.push_back((mfxExtBuffer *)&m_ExtBRC);
     }
+    #endif
 #endif
 
     // set up mfxCodingOption3
@@ -856,9 +862,11 @@ mfxStatus CEncodingPipeline::CreateHWDevice() {
 }
 
 mfxStatus CEncodingPipeline::ResetDevice() {
+#ifndef DISABLE_NON_VPL
     if (D3D9_MEMORY == m_memType || D3D11_MEMORY == m_memType) {
         return m_hwdev->Reset();
     }
+#endif
     return MFX_ERR_NONE;
 }
 
@@ -1140,7 +1148,9 @@ void CEncodingPipeline::DeleteFrames() {
 }
 
 void CEncodingPipeline::DeleteHWDevice() {
+#ifndef DISABLE_NON_VPL
     MSDK_SAFE_DELETE(m_hwdev);
+#endif
 }
 
 void CEncodingPipeline::DeleteAllocator() {
@@ -1221,11 +1231,15 @@ CEncodingPipeline::CEncodingPipeline() {
     m_VideoSignalInfo.Header.BufferSz = sizeof(m_VideoSignalInfo);
 
 #if (MFX_VERSION >= 1024)
+    #ifndef DISABLE_NON_VPL
     MSDK_ZERO_MEMORY(m_ExtBRC);
     m_ExtBRC.Header.BufferId = MFX_EXTBUFF_BRC;
     m_ExtBRC.Header.BufferSz = sizeof(m_ExtBRC);
+    #endif
 #endif
+#ifndef DISABLE_NON_VPL
     m_hwdev = NULL;
+#endif
 
 #if (MFX_VERSION >= 1027)
     m_round_in = NULL;
@@ -1540,6 +1554,7 @@ mfxStatus CEncodingPipeline::Init(sInputParams *pParams) {
     // If output isn't specified work in performance mode and do not insert idr
     m_bCutOutput = pParams->dstFileBuff.size() ? !pParams->bUncut : false;
 
+#ifndef DISABLE_NON_VPL
     // Dumping components configuration if required
     if (*pParams->DumpFileName) {
         CParametersDumper::DumpLibraryConfiguration(pParams->DumpFileName,
@@ -1550,6 +1565,7 @@ mfxStatus CEncodingPipeline::Init(sInputParams *pParams) {
                                                     &m_mfxVppParams,
                                                     &m_mfxEncParams);
     }
+#endif
 
     if (!pParams->bUseVPLLib) {
         printf("\n***\n");
@@ -1717,7 +1733,9 @@ void CEncodingPipeline::Close() {
     MSDK_SAFE_DELETE(m_pmfxVPP);
 
 #if (MFX_VERSION >= 1024)
+    #ifndef DISABLE_NON_VPL
     HEVCExtBRC::Destroy(m_ExtBRC);
+    #endif
 #endif
 
     FreeMVCSeqDesc();

@@ -18,7 +18,9 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 \**********************************************************************************/
 
 #include "preset_manager.h"
-#include "brc_routines.h"
+#ifndef DISABLE_NON_VPL
+    #include "brc_routines.h"
+#endif
 #include "mfxvideo.h"
 
 CPresetManager CPresetManager::Inst;

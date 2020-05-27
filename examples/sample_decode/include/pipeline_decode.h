@@ -30,8 +30,10 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #include <memory>
 #include <vector>
-#include "decode_render.h"
-#include "hw_device.h"
+#ifndef DISABLE_NON_VPL
+    #include "decode_render.h"
+    #include "hw_device.h"
+#endif
 #include "mfx_buffering.h"
 
 #include "base_allocator.h"
@@ -324,7 +326,9 @@ protected: // variables
     mfxExtVPPVideoSignalInfo m_VppVideoSignalInfo;
     std::vector<mfxExtBuffer*> m_VppSurfaceExtParams;
 
+#ifndef DISABLE_NON_VPL
     CHWDevice* m_hwdev;
+#endif
 #if D3D_SURFACES_SUPPORT
     CDecodeD3DRender m_d3dRender;
 #endif

@@ -8,19 +8,9 @@ cmake_minimum_required(VERSION 3.10.2)
 set(TARGET sample_common)
 
 set(SOURCES
-    src/avc_bitstream.cpp
-    src/avc_nal_spl.cpp
-    src/avc_spl.cpp
     src/base_allocator.cpp
-    src/brc_routines.cpp
-    src/d3d_allocator.cpp
-    src/d3d_device.cpp
-    src/d3d11_allocator.cpp
-    src/d3d11_device.cpp
-    src/decode_render.cpp
     src/general_allocator.cpp
     src/mfx_buffering.cpp
-    src/parameters_dumper.cpp
     src/preset_manager.cpp
     src/sample_utils.cpp
     src/sysmem_allocator.cpp
@@ -30,8 +20,6 @@ set(SOURCES
     src/vm/thread.cpp
     src/vm/thread_windows.cpp
     src/vm/time.cpp)
-
-set(WINDOWS_LIBS dxva2.lib d3d9.lib dwmapi.lib comsuppw.lib d3d11.lib dxgi.lib)
 
 add_library(${TARGET} STATIC)
 
@@ -58,7 +46,9 @@ target_compile_definitions(
   ${TARGET}
   PRIVATE -DVPL_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
           -DVPL_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-          -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH} -DNOMINMAX)
+          -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+          -DNOMINMAX
+          -DDISABLE_NON_VPL)
 
 install(
   TARGETS ${TARGET}

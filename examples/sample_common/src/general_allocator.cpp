@@ -22,11 +22,15 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "general_allocator.h"
 
 #if defined(_WIN32) || defined(_WIN64)
-    #include "d3d11_allocator.h"
-    #include "d3d_allocator.h"
+    #ifndef DISABLE_NON_VPL
+        #include "d3d11_allocator.h"
+        #include "d3d_allocator.h"
+    #endif
 #else
     #include <stdarg.h>
-    #include "vaapi_allocator.h"
+    #ifndef DISABLE_NON_VPL
+        #include "vaapi_allocator.h"
+    #endif
 #endif
 
 #include "sysmem_allocator.h"
@@ -40,16 +44,18 @@ GeneralAllocator::~GeneralAllocator(){};
 mfxStatus GeneralAllocator::Init(mfxAllocatorParams *pParams) {
     mfxStatus sts = MFX_ERR_NONE;
 
-#if defined(_WIN32) || defined(_WIN64)
+#ifndef DISABLE_NON_VPL
+    #if defined(_WIN32) || defined(_WIN64)
     D3DAllocatorParams *d3dAllocParams =
         dynamic_cast<D3DAllocatorParams *>(pParams);
     if (d3dAllocParams)
         m_D3DAllocator.reset(new D3DFrameAllocator);
-    #if MFX_D3D11_SUPPORT
+        #if MFX_D3D11_SUPPORT
     D3D11AllocatorParams *d3d11AllocParams =
         dynamic_cast<D3D11AllocatorParams *>(pParams);
     if (d3d11AllocParams)
         m_D3DAllocator.reset(new D3D11FrameAllocator);
+        #endif
     #endif
 #endif
 

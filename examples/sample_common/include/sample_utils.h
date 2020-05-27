@@ -43,10 +43,15 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "sample_types.h"
 
 #include "abstract_splitter.h"
-#include "avc_bitstream.h"
-#include "avc_headers.h"
-#include "avc_nal_spl.h"
-#include "avc_spl.h"
+
+#include <list>
+#include <memory>
+#ifndef DISABLE_NON_VPL
+    #include "avc_bitstream.h"
+    #include "avc_headers.h"
+    #include "avc_nal_spl.h"
+    #include "avc_spl.h"
+#endif
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class

@@ -20,7 +20,9 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef __TIME_DEFS_H__
 #define __TIME_DEFS_H__
 
-#include "mfx_itt_trace.h"
+#ifndef DISABLE_NON_VPL
+    #include "mfx_itt_trace.h"
+#endif
 #include "mfxdefs.h"
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -43,16 +45,14 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
     #include <unistd.h>
 
-    #define MSDK_SLEEP(msec)            \
-        do {                            \
-            MFX_ITT_TASK("MSDK_SLEEP"); \
-            usleep(1000 * msec);        \
+    #define MSDK_SLEEP(msec)     \
+        do {                     \
+            usleep(1000 * msec); \
         } while (0)
 
-    #define MSDK_USLEEP(usec)            \
-        do {                             \
-            MFX_ITT_TASK("MSDK_USLEEP"); \
-            usleep(usec);                \
+    #define MSDK_USLEEP(usec) \
+        do {                  \
+            usleep(usec);     \
         } while (0)
 
 #endif // #if defined(_WIN32) || defined(_WIN64)

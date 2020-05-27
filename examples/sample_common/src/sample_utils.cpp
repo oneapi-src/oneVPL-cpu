@@ -2297,6 +2297,7 @@ mfxI32 getMonitorType(msdk_char* str) {
     return MFX_MONITOR_MAXNUMBER;
 }
 
+#ifndef DISABLE_NON_VPL
 CH264FrameReader::CH264FrameReader()
         : CSmplBitstreamReader(),
           m_processedBS(0),
@@ -2435,6 +2436,7 @@ mfxStatus CH264FrameReader::PrepareNextFrame(mfxBitstream* in,
 
     return sts;
 }
+#endif // !DISABLE_NON_VPL
 
 // 1 ms provides better result in range [0..5] ms
 #define DEVICE_WAIT_TIME 1

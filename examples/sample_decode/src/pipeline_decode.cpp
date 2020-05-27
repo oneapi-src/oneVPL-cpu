@@ -31,11 +31,13 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "pipeline_decode.h"
 #include "sysmem_allocator.h"
 
-#if defined(_WIN32) || defined(_WIN64)
-    #include "d3d11_allocator.h"
-    #include "d3d11_device.h"
-    #include "d3d_allocator.h"
-    #include "d3d_device.h"
+#ifndef DISABLE_NON_VPL
+    #if defined(_WIN32) || defined(_WIN64)
+        #include "d3d11_allocator.h"
+        #include "d3d11_device.h"
+        #include "d3d_allocator.h"
+        #include "d3d_device.h"
+    #endif
 #endif
 
 #if defined LIBVA_SUPPORT
@@ -142,7 +144,9 @@ CDecodingPipeline::CDecodingPipeline() {
     m_DecodeErrorReport.Header.BufferId = MFX_EXTBUFF_DECODE_ERROR_REPORT;
 #endif
 
+#ifndef DISABLE_NON_VPL
     m_hwdev = NULL;
+#endif
 
     m_bOutI420 = false;
 
@@ -172,6 +176,7 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams) {
     // create reader that supports completeframe mode for latency oriented scenarios
     if (pParams->bLowLat || pParams->bCalLat) {
         switch (pParams->videoType) {
+#ifndef DISABLE_NON_VPL
             case MFX_CODEC_AVC:
                 m_FileReader.reset(new CH264FrameReader());
                 m_bIsCompleteFrame = true;
@@ -188,6 +193,12 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams) {
                 m_bIsCompleteFrame = true;
                 m_bPrintLatency    = pParams->bCalLat;
                 break;
+#else
+            case MFX_CODEC_AVC:
+            case MFX_CODEC_JPEG:
+            case MFX_CODEC_VP8:
+            case MFX_CODEC_VP9:
+#endif
             default:
                 return MFX_ERR_UNSUPPORTED; // latency mode is supported only for H.264 and JPEG codecs
         }
@@ -1005,7 +1016,10 @@ mfxStatus CDecodingPipeline::CreateHWDevice() {
 }
 
 mfxStatus CDecodingPipeline::ResetDevice() {
+#ifndef DISABLE_NON_VPL
     return m_hwdev->Reset();
+#endif
+    return MFX_ERR_NONE;
 }
 
 mfxStatus CDecodingPipeline::AllocFrames() {
@@ -1345,7 +1359,9 @@ void CDecodingPipeline::DeleteAllocator() {
     // delete allocator
     MSDK_SAFE_DELETE(m_pGeneralAllocator);
     MSDK_SAFE_DELETE(m_pmfxAllocatorParams);
+#ifndef DISABLE_NON_VPL
     MSDK_SAFE_DELETE(m_hwdev);
+#endif
 }
 
 void CDecodingPipeline::SetMultiView() {
