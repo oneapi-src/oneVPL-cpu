@@ -2,13 +2,14 @@
 
 #ifdef ENABLE_DECODE
 
-#define DEFAULT_MAX_DEC_BITSTREAM_SIZE (1024 * 1024 * 64)
+    #define DEFAULT_MAX_DEC_BITSTREAM_SIZE (1024 * 1024 * 64)
 
 // callback:
 // int (*get_buffer2)(struct AVCodecContext *s, AVFrame *frame, int flags);
 
-static int get_buffer2_msdk(struct AVCodecContext *s, AVFrame *frame, int flags)
-{
+static int get_buffer2_msdk(struct AVCodecContext *s,
+                            AVFrame *frame,
+                            int flags) {
     if (1) {
         // if AV_CODEC_CAP_DR1 is not set, use default method
         return avcodec_default_get_buffer2(s, frame, flags);
@@ -19,12 +20,12 @@ static int get_buffer2_msdk(struct AVCodecContext *s, AVFrame *frame, int flags)
     return 0;
 }
 
-mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC)
-{
+mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
     // TODO - get rid of internal BS buffer (use mfxBitstream)
     // alloc bitstream buffer
     m_bsDecValidBytes = 0;
-    m_bsDecMaxBytes = DEFAULT_MAX_DEC_BITSTREAM_SIZE + AV_INPUT_BUFFER_PADDING_SIZE;
+    m_bsDecMaxBytes =
+        DEFAULT_MAX_DEC_BITSTREAM_SIZE + AV_INPUT_BUFFER_PADDING_SIZE;
     m_bsDecData = new uint8_t[m_bsDecMaxBytes];
 
     if (!m_bsDecData)
@@ -32,20 +33,20 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC)
 
     AVCodecID cid = AV_CODEC_ID_NONE;
     switch (FourCC) {
-    case MFX_CODEC_AVC:
-        cid = AV_CODEC_ID_H264;
-        break;
-    case MFX_CODEC_HEVC:
-        cid = AV_CODEC_ID_HEVC;
-        break;
-    case MFX_CODEC_JPEG:
-        cid = AV_CODEC_ID_MJPEG;
-        break;
-    case MFX_CODEC_MPEG2:
-        cid = AV_CODEC_ID_MPEG2VIDEO;
-        break;
-    default:
-        return MFX_ERR_INVALID_VIDEO_PARAM;
+        case MFX_CODEC_AVC:
+            cid = AV_CODEC_ID_H264;
+            break;
+        case MFX_CODEC_HEVC:
+            cid = AV_CODEC_ID_HEVC;
+            break;
+        case MFX_CODEC_JPEG:
+            cid = AV_CODEC_ID_MJPEG;
+            break;
+        case MFX_CODEC_MPEG2:
+            cid = AV_CODEC_ID_MPEG2VIDEO;
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
     m_avDecCodec = avcodec_find_decoder(cid);
@@ -65,9 +66,9 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC)
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-#ifdef ENABLE_LIBAV_AUTO_THREADS
+    #ifdef ENABLE_LIBAV_AUTO_THREADS
     m_avDecContext->thread_count = 0;
-#endif
+    #endif
 
     if (avcodec_open2(m_avDecContext, m_avDecCodec, NULL) < 0) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -88,8 +89,7 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC)
     return MFX_ERR_NONE;
 }
 
-void CpuWorkstream::FreeDecode()
-{
+void CpuWorkstream::FreeDecode() {
     if (m_avDecFrameOut) {
         av_frame_free(&m_avDecFrameOut);
     }
@@ -113,7 +113,9 @@ void CpuWorkstream::FreeDecode()
 }
 
 // bs == 0 is a signal to drain
-mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out) {
+mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
+                                     mfxFrameSurface1 *surface_work,
+                                     mfxFrameSurface1 **surface_out) {
     int av_ret = 0;
 
     if (!m_decInit) {
@@ -124,7 +126,9 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface
 
     // copy new data into bitstream buffer
     if (bs && bs->DataLength > 0) {
-        memcpy(m_bsDecData + m_bsDecValidBytes, bs->Data + bs->DataOffset, bs->DataLength);
+        memcpy(m_bsDecData + m_bsDecValidBytes,
+               bs->Data + bs->DataOffset,
+               bs->DataLength);
         m_bsDecValidBytes += (uint32_t)bs->DataLength;
     }
 
@@ -136,10 +140,17 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface
         // otherwise, m_avDecPacket->size is 0 and parser needs more data to produce a packet
         // returns number of bytes consumed
         //
-        // m_avDecPacket->data may point to the input buffer m_bsDecData after calling this, 
+        // m_avDecPacket->data may point to the input buffer m_bsDecData after calling this,
         //   so do not overwrite m_bsDecData until calling avcodec_send_packet()
-        bytesParsed += av_parser_parse2(m_avDecParser, m_avDecContext, &m_avDecPacket->data, &m_avDecPacket->size,
-            m_bsDecData + bytesParsed, (int)m_bsDecValidBytes - bytesParsed, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+        bytesParsed += av_parser_parse2(m_avDecParser,
+                                        m_avDecContext,
+                                        &m_avDecPacket->data,
+                                        &m_avDecPacket->size,
+                                        m_bsDecData + bytesParsed,
+                                        (int)m_bsDecValidBytes - bytesParsed,
+                                        AV_NOPTS_VALUE,
+                                        AV_NOPTS_VALUE,
+                                        0);
 
         if (m_avDecPacket->size == 0) {
             if (bs == 0 && bytesParsed == 0) {
@@ -168,7 +179,9 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface
 
         // remove used data from bitstream after sending packet
         // packets are not ref counted, so data will be copied internally by avcodec_send_packet()
-        memmove(m_bsDecData, m_bsDecData + bytesParsed, m_bsDecValidBytes - bytesParsed);
+        memmove(m_bsDecData,
+                m_bsDecData + bytesParsed,
+                m_bsDecValidBytes - bytesParsed);
         m_bsDecValidBytes -= bytesParsed;
         bytesParsed = 0;
 
@@ -193,7 +206,7 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface
             if (surface_work) {
                 mfxU32 w, h, y, pitch, offset;
 
-                surface_work->Info.Width = m_avDecContext->width;
+                surface_work->Info.Width  = m_avDecContext->width;
                 surface_work->Info.Height = m_avDecContext->height;
 
                 surface_work->Info.CropX = 0;
@@ -203,46 +216,57 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface
 
                 surface_work->Data.Pitch = m_avDecContext->width;
 
-                w = surface_work->Info.Width;
-                h = surface_work->Info.Height;
+                w     = surface_work->Info.Width;
+                h     = surface_work->Info.Height;
                 pitch = surface_work->Data.Pitch;
 
                 // copy Y plane
                 for (y = 0; y < h; y++) {
-                    offset = pitch * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
-                    memcpy(surface_work->Data.Y + offset, m_avDecFrameOut->data[0] + y * m_avDecFrameOut->linesize[0], m_avDecFrameOut->width);
+                    offset = pitch * (y + surface_work->Info.CropY) +
+                             surface_work->Info.CropX;
+                    memcpy(surface_work->Data.Y + offset,
+                           m_avDecFrameOut->data[0] +
+                               y * m_avDecFrameOut->linesize[0],
+                           m_avDecFrameOut->width);
                 }
 
                 // copy U plane
                 for (y = 0; y < h / 2; y++) {
-                    offset = pitch / 2 * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
-                    memcpy(surface_work->Data.U + offset, m_avDecFrameOut->data[1] + y * m_avDecFrameOut->linesize[1], m_avDecFrameOut->width / 2);
+                    offset = pitch / 2 * (y + surface_work->Info.CropY) +
+                             surface_work->Info.CropX;
+                    memcpy(surface_work->Data.U + offset,
+                           m_avDecFrameOut->data[1] +
+                               y * m_avDecFrameOut->linesize[1],
+                           m_avDecFrameOut->width / 2);
                 }
 
                 // copy V plane
                 for (y = 0; y < h / 2; y++) {
-                    offset = pitch / 2 * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
-                    memcpy(surface_work->Data.V + offset, m_avDecFrameOut->data[2] + y * m_avDecFrameOut->linesize[2], m_avDecFrameOut->width / 2);
+                    offset = pitch / 2 * (y + surface_work->Info.CropY) +
+                             surface_work->Info.CropX;
+                    memcpy(surface_work->Data.V + offset,
+                           m_avDecFrameOut->data[2] +
+                               y * m_avDecFrameOut->linesize[2],
+                           m_avDecFrameOut->width / 2);
                 }
 
                 *surface_out = surface_work;
             }
 
-#if 0
+    #if 0
             // TODO - if codec capability AV_CODEC_CAP_DR1 is set, can use user-provided buffers (callback)
             int wTmp = 1280, hTmp = 720, linesize_align[AV_NUM_DATA_POINTERS];
             avcodec_align_dimensions2(m_avDecContext, &wTmp, &hTmp, linesize_align);
-#endif
+    #endif
 
             return MFX_ERR_NONE;
         }
     }
 }
 
-mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par)
-{
+mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par) {
     // call after decoding at least one frame
-    par->mfx.FrameInfo.Width = (uint16_t)m_avDecContext->width;
+    par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;
     par->mfx.FrameInfo.Height = (uint16_t)m_avDecContext->height;
 
     if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
@@ -252,25 +276,22 @@ mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par)
     return MFX_ERR_NONE;
 }
 
-#else  // ENABLE_DECODE
+#else // ENABLE_DECODE
 
-mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC)
-{
+mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
     return MFX_ERR_UNSUPPORTED;
 }
 
-void CpuWorkstream::FreeDecode()
-{
-}
+void CpuWorkstream::FreeDecode() {}
 
-mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out)
-{
+mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
+                                     mfxFrameSurface1 *surface_work,
+                                     mfxFrameSurface1 **surface_out) {
     return MFX_ERR_UNSUPPORTED;
 }
 
-mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par)
-{
+mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par) {
     return MFX_ERR_UNSUPPORTED;
 }
 
-#endif  // ENABLE_DECODE
+#endif // ENABLE_DECODE

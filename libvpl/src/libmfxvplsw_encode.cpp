@@ -1,16 +1,15 @@
-#include "mfxvideo.h"
 #include "cpu_workstream.h"
+#include "mfxvideo.h"
 
-mfxStatus MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out)
-{
+mfxStatus MFXVideoENCODE_Query(mfxSession session,
+                               mfxVideoParam *in,
+                               mfxVideoParam *out) {
     mfxStatus sts = MFX_ERR_NONE;
 
-    if (0 == session)
-    {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == out)
-    {
+    if (0 == out) {
         return MFX_ERR_NULL_PTR;
     }
 
@@ -18,7 +17,7 @@ mfxStatus MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoPa
 
     // save a local copy of in, since user may set out == in
     mfxVideoParam inCopy = *in;
-    in = &inCopy;
+    in                   = &inCopy;
 
     if (in) {
         // start with out = copy of in (does not deep copy extBufs)
@@ -32,52 +31,45 @@ mfxStatus MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoPa
         if (in->mfx.CodecId != MFX_CODEC_AVC &&
             in->mfx.CodecId != MFX_CODEC_HEVC &&
             in->mfx.CodecId != MFX_CODEC_JPEG &&
-            in->mfx.CodecId != MFX_CODEC_MPEG2
-            )
+            in->mfx.CodecId != MFX_CODEC_MPEG2)
             sts = MFX_ERR_UNSUPPORTED;
-
     }
     else {
         memset(out, 0, sizeof(mfxVideoParam));
 
         // set output struct to zero for unsupported params, non-zero for supported params
-
     }
 
     return sts;
 }
 
-mfxStatus MFXVideoENCODE_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request)
-{
+mfxStatus MFXVideoENCODE_QueryIOSurf(mfxSession session,
+                                     mfxVideoParam *par,
+                                     mfxFrameAllocRequest *request) {
     mfxStatus sts = MFX_ERR_NONE;
 
-    if (0 == session)
-    {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == par || 0 == request)
-    {
+    if (0 == par || 0 == request) {
         return MFX_ERR_NULL_PTR;
     }
 
-    request->Info = par->mfx.FrameInfo;
-    request->NumFrameMin = 1;
+    request->Info              = par->mfx.FrameInfo;
+    request->NumFrameMin       = 1;
     request->NumFrameSuggested = 1;
     request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
 
     return sts;
 }
 
-mfxStatus MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par)
-{
+mfxStatus MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par) {
     mfxStatus sts = MFX_ERR_NONE;
 
-    if (0 == session)
-    {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == par)
-    {
+    if (0 == par) {
         return MFX_ERR_NULL_PTR;
     }
 
@@ -90,10 +82,8 @@ mfxStatus MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par)
     return sts;
 }
 
-mfxStatus MFXVideoENCODE_Close(mfxSession session)
-{
-    if (0 == session)
-    {
+mfxStatus MFXVideoENCODE_Close(mfxSession session) {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
 
@@ -107,16 +97,17 @@ mfxStatus MFXVideoENCODE_Close(mfxSession session)
     return MFX_ERR_NONE;
 }
 
-mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session, mfxEncodeCtrl *ctrl, mfxFrameSurface1 *surface, mfxBitstream *bs, mfxSyncPoint *syncp)
-{
+mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
+                                          mfxEncodeCtrl *ctrl,
+                                          mfxFrameSurface1 *surface,
+                                          mfxBitstream *bs,
+                                          mfxSyncPoint *syncp) {
     mfxStatus sts = MFX_ERR_NONE;
 
-    if (0 == session)
-    {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == bs|| 0 == syncp)
-    {
+    if (0 == bs || 0 == syncp) {
         return MFX_ERR_NULL_PTR;
     }
 
@@ -135,17 +126,15 @@ mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session, mfxEncodeCtrl *ctr
 }
 
 // stubs
-mfxStatus MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par)
-{
+mfxStatus MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par) {
     return MFX_ERR_UNSUPPORTED;
 }
 
-mfxStatus MFXVideoENCODE_GetVideoParam(mfxSession session, mfxVideoParam *par){
+mfxStatus MFXVideoENCODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {
     return MFX_ERR_UNSUPPORTED;
 }
 
-mfxStatus MFXVideoENCODE_GetEncodeStat(mfxSession session, mfxEncodeStat *stat)
-{
+mfxStatus MFXVideoENCODE_GetEncodeStat(mfxSession session,
+                                       mfxEncodeStat *stat) {
     return MFX_ERR_UNSUPPORTED;
 }
-

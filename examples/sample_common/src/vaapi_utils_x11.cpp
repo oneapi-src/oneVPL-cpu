@@ -19,55 +19,51 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #if defined(LIBVA_X11_SUPPORT)
 
-#include "sample_defs.h"
-#include "vaapi_utils_x11.h"
+    #include "vaapi_utils_x11.h"
+    #include "sample_defs.h"
 
-#include <dlfcn.h>
-#if defined(X11_DRI3_SUPPORT)
-#include <fcntl.h>
-#endif
+    #include <dlfcn.h>
+    #if defined(X11_DRI3_SUPPORT)
+        #include <fcntl.h>
+    #endif
 
-#define VAAPI_X_DEFAULT_DISPLAY ":0.0"
+    #define VAAPI_X_DEFAULT_DISPLAY ":0.0"
 
 X11LibVA::X11LibVA(void)
-    : CLibVA(MFX_LIBVA_X11)
-    , m_display(0)
-    , m_contextID(VA_INVALID_ID)
-{
-    VAStatus va_res = VA_STATUS_SUCCESS;
-    mfxStatus sts = MFX_ERR_NONE;
+        : CLibVA(MFX_LIBVA_X11),
+          m_display(0),
+          m_contextID(VA_INVALID_ID) {
+    VAStatus va_res   = VA_STATUS_SUCCESS;
+    mfxStatus sts     = MFX_ERR_NONE;
     int major_version = 0, minor_version = 0;
     char* currentDisplay = getenv("DISPLAY");
 
-    try
-    {
+    try {
         if (currentDisplay)
             m_display = m_x11lib.XOpenDisplay(currentDisplay);
         else
             m_display = m_x11lib.XOpenDisplay(VAAPI_X_DEFAULT_DISPLAY);
 
-        if (NULL == m_display) sts = MFX_ERR_NOT_INITIALIZED;
+        if (NULL == m_display)
+            sts = MFX_ERR_NOT_INITIALIZED;
 
-        if (MFX_ERR_NONE == sts)
-        {
+        if (MFX_ERR_NONE == sts) {
             m_va_dpy = m_vax11lib.vaGetDisplay(m_display);
 
-            if (!m_va_dpy)
-            {
+            if (!m_va_dpy) {
                 sts = MFX_ERR_NULL_PTR;
             }
         }
-#if !defined(X11_DRI3_SUPPORT)
-        if (MFX_ERR_NONE == sts)
-        {
-            va_res = m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
+    #if !defined(X11_DRI3_SUPPORT)
+        if (MFX_ERR_NONE == sts) {
+            va_res =
+                m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
             sts = va_to_mfx_status(va_res);
         }
-        if (MFX_ERR_NONE == sts)
-        {
-            VAStatus        va_res        = VA_STATUS_SUCCESS;
-            VAConfigID      vpp_config_id = VA_INVALID_ID;
-            VAConfigAttrib  cfgAttrib;
+        if (MFX_ERR_NONE == sts) {
+            VAStatus va_res          = VA_STATUS_SUCCESS;
+            VAConfigID vpp_config_id = VA_INVALID_ID;
+            VAConfigAttrib cfgAttrib;
 
             cfgAttrib.type = VAConfigAttribRTFormat;
             m_libva.vaGetConfigAttributes(m_va_dpy,
@@ -93,41 +89,36 @@ X11LibVA::X11LibVA(void)
                                              0,
                                              &m_contextID);
         }
-#else
-        if (MFX_ERR_NONE == sts)
-        {
-            va_res = m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
+    #else
+        if (MFX_ERR_NONE == sts) {
+            va_res =
+                m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
             sts = va_to_mfx_status(va_res);
         }
-#endif // X11_DRI3_SUPPORT
-        if (MFX_ERR_NONE != sts)
-        {
+    #endif // X11_DRI3_SUPPORT
+        if (MFX_ERR_NONE != sts) {
             m_x11lib.XCloseDisplay(m_display);
         }
     }
-    catch(std::exception& )
-    {
+    catch (std::exception&) {
         sts = MFX_ERR_NOT_INITIALIZED;
     }
 
-    if (MFX_ERR_NONE != sts) throw std::bad_alloc();
+    if (MFX_ERR_NONE != sts)
+        throw std::bad_alloc();
 }
 
-X11LibVA::~X11LibVA(void)
-{
+X11LibVA::~X11LibVA(void) {
     //release context
-    if (m_contextID != VA_INVALID_ID)
-    {
+    if (m_contextID != VA_INVALID_ID) {
         m_libva.vaDestroyContext(m_va_dpy, m_contextID);
         m_contextID = VA_INVALID_ID;
     }
 
-    if (m_va_dpy)
-    {
+    if (m_va_dpy) {
         m_libva.vaTerminate(m_va_dpy);
     }
-    if (m_display)
-    {
+    if (m_display) {
         m_x11lib.XCloseDisplay(m_display);
     }
 }

@@ -26,15 +26,15 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #if defined(_WIN32) || defined(_WIN64)
 
-#define MSDK_FOPEN(file, name, mode) _tfopen_s(&file, name, mode)
+    #define MSDK_FOPEN(file, name, mode) _tfopen_s(&file, name, mode)
 
-#define msdk_fgets  _fgetts
+    #define msdk_fgets _fgetts
 #else // #if defined(_WIN32) || defined(_WIN64)
-#include <unistd.h>
+    #include <unistd.h>
 
-#define MSDK_FOPEN(file, name, mode) !(file = fopen(name, mode))
+    #define MSDK_FOPEN(file, name, mode) !(file = fopen(name, mode))
 
-#define msdk_fgets  fgets
+    #define msdk_fgets fgets
 #endif // #if defined(_WIN32) || defined(_WIN64)
 
 #endif // #ifndef __FILE_DEFS_H__

@@ -17,19 +17,18 @@ The original version of this sample may be obtained from https://software.intel.
 or https://software.intel.com/en-us/media-client-solutions-support.
 \**********************************************************************************/
 
-#if defined (ENABLE_V4L2_SUPPORT)
+#if defined(ENABLE_V4L2_SUPPORT)
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <pthread.h>
-#include <poll.h>
-#include <signal.h>
-#include <assert.h>
-#include <linux/videodev2.h>
-#include "v4l2_util.h"
+    #include "v4l2_util.h"
+    #include <assert.h>
+    #include <fcntl.h>
+    #include <linux/videodev2.h>
+    #include <poll.h>
+    #include <pthread.h>
+    #include <signal.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <sys/ioctl.h>
 
 /* Global Declaration */
 Buffer *buffers, *CurBuffers;
@@ -38,49 +37,45 @@ int m_q[5], m_first = 0, m_last = 0, m_numInQ = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t empty = PTHREAD_MUTEX_INITIALIZER;
 
-v4l2Device::v4l2Device( const char *devname,
-            uint32_t width,
-            uint32_t height,
-            uint32_t num_buffers,
-            enum AtomISPMode MipiMode,
-            enum V4L2PixelFormat v4l2Format):
-            m_devname(devname),
-            m_height(height),
-            m_width(width),
-            m_num_buffers(num_buffers),
-            m_MipiPort(0),
-            m_MipiMode(MipiMode),
-            m_v4l2Format(v4l2Format),
-            m_fd(-1)
-{
-}
+v4l2Device::v4l2Device(const char *devname,
+                       uint32_t width,
+                       uint32_t height,
+                       uint32_t num_buffers,
+                       enum AtomISPMode MipiMode,
+                       enum V4L2PixelFormat v4l2Format)
+        : m_devname(devname),
+          m_height(height),
+          m_width(width),
+          m_num_buffers(num_buffers),
+          m_MipiPort(0),
+          m_MipiMode(MipiMode),
+          m_v4l2Format(v4l2Format),
+          m_fd(-1) {}
 
-v4l2Device::~v4l2Device()
-{
-    if (m_fd > -1)
-    {
+v4l2Device::~v4l2Device() {
+    if (m_fd > -1) {
         BYE_ON(close(m_fd) < 0, "V4L2 device close failed: %s\n", ERRSTR);
     }
 }
 
-int v4l2Device::blockIOCTL(int handle, int request, void *args)
-{
+int v4l2Device::blockIOCTL(int handle, int request, void *args) {
     int ioctlStatus;
-    do
-    {
+    do {
         ioctlStatus = ioctl(handle, request, args);
     } while (-1 == ioctlStatus && EINTR == errno);
     return ioctlStatus;
 }
 
-int v4l2Device::GetAtomISPModes(enum AtomISPMode mode)
-{
-    switch(mode)
-    {
-        case VIDEO:    return _ISP_MODE_VIDEO;
-        case PREVIEW:    return _ISP_MODE_PREVIEW;
-        case CONTINUOUS:    return _ISP_MODE_CONTINUOUS;
-        case STILL:    return _ISP_MODE_STILL;
+int v4l2Device::GetAtomISPModes(enum AtomISPMode mode) {
+    switch (mode) {
+        case VIDEO:
+            return _ISP_MODE_VIDEO;
+        case PREVIEW:
+            return _ISP_MODE_PREVIEW;
+        case CONTINUOUS:
+            return _ISP_MODE_CONTINUOUS;
+        case STILL:
+            return _ISP_MODE_STILL;
         case NONE:
 
         default:
@@ -88,61 +83,59 @@ int v4l2Device::GetAtomISPModes(enum AtomISPMode mode)
     }
 }
 
-int v4l2Device::ConvertToMFXFourCC(enum V4L2PixelFormat v4l2Format)
-{
-    switch (v4l2Format)
-    {
-        case UYVY:  return MFX_FOURCC_UYVY;
-        case YUY2:  return MFX_FOURCC_YUY2;
+int v4l2Device::ConvertToMFXFourCC(enum V4L2PixelFormat v4l2Format) {
+    switch (v4l2Format) {
+        case UYVY:
+            return MFX_FOURCC_UYVY;
+        case YUY2:
+            return MFX_FOURCC_YUY2;
         case NO_FORMAT:
 
         default:
-            assert( !"Unsupported mfx fourcc");
+            assert(!"Unsupported mfx fourcc");
             return 0;
     }
 }
 
-int v4l2Device::ConvertToV4L2FourCC()
-{
-    switch (m_v4l2Format)
-    {
-        case UYVY:    return V4L2_PIX_FMT_UYVY;
-        case YUY2:    return V4L2_PIX_FMT_YUYV;
+int v4l2Device::ConvertToV4L2FourCC() {
+    switch (m_v4l2Format) {
+        case UYVY:
+            return V4L2_PIX_FMT_UYVY;
+        case YUY2:
+            return V4L2_PIX_FMT_YUYV;
         case NO_FORMAT:
 
         default:
-            assert( !"Unsupported v4l2 fourcc");
+            assert(!"Unsupported v4l2 fourcc");
             return 0;
     }
 }
 
-void v4l2Device::Init( const char *devname,
-            uint32_t width,
-            uint32_t height,
-            uint32_t num_buffers,
-            enum V4L2PixelFormat v4l2Format,
-            enum AtomISPMode MipiMode,
-            int MipiPort)
-{
-
-    (devname != NULL)? m_devname = devname : m_devname;
-    (m_width != width )? m_width = width : m_width;
-    (m_height != height)? m_height = height : m_height;
-    (m_num_buffers != num_buffers)? m_num_buffers = num_buffers : m_num_buffers;
-    (m_v4l2Format != v4l2Format )? m_v4l2Format = v4l2Format : m_v4l2Format;
-    (m_MipiMode != MipiMode )? m_MipiMode = MipiMode : m_MipiMode;
-    (m_MipiPort != MipiPort )? m_MipiPort = MipiPort : m_MipiPort;
+void v4l2Device::Init(const char *devname,
+                      uint32_t width,
+                      uint32_t height,
+                      uint32_t num_buffers,
+                      enum V4L2PixelFormat v4l2Format,
+                      enum AtomISPMode MipiMode,
+                      int MipiPort) {
+    (devname != NULL) ? m_devname                  = devname : m_devname;
+    (m_width != width) ? m_width                   = width : m_width;
+    (m_height != height) ? m_height                = height : m_height;
+    (m_num_buffers != num_buffers) ? m_num_buffers = num_buffers
+                                   : m_num_buffers;
+    (m_v4l2Format != v4l2Format) ? m_v4l2Format = v4l2Format : m_v4l2Format;
+    (m_MipiMode != MipiMode) ? m_MipiMode       = MipiMode : m_MipiMode;
+    (m_MipiPort != MipiPort) ? m_MipiPort       = MipiPort : m_MipiPort;
 
     memset(&m_format, 0, sizeof m_format);
-    m_format.width = m_width;
-    m_format.height = m_height;
+    m_format.width       = m_width;
+    m_format.height      = m_height;
     m_format.pixelformat = ConvertToV4L2FourCC();
 
     V4L2Init();
 }
 
-void v4l2Device::V4L2Init()
-{
+void v4l2Device::V4L2Init() {
     int ret;
     struct v4l2_format fmt;
     struct v4l2_capability caps;
@@ -157,53 +150,57 @@ void v4l2Device::V4L2Init()
     /* Specifically for setting up mipi configuration. DMABUFF is
      * also enable by default here.
      */
-    if (m_MipiPort > -1  && m_MipiMode != NONE) {
-    parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    parm.parm.capture.capturemode = GetAtomISPModes(m_MipiMode);
+    if (m_MipiPort > -1 && m_MipiMode != NONE) {
+        parm.type                     = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        parm.parm.capture.capturemode = GetAtomISPModes(m_MipiMode);
 
-    ret = blockIOCTL(m_fd, VIDIOC_S_INPUT, &m_MipiPort);
-    BYE_ON(ret < 0, "VIDIOC_S_INPUT failed: %s\n", ERRSTR);
+        ret = blockIOCTL(m_fd, VIDIOC_S_INPUT, &m_MipiPort);
+        BYE_ON(ret < 0, "VIDIOC_S_INPUT failed: %s\n", ERRSTR);
 
-    ret = blockIOCTL(m_fd, VIDIOC_S_PARM, &parm);
-    BYE_ON(ret < 0, "VIDIOC_S_PARAM failed: %s\n", ERRSTR);
+        ret = blockIOCTL(m_fd, VIDIOC_S_PARM, &parm);
+        BYE_ON(ret < 0, "VIDIOC_S_PARAM failed: %s\n", ERRSTR);
     }
 
     ret = blockIOCTL(m_fd, VIDIOC_QUERYCAP, &caps);
-    msdk_printf( "Driver Caps:\n"
-            "  Driver: \"%s\"\n"
-            "  Card: \"%s\"\n"
-            "  Bus: \"%s\"\n"
-            "  Version: %d.%d\n"
-            "  Capabilities: %08x\n",
-            caps.driver,
-            caps.card,
-            caps.bus_info,
-            (caps.version>>16)&&0xff,
-            (caps.version>>24)&&0xff,
-            caps.capabilities);
+    msdk_printf("Driver Caps:\n"
+                "  Driver: \"%s\"\n"
+                "  Card: \"%s\"\n"
+                "  Bus: \"%s\"\n"
+                "  Version: %d.%d\n"
+                "  Capabilities: %08x\n",
+                caps.driver,
+                caps.card,
+                caps.bus_info,
+                (caps.version >> 16) && 0xff,
+                (caps.version >> 24) && 0xff,
+                caps.capabilities);
 
     BYE_ON(ret, "VIDIOC_QUERYCAP failed: %s\n", ERRSTR);
     BYE_ON(~caps.capabilities & V4L2_CAP_VIDEO_CAPTURE,
-                "video: singleplanar capture is not supported\n");
+           "video: singleplanar capture is not supported\n");
 
     CLEAR(fmt);
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    ret = blockIOCTL(m_fd, VIDIOC_G_FMT, &fmt);
+    ret      = blockIOCTL(m_fd, VIDIOC_G_FMT, &fmt);
 
     BYE_ON(ret < 0, "VIDIOC_G_FMT failed: %s\n", ERRSTR);
 
-    msdk_printf("G_FMT(start): width = %u, height = %u, 4cc = %.4s, BPP = %u sizeimage = %d field = %d\n",
-        fmt.fmt.pix.width, fmt.fmt.pix.height,
-        (char*)&fmt.fmt.pix.pixelformat,
+    msdk_printf(
+        "G_FMT(start): width = %u, height = %u, 4cc = %.4s, BPP = %u sizeimage = %d field = %d\n",
+        fmt.fmt.pix.width,
+        fmt.fmt.pix.height,
+        (char *)&fmt.fmt.pix.pixelformat,
         fmt.fmt.pix.bytesperline,
         fmt.fmt.pix.sizeimage,
         fmt.fmt.pix.field);
 
     fmt.fmt.pix = m_format;
 
-    msdk_printf("G_FMT(pre): width = %u, height = %u, 4cc = %.4s, BPP = %u sizeimage = %d field = %d\n",
-        fmt.fmt.pix.width, fmt.fmt.pix.height,
-        (char*)&fmt.fmt.pix.pixelformat,
+    msdk_printf(
+        "G_FMT(pre): width = %u, height = %u, 4cc = %.4s, BPP = %u sizeimage = %d field = %d\n",
+        fmt.fmt.pix.width,
+        fmt.fmt.pix.height,
+        (char *)&fmt.fmt.pix.pixelformat,
         fmt.fmt.pix.bytesperline,
         fmt.fmt.pix.sizeimage,
         fmt.fmt.pix.field);
@@ -214,52 +211,57 @@ void v4l2Device::V4L2Init()
     ret = blockIOCTL(m_fd, VIDIOC_G_FMT, &fmt);
     BYE_ON(ret < 0, "VIDIOC_G_FMT failed: %s\n", ERRSTR);
     msdk_printf("G_FMT(final): width = %u, height = %u, 4cc = %.4s, BPP = %u\n",
-        fmt.fmt.pix.width, fmt.fmt.pix.height,
-        (char*)&fmt.fmt.pix.pixelformat,
-        fmt.fmt.pix.bytesperline);
+                fmt.fmt.pix.width,
+                fmt.fmt.pix.height,
+                (char *)&fmt.fmt.pix.pixelformat,
+                fmt.fmt.pix.bytesperline);
 
     CLEAR(rqbufs);
-    rqbufs.count = m_num_buffers;
-    rqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    rqbufs.count  = m_num_buffers;
+    rqbufs.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     rqbufs.memory = V4L2_MEMORY_DMABUF;
 
     ret = blockIOCTL(m_fd, VIDIOC_REQBUFS, &rqbufs);
     BYE_ON(ret < 0, "VIDIOC_REQBUFS failed: %s\n", ERRSTR);
-    BYE_ON(rqbufs.count < m_num_buffers, "video node allocated only "
-            "%u of %u buffers\n", rqbufs.count, m_num_buffers);
+    BYE_ON(rqbufs.count < m_num_buffers,
+           "video node allocated only "
+           "%u of %u buffers\n",
+           rqbufs.count,
+           m_num_buffers);
 
     m_format = fmt.fmt.pix;
 }
 
-void v4l2Device::V4L2Alloc()
-{
-    buffers = (Buffer *)malloc(sizeof(Buffer) * (int) m_num_buffers);
+void v4l2Device::V4L2Alloc() {
+    buffers = (Buffer *)malloc(sizeof(Buffer) * (int)m_num_buffers);
 }
 
-void v4l2Device::V4L2QueueBuffer(Buffer *buffer)
-{
+void v4l2Device::V4L2QueueBuffer(Buffer *buffer) {
     struct v4l2_buffer buf;
     int ret;
 
     memset(&buf, 0, sizeof buf);
-    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_DMABUF;
-    buf.index = buffer->index;
-    buf.m.fd = buffer->fd;
+    buf.index  = buffer->index;
+    buf.m.fd   = buffer->fd;
 
     ret = blockIOCTL(m_fd, VIDIOC_QBUF, &buf);
-    BYE_ON(ret < 0, "VIDIOC_QBUF for buffer %d failed: %s (fd %u) (i %u)\n",
-    buf.index, ERRSTR, buffer->fd, buffer->index);
+    BYE_ON(ret < 0,
+           "VIDIOC_QBUF for buffer %d failed: %s (fd %u) (i %u)\n",
+           buf.index,
+           ERRSTR,
+           buffer->fd,
+           buffer->index);
 }
 
-Buffer *v4l2Device::V4L2DeQueueBuffer(Buffer *buffer)
-{
+Buffer *v4l2Device::V4L2DeQueueBuffer(Buffer *buffer) {
     struct v4l2_buffer buf;
     int ret;
 
     memset(&buf, 0, sizeof buf);
 
-    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_DMABUF;
 
     ret = blockIOCTL(m_fd, VIDIOC_DQBUF, &buf);
@@ -268,61 +270,56 @@ Buffer *v4l2Device::V4L2DeQueueBuffer(Buffer *buffer)
     return &buffer[buf.index];
 }
 
-void v4l2Device::V4L2StartCapture()
-{
+void v4l2Device::V4L2StartCapture() {
     int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    int ret = 0;
+    int ret  = 0;
 
     ret = blockIOCTL(m_fd, VIDIOC_STREAMON, &type);
     BYE_ON(ret < 0, "STREAMON failed: %s\n", ERRSTR);
 }
 
-void v4l2Device::V4L2StopCapture()
-{
+void v4l2Device::V4L2StopCapture() {
     int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    int ret = 0;
+    int ret  = 0;
 
     ret = blockIOCTL(m_fd, VIDIOC_STREAMOFF, &type);
     BYE_ON(ret < 0, "STREAMOFF failed: %s\n", ERRSTR);
 }
 
-void v4l2Device::PutOnQ(int x)
-{
+void v4l2Device::PutOnQ(int x) {
     pthread_mutex_lock(&mutex);
     m_q[m_first] = x;
-    m_first = (m_first+1) % 5;
+    m_first      = (m_first + 1) % 5;
     m_numInQ++;
     pthread_mutex_unlock(&mutex);
     pthread_mutex_unlock(&empty);
 }
 
-int v4l2Device::GetOffQ()
-{
+int v4l2Device::GetOffQ() {
     int thing;
 
     /* wait if the queue is empty. */
     while (m_numInQ == 0)
-    pthread_mutex_lock(&empty);
+        pthread_mutex_lock(&empty);
 
     pthread_mutex_lock(&mutex);
-    thing = m_q[m_last];
-    m_last = (m_last+1) % 5;
+    thing  = m_q[m_last];
+    m_last = (m_last + 1) % 5;
     m_numInQ--;
     pthread_mutex_unlock(&mutex);
 
     return thing;
 }
 
-int v4l2Device::GetV4L2TerminationSignal()
-{
-    return (CtrlFlag && m_numInQ == 0)? 1 : 0;
+int v4l2Device::GetV4L2TerminationSignal() {
+    return (CtrlFlag && m_numInQ == 0) ? 1 : 0;
 }
 
-static void CtrlCTerminationHandler(int s) { CtrlFlag = true; }
+static void CtrlCTerminationHandler(int s) {
+    CtrlFlag = true;
+}
 
-void *PollingThread(void *data)
-{
-
+void *PollingThread(void *data) {
     v4l2Device *v4l2 = (v4l2Device *)data;
 
     struct sigaction sigIntHandler;
@@ -332,15 +329,12 @@ void *PollingThread(void *data)
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     struct pollfd fd;
-    fd.fd = v4l2->GetV4L2DisplayID();
+    fd.fd     = v4l2->GetV4L2DisplayID();
     fd.events = POLLIN;
 
-    while(1)
-    {
-        if (poll(&fd, 1, 5000) > 0)
-        {
-            if (fd.revents & POLLIN)
-            {
+    while (1) {
+        if (poll(&fd, 1, 5000) > 0) {
+            if (fd.revents & POLLIN) {
                 CurBuffers = v4l2->V4L2DeQueueBuffer(buffers);
                 v4l2->PutOnQ(CurBuffers->index);
 

@@ -19,36 +19,35 @@
 // SOFTWARE.
 
 #if !defined(__MFX_DISPATCHER_H)
-#define __MFX_DISPATCHER_H
+    #define __MFX_DISPATCHER_H
 
-#include <mfxvideo.h>
-#include <stddef.h>
-#include "mfx_dispatcher_defs.h"
+    #include <mfxvideo.h>
+    #include <stddef.h>
+    #include "mfx_dispatcher_defs.h"
 
-#define INTEL_VENDOR_ID 0x8086
+    #define INTEL_VENDOR_ID 0x8086
 
 mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *version);
 
-
-
-enum
-{
+enum {
     // to avoid code changing versions are just inherited
     // from the API header file.
-    DEFAULT_API_VERSION_MAJOR   = MFX_VERSION_MAJOR,
-    DEFAULT_API_VERSION_MINOR   = MFX_VERSION_MINOR
+    DEFAULT_API_VERSION_MAJOR = MFX_VERSION_MAJOR,
+    DEFAULT_API_VERSION_MINOR = MFX_VERSION_MINOR
 };
 
 //
 // declare functions' integer identifiers.
 //
 
-#undef FUNCTION
-#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) \
-    e##func_name,
+    #undef FUNCTION
+    #define FUNCTION(return_value,      \
+                     func_name,         \
+                     formal_param_list, \
+                     actual_param_list) \
+        e##func_name,
 
-enum eFunc
-{
+enum eFunc {
     eMFXInit,
     eMFXClose,
     eMFXQueryIMPL,
@@ -59,12 +58,11 @@ enum eFunc
     eMFXSetPriority,
     eMFXGetPriority,
     eMFXInitEx,
-#include "mfx_exposed_functions_list.h"
+    #include "mfx_exposed_functions_list.h"
     eVideoFuncTotal
 };
 
-enum ePluginFunc
-{
+enum ePluginFunc {
     eMFXVideoUSER_Load,
     eMFXVideoUSER_LoadByPath,
     eMFXVideoUSER_UnLoad,
@@ -74,38 +72,26 @@ enum ePluginFunc
 };
 
 // declare max buffer length for regsitry key name
-enum
-{
-    MFX_MAX_REGISTRY_KEY_NAME = 256
-};
+enum { MFX_MAX_REGISTRY_KEY_NAME = 256 };
 
 // declare the maximum DLL path
-enum
-{
-    MFX_MAX_DLL_PATH = 1024
-};
+enum { MFX_MAX_DLL_PATH = 1024 };
 
 // declare library's implementation types
-enum eMfxImplType
-{
-    MFX_LIB_HARDWARE            = 0,
-    MFX_LIB_SOFTWARE            = 1,
-    MFX_LIB_PSEUDO              = 2,
+enum eMfxImplType {
+    MFX_LIB_HARDWARE = 0,
+    MFX_LIB_SOFTWARE = 1,
+    MFX_LIB_PSEUDO   = 2,
 
-    MFX_LIB_SOFTWARE_VPL        = 3,
+    MFX_LIB_SOFTWARE_VPL = 3,
 
     MFX_LIB_IMPL_TYPES
 };
 
 // declare dispatcher's version
-enum
-{
-    MFX_DISPATCHER_VERSION_MAJOR = 1,
-    MFX_DISPATCHER_VERSION_MINOR = 2
-};
+enum { MFX_DISPATCHER_VERSION_MAJOR = 1, MFX_DISPATCHER_VERSION_MINOR = 2 };
 
-struct _mfxSession
-{
+struct _mfxSession {
     // A real handle from MFX engine passed to a called function
     mfxSession session;
 
@@ -117,15 +103,18 @@ struct _mfxSession
 };
 
 // declare a dispatcher's handle
-struct MFX_DISP_HANDLE : public _mfxSession
-{
+struct MFX_DISP_HANDLE : public _mfxSession {
     // Default constructor
     MFX_DISP_HANDLE(const mfxVersion requiredVersion);
     // Destructor
     ~MFX_DISP_HANDLE(void);
 
     // Load the library's module
-    mfxStatus LoadSelectedDLL(const wchar_t *pPath, eMfxImplType implType, mfxIMPL impl, mfxIMPL implInterface, mfxInitParam &par);
+    mfxStatus LoadSelectedDLL(const wchar_t *pPath,
+                              eMfxImplType implType,
+                              mfxIMPL impl,
+                              mfxIMPL implInterface,
+                              mfxInitParam &par);
     // Unload the library's module
     mfxStatus UnLoadSelectedDLL(void);
 
@@ -160,46 +149,34 @@ struct MFX_DISP_HANDLE : public _mfxSession
 private:
     // Declare assignment operator and copy constructor to prevent occasional assignment
     MFX_DISP_HANDLE(const MFX_DISP_HANDLE &);
-    MFX_DISP_HANDLE & operator = (const MFX_DISP_HANDLE &);
-
+    MFX_DISP_HANDLE &operator=(const MFX_DISP_HANDLE &);
 };
 
 // declare comparison operator
-inline
-bool operator == (const mfxVersion &one, const mfxVersion &two)
-{
+inline bool operator==(const mfxVersion &one, const mfxVersion &two) {
     return (one.Version == two.Version);
-
 }
 
-inline
-bool operator < (const mfxVersion &one, const mfxVersion &two)
-{
-    return (one.Major < two.Major) || ((one.Major == two.Major) && (one.Minor < two.Minor));
-
+inline bool operator<(const mfxVersion &one, const mfxVersion &two) {
+    return (one.Major < two.Major) ||
+           ((one.Major == two.Major) && (one.Minor < two.Minor));
 }
 
-inline
-bool operator <= (const mfxVersion &one, const mfxVersion &two)
-{
+inline bool operator<=(const mfxVersion &one, const mfxVersion &two) {
     return (one == two) || (one < two);
 }
-
 
 //
 // declare a table with functions descriptions
 //
 
-typedef
-struct FUNCTION_DESCRIPTION
-{
+typedef struct FUNCTION_DESCRIPTION {
     // Literal function's name
     const char *pName;
     // API version when function appeared first time
     mfxVersion apiVersion;
 } FUNCTION_DESCRIPTION;
 
-extern const
-FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal];
+extern const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal];
 
 #endif // __MFX_DISPATCHER_H

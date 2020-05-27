@@ -21,24 +21,20 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #include "vm/thread_defs.h"
 
-AutomaticMutex::AutomaticMutex(MSDKMutex& mutex):
-    m_rMutex(mutex),
-    m_bLocked(false)
-{
-    if (MFX_ERR_NONE != Lock()) throw std::bad_alloc();
+AutomaticMutex::AutomaticMutex(MSDKMutex& mutex)
+        : m_rMutex(mutex),
+          m_bLocked(false) {
+    if (MFX_ERR_NONE != Lock())
+        throw std::bad_alloc();
 };
-AutomaticMutex::~AutomaticMutex(void)
-{
+AutomaticMutex::~AutomaticMutex(void) {
     Unlock();
 }
 
-mfxStatus AutomaticMutex::Lock(void)
-{
+mfxStatus AutomaticMutex::Lock(void) {
     mfxStatus sts = MFX_ERR_NONE;
-    if (!m_bLocked)
-    {
-        if (!m_rMutex.Try())
-        {
+    if (!m_bLocked) {
+        if (!m_rMutex.Try()) {
             // add time measurement here to estimate how long you sleep on mutex...
             sts = m_rMutex.Lock();
         }
@@ -47,12 +43,10 @@ mfxStatus AutomaticMutex::Lock(void)
     return sts;
 }
 
-mfxStatus AutomaticMutex::Unlock(void)
-{
+mfxStatus AutomaticMutex::Unlock(void) {
     mfxStatus sts = MFX_ERR_NONE;
-    if (m_bLocked)
-    {
-        sts = m_rMutex.Unlock();
+    if (m_bLocked) {
+        sts       = m_rMutex.Unlock();
         m_bLocked = false;
     }
     return sts;

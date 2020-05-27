@@ -1,24 +1,24 @@
 #include "video_decoder.h"
 
-#define PROGRESS_BAR_STEPS  30
+#define PROGRESS_BAR_STEPS 30
 
 typedef struct _CodecInfo {
-    const char *codecName;  // codec name (user friendly string)
-    mfxU32 codecId;         // codec FourCC
+    const char *codecName; // codec name (user friendly string)
+    mfxU32 codecId; // codec FourCC
 } CodecInfo;
 
 static const CodecInfo codecInfoTab[NUM_CODECS] = {
-    { "h264"  , MFX_CODEC_AVC   } ,
-    { "h265"  , MFX_CODEC_HEVC  } ,
-    { "mpeg2" , MFX_CODEC_MPEG2 } ,
+    { "h264", MFX_CODEC_AVC },
+    { "h265", MFX_CODEC_HEVC },
+    { "mpeg2", MFX_CODEC_MPEG2 },
 };
 
-static void Usage(void)
-{
+static void Usage(void) {
     mfxU32 codecIdx;
-    
+
     printf("\nUsage:\n\n");
-    printf(">> video_decoder.exe codec -i infile.bit [-o outfile.yuv] [other options]\n\n");
+    printf(
+        ">> video_decoder.exe codec -i infile.bit [-o outfile.yuv] [other options]\n\n");
     printf("valid options for codec: ");
     for (codecIdx = 0; codecIdx < NUM_CODECS; codecIdx++)
         printf("%s ", codecInfoTab[codecIdx].codecName);
@@ -26,15 +26,18 @@ static void Usage(void)
     printf("Options:\n");
     printf("  -i  infile.bit     encoded bitstream\n");
     printf("  -o  outfile.yuv    decoded YUV stream (NV12)\n");
-    printf("  -e                 use external frame allocator (default = internal)\n");
+    printf(
+        "  -e                 use external frame allocator (default = internal)\n");
     printf("\n");
 
     exit(-1);
 }
 
 // estimate decode progress as (bytes consumed by MSDK) / (total bytes in bitstream)
-static void UpdateProgress(FILE *infile, mfxU32 nBytesTotal, mfxU32 nBytesBuffered, mfxU32 nOutFrames)
-{
+static void UpdateProgress(FILE *infile,
+                           mfxU32 nBytesTotal,
+                           mfxU32 nBytesBuffered,
+                           mfxU32 nOutFrames) {
     mfxU32 i, nBytesRead;
     mfxF32 fracDone;
 
@@ -44,14 +47,13 @@ static void UpdateProgress(FILE *infile, mfxU32 nBytesTotal, mfxU32 nBytesBuffer
     printf("Total frames decoded = %6d -- Progress |", nOutFrames);
     for (i = 0; i < (mfxU32)(fracDone * PROGRESS_BAR_STEPS); i++)
         printf("*");
-    for ( ; i < PROGRESS_BAR_STEPS; i++)
+    for (; i < PROGRESS_BAR_STEPS; i++)
         printf(" ");
     printf("|\r");
     fflush(stdout);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     mfxU32 argIdx, codecIdx, nOutFrames, bUseExtAlloc = 0;
     mfxU32 nBytesBuffered, nBytesTotal, nBytesRead;
     DecoderInfo decoderInfo;
@@ -62,11 +64,11 @@ int main(int argc, char **argv)
 
 #if defined _DEBUG && (defined _WIN32 || defined _WIN64)
     // enable memory leak check (Windows only)
-    _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-    _CrtSetReportMode( _CRT_ERROR, _CRTDBG_MODE_FILE );
-    _CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE );
-    _CrtSetReportFile( _CRT_ERROR, _CRTDBG_FILE_STDERR );
-    _CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDERR );
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
 #endif
 
     if (argc < 2) {
@@ -85,22 +87,22 @@ int main(int argc, char **argv)
     }
 
     // parse other arguments
-    for (argIdx = 2; argIdx < (mfxU32)argc; ) {
+    for (argIdx = 2; argIdx < (mfxU32)argc;) {
         if (argv[argIdx][0] == '-') {
-            switch(argv[argIdx++][1]) {
-            case 'i':
-                infileName = argv[argIdx++];
-                continue;
-            case 'o':
-                outfileName = argv[argIdx++];
-                continue;
-            case 'e':
-                bUseExtAlloc = 1;
-                continue;
-            default:
-                printf("invalid cmd-line");
-                Usage();
-                break;
+            switch (argv[argIdx++][1]) {
+                case 'i':
+                    infileName = argv[argIdx++];
+                    continue;
+                case 'o':
+                    outfileName = argv[argIdx++];
+                    continue;
+                case 'e':
+                    bUseExtAlloc = 1;
+                    continue;
+                default:
+                    printf("invalid cmd-line");
+                    Usage();
+                    break;
             }
         }
         ERR_AND_EXIT("invalid cmd-line");
@@ -159,7 +161,8 @@ int main(int argc, char **argv)
     printf("Codec ...............  %s\n", codecInfoTab[codecIdx].codecName);
     printf("Width ............... % 5d\n", decoderInfo.width);
     printf("Height .............. % 5d\n", decoderInfo.height);
-    printf("Frame allocator .....  %s\n", (bUseExtAlloc ? "External" : "Internal"));
+    printf("Frame allocator .....  %s\n",
+           (bUseExtAlloc ? "External" : "Internal"));
     printf("\n");
 
     // main processing loop - decode one frame at a time
@@ -183,8 +186,10 @@ int main(int argc, char **argv)
     if (sts == MFX_ERR_MORE_DATA) {
         printf("Decoding completed successfully\n");
         printf("Total frames decoded = %d\n", nOutFrames);
-    } else {
-        printf("Warning - decoding terminated prematurely (sts == 0x%08x)\n", sts);
+    }
+    else {
+        printf("Warning - decoding terminated prematurely (sts == 0x%08x)\n",
+               sts);
     }
 
     // cleanup

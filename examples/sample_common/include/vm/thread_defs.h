@@ -23,62 +23,52 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "mfxdefs.h"
 #include "vm/strings_defs.h"
 
-typedef unsigned int (MFX_STDCALL * msdk_thread_callback)(void*);
+typedef unsigned int(MFX_STDCALL* msdk_thread_callback)(void*);
 
 #if defined(_WIN32) || defined(_WIN64)
 
-#include <windows.h>
-#include <process.h>
+    #include <process.h>
+    #include <windows.h>
 
-struct msdkMutexHandle
-{
+struct msdkMutexHandle {
     CRITICAL_SECTION m_CritSec;
 };
 
-struct msdkSemaphoreHandle
-{
+struct msdkSemaphoreHandle {
     void* m_semaphore;
 };
 
-struct msdkEventHandle
-{
+struct msdkEventHandle {
     void* m_event;
 };
 
-struct msdkThreadHandle
-{
+struct msdkThreadHandle {
     void* m_thread;
 };
 
 #else // #if defined(_WIN32) || defined(_WIN64)
 
-#include <pthread.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/resource.h>
+    #include <errno.h>
+    #include <pthread.h>
+    #include <sys/resource.h>
+    #include <sys/time.h>
 
-struct msdkMutexHandle
-{
+struct msdkMutexHandle {
     pthread_mutex_t m_mutex;
 };
 
-struct msdkSemaphoreHandle
-{
-    msdkSemaphoreHandle(mfxU32 count):
-        m_count(count)
-    {}
+struct msdkSemaphoreHandle {
+    msdkSemaphoreHandle(mfxU32 count) : m_count(count) {}
 
     mfxU32 m_count;
     pthread_cond_t m_semaphore;
     pthread_mutex_t m_mutex;
 };
 
-struct msdkEventHandle
-{
-    msdkEventHandle(bool manual, bool state):
-        m_manual(manual),
-        m_state(state)
-    {}
+struct msdkEventHandle {
+    msdkEventHandle(bool manual, bool state)
+            : m_manual(manual),
+              m_state(state) {}
 
     bool m_manual;
     bool m_state;
@@ -88,16 +78,12 @@ struct msdkEventHandle
 
 class MSDKEvent;
 
-struct msdkThreadHandle
-{
-    msdkThreadHandle(
-        msdk_thread_callback func,
-        void* arg):
-      m_func(func),
-      m_arg(arg),
-      m_event(0),
-      m_thread(0)
-    {}
+struct msdkThreadHandle {
+    msdkThreadHandle(msdk_thread_callback func, void* arg)
+            : m_func(func),
+              m_arg(arg),
+              m_event(0),
+              m_thread(0) {}
 
     msdk_thread_callback m_func;
     void* m_arg;
@@ -107,8 +93,7 @@ struct msdkThreadHandle
 
 #endif // #if defined(_WIN32) || defined(_WIN64)
 
-class MSDKMutex: public msdkMutexHandle
-{
+class MSDKMutex : public msdkMutexHandle {
 public:
     MSDKMutex(void);
     ~MSDKMutex(void);
@@ -122,8 +107,7 @@ private:
     void operator=(const MSDKMutex&);
 };
 
-class AutomaticMutex
-{
+class AutomaticMutex {
 public:
     AutomaticMutex(MSDKMutex& mutex);
     ~AutomaticMutex(void);
@@ -140,10 +124,9 @@ private:
     void operator=(const AutomaticMutex&);
 };
 
-class MSDKSemaphore: public msdkSemaphoreHandle
-{
+class MSDKSemaphore : public msdkSemaphoreHandle {
 public:
-    MSDKSemaphore(mfxStatus &sts, mfxU32 count = 0);
+    MSDKSemaphore(mfxStatus& sts, mfxU32 count = 0);
     ~MSDKSemaphore(void);
 
     mfxStatus Post(void);
@@ -154,10 +137,9 @@ private:
     void operator=(const MSDKSemaphore&);
 };
 
-class MSDKEvent: public msdkEventHandle
-{
+class MSDKEvent : public msdkEventHandle {
 public:
-    MSDKEvent(mfxStatus &sts, bool manual, bool state);
+    MSDKEvent(mfxStatus& sts, bool manual, bool state);
     ~MSDKEvent(void);
 
     mfxStatus Signal(void);
@@ -170,10 +152,9 @@ private:
     void operator=(const MSDKEvent&);
 };
 
-class MSDKThread: public msdkThreadHandle
-{
+class MSDKThread : public msdkThreadHandle {
 public:
-    MSDKThread(mfxStatus &sts, msdk_thread_callback func, void* arg);
+    MSDKThread(mfxStatus& sts, msdk_thread_callback func, void* arg);
     ~MSDKThread(void);
 
     mfxStatus Wait(void);
@@ -191,7 +172,7 @@ private:
 
 mfxU32 msdk_get_current_pid();
 mfxStatus msdk_setrlimit_vmem(mfxU64 size);
-mfxStatus msdk_thread_get_schedtype(const msdk_char*, mfxI32 &type);
+mfxStatus msdk_thread_get_schedtype(const msdk_char*, mfxI32& type);
 void msdk_thread_printf_scheduling_help();
 
 #endif //__THREAD_DEFS_H__

@@ -22,65 +22,59 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #if defined(LIBVA_SUPPORT)
 
-#include <stdlib.h>
-#include <va/va.h>
-#include <va/va_drmcommon.h>
+    #include <stdlib.h>
+    #include <va/va.h>
+    #include <va/va_drmcommon.h>
 
-#include "base_allocator.h"
-#include "vaapi_utils.h"
+    #include "base_allocator.h"
+    #include "vaapi_utils.h"
 
 // VAAPI Allocator internal Mem ID
-struct vaapiMemId
-{
-    VASurfaceID* m_surface;
-    VAImage      m_image;
+struct vaapiMemId {
+    VASurfaceID *m_surface;
+    VAImage m_image;
     // variables for VAAPI Allocator internal color conversion
     unsigned int m_fourcc;
-    mfxU8*       m_sys_buffer;
-    mfxU8*       m_va_buffer;
+    mfxU8 *m_sys_buffer;
+    mfxU8 *m_va_buffer;
     // buffer info to support surface export
     VABufferInfo m_buffer_info;
     // pointer to private export data
-    void*        m_custom;
+    void *m_custom;
 };
 
-namespace MfxLoader
-{
-    class VA_Proxy;
+namespace MfxLoader {
+class VA_Proxy;
 }
 
-struct vaapiAllocatorParams : mfxAllocatorParams
-{
+struct vaapiAllocatorParams : mfxAllocatorParams {
     enum {
-      DONOT_EXPORT = 0,
-      FLINK = 0x01,
-      PRIME = 0x02,
-      NATIVE_EXPORT_MASK = FLINK | PRIME,
-      CUSTOM = 0x100,
-      CUSTOM_FLINK = CUSTOM | FLINK,
-      CUSTOM_PRIME = CUSTOM | PRIME
+        DONOT_EXPORT       = 0,
+        FLINK              = 0x01,
+        PRIME              = 0x02,
+        NATIVE_EXPORT_MASK = FLINK | PRIME,
+        CUSTOM             = 0x100,
+        CUSTOM_FLINK       = CUSTOM | FLINK,
+        CUSTOM_PRIME       = CUSTOM | PRIME
     };
-    class Exporter
-    {
+    class Exporter {
     public:
-      virtual ~Exporter(){}
-      virtual void* acquire(mfxMemId mid) = 0;
-      virtual void release(mfxMemId mid, void * hdl) = 0;
+        virtual ~Exporter() {}
+        virtual void *acquire(mfxMemId mid)           = 0;
+        virtual void release(mfxMemId mid, void *hdl) = 0;
     };
 
     vaapiAllocatorParams()
-      : m_dpy(NULL)
-      , m_export_mode(DONOT_EXPORT)
-      , m_exporter(NULL)
-    {}
+            : m_dpy(NULL),
+              m_export_mode(DONOT_EXPORT),
+              m_exporter(NULL) {}
 
     VADisplay m_dpy;
     mfxU32 m_export_mode;
-    Exporter* m_exporter;
+    Exporter *m_exporter;
 };
 
-class vaapiFrameAllocator: public BaseFrameAllocator
-{
+class vaapiFrameAllocator : public BaseFrameAllocator {
 public:
     vaapiFrameAllocator();
     virtual ~vaapiFrameAllocator();
@@ -97,12 +91,13 @@ protected:
 
     virtual mfxStatus CheckRequestType(mfxFrameAllocRequest *request);
     virtual mfxStatus ReleaseResponse(mfxFrameAllocResponse *response);
-    virtual mfxStatus AllocImpl(mfxFrameAllocRequest *request, mfxFrameAllocResponse *response);
+    virtual mfxStatus AllocImpl(mfxFrameAllocRequest *request,
+                                mfxFrameAllocResponse *response);
 
     VADisplay m_dpy;
-    MfxLoader::VA_Proxy * m_libva;
+    MfxLoader::VA_Proxy *m_libva;
     mfxU32 m_export_mode;
-    vaapiAllocatorParams::Exporter* m_exporter;
+    vaapiAllocatorParams::Exporter *m_exporter;
 };
 
 #endif //#if defined(LIBVA_SUPPORT)

@@ -22,11 +22,10 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #if defined(LIBVA_ANDROID_SUPPORT)
 
-#include <va/va_android.h>
-#include "vaapi_utils.h"
+    #include <va/va_android.h>
+    #include "vaapi_utils.h"
 
-class AndroidLibVA : public CLibVA
-{
+class AndroidLibVA : public CLibVA {
 public:
     AndroidLibVA(void);
     virtual ~AndroidLibVA(void);

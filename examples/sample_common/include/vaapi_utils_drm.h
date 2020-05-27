@@ -22,20 +22,21 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #if defined(LIBVA_DRM_SUPPORT)
 
-#include <va/va_drm.h>
-#include <va/va_drmcommon.h>
-#include "vaapi_utils.h"
-#include "vaapi_allocator.h"
+    #include <va/va_drm.h>
+    #include <va/va_drmcommon.h>
+    #include "vaapi_allocator.h"
+    #include "vaapi_utils.h"
 
 class drmRenderer;
 
-class DRMLibVA : public CLibVA
-{
+class DRMLibVA : public CLibVA {
 public:
     DRMLibVA(int type = MFX_LIBVA_DRM);
     virtual ~DRMLibVA(void);
 
-    inline int getFD() { return m_fd; }
+    inline int getFD() {
+        return m_fd;
+    }
 
 protected:
     int m_fd;
@@ -45,24 +46,23 @@ private:
     DISALLOW_COPY_AND_ASSIGN(DRMLibVA);
 };
 
-class drmRenderer : public vaapiAllocatorParams::Exporter
-{
+class drmRenderer : public vaapiAllocatorParams::Exporter {
 public:
     drmRenderer(int fd, mfxI32 monitorType);
     virtual ~drmRenderer();
 
-    virtual mfxStatus render(mfxFrameSurface1 * pSurface);
+    virtual mfxStatus render(mfxFrameSurface1* pSurface);
 
     // vaapiAllocatorParams::Exporter methods
     virtual void* acquire(mfxMemId mid);
-    virtual void release(mfxMemId mid, void * mem);
+    virtual void release(mfxMemId mid, void* mem);
 
     static uint32_t getConnectorType(mfxI32 monitor_type);
     static const msdk_char* getConnectorName(uint32_t connector_type);
 
 private:
-    bool getConnector(drmModeRes *resource, uint32_t connector_type);
-    bool setupConnection(drmModeRes *resource, drmModeConnector* connector);
+    bool getConnector(drmModeRes* resource, uint32_t connector_type);
+    bool setupConnection(drmModeRes* resource, drmModeConnector* connector);
     bool getPlane();
 
     bool setMaster();
@@ -83,7 +83,7 @@ private:
     drmModeCrtcPtr m_crtc;
     drm_intel_bufmgr* m_bufmgr;
     bool m_overlay_wrn;
-    mfxFrameSurface1 * m_pCurrentRenderTargetSurface;
+    mfxFrameSurface1* m_pCurrentRenderTargetSurface;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(drmRenderer);

@@ -26,92 +26,84 @@
 
 #include <string.h>
 #include <windows.h>
-#pragma warning(disable:4355)
+#pragma warning(disable : 4355)
 
-MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion) :
-    _mfxSession()
-    ,apiVersion(requiredVersion)
-{
+MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion)
+        : _mfxSession(),
+          apiVersion(requiredVersion) {
     actualApiVersion.Version = 0;
-    implType = MFX_LIB_SOFTWARE;
-    impl = MFX_IMPL_SOFTWARE;
-    loadStatus = MFX_ERR_NOT_FOUND;
-    dispVersion.Major = MFX_DISPATCHER_VERSION_MAJOR;
-    dispVersion.Minor = MFX_DISPATCHER_VERSION_MINOR;
-    storageID = 0;
-    implInterface = MFX_IMPL_HARDWARE_ANY;
+    implType                 = MFX_LIB_SOFTWARE;
+    impl                     = MFX_IMPL_SOFTWARE;
+    loadStatus               = MFX_ERR_NOT_FOUND;
+    dispVersion.Major        = MFX_DISPATCHER_VERSION_MAJOR;
+    dispVersion.Minor        = MFX_DISPATCHER_VERSION_MINOR;
+    storageID                = 0;
+    implInterface            = MFX_IMPL_HARDWARE_ANY;
 
-    hModule = (mfxModuleHandle) 0;
+    hModule = (mfxModuleHandle)0;
 
 } // MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion)
 
-MFX_DISP_HANDLE::~MFX_DISP_HANDLE(void)
-{
+MFX_DISP_HANDLE::~MFX_DISP_HANDLE(void) {
     Close();
 
 } // MFX_DISP_HANDLE::~MFX_DISP_HANDLE(void)
 
-mfxStatus MFX_DISP_HANDLE::Close(void)
-{
+mfxStatus MFX_DISP_HANDLE::Close(void) {
     mfxStatus mfxRes;
 
     mfxRes = UnLoadSelectedDLL();
 
     // the library wasn't unloaded
-    if (MFX_ERR_NONE != mfxRes)
-    {
-        implType = MFX_LIB_SOFTWARE;
-        impl = MFX_IMPL_SOFTWARE;
-        loadStatus = MFX_ERR_NOT_FOUND;
-        dispVersion.Major = MFX_DISPATCHER_VERSION_MAJOR;
-        dispVersion.Minor = MFX_DISPATCHER_VERSION_MINOR;
-        *static_cast<_mfxSession*>(this) = _mfxSession();
-        hModule = (mfxModuleHandle) 0;
+    if (MFX_ERR_NONE != mfxRes) {
+        implType                          = MFX_LIB_SOFTWARE;
+        impl                              = MFX_IMPL_SOFTWARE;
+        loadStatus                        = MFX_ERR_NOT_FOUND;
+        dispVersion.Major                 = MFX_DISPATCHER_VERSION_MAJOR;
+        dispVersion.Minor                 = MFX_DISPATCHER_VERSION_MINOR;
+        *static_cast<_mfxSession *>(this) = _mfxSession();
+        hModule                           = (mfxModuleHandle)0;
     }
 
     return mfxRes;
 
 } // mfxStatus MFX_DISP_HANDLE::Close(void)
 
-mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType reqImplType,
-                                           mfxIMPL reqImpl, mfxIMPL reqImplInterface, mfxInitParam &par)
-{
+mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath,
+                                           eMfxImplType reqImplType,
+                                           mfxIMPL reqImpl,
+                                           mfxIMPL reqImplInterface,
+                                           mfxInitParam &par) {
     mfxStatus mfxRes = MFX_ERR_NONE;
 
     // check error(s)
     if ((MFX_LIB_SOFTWARE != reqImplType) &&
         (MFX_LIB_HARDWARE != reqImplType) &&
-        (MFX_LIB_SOFTWARE_VPL != reqImplType)
-        )
-    {
-        DISPATCHER_LOG_ERROR((("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"), DispatcherLog_GetMFXImplString(reqImplType).c_str()));
+        (MFX_LIB_SOFTWARE_VPL != reqImplType)) {
+        DISPATCHER_LOG_ERROR((
+            ("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"),
+            DispatcherLog_GetMFXImplString(reqImplType).c_str()));
         loadStatus = MFX_ERR_ABORTED;
         return loadStatus;
     }
     // only exact types of implementation is allowed
-    if (!(reqImpl & MFX_IMPL_AUDIO) &&
-        (MFX_IMPL_SOFTWARE != reqImpl) &&
-        (MFX_IMPL_SOFTWARE_VPL != reqImpl) &&
-        (MFX_IMPL_HARDWARE != reqImpl) &&
-        (MFX_IMPL_HARDWARE2 != reqImpl) &&
-        (MFX_IMPL_HARDWARE3 != reqImpl) &&
-        (MFX_IMPL_HARDWARE4 != reqImpl))
-    {
-        DISPATCHER_LOG_ERROR((("invalid implementation impl == %s\n"), DispatcherLog_GetMFXImplString(impl).c_str()));
+    if (!(reqImpl & MFX_IMPL_AUDIO) && (MFX_IMPL_SOFTWARE != reqImpl) &&
+        (MFX_IMPL_SOFTWARE_VPL != reqImpl) && (MFX_IMPL_HARDWARE != reqImpl) &&
+        (MFX_IMPL_HARDWARE2 != reqImpl) && (MFX_IMPL_HARDWARE3 != reqImpl) &&
+        (MFX_IMPL_HARDWARE4 != reqImpl)) {
+        DISPATCHER_LOG_ERROR((("invalid implementation impl == %s\n"),
+                              DispatcherLog_GetMFXImplString(impl).c_str()));
         loadStatus = MFX_ERR_ABORTED;
         return loadStatus;
     }
     // only mfxExtThreadsParam is allowed
-    if (par.NumExtParam)
-    {
-        if ((par.NumExtParam > 1) || !par.ExtParam)
-        {
+    if (par.NumExtParam) {
+        if ((par.NumExtParam > 1) || !par.ExtParam) {
             loadStatus = MFX_ERR_ABORTED;
             return loadStatus;
         }
         if ((par.ExtParam[0]->BufferId != MFX_EXTBUFF_THREADS_PARAM) ||
-            (par.ExtParam[0]->BufferSz != sizeof(mfxExtThreadsParam)))
-        {
+            (par.ExtParam[0]->BufferSz != sizeof(mfxExtThreadsParam))) {
             loadStatus = MFX_ERR_ABORTED;
             return loadStatus;
         }
@@ -121,8 +113,8 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
     Close();
 
     // save the library's type
-    this->implType = reqImplType;
-    this->impl = reqImpl;
+    this->implType      = reqImplType;
+    this->impl          = reqImpl;
     this->implInterface = reqImplInterface;
 
     {
@@ -132,34 +124,39 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
         // load the DLL into the memory
         hModule = MFX::mfx_dll_load(pPath);
 
-        if (hModule)
-        {
+        if (hModule) {
             int i;
 
             DISPATCHER_LOG_OPERATION({
                 wchar_t modulePath[1024];
-                GetModuleFileNameW((HMODULE)hModule, modulePath, sizeof(modulePath)/sizeof(modulePath[0]));
+                GetModuleFileNameW((HMODULE)hModule,
+                                   modulePath,
+                                   sizeof(modulePath) / sizeof(modulePath[0]));
                 DISPATCHER_LOG_INFO((("loaded module %S\n"), modulePath))
             });
 
             {
                 // load video functions: pointers to exposed functions
-                for (i = 0; i < eVideoFuncTotal; i += 1)
-                {
-                    mfxFunctionPointer pProc = (mfxFunctionPointer) MFX::mfx_dll_get_addr(hModule, APIFunc[i].pName);
-                    if (pProc)
-                    {
+                for (i = 0; i < eVideoFuncTotal; i += 1) {
+                    mfxFunctionPointer pProc = (mfxFunctionPointer)
+                        MFX::mfx_dll_get_addr(hModule, APIFunc[i].pName);
+                    if (pProc) {
                         // function exists in the library,
                         // save the pointer.
                         callTable[i] = pProc;
                     }
-                    else
-                    {
+                    else {
                         // The library doesn't contain the function
-                        DISPATCHER_LOG_WRN((("Can't find API function \"%s\"\n"), APIFunc[i].pName));
-                        if (apiVersion.Version >= APIFunc[i].apiVersion.Version)
-                        {
-                            DISPATCHER_LOG_ERROR((("\"%s\" is required for API %u.%u\n"), APIFunc[i].pName, apiVersion.Major, apiVersion.Minor));
+                        DISPATCHER_LOG_WRN(
+                            (("Can't find API function \"%s\"\n"),
+                             APIFunc[i].pName));
+                        if (apiVersion.Version >=
+                            APIFunc[i].apiVersion.Version) {
+                            DISPATCHER_LOG_ERROR(
+                                (("\"%s\" is required for API %u.%u\n"),
+                                 APIFunc[i].pName,
+                                 apiVersion.Major,
+                                 apiVersion.Minor));
                             mfxRes = MFX_ERR_UNSUPPORTED;
                             break;
                         }
@@ -167,72 +164,81 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
                 }
             }
         }
-        else
-        {
-            DISPATCHER_LOG_WRN((("can't find DLL: GetLastErr()=0x%x\n"), GetLastError()))
+        else {
+            DISPATCHER_LOG_WRN(
+                (("can't find DLL: GetLastErr()=0x%x\n"), GetLastError()))
             mfxRes = MFX_ERR_UNSUPPORTED;
         }
     }
 
     // initialize the loaded DLL
-    if (MFX_ERR_NONE == mfxRes)
-    {
+    if (MFX_ERR_NONE == mfxRes) {
         mfxVersion version(apiVersion);
 
         /* check whether it is audio session or video */
         mfxFunctionPointer *actualTable = callTable;
 
         // Call old-style MFXInit init for older libraries and audio library
-        bool callOldInit = (impl & MFX_IMPL_AUDIO) || !actualTable[eMFXInitEx]; // if true call eMFXInit, if false - eMFXInitEx
+        bool callOldInit =
+            (impl & MFX_IMPL_AUDIO) ||
+            !actualTable
+                [eMFXInitEx]; // if true call eMFXInit, if false - eMFXInitEx
         int tableIndex = (callOldInit) ? eMFXInit : eMFXInitEx;
 
         mfxFunctionPointer pFunc = actualTable[tableIndex];
 
         {
-            if (callOldInit)
-            {
-                DISPATCHER_LOG_BLOCK(("MFXInit(%s,ver=%u.%u,session=0x%p)\n"
-                                     , DispatcherLog_GetMFXImplString(impl | implInterface).c_str()
-                                     , apiVersion.Major
-                                     , apiVersion.Minor
-                                     , &session));
+            if (callOldInit) {
+                DISPATCHER_LOG_BLOCK(
+                    ("MFXInit(%s,ver=%u.%u,session=0x%p)\n",
+                     DispatcherLog_GetMFXImplString(impl | implInterface)
+                         .c_str(),
+                     apiVersion.Major,
+                     apiVersion.Minor,
+                     &session));
 
-                mfxRes = (*(mfxStatus(MFX_CDECL *) (mfxIMPL, mfxVersion *, mfxSession *)) pFunc) (impl | implInterface, &version, &session);
+                mfxRes = (*(
+                    mfxStatus(MFX_CDECL *)(mfxIMPL, mfxVersion *, mfxSession *))
+                              pFunc)(impl | implInterface, &version, &session);
             }
-            else
-            {
-                DISPATCHER_LOG_BLOCK(("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n"
-                                     , DispatcherLog_GetMFXImplString(impl | implInterface).c_str()
-                                     , apiVersion.Major
-                                     , apiVersion.Minor
-                                     , par.ExternalThreads
-                                     , &session));
+            else {
+                DISPATCHER_LOG_BLOCK(
+                    ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
+                     DispatcherLog_GetMFXImplString(impl | implInterface)
+                         .c_str(),
+                     apiVersion.Major,
+                     apiVersion.Minor,
+                     par.ExternalThreads,
+                     &session));
 
                 mfxInitParam initPar = par;
                 // adjusting user parameters
                 initPar.Implementation = impl | implInterface;
-                initPar.Version = version;
-                mfxRes = (*(mfxStatus(MFX_CDECL *) (mfxInitParam, mfxSession *)) pFunc) (initPar, &session);
+                initPar.Version        = version;
+                mfxRes = (*(mfxStatus(MFX_CDECL *)(mfxInitParam, mfxSession *))
+                              pFunc)(initPar, &session);
             }
         }
 
-        if (MFX_ERR_NONE != mfxRes)
-        {
-            DISPATCHER_LOG_WRN((("library can't be load. MFXInit returned %s \n"), DispatcherLog_GetMFXStatusString(mfxRes)))
+        if (MFX_ERR_NONE != mfxRes) {
+            DISPATCHER_LOG_WRN(
+                (("library can't be load. MFXInit returned %s \n"),
+                 DispatcherLog_GetMFXStatusString(mfxRes)))
         }
-        else
-        {
-            mfxRes = MFXQueryVersion((mfxSession) this, &actualApiVersion);
+        else {
+            mfxRes = MFXQueryVersion((mfxSession)this, &actualApiVersion);
 
-            if (MFX_ERR_NONE != mfxRes)
-            {
-                DISPATCHER_LOG_ERROR((("MFXQueryVersion returned: %d, skiped this library\n"), mfxRes))
+            if (MFX_ERR_NONE != mfxRes) {
+                DISPATCHER_LOG_ERROR(
+                    (("MFXQueryVersion returned: %d, skiped this library\n"),
+                     mfxRes))
             }
-            else
-            {
-                DISPATCHER_LOG_INFO((("MFXQueryVersion returned API: %d.%d\n"), actualApiVersion.Major, actualApiVersion.Minor))
+            else {
+                DISPATCHER_LOG_INFO((("MFXQueryVersion returned API: %d.%d\n"),
+                                     actualApiVersion.Major,
+                                     actualApiVersion.Minor))
                 //special hook for applications that uses sink api to get loaded library path
-                DISPATCHER_LOG_LIBRARY(("%p" , hModule));
+                DISPATCHER_LOG_LIBRARY(("%p", hModule));
                 DISPATCHER_LOG_INFO(("library loaded succesfully\n"))
             }
         }
@@ -243,41 +249,34 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
 
 } // mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType implType, mfxIMPL impl)
 
-mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
-{
+mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void) {
     mfxStatus mfxRes = MFX_ERR_NONE;
 
     // close the loaded DLL
-    if (session)
-    {
+    if (session) {
         /* check whether it is audio session or video */
         int tableIndex = eMFXClose;
         mfxFunctionPointer pFunc;
-        {
-            pFunc = callTable[tableIndex];
+        { pFunc = callTable[tableIndex]; }
+
+        mfxRes = (*(mfxStatus(MFX_CDECL *)(mfxSession))pFunc)(session);
+        if (MFX_ERR_NONE == mfxRes) {
+            session = (mfxSession)0;
         }
 
-        mfxRes = (*(mfxStatus (MFX_CDECL *) (mfxSession)) pFunc) (session);
-        if (MFX_ERR_NONE == mfxRes)
-        {
-            session = (mfxSession) 0;
-        }
-
-        DISPATCHER_LOG_INFO((("MFXClose(0x%x) returned %d\n"), session, mfxRes));
+        DISPATCHER_LOG_INFO(
+            (("MFXClose(0x%x) returned %d\n"), session, mfxRes));
         // actually, the return value is required to pass outside only.
     }
 
     // it is possible, that there is an active child session.
     // can't unload library in that case.
-    if ((MFX_ERR_UNDEFINED_BEHAVIOR != mfxRes) &&
-        (hModule))
-    {
+    if ((MFX_ERR_UNDEFINED_BEHAVIOR != mfxRes) && (hModule)) {
         // unload the library.
-        if (!MFX::mfx_dll_free(hModule))
-        {
+        if (!MFX::mfx_dll_free(hModule)) {
             mfxRes = MFX_ERR_UNDEFINED_BEHAVIOR;
         }
-        hModule = (mfxModuleHandle) 0;
+        hModule = (mfxModuleHandle)0;
     }
 
     return mfxRes;

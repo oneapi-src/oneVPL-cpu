@@ -14,9 +14,9 @@ set(TARGET mfxvplsw64)
 set(DISABLE_LIBAV TRUE)
 
 if(DEFINED ENV{VPL_BUILD_CACHE_DIR})
-    set(VPL_BUILD_CACHE_DIR $ENV{VPL_BUILD_CACHE_DIR})
+  set(VPL_BUILD_CACHE_DIR $ENV{VPL_BUILD_CACHE_DIR})
 else()
-    set(VPL_BUILD_CACHE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../_vpl_cache/)
+  set(VPL_BUILD_CACHE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../_vpl_cache/)
 endif()
 message(STATUS "VPL_BUILD_CACHE_DIR = ${VPL_BUILD_CACHE_DIR}")
 
@@ -42,46 +42,44 @@ set_target_properties(${TARGET} PROPERTIES DEBUG_POSTFIX "_d")
 
 target_include_directories(
   ${TARGET}
-  PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/vpl>
-    $<BUILD_INTERFACE:${VPL_BUILD_CACHE_DIR}/include>
+  PUBLIC $<INSTALL_INTERFACE:include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/vpl>
+         $<BUILD_INTERFACE:${VPL_BUILD_CACHE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 if(DEFINED DISABLE_LIBAV)
-    target_compile_definitions(${TARGET} PRIVATE -DDISABLE_LIBAV)
+  target_compile_definitions(${TARGET} PRIVATE -DDISABLE_LIBAV)
 else()
-    set(FFMPEG_LIBS
-        ${VPL_BUILD_CACHE_DIR}/lib/libavcodec.a
-        ${VPL_BUILD_CACHE_DIR}/lib/libavfilter.a
-        ${VPL_BUILD_CACHE_DIR}/lib/libavformat.a
-        ${VPL_BUILD_CACHE_DIR}/lib/libavutil.a
-        ${VPL_BUILD_CACHE_DIR}/lib/libswscale.a)
+  set(FFMPEG_LIBS
+      ${VPL_BUILD_CACHE_DIR}/lib/libavcodec.a
+      ${VPL_BUILD_CACHE_DIR}/lib/libavfilter.a
+      ${VPL_BUILD_CACHE_DIR}/lib/libavformat.a
+      ${VPL_BUILD_CACHE_DIR}/lib/libavutil.a
+      ${VPL_BUILD_CACHE_DIR}/lib/libswscale.a)
 
-    if(UNIX)
-      # Linux
-      set(FFMPEG_LIBS ${FFMPEG_LIBS}
-          ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1)
+  if(UNIX)
+    # Linux
+    set(FFMPEG_LIBS ${FFMPEG_LIBS}
+                    ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1)
 
-      SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic)
-    else()
-      # Windows
-      set(FFMPEG_LIBS ${FFMPEG_LIBS}
-          ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll.a)
+    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic)
+  else()
+    # Windows
+    set(FFMPEG_LIBS ${FFMPEG_LIBS}
+                    ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll.a)
 
-      # temporary workaround for bootstrap link errors on Windows
-      set(ENABLE_MINGW_WORKAROUND TRUE)
-      if (ENABLE_MINGW_WORKAROUND)
-        set(SOURCES ${SOURCES}
-            src/mingw_wa.cpp)
+    # temporary workaround for bootstrap link errors on Windows
+    set(ENABLE_MINGW_WORKAROUND TRUE)
+    if(ENABLE_MINGW_WORKAROUND)
+      set(SOURCES ${SOURCES} src/mingw_wa.cpp)
 
-        set(FFMPEG_LIBS ${FFMPEG_LIBS}
-            ${VPL_BUILD_CACHE_DIR}/lib/libgcc.a
-            ${VPL_BUILD_CACHE_DIR}/lib/libmingwex.a
-            ${VPL_BUILD_CACHE_DIR}/lib/libmingw32.a)
-      endif()
+      set(FFMPEG_LIBS
+          ${FFMPEG_LIBS} ${VPL_BUILD_CACHE_DIR}/lib/libgcc.a
+          ${VPL_BUILD_CACHE_DIR}/lib/libmingwex.a
+          ${VPL_BUILD_CACHE_DIR}/lib/libmingw32.a)
     endif()
+  endif()
 endif()
 
 target_sources(${TARGET} PRIVATE ${SOURCES})
@@ -95,21 +93,24 @@ target_compile_definitions(
           -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 if(NOT DEFINED DISABLE_LIBAV)
-    if(WIN32)
-      set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-      add_custom_command(
-        TARGET ${TARGET}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll ${OUTPATH})
-    else()
-      set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+  if(WIN32)
+    set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+    add_custom_command(
+      TARGET ${TARGET}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+              ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.dll ${OUTPATH})
+  else()
+    set(OUTPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-      add_custom_command(
-        TARGET ${TARGET}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so   ${OUTPATH}
-        COMMAND ${CMAKE_COMMAND} -E copy ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1 ${OUTPATH})
-    endif()
+    add_custom_command(
+      TARGET ${TARGET}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+              ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so ${OUTPATH}
+      COMMAND ${CMAKE_COMMAND} -E copy
+              ${VPL_BUILD_CACHE_DIR}/lib/libSvtHevcEnc.so.1 ${OUTPATH})
+  endif()
 endif()
 
 install(

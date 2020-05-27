@@ -19,10 +19,8 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #pragma once
 
-
 #include <mfxplugin++.h>
 
 typedef MFXDecoderPlugin* (*mfxCreateDecoderPlugin)();
 typedef MFXEncoderPlugin* (*mfxCreateEncoderPlugin)();
 typedef MFXGenericPlugin* (*mfxCreateGenericPlugin)();
-

@@ -23,28 +23,23 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <stdlib.h>
 #include "base_allocator.h"
 
-struct sBuffer
-{
-    mfxU32      id;
-    mfxU32      nbytes;
-    mfxU16      type;
+struct sBuffer {
+    mfxU32 id;
+    mfxU32 nbytes;
+    mfxU16 type;
 };
 
-struct sFrame
-{
-    mfxU32          id;
-    mfxFrameInfo    info;
+struct sFrame {
+    mfxU32 id;
+    mfxFrameInfo info;
 };
 
-struct SysMemAllocatorParams : mfxAllocatorParams
-{
-    SysMemAllocatorParams()
-        : mfxAllocatorParams(), pBufferAllocator(NULL) { }
+struct SysMemAllocatorParams : mfxAllocatorParams {
+    SysMemAllocatorParams() : mfxAllocatorParams(), pBufferAllocator(NULL) {}
     MFXBufferAllocator *pBufferAllocator;
 };
 
-class SysMemFrameAllocator: public BaseFrameAllocator
-{
+class SysMemFrameAllocator : public BaseFrameAllocator {
 public:
     SysMemFrameAllocator();
     virtual ~SysMemFrameAllocator();
@@ -58,14 +53,14 @@ public:
 protected:
     virtual mfxStatus CheckRequestType(mfxFrameAllocRequest *request);
     virtual mfxStatus ReleaseResponse(mfxFrameAllocResponse *response);
-    virtual mfxStatus AllocImpl(mfxFrameAllocRequest *request, mfxFrameAllocResponse *response);
+    virtual mfxStatus AllocImpl(mfxFrameAllocRequest *request,
+                                mfxFrameAllocResponse *response);
 
     MFXBufferAllocator *m_pBufferAllocator;
     bool m_bOwnBufferAllocator;
 };
 
-class SysMemBufferAllocator : public MFXBufferAllocator
-{
+class SysMemBufferAllocator : public MFXBufferAllocator {
 public:
     SysMemBufferAllocator();
     virtual ~SysMemBufferAllocator();

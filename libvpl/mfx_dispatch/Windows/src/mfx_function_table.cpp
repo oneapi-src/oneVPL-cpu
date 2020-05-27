@@ -25,91 +25,84 @@
 //
 
 #undef FUNCTION
-#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) \
-    {#func_name, API_VERSION},
+#define FUNCTION(return_value,      \
+                 func_name,         \
+                 formal_param_list, \
+                 actual_param_list) \
+    { #func_name, API_VERSION },
 
-const
-FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal] =
-{
-    {"MFXInit", {{0, 1}}},
-    {"MFXClose", {{0, 1}}},
-    {"MFXQueryIMPL", {{0, 1}}},
-    {"MFXQueryVersion", {{0, 1}}},
+const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal] = {
+    { "MFXInit", { { 0, 1 } } },         { "MFXClose", { { 0, 1 } } },
+    { "MFXQueryIMPL", { { 0, 1 } } },    { "MFXQueryVersion", { { 0, 1 } } },
 
-    {"MFXJoinSession", {{1, 1}}},
-    {"MFXDisjoinSession", {{1, 1}}},
-    {"MFXCloneSession", {{1, 1}}},
-    {"MFXSetPriority", {{1, 1}}},
-    {"MFXGetPriority", {{1, 1}}},
-    
-    {"MFXInitEx", {{1, 14}}},
+    { "MFXJoinSession", { { 1, 1 } } },  { "MFXDisjoinSession", { { 1, 1 } } },
+    { "MFXCloneSession", { { 1, 1 } } }, { "MFXSetPriority", { { 1, 1 } } },
+    { "MFXGetPriority", { { 1, 1 } } },
+
+    { "MFXInitEx", { { 1, 14 } } },
 
 #include "mfx_exposed_functions_list.h"
 };
 
 // static section of the file
-namespace
-{
+namespace {
 
 //
 // declare pseudo-functions.
 // they are used as default values for call-tables.
 //
 
-mfxStatus pseudoMFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session)
-{
+mfxStatus pseudoMFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session) {
     // touch unreferenced parameters
-    (void) impl;
-    (void) ver;
-    (void) session;
+    (void)impl;
+    (void)ver;
+    (void)session;
 
     return MFX_ERR_UNKNOWN;
 
 } // mfxStatus pseudoMFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session)
 
-mfxStatus pseudoMFXClose(mfxSession session)
-{
+mfxStatus pseudoMFXClose(mfxSession session) {
     // touch unreferenced parameters
-    (void) session;
+    (void)session;
 
     return MFX_ERR_UNKNOWN;
 
 } // mfxStatus pseudoMFXClose(mfxSession session)
 
-mfxStatus pseudoMFXJoinSession(mfxSession session, mfxSession child_session)
-{
+mfxStatus pseudoMFXJoinSession(mfxSession session, mfxSession child_session) {
     // touch unreferenced parameters
-    (void) session;
-    (void) child_session;
+    (void)session;
+    (void)child_session;
 
     return MFX_ERR_UNKNOWN;
 
 } // mfxStatus pseudoMFXJoinSession(mfxSession session, mfxSession child_session)
 
-mfxStatus pseudoMFXCloneSession(mfxSession session, mfxSession *clone)
-{
+mfxStatus pseudoMFXCloneSession(mfxSession session, mfxSession *clone) {
     // touch unreferenced parameters
-    (void) session;
-    (void) clone;
+    (void)session;
+    (void)clone;
 
     return MFX_ERR_UNKNOWN;
 
 } // mfxStatus pseudoMFXCloneSession(mfxSession session, mfxSession *clone)
 
-void SuppressWarnings(...)
-{
+void SuppressWarnings(...) {
     // this functions is suppose to suppress warnings.
     // Actually it does nothing.
 
 } // void SuppressWarnings(...)
 
 #undef FUNCTION
-#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) \
-return_value pseudo##func_name formal_param_list \
-{ \
-    SuppressWarnings actual_param_list; \
-    return MFX_ERR_UNKNOWN; \
-}
+#define FUNCTION(return_value,                         \
+                 func_name,                            \
+                 formal_param_list,                    \
+                 actual_param_list)                    \
+    return_value pseudo##func_name formal_param_list { \
+        SuppressWarnings actual_param_list;            \
+        return MFX_ERR_UNKNOWN;                        \
+    }
 
 #include "mfx_exposed_functions_list.h"
 

@@ -4,99 +4,106 @@
 #include <string.h>
 
 #include "mfxstructures.h"
+
 #include "mfxjpeg.h"
 
 // TMP - define this to build stub library without ffmpeg
 #ifndef DISABLE_LIBAV
 
-#define ENABLE_DECODE
-//#define ENABLE_VPP
-#define ENABLE_ENCODE
+    #define ENABLE_DECODE
+    //#define ENABLE_VPP
+    #define ENABLE_ENCODE
 
-#endif  // !DISABLE_LIBAV
+#endif // !DISABLE_LIBAV
 
 #define ENABLE_LIBAV_AUTO_THREADS
 
-#if !defined (WIN32) && !defined(memcpy_s)
-#define memcpy_s(dest, destsz, src, count) memcpy(dest, src, count)
+#if !defined(WIN32) && !defined(memcpy_s)
+    #define memcpy_s(dest, destsz, src, count) memcpy(dest, src, count)
 #endif
 
 #ifndef DISABLE_LIBAV
 
-extern "C"
-{
-#include "libavcodec/avcodec.h"
-#include "libswscale/swscale.h"
-#include "libavutil/imgutils.h"
-#include "libavutil/opt.h"
+extern "C" {
+    #include "libavcodec/avcodec.h"
+    #include "libavutil/imgutils.h"
+    #include "libavutil/opt.h"
+    #include "libswscale/swscale.h"
 }
 
-#endif  // !DISABLE_LIBAV
+#endif // !DISABLE_LIBAV
 
-#define ERR_EXIT(ws)  { /* optional logging, etc. here */ return MFX_ERR_UNKNOWN; }
+#define ERR_EXIT(ws)                    \
+    { /* optional logging, etc. here */ \
+        return MFX_ERR_UNKNOWN;         \
+    }
 
 class CpuWorkstream {
- public:
-  CpuWorkstream(); 
-  ~CpuWorkstream();
+public:
+    CpuWorkstream();
+    ~CpuWorkstream();
 
-  // decode
-  mfxStatus InitDecode(mfxU32 FourCC);
-  mfxStatus DecodeFrame(mfxBitstream *bs, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out);
-  void FreeDecode(void);
-  mfxStatus DecodeGetVideoParams(mfxVideoParam *par);
+    // decode
+    mfxStatus InitDecode(mfxU32 FourCC);
+    mfxStatus DecodeFrame(mfxBitstream *bs,
+                          mfxFrameSurface1 *surface_work,
+                          mfxFrameSurface1 **surface_out);
+    void FreeDecode(void);
+    mfxStatus DecodeGetVideoParams(mfxVideoParam *par);
 
-  // VPP
-  mfxStatus InitVPP(void);
-  mfxStatus ProcessFrame(void);
-  void FreeVPP(void);
+    // VPP
+    mfxStatus InitVPP(void);
+    mfxStatus ProcessFrame(void);
+    void FreeVPP(void);
 
-  // encode
-  mfxStatus InitEncode(mfxVideoParam *par);
-  mfxStatus EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs);
-  void FreeEncode(void);
+    // encode
+    mfxStatus InitEncode(mfxVideoParam *par);
+    mfxStatus EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs);
+    void FreeEncode(void);
 
-  bool  m_decInit;
-  bool  m_vppInit;
-  bool  m_vppBypass;
-  bool  m_encInit;
+    bool m_decInit;
+    bool m_vppInit;
+    bool m_vppBypass;
+    bool m_encInit;
 
 private:
-  CpuWorkstream(const CpuWorkstream&){ /* copy not allowed */ }
-  CpuWorkstream& operator=(const CpuWorkstream&){ return *this; /* copy not allowed */ }
-  
+    CpuWorkstream(const CpuWorkstream &) { /* copy not allowed */
+    }
+    CpuWorkstream &operator=(const CpuWorkstream &) {
+        return *this; /* copy not allowed */
+    }
+
 #ifndef DISABLE_LIBAV
 
-  // libav objects - Decode
-  const AVCodec         * m_avDecCodec;
-  AVCodecContext        * m_avDecContext;
-  AVCodecParserContext  * m_avDecParser;
-  AVPacket              * m_avDecPacket;
+    // libav objects - Decode
+    const AVCodec *m_avDecCodec;
+    AVCodecContext *m_avDecContext;
+    AVCodecParserContext *m_avDecParser;
+    AVPacket *m_avDecPacket;
 
-  // bitstream buffer - Decode
-  uint8_t               * m_bsDecData;
-  uint32_t                m_bsDecValidBytes;
-  uint32_t                m_bsDecMaxBytes;
-  
-  // libav objects - VPP
-  struct SwsContext     * m_avVppContext;
+    // bitstream buffer - Decode
+    uint8_t *m_bsDecData;
+    uint32_t m_bsDecValidBytes;
+    uint32_t m_bsDecMaxBytes;
 
-  // libav objects - Encode
-  const AVCodec         * m_avEncCodec;
-  AVCodecContext        * m_avEncContext;
-  AVPacket              * m_avEncPacket;
+    // libav objects - VPP
+    struct SwsContext *m_avVppContext;
 
-  // libav frames
-  AVFrame               * m_avDecFrameOut;
-  AVFrame               * m_avVppFrameIn;
-  AVFrame               * m_avVppFrameOut;
-  AVFrame               * m_avEncFrameIn;
+    // libav objects - Encode
+    const AVCodec *m_avEncCodec;
+    AVCodecContext *m_avEncContext;
+    AVPacket *m_avEncPacket;
 
-  // other internal state
-  mfxU32 m_encCodecId;
+    // libav frames
+    AVFrame *m_avDecFrameOut;
+    AVFrame *m_avVppFrameIn;
+    AVFrame *m_avVppFrameOut;
+    AVFrame *m_avEncFrameIn;
 
-#endif  // !DISABLE_LIBAV
+    // other internal state
+    mfxU32 m_encCodecId;
 
+#endif // !DISABLE_LIBAV
 };
 
 #endif // _CPU_WORKSTREAM_H

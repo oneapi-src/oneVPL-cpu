@@ -25,14 +25,16 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 /*
     Rationale: locks allocator if necessary to get RAW pointers, unlock it at the end
 */
-class SurfaceAutoLock : private no_copy
-{
+class SurfaceAutoLock : private no_copy {
 public:
-    SurfaceAutoLock(mfxFrameAllocator & alloc, mfxFrameSurface1 &srf)
-        : m_alloc(alloc) , m_srf(srf), m_lockRes(MFX_ERR_NONE), m_bLocked() {
+    SurfaceAutoLock(mfxFrameAllocator &alloc, mfxFrameSurface1 &srf)
+            : m_alloc(alloc),
+              m_srf(srf),
+              m_lockRes(MFX_ERR_NONE),
+              m_bLocked() {
         LockFrame();
     }
-    operator mfxStatus () {
+    operator mfxStatus() {
         return m_lockRes;
     }
     ~SurfaceAutoLock() {
@@ -40,17 +42,15 @@ public:
     }
 
 protected:
-
-    mfxFrameAllocator & m_alloc;
-    mfxFrameSurface1 & m_srf;
+    mfxFrameAllocator &m_alloc;
+    mfxFrameSurface1 &m_srf;
     mfxStatus m_lockRes;
     bool m_bLocked;
 
-    void LockFrame()
-    {
+    void LockFrame() {
         //no allocator used, no need to do lock
         if (m_srf.Data.Y != 0)
-            return ;
+            return;
         //lock required
         m_lockRes = m_alloc.Lock(m_alloc.pthis, m_srf.Data.MemId, &m_srf.Data);
         if (m_lockRes == MFX_ERR_NONE) {
@@ -58,8 +58,7 @@ protected:
         }
     }
 
-    void UnlockFrame()
-    {
+    void UnlockFrame() {
         if (m_lockRes != MFX_ERR_NONE || !m_bLocked) {
             return;
         }

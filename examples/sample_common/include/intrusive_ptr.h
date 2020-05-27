@@ -26,35 +26,33 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 //inline void intrusive_ptr_release(UserClassA * pResource);
 
 template <class T>
-class intrusive_ptr
-{
-    T * m_pResource;
+class intrusive_ptr {
+    T* m_pResource;
+
 public:
-    intrusive_ptr(T* pResource = NULL)
-        : m_pResource(pResource) {
+    intrusive_ptr(T* pResource = NULL) : m_pResource(pResource) {
         intrusive_ptr_addref(m_pResource);
     }
-    intrusive_ptr(const intrusive_ptr<T> & rhs)
-        : m_pResource(rhs.m_pResource) {
+    intrusive_ptr(const intrusive_ptr<T>& rhs) : m_pResource(rhs.m_pResource) {
         intrusive_ptr_addref(m_pResource);
     }
     void reset(T* pResource) {
-        if (m_pResource){
+        if (m_pResource) {
             intrusive_ptr_release(m_pResource);
         }
         m_pResource = pResource;
         intrusive_ptr_addref(m_pResource);
     }
-    T* operator *() {
+    T* operator*() {
         return m_pResource;
     }
-    T* operator ->() {
+    T* operator->() {
         return m_pResource;
     }
-    T* get(){
+    T* get() {
         return m_pResource;
     }
-    ~intrusive_ptr(){
+    ~intrusive_ptr() {
         if (m_pResource) {
             intrusive_ptr_release(m_pResource);
         }

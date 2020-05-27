@@ -28,16 +28,13 @@
 
 #include "mfxdefs.h"
 
-inline bool operator < (const mfxVersion &lhs, const mfxVersion & rhs)
-{
+inline bool operator<(const mfxVersion &lhs, const mfxVersion &rhs) {
     return (lhs.Major < rhs.Major ||
             (lhs.Major == rhs.Major && lhs.Minor < rhs.Minor));
 }
 
-inline bool operator <= (const mfxVersion &lhs, const mfxVersion & rhs)
-{
+inline bool operator<=(const mfxVersion &lhs, const mfxVersion &rhs) {
     return (lhs < rhs || (lhs.Major == rhs.Major && lhs.Minor == rhs.Minor));
 }
-
 
 #endif

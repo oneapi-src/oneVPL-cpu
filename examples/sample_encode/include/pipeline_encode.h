@@ -20,47 +20,52 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef __PIPELINE_ENCODE_H__
 #define __PIPELINE_ENCODE_H__
 
-#include "sample_defs.h"
 #include "hw_device.h"
+#include "sample_defs.h"
 
 #ifdef D3D_SURFACES_SUPPORT
-#pragma warning(disable : 4201)
+    #pragma warning(disable : 4201)
 #endif
 
-#include "sample_utils.h"
 #include "base_allocator.h"
+#include "sample_utils.h"
 #include "time_statistics.h"
 
 #include "mfxmvc.h"
-#include "mfxvideo.h"
 #include "mfxvideo++.h"
+#include "mfxvideo.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "preset_manager.h"
 
-#if defined (ENABLE_V4L2_SUPPORT)
-#include "v4l2_util.h"
+#if defined(ENABLE_V4L2_SUPPORT)
+    #include "v4l2_util.h"
 #endif
 
 #if (MFX_VERSION >= 1024)
-#include "brc_routines.h"
+    #include "brc_routines.h"
 #endif
 
 #ifndef MFX_VERSION
-#error MFX_VERSION not defined
+    #error MFX_VERSION not defined
 #endif
 
-#define SAFE_FREAD(PTR, SZ, COUNT, FPTR, ERR) { if (FPTR && (fread(PTR, SZ, COUNT, FPTR) != COUNT)){ return ERR; }}
+#define SAFE_FREAD(PTR, SZ, COUNT, FPTR, ERR)                 \
+    {                                                         \
+        if (FPTR && (fread(PTR, SZ, COUNT, FPTR) != COUNT)) { \
+            return ERR;                                       \
+        }                                                     \
+    }
 
 msdk_tick time_get_tick(void);
 msdk_tick time_get_frequency(void);
 
 enum {
-    MVC_DISABLED          = 0x0,
-    MVC_ENABLED           = 0x1,
-    MVC_VIEWOUTPUT        = 0x2,    // 2 output bitstreams
+    MVC_DISABLED   = 0x0,
+    MVC_ENABLED    = 0x1,
+    MVC_VIEWOUTPUT = 0x2, // 2 output bitstreams
 };
 
 enum MemType {
@@ -69,8 +74,7 @@ enum MemType {
     D3D11_MEMORY  = 0x02,
 };
 
-struct sInputParams
-{
+struct sInputParams {
     mfxU16 nTargetUsage;
     mfxU32 CodecId;
     mfxU32 FileInputFourCC;
@@ -96,25 +100,30 @@ struct sInputParams
     mfxU16 nQuality; // quality parameter for JPEG encoder
 
     mfxU32 numViews; // number of views for Multi-View Codec
-    mfxU16 nDstWidth; // destination picture width, specified if resizing required
-    mfxU16 nDstHeight; // destination picture height, specified if resizing required
+    mfxU16
+        nDstWidth; // destination picture width, specified if resizing required
+    mfxU16
+        nDstHeight; // destination picture height, specified if resizing required
 
     mfxU16 nEncTileRows; // number of rows for encoding tiling
     mfxU16 nEncTileCols; // number of columns for encoding tiling
 
     MemType memType;
     bool bUseHWLib; // true if application wants to use HW MSDK library
-    bool bUseVPLLib;   // true to use VPL SW library
+    bool bUseVPLLib; // true to use VPL SW library
 
     std::list<msdk_string> InputFiles;
 
     std::vector<msdk_char*> dstFileBuff;
 
-    mfxU32  HEVCPluginVersion;
-    mfxU8 nRotationAngle; // if specified, enables rotation plugin in mfx pipeline
-    msdk_char strPluginDLLPath[MSDK_MAX_FILENAME_LEN]; // plugin dll path and name
+    mfxU32 HEVCPluginVersion;
+    mfxU8
+        nRotationAngle; // if specified, enables rotation plugin in mfx pipeline
+    msdk_char
+        strPluginDLLPath[MSDK_MAX_FILENAME_LEN]; // plugin dll path and name
 
-    mfxU16 nAsyncDepth; // depth of asynchronous pipeline, this number can be tuned to achieve better performance
+    mfxU16
+        nAsyncDepth; // depth of asynchronous pipeline, this number can be tuned to achieve better performance
     mfxU16 gpuCopy; // GPU Copy mode (three-state option)
 
     mfxU16 nRateControlMethod;
@@ -185,7 +194,7 @@ struct sInputParams
     bool bSingleTexture;
 
 #if (MFX_VERSION >= 1027)
-    msdk_char *RoundingOffsetFile;
+    msdk_char* RoundingOffsetFile;
 #endif
     msdk_char DumpFileName[MSDK_MAX_FILENAME_LEN];
     msdk_char uSEI[MSDK_MAX_USER_DATA_UNREG_SEI_LEN];
@@ -193,7 +202,7 @@ struct sInputParams
     EPresetModes PresetMode;
     bool shouldPrintPresets;
 
-#if defined (ENABLE_V4L2_SUPPORT)
+#if defined(ENABLE_V4L2_SUPPORT)
     msdk_char DeviceName[MSDK_MAX_FILENAME_LEN];
     msdk_char MipiModeName[MSDK_MAX_FILENAME_LEN];
     enum V4L2PixelFormat v4l2Format;
@@ -205,34 +214,28 @@ struct sInputParams
     mfxI16 DeblockingAlphaTcOffset;
     mfxI16 DeblockingBetaOffset;
 #endif
-
 };
 
-struct bufSet
-{
+struct bufSet {
     mfxU16 m_nFields;
-    std::vector<mfxExtBuffer *> buffers;
+    std::vector<mfxExtBuffer*> buffers;
 
-    bufSet(mfxU16 n_fields = 1)
-    : m_nFields(n_fields)
-    {}
+    bufSet(mfxU16 n_fields = 1) : m_nFields(n_fields) {}
 
-    ~bufSet() { Destroy();}
+    ~bufSet() {
+        Destroy();
+    }
 
-    void Destroy()
-    {
-        for (mfxU16 i = 0; i < buffers.size(); /*i++*/)
-        {
-            switch (buffers[i]->BufferId)
-            {
+    void Destroy() {
+        for (mfxU16 i = 0; i < buffers.size(); /*i++*/) {
+            switch (buffers[i]->BufferId) {
 #if (MFX_VERSION >= 1027)
-                case MFX_EXTBUFF_AVC_ROUNDING_OFFSET:
-                {
-                    mfxExtAVCRoundingOffset* roundingOffset = reinterpret_cast<mfxExtAVCRoundingOffset*>(buffers[i]);
+                case MFX_EXTBUFF_AVC_ROUNDING_OFFSET: {
+                    mfxExtAVCRoundingOffset* roundingOffset =
+                        reinterpret_cast<mfxExtAVCRoundingOffset*>(buffers[i]);
                     MSDK_SAFE_DELETE_ARRAY(roundingOffset);
                     i += m_nFields;
-                }
-                break;
+                } break;
 #endif
                 default:
                     ++i;
@@ -244,27 +247,30 @@ struct bufSet
     }
 };
 
-struct bufList
-{
+struct bufList {
     std::vector<std::unique_ptr<bufSet>> buf_list;
     mfxU16 m_nBufListStart;
 
-    bufList()
-    : m_nBufListStart(0)
-    {}
+    bufList() : m_nBufListStart(0) {}
 
-    ~bufList() { Clear(); }
+    ~bufList() {
+        Clear();
+    }
 
-    void AddSet(std::unique_ptr<bufSet> && set) { buf_list.push_back(std::move(set)); }
+    void AddSet(std::unique_ptr<bufSet>&& set) {
+        buf_list.push_back(std::move(set));
+    }
 
-    bool Empty() { return buf_list.empty(); }
+    bool Empty() {
+        return buf_list.empty();
+    }
 
-    void Clear()
-    {
-        for (std::vector<std::unique_ptr<bufSet>>::iterator it = buf_list.begin(); it != buf_list.end(); ++it)
-        {
-            if (*it)
-            {
+    void Clear() {
+        for (std::vector<std::unique_ptr<bufSet>>::iterator it =
+                 buf_list.begin();
+             it != buf_list.end();
+             ++it) {
+            if (*it) {
                 (*it)->Destroy();
             }
         }
@@ -272,11 +278,9 @@ struct bufList
         buf_list.clear();
     }
 
-    bufSet* GetFreeSet()
-    {
-        bufSet *pBufSet = NULL;
-        if (m_nBufListStart < buf_list.size())
-        {
+    bufSet* GetFreeSet() {
+        bufSet* pBufSet = NULL;
+        if (m_nBufListStart < buf_list.size()) {
             pBufSet = (buf_list[m_nBufListStart]).get();
 
             m_nBufListStart += 1;
@@ -289,36 +293,43 @@ struct bufList
     }
 };
 
-struct sTask
-{
+struct sTask {
     mfxBitstream mfxBS;
     mfxSyncPoint EncSyncP;
     std::list<mfxSyncPoint> DependentVppTasks;
-    CSmplBitstreamWriter *pWriter;
+    CSmplBitstreamWriter* pWriter;
     bufSet* extBufs;
 
     sTask();
     mfxStatus WriteBitstream();
     mfxStatus Reset();
-    mfxStatus Init(mfxU32 nBufferSize, CSmplBitstreamWriter *pWriter = NULL);
+    mfxStatus Init(mfxU32 nBufferSize, CSmplBitstreamWriter* pWriter = NULL);
     mfxStatus Close();
 };
 
-class CEncTaskPool
-{
+class CEncTaskPool {
 public:
     CEncTaskPool();
     virtual ~CEncTaskPool();
 
-    virtual mfxStatus Init(MFXVideoSession* pmfxSession, CSmplBitstreamWriter* pWriter, mfxU32 nPoolSize, mfxU32 nBufferSize, CSmplBitstreamWriter *pOtherWriter = NULL);
-    virtual mfxStatus GetFreeTask(sTask **ppTask);
+    virtual mfxStatus Init(MFXVideoSession* pmfxSession,
+                           CSmplBitstreamWriter* pWriter,
+                           mfxU32 nPoolSize,
+                           mfxU32 nBufferSize,
+                           CSmplBitstreamWriter* pOtherWriter = NULL);
+    virtual mfxStatus GetFreeTask(sTask** ppTask);
     virtual mfxStatus SynchronizeFirstTask();
 
-    virtual CTimeStatistics& GetOverallStatistics() { return m_statOverall;}
-    virtual CTimeStatistics& GetFileStatistics() { return m_statFile;}
+    virtual CTimeStatistics& GetOverallStatistics() {
+        return m_statOverall;
+    }
+    virtual CTimeStatistics& GetFileStatistics() {
+        return m_statFile;
+    }
     virtual void Close();
     virtual void SetGpuHangRecoveryFlag();
     virtual void ClearTasks();
+
 protected:
     sTask* m_pTasks;
     mfxU32 m_nPoolSize;
@@ -334,39 +345,40 @@ protected:
 };
 
 /* This class implements a pipeline with 2 mfx components: vpp (video preprocessing) and encode */
-class CEncodingPipeline
-{
+class CEncodingPipeline {
 public:
     CEncodingPipeline();
     virtual ~CEncodingPipeline();
 
-    virtual mfxStatus Init(sInputParams *pParams);
+    virtual mfxStatus Init(sInputParams* pParams);
     virtual mfxStatus Run();
     virtual void Close();
     virtual mfxStatus ResetMFXComponents(sInputParams* pParams);
     virtual mfxStatus ResetDevice();
 
-    void SetNumView(mfxU32 numViews) { m_nNumView = numViews; }
-    virtual void  PrintInfo();
+    void SetNumView(mfxU32 numViews) {
+        m_nNumView = numViews;
+    }
+    virtual void PrintInfo();
 
-    void InitV4L2Pipeline(sInputParams *pParams);
+    void InitV4L2Pipeline(sInputParams* pParams);
     mfxStatus CaptureStartV4L2Pipeline();
     void CaptureStopV4L2Pipeline();
 
     void InsertIDR(bool bIsNextFrameIDR);
 
-    virtual mfxStatus AllocExtBuffers(sInputParams *pInParams);
+    virtual mfxStatus AllocExtBuffers(sInputParams* pInParams);
     mfxStatus InitEncFrameParams(sTask* pTask);
 
-#if defined (ENABLE_V4L2_SUPPORT)
+#if defined(ENABLE_V4L2_SUPPORT)
     v4l2Device v4l2Pipeline;
     pthread_t m_PollThread;
 #endif
 
 protected:
-    std::pair<CSmplBitstreamWriter *,CSmplBitstreamWriter *> m_FileWriters;
+    std::pair<CSmplBitstreamWriter*, CSmplBitstreamWriter*> m_FileWriters;
     CSmplYUVReader m_FileReader;
-    CEncTaskPool   m_TaskPool;
+    CEncTaskPool m_TaskPool;
 
     MFXVideoSession m_mfxSession;
     MFXVideoENCODE* m_pmfxENC;
@@ -385,10 +397,12 @@ protected:
     mfxU16 m_nMemBuffer;
     bool m_bExternalAlloc; // use memory allocator as external for Media SDK
 
-    mfxFrameSurface1* m_pEncSurfaces; // frames array for encoder input (vpp output)
+    mfxFrameSurface1*
+        m_pEncSurfaces; // frames array for encoder input (vpp output)
     mfxFrameSurface1* m_pVppSurfaces; // frames array for vpp input
-    mfxFrameAllocResponse m_EncResponse;  // memory allocation response for encoder
-    mfxFrameAllocResponse m_VppResponse;  // memory allocation response for vpp
+    mfxFrameAllocResponse
+        m_EncResponse; // memory allocation response for encoder
+    mfxFrameAllocResponse m_VppResponse; // memory allocation response for vpp
 
     mfxU32 m_nNumView;
     mfxU32 m_nFramesToProcess; // number of frames to process
@@ -413,7 +427,7 @@ protected:
     mfxExtCodingOptionSPSPPS m_CodingOptionSPSPPS;
 
 #if (MFX_VERSION >= 1024)
-    mfxExtBRC           m_ExtBRC;
+    mfxExtBRC m_ExtBRC;
 #endif
 
     // external parameters for each component are stored in a vector
@@ -422,7 +436,7 @@ protected:
 
     std::vector<mfxPayload*> m_UserDataUnregSEI;
 
-    CHWDevice *m_hwdev;
+    CHWDevice* m_hwdev;
 
     bool isV4L2InputEnabled;
     bufList m_encExtBufs;
@@ -433,25 +447,26 @@ protected:
 
     mfxU32 m_nTimeout;
 
-    bool   m_bFileWriterReset;
+    bool m_bFileWriterReset;
     mfxU32 m_nFramesRead;
-    bool   m_bCutOutput;
-    bool   m_bInsertIDR;
-    bool   m_bTimeOutExceed;
+    bool m_bCutOutput;
+    bool m_bInsertIDR;
+    bool m_bTimeOutExceed;
 
-    bool   m_bIsFieldSplitting;
-    bool   m_bSingleTexture;
+    bool m_bIsFieldSplitting;
+    bool m_bSingleTexture;
 
     mfxEncodeCtrl m_encCtrl;
 
     CTimeStatisticsReal m_statOverall;
     CTimeStatisticsReal m_statFile;
-    virtual mfxStatus InitMfxEncParams(sInputParams *pParams);
-    virtual mfxStatus InitMfxVppParams(sInputParams *pParams);
+    virtual mfxStatus InitMfxEncParams(sInputParams* pParams);
+    virtual mfxStatus InitMfxVppParams(sInputParams* pParams);
 
-    virtual mfxStatus InitFileWriters(sInputParams *pParams);
+    virtual mfxStatus InitFileWriters(sInputParams* pParams);
     virtual void FreeFileWriters();
-    virtual mfxStatus InitFileWriter(CSmplBitstreamWriter **ppWriter, const msdk_char *filename);
+    virtual mfxStatus InitFileWriter(CSmplBitstreamWriter** ppWriter,
+                                     const msdk_char* filename);
 
     virtual mfxStatus AllocAndInitVppDoNotUse();
     virtual void FreeVppDoNotUse();
@@ -472,9 +487,13 @@ protected:
     virtual mfxStatus FillBuffers();
     virtual mfxStatus LoadNextFrame(mfxFrameSurface1* pSurf);
 
-    virtual mfxStatus GetFreeTask(sTask **ppTask);
-    virtual MFXVideoSession& GetFirstSession(){return m_mfxSession;}
-    virtual MFXVideoENCODE* GetFirstEncoder(){return m_pmfxENC;}
+    virtual mfxStatus GetFreeTask(sTask** ppTask);
+    virtual MFXVideoSession& GetFirstSession() {
+        return m_mfxSession;
+    }
+    virtual MFXVideoENCODE* GetFirstEncoder() {
+        return m_pmfxENC;
+    }
 
     virtual mfxU32 FileFourCC2EncFourCC(mfxU32 fcc);
 };

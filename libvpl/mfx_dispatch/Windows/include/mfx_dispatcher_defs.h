@@ -19,23 +19,23 @@
 // SOFTWARE.
 
 #pragma once
-#include "mfxdefs.h"
-#include <cstring>
 #include <cstdio>
+#include <cstring>
+#include "mfxdefs.h"
 
 #if defined(MFX_DISPATCHER_LOG)
-#include <string>
-#include <string.h>
+    #include <string.h>
+    #include <string>
 #endif
 
 #define MAX_PLUGIN_PATH 4096
 #define MAX_PLUGIN_NAME 4096
 
 #if _MSC_VER < 1400
-#define wcscpy_s(to,to_size, from) wcscpy(to, from)
+    #define wcscpy_s(to, to_size, from) wcscpy(to, from)
 #endif
 
 // declare library module's handle
-typedef void * mfxModuleHandle;
+typedef void* mfxModuleHandle;
 
-typedef void (MFX_CDECL * mfxFunctionPointer)(void);
+typedef void(MFX_CDECL* mfxFunctionPointer)(void);

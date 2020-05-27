@@ -20,20 +20,17 @@
 
 // SEE: mdp_msdk-lib\_studio\mfx_lib\shared\src\libmfxsw.cpp
 
-#include "mfxvideo.h"
 #include "cpu_workstream.h"
+#include "mfxvideo.h"
 
-mfxStatus MFXInit(mfxIMPL implParam, mfxVersion *ver, mfxSession *session)
-{
+mfxStatus MFXInit(mfxIMPL implParam, mfxVersion *ver, mfxSession *session) {
     mfxInitParam par = {};
 
     par.Implementation = implParam;
-    if (ver)
-    {
+    if (ver) {
         par.Version = *ver;
     }
-    else
-    {
+    else {
         par.Version.Major = MFX_VERSION_MAJOR;
         par.Version.Minor = MFX_VERSION_MINOR;
     }
@@ -42,30 +39,25 @@ mfxStatus MFXInit(mfxIMPL implParam, mfxVersion *ver, mfxSession *session)
     return MFXInitEx(par, session);
 }
 
-mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session)
-{
+mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     mfxIMPL impl = par.Implementation & (MFX_IMPL_VIA_ANY - 1);
 
     // check the library version
     if ((MFX_VERSION_MAJOR != par.Version.Major) ||
-        (MFX_VERSION_MINOR < par.Version.Minor))
-    {
+        (MFX_VERSION_MINOR < par.Version.Minor)) {
         return MFX_ERR_UNSUPPORTED;
     }
 
     // SW plugin only
-    if ((MFX_IMPL_AUTO != impl) &&
-        (MFX_IMPL_AUTO_ANY != impl) &&
-        (MFX_IMPL_SOFTWARE_VPL != impl))
-    {
+    if ((MFX_IMPL_AUTO != impl) && (MFX_IMPL_AUTO_ANY != impl) &&
+        (MFX_IMPL_SOFTWARE_VPL != impl)) {
         return MFX_ERR_UNSUPPORTED;
     }
 
     // create CPU workstream
     CpuWorkstream *ws = new CpuWorkstream;
 
-    if (!ws)
-    {
+    if (!ws) {
         return MFX_ERR_UNSUPPORTED;
     }
 
@@ -75,10 +67,8 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session)
     return MFX_ERR_NONE;
 }
 
-mfxStatus MFXClose(mfxSession session)
-{
-    if (0 == session)
-    {
+mfxStatus MFXClose(mfxSession session) {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
 
@@ -90,14 +80,11 @@ mfxStatus MFXClose(mfxSession session)
     return MFX_ERR_NONE;
 }
 
-mfxStatus MFXQueryIMPL(mfxSession session, mfxIMPL *impl)
-{
-    if (0 == session)
-    {
+mfxStatus MFXQueryIMPL(mfxSession session, mfxIMPL *impl) {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == impl)
-    {
+    if (0 == impl) {
         return MFX_ERR_NULL_PTR;
     }
 
@@ -106,14 +93,11 @@ mfxStatus MFXQueryIMPL(mfxSession session, mfxIMPL *impl)
     return MFX_ERR_NONE;
 }
 
-mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *pVersion)
-{
-    if (0 == session)
-    {
+mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *pVersion) {
+    if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == pVersion)
-    {
+    if (0 == pVersion) {
         return MFX_ERR_NULL_PTR;
     }
 
@@ -122,28 +106,35 @@ mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *pVersion)
     pVersion->Minor = MFX_VERSION_MINOR;
 
     return MFX_ERR_NONE;
-
 }
 
 // stubs
-mfxStatus MFXDoWork(mfxSession session) { return MFX_ERR_UNSUPPORTED; }
-mfxStatus MFXJoinSession(mfxSession session, mfxSession child) { return MFX_ERR_UNSUPPORTED; }
-mfxStatus MFXDisjoinSession(mfxSession session) { return MFX_ERR_UNSUPPORTED; }
-mfxStatus MFXCloneSession(mfxSession session, mfxSession *clone) { return MFX_ERR_UNSUPPORTED; }
-mfxStatus MFXSetPriority(mfxSession session, mfxPriority priority) { return MFX_ERR_UNSUPPORTED; }
-mfxStatus MFXGetPriority(mfxSession session, mfxPriority *priority) { return MFX_ERR_UNSUPPORTED; }
+mfxStatus MFXDoWork(mfxSession session) {
+    return MFX_ERR_UNSUPPORTED;
+}
+mfxStatus MFXJoinSession(mfxSession session, mfxSession child) {
+    return MFX_ERR_UNSUPPORTED;
+}
+mfxStatus MFXDisjoinSession(mfxSession session) {
+    return MFX_ERR_UNSUPPORTED;
+}
+mfxStatus MFXCloneSession(mfxSession session, mfxSession *clone) {
+    return MFX_ERR_UNSUPPORTED;
+}
+mfxStatus MFXSetPriority(mfxSession session, mfxPriority priority) {
+    return MFX_ERR_UNSUPPORTED;
+}
+mfxStatus MFXGetPriority(mfxSession session, mfxPriority *priority) {
+    return MFX_ERR_UNSUPPORTED;
+}
 
 // DLL entry point
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID lpReserved)
-{
+    #include <windows.h>
+BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID lpReserved) {
     return TRUE;
 } // BOOL APIENTRY DllMain(HMODULE hModule,
 #else // #if defined(_WIN32) || defined(_WIN64)
-void __attribute__((constructor)) dll_init(void)
-{
-}
+void __attribute__((constructor)) dll_init(void) {}
 #endif // #if defined(_WIN32) || defined(_WIN64)
-

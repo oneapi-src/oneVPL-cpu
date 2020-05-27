@@ -5,7 +5,9 @@
 
 // callback functions for external frame allocator
 // functions do not keep any internal state, are fully re-entrant
-mfxStatus sys_alloc(mfxHDL pthis, mfxFrameAllocRequest* request, mfxFrameAllocResponse* response);
+mfxStatus sys_alloc(mfxHDL pthis,
+                    mfxFrameAllocRequest* request,
+                    mfxFrameAllocResponse* response);
 mfxStatus sys_lock(mfxHDL pthis, mfxMemId mid, mfxFrameData* ptr);
 mfxStatus sys_unlock(mfxHDL pthis, mfxMemId mid, mfxFrameData* ptr);
 mfxStatus sys_gethdl(mfxHDL pthis, mfxMemId mid, mfxHDL* handle);
