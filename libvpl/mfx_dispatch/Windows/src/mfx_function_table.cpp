@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfx_dispatcher.h"
+#include "include/mfx_dispatcher.h"
 
 //
 // implement a table with functions names
@@ -41,7 +41,7 @@ const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal] = {
 
     { "MFXInitEx", { { 1, 14 } } },
 
-#include "mfx_exposed_functions_list.h"
+#include "include/mfx_exposed_functions_list.h"
 };
 
 // static section of the file
@@ -104,6 +104,6 @@ void SuppressWarnings(...) {
         return MFX_ERR_UNKNOWN;                        \
     }
 
-#include "mfx_exposed_functions_list.h"
+#include "include/mfx_exposed_functions_list.h"
 
 } // namespace

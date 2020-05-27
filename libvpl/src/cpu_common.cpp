@@ -1,4 +1,10 @@
-#include "cpu_workstream.h"
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#include "./cpu_workstream.h"
 
 #ifndef DISABLE_LIBAV
 

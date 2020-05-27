@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfx_win_reg_key.h"
-#include "mfx_dispatcher_log.h"
+#include "include/mfx_win_reg_key.h"
+#include "include/mfx_dispatcher_log.h"
 
 #define TRACE_WINREG_ERROR(str, ...) \
     DISPATCHER_LOG_ERROR((("[WINREG]: " str), __VA_ARGS__))

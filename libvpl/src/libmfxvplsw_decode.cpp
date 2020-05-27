@@ -1,5 +1,11 @@
-#include "cpu_workstream.h"
-#include "mfxvideo.h"
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#include "./cpu_workstream.h"
+#include "vpl/mfxvideo.h"
 
 // NOTES - for now, just do init, decode the first frame, get params, close codec
 //
@@ -21,7 +27,7 @@ mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     mfxFrameSurface1 *surface_out;
 
     if (ws->m_decInit == false) {
@@ -69,7 +75,7 @@ mfxStatus MFXVideoDECODE_Query(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     // save a local copy of in, since user may set out == in
     mfxVideoParam inCopy = *in;
@@ -138,7 +144,7 @@ mfxStatus MFXVideoDECODE_Init(mfxSession session, mfxVideoParam *par) {
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     sts = ws->InitDecode(par->mfx.CodecId);
     if (sts == MFX_ERR_NONE)
@@ -156,7 +162,7 @@ mfxStatus MFXVideoDECODE_Close(mfxSession session) {
         return MFX_ERR_INVALID_HANDLE;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     if (ws->m_decInit == false)
         return MFX_ERR_NOT_INITIALIZED;
@@ -184,7 +190,7 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     if (ws->m_decInit == false)
         return MFX_ERR_NOT_INITIALIZED;

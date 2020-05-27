@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfx_load_dll.h"
-#include "mfx_dispatcher.h"
+#include "include/mfx_load_dll.h"
+#include "include/mfx_dispatcher.h"
 
 #include <string.h>
 #include <wchar.h>

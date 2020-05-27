@@ -1,4 +1,10 @@
-#include "cpu_workstream.h"
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#include "./cpu_workstream.h"
 
 #ifdef ENABLE_ENCODE
 
@@ -45,14 +51,15 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
     // set defaults for anything not passed in
     if (!m_avEncContext->gop_size)
         m_avEncContext->gop_size =
-            2 * (int)((float)m_avEncContext->framerate.num /
-                      m_avEncContext->framerate.den);
+            2 *
+            static_cast<int>(static_cast<float>(m_avEncContext->framerate.num) /
+                             m_avEncContext->framerate.den);
 
     // set codec-specific parameters
     if (m_encCodecId == MFX_CODEC_HEVC) {
         // set SVT rate control
         if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
-            // TODO - plumb QPI/QPP/QPB
+            // TODO(jrecker) - plumb QPI/QPP/QPB
             av_opt_set(m_avEncContext, "rc", "cqp", AV_OPT_SEARCH_CHILDREN);
         }
         else {

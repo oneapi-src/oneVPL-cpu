@@ -29,9 +29,9 @@
 #include <mutex>
 #include <vector>
 
-#include "mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
-#include "mfxloader.h"
+#include "include/mfxloader.h"
 
 namespace MFX {
 
@@ -55,7 +55,7 @@ enum Function {
     eMFXInitEx,
     eMFXClose,
     eMFXJoinSession,
-#include "mfxvideo_functions.h"
+#include "include/mfxvideo_functions.h"
     eFunctionsNum,
     eNoMoreFunctions = eFunctionsNum
 };
@@ -83,7 +83,7 @@ static const FunctionsTable g_mfxFuncTable[] = {
     { eMFXInitEx, "MFXInitEx", VERSION(1, 14) },
     { eMFXClose, "MFXClose", VERSION(1, 0) },
     { eMFXJoinSession, "MFXJoinSession", VERSION(1, 1) },
-#include "mfxvideo_functions.h"
+#include "include/mfxvideo_functions.h"
     { eNoMoreFunctions }
 };
 
@@ -371,7 +371,7 @@ mfxStatus MFXCloneSession(mfxSession session, mfxSession* clone) {
         return (*proc)actual_param_list;                                  \
     }
 
-#include "mfxvideo_functions.h"
+#include "include/mfxvideo_functions.h"
 
 #undef FUNCTION
 

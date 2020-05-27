@@ -17,10 +17,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXMVC_H__
-#define __MFXMVC_H__
+#ifndef LIBVPL_INCLUDE_VPL_MFXMVC_H_
+#define LIBVPL_INCLUDE_VPL_MFXMVC_H_
 
-#include "mfxdefs.h"
+#include "./mfxdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,4 +102,4 @@ MFX_PACK_END()
 } // extern "C"
 #endif
 
-#endif
+#endif // LIBVPL_INCLUDE_VPL_MFXMVC_H_

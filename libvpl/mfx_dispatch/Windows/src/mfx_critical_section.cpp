@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfx_critical_section.h"
+#include "include/mfx_critical_section.h"
 
 #include <windows.h>
 // SDK re-declares the following functions with different call declarator.

@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __MFXVIDEOPLUSPLUS_H
-#define __MFXVIDEOPLUSPLUS_H
+#ifndef LIBVPL_INCLUDE_VPL_MFXVIDEO___H_
+#define LIBVPL_INCLUDE_VPL_MFXVIDEO___H_
 
-#include "mfxvideo.h"
+#include "./mfxvideo.h"
 
 class MFXVideoSession {
 public:
@@ -105,7 +105,7 @@ private:
 
 class MFXVideoENCODE {
 public:
-    MFXVideoENCODE(mfxSession session) {
+    explicit MFXVideoENCODE(mfxSession session) {
         m_session = session;
     }
     virtual ~MFXVideoENCODE(void) {
@@ -153,7 +153,7 @@ protected:
 
 class MFXVideoDECODE {
 public:
-    MFXVideoDECODE(mfxSession session) {
+    explicit MFXVideoDECODE(mfxSession session) {
         m_session = session;
     }
     virtual ~MFXVideoDECODE(void) {
@@ -210,7 +210,7 @@ protected:
 
 class MFXVideoVPP {
 public:
-    MFXVideoVPP(mfxSession session) {
+    explicit MFXVideoVPP(mfxSession session) {
         m_session = session;
     }
     virtual ~MFXVideoVPP(void) {
@@ -257,4 +257,4 @@ protected:
     mfxSession m_session; // (mfxSession) handle to the owning session
 };
 
-#endif // __MFXVIDEOPLUSPLUS_H
+#endif // LIBVPL_INCLUDE_VPL_MFXVIDEO___H_

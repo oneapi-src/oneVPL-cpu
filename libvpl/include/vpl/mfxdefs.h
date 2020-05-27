@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXDEFS_H__
-#define __MFXDEFS_H__
+#ifndef LIBVPL_INCLUDE_VPL_MFXDEFS_H_
+#define LIBVPL_INCLUDE_VPL_MFXDEFS_H_
 
 #define MFX_VERSION_MAJOR 1
 #define MFX_VERSION_MINOR 32
@@ -87,8 +87,8 @@ extern "C" {
     #error Unknown packing
 #endif
 
-#define __INT64  long long
-#define __UINT64 unsigned long long
+#define __INT64  long long // NOLINT
+#define __UINT64 unsigned long long // NOLINT
 
 #ifdef _WIN32
     #define MFX_CDECL   __cdecl
@@ -102,13 +102,13 @@ extern "C" {
 
 typedef unsigned char mfxU8;
 typedef char mfxI8;
-typedef short mfxI16;
-typedef unsigned short mfxU16;
+typedef short mfxI16; // NOLINT
+typedef unsigned short mfxU16; // NOLINT
 typedef unsigned int mfxU32;
 typedef int mfxI32;
 #if defined(_WIN32) || defined(_WIN64)
-typedef unsigned long mfxUL32;
-typedef long mfxL32;
+typedef unsigned long mfxUL32; // NOLINT
+typedef long mfxL32; // NOLINT
 #else
 typedef unsigned int mfxUL32;
 typedef int mfxL32;
@@ -211,4 +211,4 @@ typedef enum {
 }
 #endif /* __cplusplus */
 
-#endif /* __MFXDEFS_H__ */
+#endif // LIBVPL_INCLUDE_VPL_MFXDEFS_H_

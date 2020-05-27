@@ -21,11 +21,11 @@
 #if !defined(__MFX_LIBRARY_ITERATOR_H)
     #define __MFX_LIBRARY_ITERATOR_H
 
-    #include <mfxvideo.h>
+    #include <vpl/mfxvideo.h>
 
-    #include "mfx_win_reg_key.h"
+    #include "include/mfx_win_reg_key.h"
 
-    #include "mfx_dispatcher.h"
+    #include "include/mfx_dispatcher.h"
 
 namespace MFX {
 
@@ -48,6 +48,7 @@ mfxStatus SelectImplementationType(const mfxU32 adapterNum,
                                    mfxU32 *pDeviceID);
 
 const mfxU32 msdk_disp_path_len = 1024;
+    #define kTT msdk_disp_path_len
 
 class MFXLibraryIterator {
 public:

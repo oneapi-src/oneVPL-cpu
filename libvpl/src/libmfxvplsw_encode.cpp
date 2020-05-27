@@ -1,5 +1,11 @@
-#include "cpu_workstream.h"
-#include "mfxvideo.h"
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#include "./cpu_workstream.h"
+#include "vpl/mfxvideo.h"
 
 mfxStatus MFXVideoENCODE_Query(mfxSession session,
                                mfxVideoParam *in,
@@ -13,7 +19,7 @@ mfxStatus MFXVideoENCODE_Query(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     // save a local copy of in, since user may set out == in
     mfxVideoParam inCopy = *in;
@@ -73,7 +79,7 @@ mfxStatus MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par) {
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     sts = ws->InitEncode(par);
     if (sts == MFX_ERR_NONE)
@@ -87,7 +93,7 @@ mfxStatus MFXVideoENCODE_Close(mfxSession session) {
         return MFX_ERR_INVALID_HANDLE;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     if (ws->m_encInit == false)
         return MFX_ERR_NOT_INITIALIZED;
@@ -111,7 +117,7 @@ mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     if (ws->m_encInit == false)
         return MFX_ERR_NOT_INITIALIZED;

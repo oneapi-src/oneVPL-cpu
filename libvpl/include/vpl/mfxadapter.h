@@ -18,12 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfxdefs.h"
-#if (MFX_VERSION >= 1031)
-    #ifndef __MFXADAPTER_H__
-        #define __MFXADAPTER_H__
+#include "./mfxdefs.h"
 
-        #include "mfxstructures.h"
+#ifndef LIBVPL_INCLUDE_VPL_MFXADAPTER_H_
+    #define LIBVPL_INCLUDE_VPL_MFXADAPTER_H_
+
+    #if (MFX_VERSION >= 1031)
+
+        #include "./mfxstructures.h"
 
         #ifdef __cplusplus
 extern "C" {
@@ -38,5 +40,6 @@ mfxStatus MFXQueryAdaptersNumber(mfxU32* num_adapters);
 } // extern "C"
         #endif
 
-    #endif // __MFXADAPTER_H__
-#endif
+    #endif
+
+#endif // LIBVPL_INCLUDE_VPL_MFXADAPTER_H_

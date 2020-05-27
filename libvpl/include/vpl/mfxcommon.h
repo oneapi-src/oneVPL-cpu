@@ -17,9 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXCOMMON_H__
-#define __MFXCOMMON_H__
-#include "mfxdefs.h"
+#ifndef LIBVPL_INCLUDE_VPL_MFXCOMMON_H_
+#define LIBVPL_INCLUDE_VPL_MFXCOMMON_H_
+#include "./mfxdefs.h"
 
 #if !defined(__GNUC__)
     #pragma warning(disable : 4201)
@@ -29,8 +29,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MFX_MAKEFOURCC(A, B, C, D) \
-    ((((int)A)) + (((int)B) << 8) + (((int)C) << 16) + (((int)D) << 24))
+#define MFX_MAKEFOURCC(A, B, C, D)                            \
+    (((static_cast<int>(A))) + ((static_cast<int>(B)) << 8) + \
+     ((static_cast<int>(C)) << 16) + ((static_cast<int>(D)) << 24))
 
 /* Extended Configuration Header Structure */
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -76,8 +77,8 @@ enum {
     MFX_IMPL_SINGLE_THREAD = 0x0010,
 #endif
     MFX_IMPL_VIA_ANY =
-        0x0100, /*!< Hardware acceleration can go through any supported OS infrastructure. This is default value,
-                                          it is used by the SDK if none of MFX_IMPL_VIA_xxx flag is specified by application. */
+        0x0100, //!< Hardware acceleration can go through any supported OS infrastructure. This is default value,
+    //                          it is used by the SDK if none of MFX_IMPL_VIA_xxx flag is specified by application.
     MFX_IMPL_VIA_D3D9 =
         0x0200, /*!< Hardware acceleration goes through the Microsoft* Direct3D9* infrastructure. */
     MFX_IMPL_VIA_D3D11 =
@@ -236,4 +237,4 @@ MFX_PACK_END()
 }
 #endif /* __cplusplus */
 
-#endif
+#endif // LIBVPL_INCLUDE_VPL_MFXCOMMON_H_

@@ -17,10 +17,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXVIDEO_H__
-#define __MFXVIDEO_H__
-#include "mfxsession.h"
-#include "mfxvstructures.h"
+#ifndef LIBVPL_INCLUDE_VPL_MFXVIDEO_H_
+#define LIBVPL_INCLUDE_VPL_MFXVIDEO_H_
+#include "./mfxsession.h"
+#include "./mfxvstructures.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -159,4 +159,4 @@ MFXVideoVPP_RunFrameVPPAsyncEx(mfxSession session,
 } // extern "C"
 #endif
 
-#endif
+#endif // LIBVPL_INCLUDE_VPL_MFXVIDEO_H_

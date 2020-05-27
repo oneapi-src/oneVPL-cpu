@@ -22,9 +22,9 @@
     #define __MFX_WIN_REG_KEY_H
 
     #include <windows.h>
-    #include "mfx_dispatcher_log.h"
-    #include "mfx_vector.h"
-    #include "mfxvideo.h"
+    #include "include/mfx_dispatcher_log.h"
+    #include "include/mfx_vector.h"
+    #include "vpl/mfxvideo.h"
 
 namespace MFX {
 

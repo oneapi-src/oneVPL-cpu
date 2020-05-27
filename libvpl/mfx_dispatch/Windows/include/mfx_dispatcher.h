@@ -18,14 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if !defined(__MFX_DISPATCHER_H)
-    #define __MFX_DISPATCHER_H
+#ifndef __MFX_DISPATCHER_H
+#define __MFX_DISPATCHER_H
 
-    #include <mfxvideo.h>
-    #include <stddef.h>
-    #include "mfx_dispatcher_defs.h"
+#include <stddef.h>
+#include <vpl/mfxvideo.h>
+#include "include/mfx_dispatcher_defs.h"
 
-    #define INTEL_VENDOR_ID 0x8086
+#define INTEL_VENDOR_ID 0x8086
 
 mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *version);
 
@@ -40,12 +40,12 @@ enum {
 // declare functions' integer identifiers.
 //
 
-    #undef FUNCTION
-    #define FUNCTION(return_value,      \
-                     func_name,         \
-                     formal_param_list, \
-                     actual_param_list) \
-        e##func_name,
+#undef FUNCTION
+#define FUNCTION(return_value,      \
+                 func_name,         \
+                 formal_param_list, \
+                 actual_param_list) \
+    e##func_name,
 
 enum eFunc {
     eMFXInit,
@@ -58,7 +58,7 @@ enum eFunc {
     eMFXSetPriority,
     eMFXGetPriority,
     eMFXInitEx,
-    #include "mfx_exposed_functions_list.h"
+#include "include/mfx_exposed_functions_list.h"
     eVideoFuncTotal
 };
 

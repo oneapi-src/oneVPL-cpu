@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.10.2)
 
 set(TARGET mfx)
 
-set(SOURCES mfxloader.cpp)
+set(SOURCES src/mfxloader.cpp)
 
 add_library(${TARGET} STATIC "")
 
@@ -16,7 +16,7 @@ target_sources(${TARGET} PRIVATE ${SOURCES})
 target_include_directories(
   ${TARGET}
   PUBLIC $<INSTALL_INTERFACE:include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include/vpl>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 target_compile_definitions(

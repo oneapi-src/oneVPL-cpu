@@ -18,9 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfx_dispatcher.h"
-#include "mfx_dispatcher_log.h"
-#include "mfx_load_dll.h"
+#include "include/mfx_dispatcher.h"
+#include "include/mfx_dispatcher_log.h"
+#include "include/mfx_load_dll.h"
 
 #include <assert.h>
 

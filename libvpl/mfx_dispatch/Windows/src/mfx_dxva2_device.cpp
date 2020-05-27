@@ -22,7 +22,7 @@
 #include <d3d9.h>
 #include <dxgi.h>
 
-#include "mfx_dxva2_device.h"
+#include "include/mfx_dxva2_device.h"
 
 using namespace MFX;
 

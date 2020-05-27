@@ -1,11 +1,17 @@
-#ifndef _CPU_WORKSTREAM_H
-#define _CPU_WORKSTREAM_H
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#ifndef LIBVPL_SRC_CPU_WORKSTREAM_H_
+#define LIBVPL_SRC_CPU_WORKSTREAM_H_
 
 #include <string.h>
 
-#include "mfxstructures.h"
+#include "vpl/mfxstructures.h"
 
-#include "mfxjpeg.h"
+#include "vpl/mfxjpeg.h"
 
 // TMP - define this to build stub library without ffmpeg
 #ifndef DISABLE_LIBAV
@@ -106,4 +112,4 @@ private:
 #endif // !DISABLE_LIBAV
 };
 
-#endif // _CPU_WORKSTREAM_H
+#endif // LIBVPL_SRC_CPU_WORKSTREAM_H_

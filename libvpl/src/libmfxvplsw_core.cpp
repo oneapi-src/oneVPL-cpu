@@ -1,5 +1,11 @@
-#include "cpu_workstream.h"
-#include "mfxvideo.h"
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#include "./cpu_workstream.h"
+#include "vpl/mfxvideo.h"
 
 // stubs
 mfxStatus MFXVideoCORE_SetBufferAllocator(mfxSession session,

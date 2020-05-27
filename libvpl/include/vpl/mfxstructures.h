@@ -17,9 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXSTRUCTURES_H__
-#define __MFXSTRUCTURES_H__
-#include "mfxcommon.h"
+#ifndef LIBVPL_INCLUDE_VPL_MFXSTRUCTURES_H_
+#define LIBVPL_INCLUDE_VPL_MFXSTRUCTURES_H_
+#include "./mfxcommon.h"
 
 #if !defined(__GNUC__)
     #pragma warning(disable : 4201)
@@ -2371,4 +2371,4 @@ MFX_PACK_END()
 } // extern "C"
 #endif
 
-#endif
+#endif // LIBVPL_INCLUDE_VPL_MFXSTRUCTURES_H_

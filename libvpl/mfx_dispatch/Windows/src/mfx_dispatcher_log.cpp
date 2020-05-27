@@ -202,7 +202,7 @@ void DispatchLog::Write(int level,
                               msg,
                               argptr);
     #endif
-                    //TODO: improve this , add opcode handling
+                    //TODO(x): improve this , add opcode handling
                     printf("%s %s",
                            CODE_TO_STRING(level, LevelStrings),
                            msg_formated);
@@ -289,7 +289,7 @@ public:
             }
         }
         else {
-            //TODO: non formated events supports under zbb
+            //TODO(x): non formated events supports under zbb
         }
 
         EventWrite(m_EventHandle, &descriptor, 1, &data_descriptor);

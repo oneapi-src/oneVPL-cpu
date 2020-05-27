@@ -24,11 +24,11 @@
 #include <memory>
 #include <new>
 
-#include "mfx_critical_section.h"
-#include "mfx_dispatcher.h"
-#include "mfx_dispatcher_log.h"
-#include "mfx_library_iterator.h"
-#include "mfx_load_dll.h"
+#include "include/mfx_critical_section.h"
+#include "include/mfx_dispatcher.h"
+#include "include/mfx_dispatcher_log.h"
+#include "include/mfx_library_iterator.h"
+#include "include/mfx_load_dll.h"
 
 #include <string.h> /* for memset on Linux */
 

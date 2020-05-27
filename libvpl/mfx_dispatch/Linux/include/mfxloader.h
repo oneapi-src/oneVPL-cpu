@@ -26,7 +26,7 @@
 #include <sstream>
 #include <string>
 
-#include "mfxdefs.h"
+#include "vpl/mfxdefs.h"
 
 inline bool operator<(const mfxVersion &lhs, const mfxVersion &rhs) {
     return (lhs.Major < rhs.Major ||

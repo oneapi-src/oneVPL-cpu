@@ -18,10 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#ifndef _MFX_DISPATCHER_DEFS_H
+#define _MFX_DISPATCHER_DEFS_H
+
 #include <cstdio>
 #include <cstring>
-#include "mfxdefs.h"
+#include "vpl/mfxdefs.h"
 
 #if defined(MFX_DISPATCHER_LOG)
     #include <string.h>
@@ -39,3 +41,5 @@
 typedef void* mfxModuleHandle;
 
 typedef void(MFX_CDECL* mfxFunctionPointer)(void);
+
+#endif

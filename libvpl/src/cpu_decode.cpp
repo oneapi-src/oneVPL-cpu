@@ -1,4 +1,10 @@
-#include "cpu_workstream.h"
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
+#include "./cpu_workstream.h"
 
 #ifdef ENABLE_DECODE
 
@@ -21,7 +27,7 @@ static int get_buffer2_msdk(struct AVCodecContext *s,
 }
 
 mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
-    // TODO - get rid of internal BS buffer (use mfxBitstream)
+    // TODO(jrecker) - get rid of internal BS buffer (use mfxBitstream)
     // alloc bitstream buffer
     m_bsDecValidBytes = 0;
     m_bsDecMaxBytes =
@@ -122,7 +128,7 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
         ERR_EXIT(VPL_WORKSTREAM_DECODE);
     }
 
-    // TODO - get rid of internal BS buffer (use mfxBitstream)
+    // TODO(jrecker) - get rid of internal BS buffer (use mfxBitstream)
 
     // copy new data into bitstream buffer
     if (bs && bs->DataLength > 0) {
@@ -147,7 +153,7 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
                                         &m_avDecPacket->data,
                                         &m_avDecPacket->size,
                                         m_bsDecData + bytesParsed,
-                                        (int)m_bsDecValidBytes - bytesParsed,
+                                        m_bsDecValidBytes - bytesParsed,
                                         AV_NOPTS_VALUE,
                                         AV_NOPTS_VALUE,
                                         0);
@@ -165,7 +171,7 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
             }
         }
 
-        // TODO: get_buffer2_msdk() will be called from inside avcodec_send_packet()
+        // TODO(jrecker): get_buffer2_msdk() will be called from inside avcodec_send_packet()
         // this is where we can associate the user-allocated decoded output frame buffer
         //   (surface_work) with the compressed frame
         // so need to break up this function so it only calls avcodec_send_packet() one time
@@ -254,7 +260,7 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
             }
 
     #if 0
-            // TODO - if codec capability AV_CODEC_CAP_DR1 is set, can use user-provided buffers (callback)
+            // TODO(jrecker) - if codec capability AV_CODEC_CAP_DR1 is set, can use user-provided buffers (callback)
             int wTmp = 1280, hTmp = 720, linesize_align[AV_NUM_DATA_POINTERS];
             avcodec_align_dimensions2(m_avDecContext, &wTmp, &hTmp, linesize_align);
     #endif

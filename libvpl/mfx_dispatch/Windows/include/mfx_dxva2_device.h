@@ -30,7 +30,7 @@
     #pragma message("\n\nATTENTION:\nin file\n\t" __FILE__ \
                     " (" STRINGIFY(__LINE__) "):\nUsing of D3D9 enabled!\n\n")
 
-    #include <mfxdefs.h>
+    #include <vpl/mfxdefs.h>
 
     #ifdef DXVA2DEVICE_LOG
         #include <stdio.h>
