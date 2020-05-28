@@ -355,7 +355,7 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams) {
 
     if (pParams->bRenderWin) {
         m_bRenderWin = pParams->bRenderWin;
-        // note: currently position is unsupported for Wayland
+        // note: currently position is unsupported with Wayland
 #if !defined(LIBVA_WAYLAND_SUPPORT)
         m_nRenderWinX = pParams->nRenderWinX;
         m_nRenderWinY = pParams->nRenderWinY;
@@ -1887,7 +1887,7 @@ mfxStatus CDecodingPipeline::RunDecoding() {
                 }
             }
             else if ((MFX_ERR_MORE_DATA == sts) && !pBitstream) {
-                // that's it - we reached end of stream; now we need to render bufferred data...
+                // that's all - we reached end of stream; now we need to render bufferred data...
                 do {
                     sts = SyncOutputSurface(MSDK_DEC_WAIT_INTERVAL);
                 } while (MFX_ERR_NONE == sts);

@@ -136,7 +136,7 @@ void PrintHelp(msdk_char *strAppName, const msdk_char *strErrorMessage) {
     msdk_printf(MSDK_STRING(
         "   [-rwld]                   - render decoded data in a Wayland window \n"));
     msdk_printf(MSDK_STRING(
-        "   [-perf]                   - turn on asynchronous flipping for Wayland rendering \n"));
+        "   [-perf]                   - turn on asynchronous flipping with Wayland rendering \n"));
 #endif
 #if defined(LIBVA_DRM_SUPPORT)
     msdk_printf(MSDK_STRING(

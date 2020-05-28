@@ -57,9 +57,9 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
 
     // set codec-specific parameters
     if (m_encCodecId == MFX_CODEC_HEVC) {
-        // set SVT rate control
+        // set rate control
         if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
-            // TODO(jrecker) - plumb QPI/QPP/QPB
+            // TODO(jon) - plumb QPI/QPP/QPB
             av_opt_set(m_avEncContext, "rc", "cqp", AV_OPT_SEARCH_CHILDREN);
         }
         else {

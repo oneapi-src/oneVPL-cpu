@@ -76,29 +76,29 @@ protected:
 private:
     const msdk_char *msdkGetPluginName(const mfxPluginUID &guid) {
         if (AreGuidsEqual(guid, MFX_PLUGINID_HEVCD_SW))
-            return MSDK_STRING("Intel (R) Media SDK plugin for HEVC DECODE");
+            return MSDK_STRING("Intel(R) Media SDK plugin for HEVC DECODE");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_HEVCD_HW))
-            return MSDK_STRING("Intel (R) Media SDK HW plugin for HEVC DECODE");
+            return MSDK_STRING("Intel(R) Media SDK HW plugin for HEVC DECODE");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_HEVCE_SW))
-            return MSDK_STRING("Intel (R) Media SDK plugin for HEVC ENCODE");
+            return MSDK_STRING("Intel(R) Media SDK plugin for HEVC ENCODE");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_HEVCE_HW))
-            return MSDK_STRING("Intel (R) Media SDK HW plugin for HEVC ENCODE");
+            return MSDK_STRING("Intel(R) Media SDK HW plugin for HEVC ENCODE");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_H264LA_HW))
-            return MSDK_STRING("Intel (R) Media SDK plugin for LA ENC");
+            return MSDK_STRING("Intel(R) Media SDK plugin for LA ENC");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_ITELECINE_HW))
-            return MSDK_STRING("Intel (R) Media SDK PTIR plugin (HW)");
+            return MSDK_STRING("Intel(R) Media SDK PTIR plugin (HW)");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_HEVCE_GACC))
             return MSDK_STRING(
-                "Intel (R) Media SDK GPU-Accelerated plugin for HEVC ENCODE");
+                "Intel(R) Media SDK GPU-Accelerated plugin for HEVC ENCODE");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_VP9D_HW))
-            return MSDK_STRING("Intel (R) Media SDK HW plugin for VP9 DECODE");
+            return MSDK_STRING("Intel(R) Media SDK HW plugin for VP9 DECODE");
         else if (AreGuidsEqual(guid, MFX_PLUGINID_VP9E_HW))
-            return MSDK_STRING("Intel (R) Media SDK HW plugin for VP9 ENCODE");
+            return MSDK_STRING("Intel(R) Media SDK HW plugin for VP9 ENCODE");
         else
     #if (MFX_VERSION >= 1027) && !defined(_WIN32) && !defined(_WIN64)
             if (AreGuidsEqual(guid, MFX_PLUGINID_HEVC_FEI_ENCODE))
             return MSDK_STRING(
-                "Intel (R) Media SDK HW plugin for HEVC FEI ENCODE");
+                "Intel(R) Media SDK HW plugin for HEVC FEI ENCODE");
         else
     #endif
             return MSDK_STRING("Unknown plugin");

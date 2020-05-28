@@ -84,7 +84,7 @@ enum {
     MFX_IMPL_VIA_D3D11 =
         0x0300, /*!< Hardware acceleration goes through the Microsoft* Direct3D11* infrastructure. */
     MFX_IMPL_VIA_VAAPI =
-        0x0400, /*!< Hardware acceleration goes through the Linux* VA API infrastructure. */
+        0x0400, /*!< Hardware acceleration goes through the Linux* VA-API infrastructure. */
 
     MFX_IMPL_AUDIO = 0x8000,
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
