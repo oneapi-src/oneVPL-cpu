@@ -25,13 +25,13 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <iostream>
 #include <map>
 
-#include "mfxcommon.h"
-#include "mfxjpeg.h"
-#include "mfxvp8.h"
 #include "sample_defs.h"
 #include "sample_utils.h"
 #include "time_statistics.h"
 #include "vm/strings_defs.h"
+#include "vpl/mfxcommon.h"
+#include "vpl/mfxjpeg.h"
+#include "vpl/mfxvp8.h"
 
 #pragma warning(disable : 4748)
 

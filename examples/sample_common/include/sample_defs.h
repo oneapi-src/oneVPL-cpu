@@ -23,10 +23,10 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <memory.h>
 #include <iostream>
 
-#include "mfxdefs.h"
 #include "vm/file_defs.h"
 #include "vm/strings_defs.h"
 #include "vm/time_defs.h"
+#include "vpl/mfxdefs.h"
 
 #define _MSDK_API       (MFX_VERSION_MAJOR * 256 + MFX_VERSION_MINOR)
 #define MSDK_API(M, MM) (M * 256 + MM)

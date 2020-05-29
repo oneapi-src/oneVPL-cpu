@@ -30,15 +30,9 @@ set(CMAKE_INSTALL_SO_NO_EXE 0)
 
 include(cmake/CompileOptions.cmake)
 
-if(UNIX)
-  add_subdirectory(libvpl/mfx_dispatch/Linux)
-else()
-  add_subdirectory(libvpl/mfx_dispatch/Windows)
-endif()
-
 add_subdirectory(libvpl)
-add_subdirectory(examples)
 add_subdirectory(doc)
+add_subdirectory(examples)
 
 install(
   FILES third-party-programs.txt LICENSE

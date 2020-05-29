@@ -8,9 +8,9 @@ cmake_minimum_required(VERSION 3.10.2)
 set(TARGET vpl-app)
 set(SOURCES vpl-app.cpp)
 
-set(DEPENDENCIES vpl)
+set(DEPENDENCIES libmfx)
 
-# add_executable(${TARGET} ${SOURCES}) add_dependencies(${TARGET}
-# ${DEPENDENCIES})
+add_executable(${TARGET} ${SOURCES})
+add_dependencies(${TARGET} ${DEPENDENCIES})
 
-# target_link_libraries(${TARGET} ${DEPENDENCIES})
+target_link_libraries(${TARGET} ${DEPENDENCIES})

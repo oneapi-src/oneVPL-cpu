@@ -22,7 +22,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #include <stdio.h>
 
-#include "mfxstructures.h"
+#include "vpl/mfxstructures.h"
 
 #include "vm/atomic_defs.h"
 #include "vm/strings_defs.h"
