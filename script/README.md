@@ -12,6 +12,10 @@ These are designed around the model described by
 - `lint` - Analyze project source for potential issues. Requires Python modules
   in `requirements-dev.txt`.
 
+- `bootstrap` - Build the project dependencies and place in the location
+  specified by `VPL_BUILD_DEPENDENCIES` in the environment. If environment
+  variable is undefined, define it as and place output in `_deps`.
+
 - `build` - Build the project and place output in `_build`.
 
 - `package` - Create zip packages and place in `_build`.

@@ -1,0 +1,84 @@
+#!/bin/bash
+###############################################################################
+# Copyright (C) 2020 Intel Corporation
+#
+# SPDX-License-Identifier: MIT
+###############################################################################
+## start of boilerplate to switch to project root ------------------------------
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+proj_dir="$( dirname "${script_dir}" )"
+cd ${proj_dir}
+
+## start of commands -----------------------------------------------------------
+build_dir=${proj_dir}/_depbuild
+DEFAULT_VPL_BUILD_DEPENDENCIES=${proj_dir}/_deps
+
+if [ -z "$VPL_BUILD_DEPENDENCIES" ];then
+    # make sure VPL_BUILD_DEPENDENCIES will be available after script is run
+    if [ "${BASH_SOURCE[0]}" == "${0}" ];then
+        msg="VPL_BUILD_DEPENDENCIES is not set in the environment and the \
+script is not being sourced. Export VPL_BUILD_DEPENDENCIES or call like this:"
+        printf "%s\n\nsource %s\n" "$msg" "$BASH_SOURCE" | fold -s
+        exit 1
+    fi
+    export VPL_BUILD_DEPENDENCIES="${DEFAULT_VPL_BUILD_DEPENDENCIES}"
+fi
+if [ "${BASH_SOURCE[0]}" == "${0}" ];then
+    #exit on error if we are not sourced
+    set -o errexit
+fi
+
+install_dir=${VPL_BUILD_DEPENDENCIES}
+
+rm -rf ${build_dir}
+rm -rf ${VPL_BUILD_DEPENDENCIES}
+
+## build FFmpeg with SVT-HEVC
+mkdir -p ${build_dir}
+cd ${build_dir}
+
+git clone https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
+git checkout v1.4.3
+mkdir release && cd release
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off
+cmake --build . --target install
+
+cd ${build_dir}
+git clone https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
+git config user.email "you@example.com"
+git config user.name "Your Name"
+git checkout release/4.2
+git am ${build_dir}/SVT-HEVC/ffmpeg_plugin/0001*.patch
+
+export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}
+
+echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
+./configure --extra-cflags="-fPIC" --extra-ldflags="-fPIC" --enable-pic \
+            --prefix=${install_dir} --arch=x86_64 \
+            --disable-shared --enable-static --disable-network \
+            --disable-everything --disable-doc --disable-manpages \
+            --disable-hwaccels --disable-appkit --disable-alsa \
+            --disable-avfoundation --disable-iconv --disable-lzma \
+            --disable-sdl2 --disable-securetransport --disable-xlib \
+            --disable-zlib --disable-amf --disable-audiotoolbox \
+            --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-nvdec \
+            --disable-nvenc --disable-v4l2-m2m --disable-videotoolbox \
+            --enable-indev=lavfi --enable-protocol=file \
+            --enable-bsf=h264_mp4toannexb --enable-bsf=hevc_mp4toannexb \
+            --enable-decoder=rawvideo --enable-muxer=rawvideo \
+            --enable-muxer=h264 --enable-muxer=mpeg2video --enable-muxer=mjpeg \
+            --enable-muxer=hevc --enable-filter=testsrc \
+            --enable-filter=testsrc2 --enable-filter=rgbtestsrc \
+            --enable-filter=yuvtestsrc --enable-demuxer=h264 \
+            --enable-parser=h264 --enable-decoder=h264 --enable-demuxer=hevc \
+            --enable-decoder=hevc --enable-parser=hevc \
+            --enable-decoder=mpeg2video --enable-encoder=mpeg2video \
+            --enable-decoder=mjpeg --enable-encoder=mjpeg \
+            --enable-filter=scale --enable-filter=psnr --enable-filter=ssim \
+            --enable-libsvthevc --enable-encoder=libsvt_hevc \
+            --enable-encoder=rawvideo
+
+make -j $(nproc) && make install
+
+cd ${proj_dir}

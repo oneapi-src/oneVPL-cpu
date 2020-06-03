@@ -12,7 +12,9 @@ It comes with bindings for C, C++, and Python.
 
 - A C/C++ Compiler
   - GCC on Linux
-  - Microsoft Visual Studio on Windows
+  - Microsoft Visual Studio, MinGW on Windows
+- [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
+- [yasm](https://yasm.tortall.net/)
 - [CMake](https://cmake.org/)
 - [Python3](https://www.python.org/)
 - [git](https://git-scm.com/)
@@ -22,9 +24,13 @@ It comes with bindings for C, C++, and Python.
 ### Canonical build
 
 ```
+script/bootstrap
 script/build
 ```
 (Adjust slashes depending on your shell path separator.)
+
+See the [developer reference](doc/developer-reference/build.md) for more details
+on configuring the build.
 
 ### Building documentation
 
