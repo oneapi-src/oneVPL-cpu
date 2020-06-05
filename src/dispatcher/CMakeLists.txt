@@ -5,7 +5,7 @@
 # ##############################################################################
 cmake_minimum_required(VERSION 3.10.2)
 
-set(TARGET libmfx)
+set(TARGET mfx)
 
 if(WIN32)
   set(SOURCES
@@ -25,6 +25,9 @@ if(UNIX)
 endif()
 
 add_library(${TARGET} STATIC "")
+
+# force correct name on Windows
+set_target_properties(${TARGET} PROPERTIES PREFIX "lib")
 
 target_sources(${TARGET} PRIVATE ${SOURCES})
 

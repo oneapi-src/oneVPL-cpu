@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 
 set(TARGET sample_common)
-set(DEPENDENCIES libmfx)
+set(DEPENDENCIES mfx)
 
 set(SOURCES
     src/base_allocator.cpp

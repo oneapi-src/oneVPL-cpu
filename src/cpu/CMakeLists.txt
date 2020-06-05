@@ -31,6 +31,12 @@ endif()
 
 add_library(${TARGET} SHARED "")
 
+# force correct name on Windows
+set_target_properties(${TARGET} PROPERTIES PREFIX "lib")
+
+# add "_d" to debug library name
+set_target_properties(${TARGET} PROPERTIES DEBUG_POSTFIX "_d")
+
 target_sources(${TARGET} PRIVATE ${SOURCES})
 
 target_link_libraries(${TARGET} PUBLIC vpl-api)
