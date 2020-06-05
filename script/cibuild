@@ -11,4 +11,7 @@ cd ${proj_dir}
 set -o errexit
 ## start of commands -----------------------------------------------------------
 script/lint
+if [ -z "$VPL_BUILD_DEPENDENCIES" ];then
+    source script/bootstrap
+fi
 script/package

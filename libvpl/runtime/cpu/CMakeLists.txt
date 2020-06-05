@@ -35,16 +35,22 @@ target_sources(${TARGET} PRIVATE ${SOURCES})
 
 target_link_libraries(${TARGET} PUBLIC vpl-api)
 
+add_subdirectory(ext/ffmpeg-svt)
+
+target_link_libraries(${TARGET} PRIVATE ffmpeg-svt)
+
 target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
                                              ${CMAKE_CURRENT_BINARY_DIR})
-
-target_compile_definitions(${TARGET} PRIVATE -DDISABLE_LIBAV)
 
 target_compile_definitions(
   ${TARGET}
   PRIVATE -DVPL_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
           -DVPL_VERSION_MINOR=${PROJECT_VERSION_MINOR}
           -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH})
+
+if(UNIX)
+  set_target_properties(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic)
+endif()
 
 install(
   TARGETS ${TARGET}
