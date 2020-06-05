@@ -22,5 +22,5 @@ set(DOXYGEN_WARN_AS_ERROR "NO")
 set(DOXYGEN_EXAMPLE_PATH ${PROJECT_SOURCE_DIR}/examples)
 set(DOXYGEN_EXAMPLE_RECURSIVE "YES")
 
-doxygen_add_docs(doc ${PROJECT_SOURCE_DIR}/libvpl
+doxygen_add_docs(doc ${PROJECT_SOURCE_DIR}/api
                  ${PROJECT_SOURCE_DIR}/doc/developer-reference)

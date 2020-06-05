@@ -30,7 +30,8 @@ set(CMAKE_INSTALL_SO_NO_EXE 0)
 
 include(cmake/CompileOptions.cmake)
 
-add_subdirectory(libvpl)
+add_subdirectory(api)
+add_subdirectory(src)
 add_subdirectory(doc)
 add_subdirectory(examples)
 
