@@ -34,6 +34,8 @@ if(MSVC)
   endif()
 
   set(GCC_LIB ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/10.1.0/libgcc.a)
+  set(GCC_EH_LIB
+      ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/10.1.0/libgcc_eh.a)
   set(BCRYPT_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libbcrypt.a)
   set(MINGW32_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingw32.a)
   set(MINGWEX_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingwex.a)
@@ -42,6 +44,7 @@ if(MSVC)
   set(MSVCRT_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmsvcrt.a)
 
   if(NOT EXISTS ${GCC_LIB}
+     OR NOT EXISTS ${GCC_EH_LIB}
      OR NOT EXISTS ${BCRYPT_LIB}
      OR NOT EXISTS ${MINGW32_LIB}
      OR NOT EXISTS ${MINGWEX_LIB}
@@ -49,8 +52,8 @@ if(MSVC)
     message(FATAL_ERROR "Could not find expected MinGW runtime libraries")
   endif()
   target_link_libraries(
-    ${TARGET} INTERFACE ${GCC_LIB} ${BCRYPT_LIB} ${MINGW32_LIB} ${MINGWEX_LIB}
-                        ${MSVCRT_LIB})
+    ${TARGET} INTERFACE ${GCC_LIB} ${GCC_EH_LIB} ${BCRYPT_LIB} ${MINGW32_LIB}
+                        ${MINGWEX_LIB} ${MSVCRT_LIB})
 
   if(NOT EXISTS ${PTHREAD_IMPLIB})
     message(FATAL_ERROR "Could not find expected MinGW runtime libraries")
