@@ -45,6 +45,7 @@ md %build_dir% 2>NUL
 cd %build_dir%
 
 git clone https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
+git config advice.detachedHead false
 git checkout v1.4.3
 mkdir release && cd release
 set PATH=%MINGWPATH%
