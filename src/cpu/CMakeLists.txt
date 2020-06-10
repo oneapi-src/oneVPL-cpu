@@ -55,7 +55,7 @@ target_compile_definitions(
           -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 if(UNIX)
-  set_target_properties(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic)
+  set_target_properties(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic,-z,defs)
 endif()
 
 install(

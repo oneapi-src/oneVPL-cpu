@@ -68,7 +68,11 @@ endif()
 set_property(TARGET ${TARGET} PROPERTY INTERFACE_INCLUDE_DIRECTORIES
                                        ${VPL_DEP_DIR}/include)
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 target_link_libraries(
   ${TARGET}
-  INTERFACE ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a ${VPL_DEP_DIR}/lib/libavcodec.a
-            ${VPL_DEP_DIR}/lib/libavutil.a)
+  INTERFACE ${VPL_DEP_DIR}/lib/libavcodec.a ${VPL_DEP_DIR}/lib/libavutil.a
+            ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a Threads::Threads)

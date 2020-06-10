@@ -16,7 +16,6 @@ target_include_directories(${TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
 
 target_link_libraries(${TARGET} sample_common mfx)
 
-# todo: revisit this later -- this should really be pushed to the library
 if(UNIX)
   set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
   set(THREADS_PREFER_PTHREAD_FLAG TRUE)
