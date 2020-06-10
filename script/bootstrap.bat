@@ -57,9 +57,10 @@ cmake --build . --target install
 cd %build_dir%
 set PATH=%GITPATH%
 git clone https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
-git config user.email "you@example.com"
-git config user.name "Your Name"
 git checkout release/4.2
+
+git config user.email "bootstrap@localhost"
+git config user.name "bootstrap"
 set patch=0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch
 git am %build_dir%\SVT-HEVC\ffmpeg_plugin\%patch%
 if ERRORLEVEL 1 exit /b 1
