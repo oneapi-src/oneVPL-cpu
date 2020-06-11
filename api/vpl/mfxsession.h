@@ -1,15 +1,15 @@
 // Copyright (c) 2017 Intel Corporation
-//
+// 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -17,12 +17,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef API_VPL_MFXSESSION_H_
-#define API_VPL_MFXSESSION_H_
-#include "./mfxcommon.h"
+#ifndef __MFXSESSION_H__
+#define __MFXSESSION_H__
+#include "mfxcommon.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif /* __cplusplus */
 
 /* Global Functions */
@@ -31,7 +32,6 @@ extern "C" {
 typedef struct _mfxSession *mfxSession;
 
 /*!
-   @fn mfxStatus    MFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session)
    @brief
       This function creates and initializes an SDK session. Call this function before calling
       any other SDK functions. If the desired implementation specified by impl is MFX_IMPL_AUTO,
@@ -60,7 +60,6 @@ typedef struct _mfxSession *mfxSession;
 mfxStatus MFX_CDECL MFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session);
 
 /*!
-   @fn mfxStatus    MFXInitEx(mfxInitParam par, mfxSession *session)
    @brief
       This function creates and initializes an SDK session. Call this function before calling any other SDK functions.
       If the desired implementation specified by par. Implementation is MFX_IMPL_AUTO, the function will search for
@@ -89,7 +88,6 @@ mfxStatus MFX_CDECL MFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session);
 mfxStatus MFX_CDECL MFXInitEx(mfxInitParam par, mfxSession *session);
 
 /*!
-   @fn mfxStatus    MFXClose(mfxSession session);
    @brief This function completes and de-initializes an SDK session. Any active tasks in execution or
     in queue are aborted. The application cannot call any SDK function after this function.
     
@@ -101,7 +99,6 @@ mfxStatus MFX_CDECL MFXInitEx(mfxInitParam par, mfxSession *session);
 mfxStatus MFX_CDECL MFXClose(mfxSession session);
 
 /*!
-   @fn mfxStatus    MFXQueryIMPL(mfxSession session, mfxIMPL *impl);
    @brief This function returns the implementation type of a given session.
     
    @param[in]  session SDK session handle.
@@ -112,7 +109,6 @@ mfxStatus MFX_CDECL MFXClose(mfxSession session);
 mfxStatus MFX_CDECL MFXQueryIMPL(mfxSession session, mfxIMPL *impl);
 
 /*!
-   @fn mfxStatus    MFXQueryVersion(mfxSession session, mfxVersion *version);
    @brief This function returns the SDK implementation version.
     
    @param[in]  session SDK session handle.
@@ -123,7 +119,6 @@ mfxStatus MFX_CDECL MFXQueryIMPL(mfxSession session, mfxIMPL *impl);
 mfxStatus MFX_CDECL MFXQueryVersion(mfxSession session, mfxVersion *version);
 
 /*!
-   @fn mfxStatus    MFXJoinSession(mfxSession session, mfxSession child);
    @brief This function joins the child session to the current session.
 
    After joining, the two sessions share thread and resource scheduling for asynchronous
@@ -148,7 +143,6 @@ mfxStatus MFX_CDECL MFXQueryVersion(mfxSession session, mfxVersion *version);
 mfxStatus MFX_CDECL MFXJoinSession(mfxSession session, mfxSession child);
 
 /*!
-   @fn mfxStatus    MFXDisjoinSession(mfxSession session);
    @brief This function removes the joined state of the current session. After disjoining, the current
       session becomes independent. The application must ensure there is no active task running
       in the session before calling this function.
@@ -161,13 +155,53 @@ mfxStatus MFX_CDECL MFXJoinSession(mfxSession session, mfxSession child);
            MFX_ERR_UNDEFINED_BEHAVIOR  The session is independent, or this session is the parent of all joined sessions.
 */
 mfxStatus MFX_CDECL MFXDisjoinSession(mfxSession session);
+
+/*!
+   @brief This function creates a clean copy of the current session. The cloned session is an independent session.
+          It does not inherit any user-defined buffer, frame allocator, or device manager handles from the current session.
+          This function is a light-weight equivalent of MFXJoinSession after MFXInit.
+    
+   @param[in] session    The current session handle.
+   @param[out] clone     Pointer to the cloned session handle.
+
+   @return MFX_ERR_NONE                The function completed successfully.
+*/
 mfxStatus MFX_CDECL MFXCloneSession(mfxSession session, mfxSession *clone);
+
+/*!
+   @brief This function sets the current session priority.
+    
+   @param[in] session    The current session handle.
+   @param[in] priority   Priority value.
+
+   @return MFX_ERR_NONE                The function completed successfully.
+*/
 mfxStatus MFX_CDECL MFXSetPriority(mfxSession session, mfxPriority priority);
+
+/*!
+   @brief This function returns the current session priority.
+    
+   @param[in] session    The current session handle.
+   @param[out] priority   Pointer to the priority value.
+
+   @return MFX_ERR_NONE                The function completed successfully.
+*/
 mfxStatus MFX_CDECL MFXGetPriority(mfxSession session, mfxPriority *priority);
+
+/*!
+   @brief This function complements MFXInitEx with external threading mode on. Application expected to
+          create no less than two work threads per session and pass them to SDK via this function.
+          This function won’t return control to application unless session is closed.
+    
+   @param[in] session    The current session handle.
+
+   @return MFX_ERR_NONE                The function completed successfully.
+*/
 mfxStatus MFX_CDECL MFXDoWork(mfxSession session);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif // API_VPL_MFXSESSION_H_
+#endif
+

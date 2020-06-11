@@ -1,15 +1,15 @@
 // Copyright (c) 2017-2019 Intel Corporation
-//
+// 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -17,10 +17,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef API_VPL_MFXMVC_H_
-#define API_VPL_MFXMVC_H_
+#ifndef __MFXMVC_H__
+#define __MFXMVC_H__
 
-#include "./mfxdefs.h"
+#include "mfxdefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,18 +29,18 @@ extern "C" {
 /* CodecProfile, CodecLevel */
 enum {
     /* MVC profiles */
-    MFX_PROFILE_AVC_MULTIVIEW_HIGH = 118,
-    MFX_PROFILE_AVC_STEREO_HIGH    = 128
+    MFX_PROFILE_AVC_MULTIVIEW_HIGH =118,
+    MFX_PROFILE_AVC_STEREO_HIGH    =128
 };
 
 /* Extended Buffer Ids */
 enum {
-    MFX_EXTBUFF_MVC_SEQ_DESC     = MFX_MAKEFOURCC('M', 'V', 'C', 'D'),
-    MFX_EXTBUFF_MVC_TARGET_VIEWS = MFX_MAKEFOURCC('M', 'V', 'C', 'T')
+    MFX_EXTBUFF_MVC_SEQ_DESC =   MFX_MAKEFOURCC('M','V','C','D'),
+    MFX_EXTBUFF_MVC_TARGET_VIEWS    =   MFX_MAKEFOURCC('M','V','C','T')
 };
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
-typedef struct {
+typedef struct  {
     mfxU16 ViewId;
 
     mfxU16 NumAnchorRefsL0;
@@ -67,7 +67,7 @@ typedef struct {
 MFX_PACK_END()
 
 MFX_PACK_BEGIN_STRUCT_W_PTR()
-typedef struct {
+typedef struct  {
     mfxExtBuffer Header;
 
     mfxU32 NumView;
@@ -90,16 +90,17 @@ MFX_PACK_END()
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 typedef struct {
-    mfxExtBuffer Header;
+    mfxExtBuffer    Header;
 
     mfxU16 TemporalId;
     mfxU32 NumView;
     mfxU16 ViewId[1024];
-} mfxExtMVCTargetViews;
+} mfxExtMVCTargetViews ;
 MFX_PACK_END()
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif // API_VPL_MFXMVC_H_
+#endif
+

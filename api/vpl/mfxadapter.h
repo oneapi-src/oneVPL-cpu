@@ -18,28 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "./mfxdefs.h"
+#include "mfxdefs.h"
+#if (MFX_VERSION >= 1031)
+#ifndef __MFXADAPTER_H__
+#define __MFXADAPTER_H__
 
-#ifndef API_VPL_MFXADAPTER_H_
-    #define API_VPL_MFXADAPTER_H_
+#include "mfxstructures.h"
 
-    #if (MFX_VERSION >= 1031)
-
-        #include "./mfxstructures.h"
-
-        #ifdef __cplusplus
-extern "C" {
-        #endif
-mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info,
-                           mfxAdaptersInfo* adapters);
-mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
-                                 mfxU32 codec_id,
-                                 mfxAdaptersInfo* adapters);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapters);
+mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAdaptersInfo* adapters);
 mfxStatus MFXQueryAdaptersNumber(mfxU32* num_adapters);
-        #ifdef __cplusplus
+#ifdef __cplusplus
 } // extern "C"
-        #endif
+#endif
 
-    #endif
-
-#endif // API_VPL_MFXADAPTER_H_
+#endif // __MFXADAPTER_H__
+#endif
