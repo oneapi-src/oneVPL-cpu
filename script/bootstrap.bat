@@ -40,35 +40,82 @@ set install_dir=%VPL_BUILD_DEPENDENCIES%
 rd /s /q %build_dir% 2>NUL
 rd /s /q %VPL_BUILD_DEPENDENCIES% 2>NUL
 
-:: build FFmpeg with SVT-HEVC
+:: build FFmpeg with SVT-HEVC and SVT-AV1
 md %build_dir% 2>NUL
-cd %build_dir%
 
+:: checkout SVT-HEVC
+cd %build_dir%
 git clone https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 git config advice.detachedHead false
 git checkout v1.4.3
-mkdir release && cd release
+
+:: checkout SVT-AV1
+cd %build_dir%
+git clone https://github.com/OpenVisualCloud/SVT-AV1.git && cd SVT-AV1
+git config advice.detachedHead false
+:: tip of master at 06112020
+:: this includes the fix related to link failure by common symbols (#1295)
+:: ffmpeg build and svt app build will fail without this fix in windows and with static lib.
+git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
+
+:: set path for build
 set PATH=%MINGWPATH%
+
+:: SVT-HEVC build and install
+cd %build_dir%\SVT-HEVC
+mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
--DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off
+-DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
+if ERRORLEVEL 1 exit /b 1
+cmake --build . --target install
+
+:: SVT-AV1 build and install
+cd %build_dir%\SVT-AV1
+mkdir release && cd release
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
+-DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off
 if ERRORLEVEL 1 exit /b 1
 cmake --build . --target install
 
 cd %build_dir%
+:: set path for git
 set PATH=%GITPATH%
+
+:: checkout ffmpeg
 git clone https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
 git checkout release/4.2
 
+:: patch of SVT-HEVC and SVT-AV1 ffmpeg plugin
 git config user.email "bootstrap@localhost"
 git config user.name "bootstrap"
 set patch=0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch
 git am %build_dir%\SVT-HEVC\ffmpeg_plugin\%patch%
 if ERRORLEVEL 1 exit /b 1
+set patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1-with-svt-hevc.patch
+git am %build_dir%\SVT-AV1\ffmpeg_plugin\%patch%
+if ERRORLEVEL 1 exit /b 1
 
+:: set path for build
 set PATH=%MINGWPATH%
+
 set PKG_CONFIG_PATH=%install_dir%\lib\pkgconfig;%PKG_CONFIG_PATH%
 set install_dir=%install_dir:\=/%
-bash -c './configure --extra-cflags="-fPIC" --extra-ldflags="-fPIC" --enable-pic --prefix=${install_dir} --arch=x86_64 --target-os=mingw64 --disable-shared --enable-static --disable-network --disable-everything --disable-doc --disable-manpages --disable-hwaccels --disable-appkit --disable-alsa --disable-avfoundation --disable-iconv --disable-lzma --disable-sdl2 --disable-securetransport --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-videotoolbox --enable-indev=lavfi --enable-protocol=file --enable-bsf=h264_mp4toannexb --enable-bsf=hevc_mp4toannexb --enable-decoder=rawvideo --enable-muxer=rawvideo --enable-muxer=h264 --enable-muxer=mpeg2video --enable-muxer=mjpeg --enable-muxer=hevc --enable-filter=testsrc --enable-filter=testsrc2 --enable-filter=rgbtestsrc --enable-filter=yuvtestsrc --enable-demuxer=h264 --enable-parser=h264 --enable-decoder=h264 --enable-demuxer=hevc --enable-decoder=hevc --enable-parser=hevc --enable-decoder=mpeg2video --enable-encoder=mpeg2video --enable-decoder=mjpeg --enable-encoder=mjpeg --enable-filter=scale --enable-filter=psnr --enable-filter=ssim --enable-libsvthevc --enable-encoder=libsvt_hevc'
+bash -c './configure --extra-cflags="-fPIC" --extra-ldflags="-fPIC" ^
+--enable-pic --prefix=${install_dir} --arch=x86_64 --target-os=mingw64 ^
+--disable-shared --enable-static --disable-network --disable-everything ^
+--disable-doc --disable-manpages --disable-hwaccels --disable-appkit --disable-alsa ^
+--disable-avfoundation --disable-iconv --disable-lzma --disable-sdl2 --disable-securetransport ^
+--disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid ^
+--disable-d3d11va --disable-dxva2 --disable-nvdec --disable-nvenc --disable-v4l2-m2m ^
+--disable-videotoolbox --enable-indev=lavfi --enable-protocol=file --enable-bsf=h264_mp4toannexb ^
+--enable-bsf=hevc_mp4toannexb --enable-decoder=rawvideo --enable-muxer=rawvideo --enable-muxer=h264 ^
+--enable-muxer=mpeg2video --enable-muxer=mjpeg --enable-muxer=hevc --enable-filter=testsrc ^
+--enable-filter=testsrc2 --enable-filter=rgbtestsrc --enable-filter=yuvtestsrc --enable-demuxer=h264 ^
+--enable-parser=h264 --enable-decoder=h264 --enable-demuxer=hevc --enable-decoder=hevc ^
+--enable-parser=hevc --enable-decoder=mpeg2video --enable-encoder=mpeg2video --enable-decoder=mjpeg ^
+--enable-encoder=mjpeg --enable-filter=scale --enable-filter=psnr --enable-filter=ssim ^
+--enable-libsvthevc --enable-encoder=libsvt_hevc ^
+--enable-libsvtav1 --enable-encoder=libsvt_av1'
 
 make -j %NUMBER_OF_PROCESSORS% && make install
 
