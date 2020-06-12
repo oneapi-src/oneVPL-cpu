@@ -10,6 +10,7 @@ proj_dir="$( dirname "${script_dir}" )"
 cd ${proj_dir}
 set -o errexit
 ## start of commands -----------------------------------------------------------
+source test/env/vars.sh
 script/lint
 if [ -z "$VPL_BUILD_DEPENDENCIES" ];then
     source script/bootstrap

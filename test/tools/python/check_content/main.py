@@ -29,6 +29,11 @@ except ImportError:
         print(msg, file=sys.stderr)
 
 
+TOOLPATH = os.getenv('VPL_BUILD_DEPENDENCIES')
+if TOOLPATH is not None:
+    TOOLPATH += "/bin"
+    print(TOOLPATH)
+
 CODEC_MAP = {
     "H264": "h264",
     "H265": "hevc",
@@ -134,7 +139,14 @@ def psnr(ref, proc, codec, size, frames):
     iproc, _ = munge_format(proc, codec)
     if (icodec not in ENCODED) and (not isize):
         raise ValueError("Raw formats require a size setting")
-    cmd = ['ffmpeg', '-y']
+
+    if TOOLPATH is not None:
+        cmd = ([str(TOOLPATH) + '/' + 'ffmpeg'])
+    else:
+        cmd = (['ffmpeg'])
+
+    cmd.extend(['-y'])
+
     config = []
     if isize and isize.framerate:
         config.extend(['-r', str(isize.framerate)])
@@ -240,11 +252,11 @@ def check_content(ref,
     is_pass = False
     value = 0
     if algorithm == 'psnr':
-        value = psnr(ref, proc, codec, parse_size(size), frames)
+        value = psnr(ref, proc, codec, size, frames)
         threshold_value = float(threshold) if threshold is not None else 30.0
         is_pass = math.isinf(value) or (value >= threshold_value)
     elif algorithm == 'ssim':
-        value = ssim(ref, proc, codec, parse_size(size), frames)
+        value = ssim(ref, proc, codec, size, frames)
         threshold_value = float(threshold) if threshold is not None else 0.95
         is_pass = math.isinf(value) or (value >= threshold_value)
     elif algorithm == 'bit-exact':
