@@ -21,8 +21,8 @@
 #ifndef SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_
 #define SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_
 
-#include <stddef.h>
 #include <onevpl/mfxvideo.h>
+#include <stddef.h>
 #include "windows/mfx_dispatcher_defs.h"
 
 #define INTEL_VENDOR_ID 0x8086

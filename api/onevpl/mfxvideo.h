@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef API_VPL_MFXVIDEO_H_
-#define API_VPL_MFXVIDEO_H_
+#ifndef API_ONEVPL_MFXVIDEO_H_
+#define API_ONEVPL_MFXVIDEO_H_
 #include "./mfxsession.h"
 #include "./mfxvstructures.h"
 
@@ -780,4 +780,4 @@ MFXVideoVPP_RunFrameVPPAsyncEx(mfxSession session,
 } // extern "C"
 #endif
 
-#endif // API_VPL_MFXVIDEO_H_
+#endif // API_ONEVPL_MFXVIDEO_H_

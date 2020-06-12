@@ -9,9 +9,9 @@
 ///
 /// @file
 
-#ifndef API_VPL_VPL_HPP_
-#define API_VPL_VPL_HPP_
+#ifndef API_ONEVPL_VPL_HPP_
+#define API_ONEVPL_VPL_HPP_
 
 #include "onevpl/version.hpp"
 
-#endif // API_VPL_VPL_HPP_
+#endif // API_ONEVPL_VPL_HPP_

@@ -9,8 +9,8 @@
 ///
 /// @file
 
-#ifndef API_VPL_VERSION_H_
-#define API_VPL_VERSION_H_
+#ifndef API_ONEVPL_VERSION_H_
+#define API_ONEVPL_VERSION_H_
 
 #include <stdint.h>
 
@@ -34,4 +34,4 @@ VPL_API vpl_library_version_t const* vpl_get_library_version();
 }
 #endif
 
-#endif // API_VPL_VERSION_H_
+#endif // API_ONEVPL_VERSION_H_

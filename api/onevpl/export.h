@@ -9,8 +9,8 @@
 ///
 /// @file
 
-#ifndef API_VPL_EXPORT_H_
-#define API_VPL_EXPORT_H_
+#ifndef API_ONEVPL_EXPORT_H_
+#define API_ONEVPL_EXPORT_H_
 
 #ifdef VPL_STATIC_DEFINE
     #define VPL_API
@@ -35,4 +35,4 @@
     #endif
 #endif
 
-#endif // API_VPL_EXPORT_H_
+#endif // API_ONEVPL_EXPORT_H_

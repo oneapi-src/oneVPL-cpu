@@ -20,8 +20,8 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef _ABSTRACT_SPL_H__
 #define _ABSTRACT_SPL_H__
 
-#include "vm/strings_defs.h"
 #include "onevpl/mfxstructures.h"
+#include "vm/strings_defs.h"
 
 enum SliceTypeCode {
     TYPE_I       = 0,

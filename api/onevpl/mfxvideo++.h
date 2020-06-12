@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef API_VPL_MFXVIDEO___H_
-#define API_VPL_MFXVIDEO___H_
+#ifndef API_ONEVPL_MFXVIDEO___H_
+#define API_ONEVPL_MFXVIDEO___H_
 
 #include "./mfxvideo.h"
 
@@ -257,4 +257,4 @@ protected:
     mfxSession m_session; // (mfxSession) handle to the owning session
 };
 
-#endif // API_VPL_MFXVIDEO___H_
+#endif // API_ONEVPL_MFXVIDEO___H_

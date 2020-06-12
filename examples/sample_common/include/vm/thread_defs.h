@@ -20,8 +20,8 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef __THREAD_DEFS_H__
 #define __THREAD_DEFS_H__
 
-#include "vm/strings_defs.h"
 #include "onevpl/mfxdefs.h"
+#include "vm/strings_defs.h"
 
 typedef unsigned int(MFX_STDCALL* msdk_thread_callback)(void*);
 

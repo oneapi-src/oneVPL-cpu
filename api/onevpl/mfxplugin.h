@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef API_VPL_MFXPLUGIN_H_
-#define API_VPL_MFXPLUGIN_H_
+#ifndef API_ONEVPL_MFXPLUGIN_H_
+#define API_ONEVPL_MFXPLUGIN_H_
 #include "./mfxvideo.h"
 
 #ifdef __cplusplus
@@ -457,4 +457,4 @@ mfxStatus MFX_CDECL MFXVideoUSER_UnLoad(mfxSession session,
 } // extern "C"
 #endif /* __cplusplus */
 
-#endif // API_VPL_MFXPLUGIN_H_
+#endif // API_ONEVPL_MFXPLUGIN_H_

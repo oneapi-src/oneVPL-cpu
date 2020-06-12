@@ -9,8 +9,8 @@
 ///
 /// @file
 
-#ifndef API_VPL_VERSION_HPP_
-#define API_VPL_VERSION_HPP_
+#ifndef API_ONEVPL_VERSION_HPP_
+#define API_ONEVPL_VERSION_HPP_
 
 #include <cstdint>
 
@@ -27,4 +27,4 @@ library_version_t const& get_library_version() {
 
 } // namespace vpl
 
-#endif // API_VPL_VERSION_HPP_
+#endif // API_ONEVPL_VERSION_HPP_

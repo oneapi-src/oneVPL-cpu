@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef API_VPL_MFXADAPTER_H_
-#define API_VPL_MFXADAPTER_H_
+#ifndef API_ONEVPL_MFXADAPTER_H_
+#define API_ONEVPL_MFXADAPTER_H_
 
 #include "./mfxdefs.h"
 #if (MFX_VERSION >= 1031)
@@ -41,4 +41,4 @@ mfxStatus MFXQueryAdaptersNumber(mfxU32* num_adapters);
 
 #endif
 
-#endif // API_VPL_MFXADAPTER_H_
+#endif // API_ONEVPL_MFXADAPTER_H_

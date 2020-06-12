@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef API_VPL_MFXLA_H_
-#define API_VPL_MFXLA_H_
+#ifndef API_ONEVPL_MFXLA_H_
+#define API_ONEVPL_MFXLA_H_
 #include "./mfxdefs.h"
 #include "./mfxvstructures.h"
 
@@ -137,4 +137,4 @@ MFX_PACK_END()
 } // extern "C"
 #endif /* __cplusplus */
 
-#endif // API_VPL_MFXLA_H_
+#endif // API_ONEVPL_MFXLA_H_

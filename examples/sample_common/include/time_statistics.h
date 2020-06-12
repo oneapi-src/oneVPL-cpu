@@ -22,9 +22,9 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <stdio.h>
 #include <vector>
 #include "math.h"
+#include "onevpl/mfxstructures.h"
 #include "vm/strings_defs.h"
 #include "vm/time_defs.h"
-#include "onevpl/mfxstructures.h"
 
 #pragma warning(disable : 4100)
 

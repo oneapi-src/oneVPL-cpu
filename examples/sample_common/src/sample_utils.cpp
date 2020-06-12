@@ -25,13 +25,13 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <iostream>
 #include <map>
 
+#include "onevpl/mfxcommon.h"
+#include "onevpl/mfxjpeg.h"
+#include "onevpl/mfxvp8.h"
 #include "sample_defs.h"
 #include "sample_utils.h"
 #include "time_statistics.h"
 #include "vm/strings_defs.h"
-#include "onevpl/mfxcommon.h"
-#include "onevpl/mfxjpeg.h"
-#include "onevpl/mfxvp8.h"
 
 #pragma warning(disable : 4748)
 
