@@ -13,6 +13,7 @@ if(NOT DEFINED ENV{VPL_BUILD_DEPENDENCIES})
   message(FATAL_ERROR "VPL_BUILD_DEPENDENCIES not defined in environment")
 else()
   set(VPL_DEP_DIR $ENV{VPL_BUILD_DEPENDENCIES})
+  message(STATUS "Using VPL_BUILD_DEPENDENCIES located at ${VPL_DEP_DIR}")
 endif()
 
 set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)

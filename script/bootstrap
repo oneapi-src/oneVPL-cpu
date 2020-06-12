@@ -70,7 +70,9 @@ git am ${build_dir}/SVT-AV1/ffmpeg_plugin/${patch}
 export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}
 
 echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
-./configure --prefix=${install_dir} \
+./configure --disable-vaapi \
+            --disable-cuda-llvm \
+            --prefix=${install_dir} \
             --disable-shared \
             --enable-static \
             --enable-pic  \
@@ -79,7 +81,6 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --disable-doc \
             --disable-manpages  \
             --disable-hwaccels \
-            --disable-vaapi \
             --disable-appkit \
             --disable-alsa  \
             --disable-avfoundation \
@@ -91,7 +92,6 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --disable-zlib \
             --disable-amf \
             --disable-audiotoolbox \
-            --disable-cuda-llvm \
             --disable-cuvid \
             --disable-d3d11va \
             --disable-dxva2 \
@@ -104,7 +104,12 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --enable-bsf=h264_mp4toannexb \
             --enable-bsf=hevc_mp4toannexb  \
             --enable-decoder=rawvideo \
+            --enable-encoder=rawvideo \
+            --enable-demuxer=rawvideo  \
             --enable-muxer=rawvideo  \
+            --enable-muxer=null \
+            --enable-decoder=wrapped_avframe \
+            --enable-encoder=wrapped_avframe \
             --enable-muxer=h264 \
             --enable-muxer=mpeg2video \
             --enable-muxer=mjpeg  \
