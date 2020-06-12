@@ -23,11 +23,18 @@ It comes with bindings for C, C++, and Python.
 
 ### Canonical build
 
+Ubuntu bash shell:
 ```
 script/bootstrap
 script/build
 ```
-(Adjust slashes depending on your shell path separator.)
+
+Windows cmd prompt:
+```
+script\bootstrap
+script\build
+```
+
 
 See the [developer reference](doc/developer-reference/build.md) for more details
 on configuring the build.
