@@ -9,9 +9,9 @@
 
 #include <string.h>
 
-#include "vpl/mfxstructures.h"
+#include "onevpl/mfxstructures.h"
 
-#include "vpl/mfxjpeg.h"
+#include "onevpl/mfxjpeg.h"
 
 // TMP - define this to build stub library without ffmpeg
 #ifndef DISABLE_LIBAV

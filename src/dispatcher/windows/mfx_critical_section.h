@@ -21,7 +21,7 @@
 #ifndef SRC_DISPATCHER_WINDOWS_MFX_CRITICAL_SECTION_H_
 #define SRC_DISPATCHER_WINDOWS_MFX_CRITICAL_SECTION_H_
 
-#include <vpl/mfxdefs.h>
+#include <onevpl/mfxdefs.h>
 
 namespace MFX {
 

@@ -20,7 +20,7 @@
 
 #pragma once
 #include <exception>
-#include "vpl/mfxstructures.h"
+#include "onevpl/mfxstructures.h"
 
 namespace MFX {
 template <class T>

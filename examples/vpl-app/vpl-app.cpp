@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#include "vpl/mfxvideo++.h"
+#include "onevpl/mfxvideo++.h"
 
 /// Main entry point.
 int main(int argc, char* argv[]) {

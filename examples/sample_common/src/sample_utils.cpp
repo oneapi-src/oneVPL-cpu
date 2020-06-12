@@ -29,9 +29,9 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "sample_utils.h"
 #include "time_statistics.h"
 #include "vm/strings_defs.h"
-#include "vpl/mfxcommon.h"
-#include "vpl/mfxjpeg.h"
-#include "vpl/mfxvp8.h"
+#include "onevpl/mfxcommon.h"
+#include "onevpl/mfxjpeg.h"
+#include "onevpl/mfxvp8.h"
 
 #pragma warning(disable : 4748)
 

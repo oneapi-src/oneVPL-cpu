@@ -12,6 +12,6 @@
 #ifndef API_VPL_VPL_H_
 #define API_VPL_VPL_H_
 
-#incllude "vpl/version.h"
+#incllude "onevpl/version.h"
 
 #endif // API_VPL_VPL_H_

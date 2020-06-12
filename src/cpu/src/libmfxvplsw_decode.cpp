@@ -5,7 +5,7 @@
   ############################################################################*/
 
 #include "./cpu_workstream.h"
-#include "vpl/mfxvideo.h"
+#include "onevpl/mfxvideo.h"
 
 // NOTES - for now, just do init, decode the first frame, get params, close codec
 //

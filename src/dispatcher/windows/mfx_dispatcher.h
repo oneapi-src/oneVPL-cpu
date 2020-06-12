@@ -22,7 +22,7 @@
 #define SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_
 
 #include <stddef.h>
-#include <vpl/mfxvideo.h>
+#include <onevpl/mfxvideo.h>
 #include "windows/mfx_dispatcher_defs.h"
 
 #define INTEL_VENDOR_ID 0x8086

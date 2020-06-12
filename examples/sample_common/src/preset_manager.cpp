@@ -21,7 +21,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef DISABLE_NON_VPL
     #include "brc_routines.h"
 #endif
-#include "vpl/mfxvideo.h"
+#include "onevpl/mfxvideo.h"
 
 CPresetManager CPresetManager::Inst;
 

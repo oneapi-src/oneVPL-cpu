@@ -22,7 +22,7 @@
 #define SRC_DISPATCHER_WINDOWS_MFX_WIN_REG_KEY_H_
 
 #include <windows.h>
-#include "vpl/mfxvideo.h"
+#include "onevpl/mfxvideo.h"
 #include "windows/mfx_dispatcher_log.h"
 #include "windows/mfx_vector.h"
 

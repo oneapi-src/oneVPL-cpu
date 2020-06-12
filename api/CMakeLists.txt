@@ -10,6 +10,6 @@ add_library(vpl-api INTERFACE)
 target_include_directories(vpl-api INTERFACE .)
 
 install(
-  DIRECTORY vpl
+  DIRECTORY onevpl
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   COMPONENT dev)

@@ -12,6 +12,6 @@
 #ifndef API_VPL_VPL_HPP_
 #define API_VPL_VPL_HPP_
 
-#include "vpl/version.hpp"
+#include "onevpl/version.hpp"
 
 #endif // API_VPL_VPL_HPP_

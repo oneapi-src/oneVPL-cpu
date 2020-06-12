@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-#include "vpl/mfxvideo.h"
+#include "onevpl/mfxvideo.h"
 
 #include "linux/mfxloader.h"
 

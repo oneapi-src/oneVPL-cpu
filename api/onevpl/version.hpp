@@ -14,7 +14,7 @@
 
 #include <cstdint>
 
-#include "vpl/version.h"
+#include "onevpl/version.h"
 
 namespace vpl {
 /// The library version

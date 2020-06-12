@@ -21,7 +21,7 @@
 #ifndef SRC_DISPATCHER_WINDOWS_MFX_LIBRARY_ITERATOR_H_
 #define SRC_DISPATCHER_WINDOWS_MFX_LIBRARY_ITERATOR_H_
 
-#include <vpl/mfxvideo.h>
+#include <onevpl/mfxvideo.h>
 
 #include "windows/mfx_win_reg_key.h"
 

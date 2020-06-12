@@ -25,7 +25,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <list>
 #include <memory>
 #include <mutex>
-#include "vpl/mfxvideo.h"
+#include "onevpl/mfxvideo.h"
 
 struct mfxAllocatorParams {
     virtual ~mfxAllocatorParams(){};

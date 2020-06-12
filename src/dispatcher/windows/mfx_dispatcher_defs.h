@@ -23,7 +23,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include "vpl/mfxdefs.h"
+#include "onevpl/mfxdefs.h"
 
 #if defined(MFX_DISPATCHER_LOG)
     #include <string.h>

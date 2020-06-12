@@ -21,7 +21,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #define __SO_DEFS_H__
 
 #include "strings_defs.h"
-#include "vpl/mfxdefs.h"
+#include "onevpl/mfxdefs.h"
 
 /* Declare shared object handle */
 typedef void *msdk_so_handle;
