@@ -5,7 +5,7 @@
   ############################################################################*/
 
 ///
-/// Shared library export macros.
+/// Shared library export macros for oneAPI Video Processing Library (oneVPL)
 ///
 /// @file
 
