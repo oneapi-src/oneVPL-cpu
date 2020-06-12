@@ -1,15 +1,15 @@
 // Copyright (c) 2017-2019 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,38 +23,43 @@
 #include "mfxvstructures.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* MFXVideoCORE */
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 typedef struct {
-    mfxU32      reserved[4];
-    mfxHDL      pthis;
-    mfxStatus  (MFX_CDECL *Alloc)    (mfxHDL pthis, mfxU32 nbytes, mfxU16 type, mfxMemId *mid);
-    mfxStatus  (MFX_CDECL *Lock)     (mfxHDL pthis, mfxMemId mid, mfxU8 **ptr);
-    mfxStatus  (MFX_CDECL *Unlock)   (mfxHDL pthis, mfxMemId mid);
-    mfxStatus  (MFX_CDECL *Free)     (mfxHDL pthis, mfxMemId mid);
+    mfxU32 reserved[4];
+    mfxHDL pthis;
+    mfxStatus(MFX_CDECL *Alloc)(mfxHDL pthis,
+                                mfxU32 nbytes,
+                                mfxU16 type,
+                                mfxMemId *mid);
+    mfxStatus(MFX_CDECL *Lock)(mfxHDL pthis, mfxMemId mid, mfxU8 **ptr);
+    mfxStatus(MFX_CDECL *Unlock)(mfxHDL pthis, mfxMemId mid);
+    mfxStatus(MFX_CDECL *Free)(mfxHDL pthis, mfxMemId mid);
 } mfxBufferAllocator;
 MFX_PACK_END()
 
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 typedef struct {
-    mfxU32      reserved[4];
-    mfxHDL      pthis;
+    mfxU32 reserved[4];
+    mfxHDL pthis;
 
-    mfxStatus  (MFX_CDECL  *Alloc)    (mfxHDL pthis, mfxFrameAllocRequest *request, mfxFrameAllocResponse *response);
-    mfxStatus  (MFX_CDECL  *Lock)     (mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
-    mfxStatus  (MFX_CDECL  *Unlock)   (mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
-    mfxStatus  (MFX_CDECL  *GetHDL)   (mfxHDL pthis, mfxMemId mid, mfxHDL *handle);
-    mfxStatus  (MFX_CDECL  *Free)     (mfxHDL pthis, mfxFrameAllocResponse *response);
+    mfxStatus(MFX_CDECL *Alloc)(mfxHDL pthis,
+                                mfxFrameAllocRequest *request,
+                                mfxFrameAllocResponse *response);
+    mfxStatus(MFX_CDECL *Lock)(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
+    mfxStatus(MFX_CDECL *Unlock)(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
+    mfxStatus(MFX_CDECL *GetHDL)(mfxHDL pthis, mfxMemId mid, mfxHDL *handle);
+    mfxStatus(MFX_CDECL *Free)(mfxHDL pthis, mfxFrameAllocResponse *response);
 } mfxFrameAllocator;
 MFX_PACK_END()
 
 /* VideoCORE */
-mfxStatus MFX_CDECL MFXVideoCORE_SetBufferAllocator(mfxSession session, mfxBufferAllocator *allocator);
-
+mfxStatus MFX_CDECL
+MFXVideoCORE_SetBufferAllocator(mfxSession session,
+                                mfxBufferAllocator *allocator);
 
 /*!
    @brief 
@@ -67,7 +72,9 @@ mfxStatus MFX_CDECL MFXVideoCORE_SetBufferAllocator(mfxSession session, mfxBuffe
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoCORE_SetFrameAllocator(mfxSession session, mfxFrameAllocator *allocator);
+mfxStatus MFX_CDECL
+MFXVideoCORE_SetFrameAllocator(mfxSession session,
+                               mfxFrameAllocator *allocator);
 
 /*!
    @brief 
@@ -85,7 +92,9 @@ mfxStatus MFX_CDECL MFXVideoCORE_SetFrameAllocator(mfxSession session, mfxFrameA
                               For example, the function has been called twice with the same handle type or 
                               internal handle has been created by the SDK before this function call.
 */
-mfxStatus MFX_CDECL MFXVideoCORE_SetHandle(mfxSession session, mfxHandleType type, mfxHDL hdl);
+mfxStatus MFX_CDECL MFXVideoCORE_SetHandle(mfxSession session,
+                                           mfxHandleType type,
+                                           mfxHDL hdl);
 
 /*!
    @brief
@@ -101,7 +110,9 @@ mfxStatus MFX_CDECL MFXVideoCORE_SetHandle(mfxSession session, mfxHandleType typ
    MFX_ERR_NONE The function completed successfully. \n
    MFX_ERR_UNDEFINED_BEHAVIOR Specified handle type not found.
 */
-mfxStatus MFX_CDECL MFXVideoCORE_GetHandle(mfxSession session, mfxHandleType type, mfxHDL *hdl);
+mfxStatus MFX_CDECL MFXVideoCORE_GetHandle(mfxSession session,
+                                           mfxHandleType type,
+                                           mfxHDL *hdl);
 
 /*!
    @brief
@@ -113,7 +124,8 @@ mfxStatus MFX_CDECL MFXVideoCORE_GetHandle(mfxSession session, mfxHandleType typ
    @return
    MFX_ERR_NONE The function completed successfully. \n
 */
-mfxStatus MFX_CDECL MFXVideoCORE_QueryPlatform(mfxSession session, mfxPlatform* platform);
+mfxStatus MFX_CDECL MFXVideoCORE_QueryPlatform(mfxSession session,
+                                               mfxPlatform *platform);
 
 /*!
    @brief
@@ -130,7 +142,9 @@ mfxStatus MFX_CDECL MFXVideoCORE_QueryPlatform(mfxSession session, mfxPlatform* 
    MFX_WRN_IN_EXECUTION   The specified asynchronous function is in execution. \n
    MFX_ERR_ABORTED  The specified asynchronous function aborted due to data dependency on a previous asynchronous function that did not complete.   
 */
-mfxStatus MFX_CDECL MFXVideoCORE_SyncOperation(mfxSession session, mfxSyncPoint syncp, mfxU32 wait);
+mfxStatus MFX_CDECL MFXVideoCORE_SyncOperation(mfxSession session,
+                                               mfxSyncPoint syncp,
+                                               mfxU32 wait);
 
 /* MFXMemory */
 
@@ -151,7 +165,8 @@ mfxStatus MFX_CDECL MFXVideoCORE_SyncOperation(mfxSession session, mfxSyncPoint 
    MFX_ERR_MEMORY_ALLOC In case of any other internal allocation error.
 
 */
-mfxStatus MFX_CDECL MFXMemory_GetSurfaceForVPP(mfxSession session, mfxFrameSurface1** surface);
+mfxStatus MFX_CDECL MFXMemory_GetSurfaceForVPP(mfxSession session,
+                                               mfxFrameSurface1 **surface);
 
 /*!
    @brief 
@@ -171,7 +186,8 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForVPP(mfxSession session, mfxFrameSurfa
    MFX_ERR_MEMORY_ALLOC In case of any other internal allocation error.
 
 */
-mfxStatus MFX_CDECL MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSurface1** surface);
+mfxStatus MFX_CDECL MFXMemory_GetSurfaceForEncode(mfxSession session,
+                                                  mfxFrameSurface1 **surface);
 
 /*!
    @brief 
@@ -193,8 +209,8 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSu
    MFX_ERR_MEMORY_ALLOC In case of any other internal allocation error.
 
 */
-mfxStatus MFX_CDECL MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1** surface);
-
+mfxStatus MFX_CDECL MFXMemory_GetSurfaceForDecode(mfxSession session,
+                                                  mfxFrameSurface1 **surface);
 
 /* VideoENCODE */
 
@@ -231,7 +247,9 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSu
                                           The encoding may be partially accelerated. Only SDK HW implementations may return this status code. 
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out);
+mfxStatus MFX_CDECL MFXVideoENCODE_Query(mfxSession session,
+                                         mfxVideoParam *in,
+                                         mfxVideoParam *out);
 
 /*!
    @brief 
@@ -251,7 +269,9 @@ mfxStatus MFX_CDECL MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, 
                                           The encoding may be partially accelerated. Only SDK HW implementations may return this status code.
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoENCODE_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request);
+mfxStatus MFX_CDECL MFXVideoENCODE_QueryIOSurf(mfxSession session,
+                                               mfxVideoParam *par,
+                                               mfxFrameAllocRequest *request);
 
 /*!
    @brief 
@@ -286,7 +306,8 @@ mfxStatus MFX_CDECL MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par);
                                               component and then reinitialize it.
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par);
+mfxStatus MFX_CDECL MFXVideoENCODE_Reset(mfxSession session,
+                                         mfxVideoParam *par);
 
 /*!
    @brief 
@@ -309,7 +330,8 @@ mfxStatus MFX_CDECL MFXVideoENCODE_Close(mfxSession session);
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoENCODE_GetVideoParam(mfxSession session, mfxVideoParam *par);
+mfxStatus MFX_CDECL MFXVideoENCODE_GetVideoParam(mfxSession session,
+                                                 mfxVideoParam *par);
 
 /*!
    @brief 
@@ -320,7 +342,8 @@ mfxStatus MFX_CDECL MFXVideoENCODE_GetVideoParam(mfxSession session, mfxVideoPar
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoENCODE_GetEncodeStat(mfxSession session, mfxEncodeStat *stat);
+mfxStatus MFX_CDECL MFXVideoENCODE_GetEncodeStat(mfxSession session,
+                                                 mfxEncodeStat *stat);
 
 /*!
    @brief 
@@ -354,7 +377,11 @@ mfxStatus MFX_CDECL MFXVideoENCODE_GetEncodeStat(mfxSession session, mfxEncodeSt
    @return MFX_WRN_DEVICE_BUSY  Hardware device is currently busy. Call this function again in a few milliseconds.
    @return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM  Inconsistent parameters detected not conforming to Appendix A.
 */
-mfxStatus MFX_CDECL MFXVideoENCODE_EncodeFrameAsync(mfxSession session, mfxEncodeCtrl *ctrl, mfxFrameSurface1 *surface, mfxBitstream *bs, mfxSyncPoint *syncp);
+mfxStatus MFX_CDECL MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
+                                                    mfxEncodeCtrl *ctrl,
+                                                    mfxFrameSurface1 *surface,
+                                                    mfxBitstream *bs,
+                                                    mfxSyncPoint *syncp);
 
 /*!
    @brief
@@ -381,7 +408,9 @@ mfxStatus MFX_CDECL MFXVideoENCODE_EncodeFrameAsync(mfxSession session, mfxEncod
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 
-mfxStatus MFX_CDECL MFXVideoDECODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out);
+mfxStatus MFX_CDECL MFXVideoDECODE_Query(mfxSession session,
+                                         mfxVideoParam *in,
+                                         mfxVideoParam *out);
 
 /*!
    @brief 
@@ -405,8 +434,10 @@ mfxStatus MFX_CDECL MFXVideoDECODE_Query(mfxSession session, mfxVideoParam *in, 
    @return MFX_ERR_UNSUPPORTED  CodecId field of the mfxVideoParam structure indicates some unsupported codec.
    @return MFX_ERR_INVALID_HANDLE  session is not initialized
    @return MFX_ERR_NULL_PTR  bs or par pointer is NULL.
-*/   
-mfxStatus MFX_CDECL MFXVideoDECODE_DecodeHeader(mfxSession session, mfxBitstream *bs, mfxVideoParam *par);
+*/
+mfxStatus MFX_CDECL MFXVideoDECODE_DecodeHeader(mfxSession session,
+                                                mfxBitstream *bs,
+                                                mfxVideoParam *par);
 
 /*!
    @brief
@@ -427,7 +458,9 @@ mfxStatus MFX_CDECL MFXVideoDECODE_DecodeHeader(mfxSession session, mfxBitstream
                                           The encoding may be partially accelerated. Only SDK HW implementations may return this status code.
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request);
+mfxStatus MFX_CDECL MFXVideoDECODE_QueryIOSurf(mfxSession session,
+                                               mfxVideoParam *par,
+                                               mfxFrameAllocRequest *request);
 
 /*!
    @brief
@@ -466,7 +499,8 @@ mfxStatus MFX_CDECL MFXVideoDECODE_Init(mfxSession session, mfxVideoParam *par);
                                               component and then reinitialize it.
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par);
+mfxStatus MFX_CDECL MFXVideoDECODE_Reset(mfxSession session,
+                                         mfxVideoParam *par);
 
 /*!
    @brief
@@ -489,7 +523,8 @@ mfxStatus MFX_CDECL MFXVideoDECODE_Close(mfxSession session);
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_GetVideoParam(mfxSession session, mfxVideoParam *par);
+mfxStatus MFX_CDECL MFXVideoDECODE_GetVideoParam(mfxSession session,
+                                                 mfxVideoParam *par);
 
 /*!
    @brief
@@ -500,7 +535,8 @@ mfxStatus MFX_CDECL MFXVideoDECODE_GetVideoParam(mfxSession session, mfxVideoPar
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_GetDecodeStat(mfxSession session, mfxDecodeStat *stat);
+mfxStatus MFX_CDECL MFXVideoDECODE_GetDecodeStat(mfxSession session,
+                                                 mfxDecodeStat *stat);
 
 /*!
    @brief 
@@ -513,7 +549,8 @@ mfxStatus MFX_CDECL MFXVideoDECODE_GetDecodeStat(mfxSession session, mfxDecodeSt
    @return MFX_ERR_NONE The function completed successfully and the output surface is ready for decoding
    @return MFX_WRN_VALUE_NOT_CHANGED   The skip mode is not affected as the maximum or minimum skip range is reached.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_SetSkipMode(mfxSession session, mfxSkipMode mode);
+mfxStatus MFX_CDECL MFXVideoDECODE_SetSkipMode(mfxSession session,
+                                               mfxSkipMode mode);
 
 /*!
    @brief 
@@ -530,7 +567,9 @@ mfxStatus MFX_CDECL MFXVideoDECODE_SetSkipMode(mfxSession session, mfxSkipMode m
    @return MFX_ERR_NONE The function completed successfully and the output buffer is ready for decoding
    @return MFX_ERR_NOT_ENOUGH_BUFFER  The payload buffer size is insufficient.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_GetPayload(mfxSession session, mfxU64 *ts, mfxPayload *payload);
+mfxStatus MFX_CDECL MFXVideoDECODE_GetPayload(mfxSession session,
+                                              mfxU64 *ts,
+                                              mfxPayload *payload);
 
 /*!
    @brief 
@@ -577,8 +616,13 @@ mfxStatus MFX_CDECL MFXVideoDECODE_GetPayload(mfxSession session, mfxU64 *ts, mf
    @return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM  The decoder detected incompatible video parameters in the bitstream and failed to follow them.
    @return MFX_ERR_REALLOC_SURFACE  Bigger surface_work required. May be returned only if mfxInfoMFX::EnableReallocRequest was set to ON during initialization.
 */
-mfxStatus MFX_CDECL MFXVideoDECODE_DecodeFrameAsync(mfxSession session, mfxBitstream *bs, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out, mfxSyncPoint *syncp);
- 
+mfxStatus MFX_CDECL
+MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
+                                mfxBitstream *bs,
+                                mfxFrameSurface1 *surface_work,
+                                mfxFrameSurface1 **surface_out,
+                                mfxSyncPoint *syncp);
+
 /* VideoVPP */
 
 /*!
@@ -603,7 +647,9 @@ mfxStatus MFX_CDECL MFXVideoDECODE_DecodeFrameAsync(mfxSession session, mfxBitst
                                           The videoprocessing may be partially accelerated. Only SDK HW implementations may return this status code.
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoVPP_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out);
+mfxStatus MFX_CDECL MFXVideoVPP_Query(mfxSession session,
+                                      mfxVideoParam *in,
+                                      mfxVideoParam *out);
 
 /*!
    @brief
@@ -624,7 +670,9 @@ mfxStatus MFX_CDECL MFXVideoVPP_Query(mfxSession session, mfxVideoParam *in, mfx
                                           The videoprocessing may be partially accelerated. Only SDK HW implementations may return this status code.
    @return  MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
-mfxStatus MFX_CDECL MFXVideoVPP_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest request[2]);
+mfxStatus MFX_CDECL MFXVideoVPP_QueryIOSurf(mfxSession session,
+                                            mfxVideoParam *par,
+                                            mfxFrameAllocRequest request[2]);
 
 /*!
    @brief
@@ -681,7 +729,8 @@ mfxStatus MFX_CDECL MFXVideoVPP_Close(mfxSession session);
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoVPP_GetVideoParam(mfxSession session, mfxVideoParam *par);
+mfxStatus MFX_CDECL MFXVideoVPP_GetVideoParam(mfxSession session,
+                                              mfxVideoParam *par);
 
 /*!
    @brief
@@ -692,7 +741,8 @@ mfxStatus MFX_CDECL MFXVideoVPP_GetVideoParam(mfxSession session, mfxVideoParam 
 
    @return MFX_ERR_NONE The function completed successfully.
 */
-mfxStatus MFX_CDECL MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat);
+mfxStatus MFX_CDECL MFXVideoVPP_GetVPPStat(mfxSession session,
+                                           mfxVPPStat *stat);
 
 /*!
    @brief
@@ -714,8 +764,17 @@ mfxStatus MFX_CDECL MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat)
    @return MFX_ERR_DEVICE_LOST  Hardware device was lost; See the Working with Microsoft* DirectX* Applications section for further information.
    @return MFX_WRN_DEVICE_BUSY  Hardware device is currently busy. Call this function again in a few milliseconds.
 */
-mfxStatus MFX_CDECL MFXVideoVPP_RunFrameVPPAsync(mfxSession session, mfxFrameSurface1 *in, mfxFrameSurface1 *out, mfxExtVppAuxData *aux, mfxSyncPoint *syncp);
-mfxStatus MFX_CDECL MFXVideoVPP_RunFrameVPPAsyncEx(mfxSession session, mfxFrameSurface1 *in, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out, mfxSyncPoint *syncp);
+mfxStatus MFX_CDECL MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
+                                                 mfxFrameSurface1 *in,
+                                                 mfxFrameSurface1 *out,
+                                                 mfxExtVppAuxData *aux,
+                                                 mfxSyncPoint *syncp);
+mfxStatus MFX_CDECL
+MFXVideoVPP_RunFrameVPPAsyncEx(mfxSession session,
+                               mfxFrameSurface1 *in,
+                               mfxFrameSurface1 *surface_work,
+                               mfxFrameSurface1 **surface_out,
+                               mfxSyncPoint *syncp);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -20,21 +20,23 @@
 
 #include "mfxdefs.h"
 #if (MFX_VERSION >= 1031)
-#ifndef __MFXADAPTER_H__
-#define __MFXADAPTER_H__
+    #ifndef __MFXADAPTER_H__
+        #define __MFXADAPTER_H__
 
-#include "mfxstructures.h"
+        #include "mfxstructures.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapters);
-mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAdaptersInfo* adapters);
+        #ifdef __cplusplus
+extern "C" {
+        #endif
+mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info,
+                           mfxAdaptersInfo* adapters);
+mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
+                                 mfxU32 codec_id,
+                                 mfxAdaptersInfo* adapters);
 mfxStatus MFXQueryAdaptersNumber(mfxU32* num_adapters);
-#ifdef __cplusplus
+        #ifdef __cplusplus
 } // extern "C"
-#endif
+        #endif
 
-#endif // __MFXADAPTER_H__
+    #endif // __MFXADAPTER_H__
 #endif

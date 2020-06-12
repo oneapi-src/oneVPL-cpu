@@ -1,15 +1,15 @@
 // Copyright (c) 2017-2019 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,52 +23,61 @@
 #include "mfxdefs.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif /* __cplusplus */
 
 /* CodecId */
 enum {
-    MFX_CODEC_JPEG    = MFX_MAKEFOURCC('J','P','E','G') /*!< JPEG codec */
+    MFX_CODEC_JPEG = MFX_MAKEFOURCC('J', 'P', 'E', 'G') /*!< JPEG codec */
 };
 
 /* CodecProfile, CodecLevel */
-enum
-{
-    MFX_PROFILE_JPEG_BASELINE      = 1 /*!< Baseline JPEG Profile. */
+enum {
+    MFX_PROFILE_JPEG_BASELINE = 1 /*!< Baseline JPEG Profile. */
 };
 
 /*! The Rotation enumerator itemizes the JPEG rotation options. */
-enum
-{
-    MFX_ROTATION_0      = 0, /*!< No rotation. */
-    MFX_ROTATION_90     = 1, /*!< 90 degree rotation */
-    MFX_ROTATION_180    = 2, /*!< 180 degree rotation */
-    MFX_ROTATION_270    = 3  /*!< 270 degree rotation */
+enum {
+    MFX_ROTATION_0   = 0, /*!< No rotation. */
+    MFX_ROTATION_90  = 1, /*!< 90 degree rotation */
+    MFX_ROTATION_180 = 2, /*!< 180 degree rotation */
+    MFX_ROTATION_270 = 3 /*!< 270 degree rotation */
 };
 
 enum {
-    MFX_EXTBUFF_JPEG_QT      = MFX_MAKEFOURCC('J','P','G','Q'), /*!< This extended buffer defines quantization tables for JPEG encoder. */
-    MFX_EXTBUFF_JPEG_HUFFMAN = MFX_MAKEFOURCC('J','P','G','H')  /*!< This extended buffer defines Huffman tables for JPEG encoder. */
+    MFX_EXTBUFF_JPEG_QT = MFX_MAKEFOURCC(
+        'J',
+        'P',
+        'G',
+        'Q'), /*!< This extended buffer defines quantization tables for JPEG encoder. */
+    MFX_EXTBUFF_JPEG_HUFFMAN = MFX_MAKEFOURCC(
+        'J',
+        'P',
+        'G',
+        'H') /*!< This extended buffer defines Huffman tables for JPEG encoder. */
 };
 
 /*! The JPEGColorFormat enumerator itemizes the JPEG color format options. */
 enum {
-    MFX_JPEG_COLORFORMAT_UNKNOWN = 0, /*! Unknown color format. The SDK decoder tries to determine color format from available in bitstream information.
+    MFX_JPEG_COLORFORMAT_UNKNOWN =
+        0, /*! Unknown color format. The SDK decoder tries to determine color format from available in bitstream information.
                                           If such information is not present, then MFX_JPEG_COLORFORMAT_YCbCr color format is assumed. */
-    MFX_JPEG_COLORFORMAT_YCbCr   = 1, /*! Bitstream contains Y, Cb and Cr components. */
-    MFX_JPEG_COLORFORMAT_RGB     = 2  /*! Bitstream contains R, G and B components. */
+    MFX_JPEG_COLORFORMAT_YCbCr =
+        1, /*! Bitstream contains Y, Cb and Cr components. */
+    MFX_JPEG_COLORFORMAT_RGB =
+        2 /*! Bitstream contains R, G and B components. */
 };
 
 /*! The JPEGScanType enumerator itemizes the JPEG scan types. */
 enum {
     MFX_SCANTYPE_UNKNOWN        = 0, /*!< Unknown scan type. */
     MFX_SCANTYPE_INTERLEAVED    = 1, /*!< Interleaved scan. */
-    MFX_SCANTYPE_NONINTERLEAVED = 2  /*!< Non-interleaved scan. */
+    MFX_SCANTYPE_NONINTERLEAVED = 2 /*!< Non-interleaved scan. */
 };
 
 enum {
-    MFX_CHROMAFORMAT_JPEG_SAMPLING = 6 /*!< Color sampling specified via mfxInfoMFX::SamplingFactorH and SamplingFactorV. */
+    MFX_CHROMAFORMAT_JPEG_SAMPLING =
+        6 /*!< Color sampling specified via mfxInfoMFX::SamplingFactorH and SamplingFactorV. */
 };
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -94,12 +103,13 @@ MFX_PACK_BEGIN_USUAL_STRUCT()
    @endinternal
 */
 typedef struct {
-    mfxExtBuffer    Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_JPEG_QT. */
+    mfxExtBuffer
+        Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_JPEG_QT. */
 
-    mfxU16  reserved[7];
-    mfxU16  NumTable;       /*!< Number of quantization tables defined in Qmarray. */
+    mfxU16 reserved[7];
+    mfxU16 NumTable; /*!< Number of quantization tables defined in Qmarray. */
 
-    mfxU16    Qm[4][64];    /*!< Quantization table values. */
+    mfxU16 Qm[4][64]; /*!< Quantization table values. */
 } mfxExtJPEGQuantTables;
 MFX_PACK_END()
 
@@ -123,21 +133,24 @@ MFX_PACK_BEGIN_USUAL_STRUCT()
    @endinternal
 */
 typedef struct {
-    mfxExtBuffer    Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_JPEG_HUFFMAN. */
+    mfxExtBuffer
+        Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_JPEG_HUFFMAN. */
 
-    mfxU16  reserved[2];
-    mfxU16  NumDCTable;      /*!< Number of DC quantization table in DCTables array. */
-    mfxU16  NumACTable;      /*!< Number of AC quantization table in ACTables array. */
-
-    struct {
-        mfxU8   Bits[16];    /*!< Number of codes for each code length. */
-        mfxU8   Values[12];  /*!< List of the 8-bit symbol values. */
-    } DCTables[4];           /*!< Array of DC tables. */
+    mfxU16 reserved[2];
+    mfxU16
+        NumDCTable; /*!< Number of DC quantization table in DCTables array. */
+    mfxU16
+        NumACTable; /*!< Number of AC quantization table in ACTables array. */
 
     struct {
-        mfxU8   Bits[16];    /*!< Number of codes for each code length. */
-        mfxU8   Values[162]; /*!< Array of AC tables. */
-    } ACTables[4];           /*!< List of the 8-bit symbol values. */
+        mfxU8 Bits[16]; /*!< Number of codes for each code length. */
+        mfxU8 Values[12]; /*!< List of the 8-bit symbol values. */
+    } DCTables[4]; /*!< Array of DC tables. */
+
+    struct {
+        mfxU8 Bits[16]; /*!< Number of codes for each code length. */
+        mfxU8 Values[162]; /*!< Array of AC tables. */
+    } ACTables[4]; /*!< List of the 8-bit symbol values. */
 } mfxExtJPEGHuffmanTables;
 MFX_PACK_END()
 
