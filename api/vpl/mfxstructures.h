@@ -394,6 +394,23 @@ typedef enum {
     MFX_RESOURCE_DMA_RESOURCE                    = 7  /*!< DMA resource. */
 } mfxResourceType;
 
+/*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
+typedef enum {
+    MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
+    MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
+    MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
+#if (MFX_VERSION >= 1030)
+    MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
+    MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
+#endif
+#if (MFX_VERSION >= MFX_VERSION_NEXT)
+    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
+#endif
+} mfxHandleType;
+
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /* The mfxFrameSurfaceInterface strucutre specifies frame surface interface. */
 typedef struct {
@@ -414,7 +431,7 @@ typedef struct {
      MFX_ERR_UNKNOWN           in case of any internal error. 
 
     */
-    mfxStatus           (MFX_CDECL *AddRef)(mfxFrameSurface1* surface);
+    mfxStatus           (MFX_CDECL *AddRef)(struct _mfxFrameSurface1* surface);
     /*! @brief
     This function decrements the internal reference counter of the surface, users have to care about calling of (*Release) after (*AddRef) or 
     when it's required according to the allocation logic. For instance,  users have to call (*Release) to relase a surface obtained with GetSurfaceForXXX function. 
@@ -428,7 +445,7 @@ typedef struct {
      MFX_ERR_UNDEFINED_BEHAVIOR if Reference Counter of surface is zero before call. \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *Release)(mfxFrameSurface1* surface);
+    mfxStatus           (MFX_CDECL *Release)(struct _mfxFrameSurface1* surface);
     
     /*! @brief
     This function returns current reference counter of mfxFrameSurface1 structure.
@@ -442,7 +459,7 @@ typedef struct {
      MFX_ERR_INVALID_HANDLE     if mfxFrameSurfaceInterface->Context is invalid (for example NULL). \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *GetRefCounter)(mfxFrameSurface1* surface, mfxU32* counter);
+    mfxStatus           (MFX_CDECL *GetRefCounter)(struct _mfxFrameSurface1* surface, mfxU32* counter);
     
     /*! @brief
     This function set pointers of surface->Info.Data to actual pixel data, providing read-write access. 
@@ -471,7 +488,7 @@ typedef struct {
      MFX_ERR_LOCK_MEMORY        if user wants to map the surface for write and surface->Data.Locked doesn't equal to 0. \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *Map)(mfxFrameSurface1* surface, mfxU32 flags);
+    mfxStatus           (MFX_CDECL *Map)(struct _mfxFrameSurface1* surface, mfxU32 flags);
     
     /*! @brief
     This function invalidates pointers of surface->Info.Data and sets them to NULL. 
@@ -488,7 +505,7 @@ typedef struct {
      MFX_ERR_UNSUPPORTED        if surface is already unmapped. \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *Unmap)(mfxFrameSurface1* surface);
+    mfxStatus           (MFX_CDECL *Unmap)(struct _mfxFrameSurface1* surface);
     
     /*! @brief
     This function returns a native resource's handle and type. The handle is returned *as-is* that means 
@@ -509,7 +526,7 @@ typedef struct {
      MFX_ERR_UNSUPPORTED        if surface is in system memory. \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *GetNativeHandle)(mfxFrameSurface1* surface, mfxHDL* resource, mfxResourceType* resource_type);
+    mfxStatus           (MFX_CDECL *GetNativeHandle)(struct _mfxFrameSurface1* surface, mfxHDL* resource, mfxResourceType* resource_type);
     
     /*! @brief
     This function returns a device abstraction which was used to create that resource. 
@@ -530,7 +547,7 @@ typedef struct {
      MFX_ERR_UNSUPPORTED        if surface is in system memory. \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *GetDeviceHandle)(mfxFrameSurface1* surface, mfxHDL* device_handle, mfxHandleType* device_type);
+    mfxStatus           (MFX_CDECL *GetDeviceHandle)(struct _mfxFrameSurface1* surface, mfxHDL* device_handle, mfxHandleType* device_type);
     
     /*! @brief
     This function guarantees readiness both of the data (pixels) and any frame's meta information (e.g. corruption flags) after function complete.
@@ -552,7 +569,7 @@ typedef struct {
      MFX_ERR_ABORTED            if the specified asynchronous function aborted due to data dependency on a previous asynchronous function that did not complete. \n
      MFX_ERR_UNKNOWN            in case of any internal error. 
     */
-    mfxStatus           (MFX_CDECL *Synchronize)(mfxFrameSurface1* surface, mfxU32 wait);
+    mfxStatus           (MFX_CDECL *Synchronize)(struct _mfxFrameSurface1* surface, mfxU32 wait);
     mfxHDL              reserved2[4];
 } mfxFrameSurfaceInterface;
 MFX_PACK_END()
@@ -563,7 +580,7 @@ MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
     The frame surface is in the frame or complementary field pairs of pixels up to four color-channels, in two parts:
     mfxFrameInfo and mfxFrameData.
 */
-typedef struct {
+typedef struct _mfxFrameSurface1 {
     union
     {
         mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
@@ -2356,22 +2373,6 @@ enum {
 };
 #endif
 
-/*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
-typedef enum {
-    MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
-    MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
-    MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
-#if (MFX_VERSION >= 1030)
-    MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
-    MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
-#endif
-#if (MFX_VERSION >= MFX_VERSION_NEXT)
-    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
-#endif
-} mfxHandleType;
 
 /*! The mfxSkipMode enumerator describes the decoder skip-mode options. */
 typedef enum {

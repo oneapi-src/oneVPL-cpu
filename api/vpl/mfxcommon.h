@@ -62,10 +62,11 @@ enum  {
     MFX_IMPL_HARDWARE2    = 0x0005,  /*!< Hardware accelerated implementation (2nd device) */
     MFX_IMPL_HARDWARE3    = 0x0006,  /*!< Hardware accelerated implementation (3rd device) */
     MFX_IMPL_HARDWARE4    = 0x0007,  /*!< Hardware accelerated implementation (4th device) */
-    MFX_IMPL_RUNTIME      = 0x0008,  /*!< This value cannot be used for session initialization. It may be returned by MFXQueryIMPL
-                                          function to show that session has been initialized in run time mode. */
+    MFX_IMPL_SOFTWARE_VPL = 0x0008,  /*!< VPL Software Implementation */
+    MFX_IMPL_RUNTIME      = 0x0009,
+
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
-    MFX_IMPL_SINGLE_THREAD= 0x0009,
+    MFX_IMPL_SINGLE_THREAD = 0x0010,
 #endif
     MFX_IMPL_VIA_ANY      = 0x0100,  /*!< Hardware acceleration can go through any supported OS infrastructure. This is default value,
                                           it is used by the SDK if none of MFX_IMPL_VIA_xxx flag is specified by application. */
