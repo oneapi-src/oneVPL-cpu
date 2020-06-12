@@ -17,9 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXCOMMON_H__
-#define __MFXCOMMON_H__
-#include "mfxdefs.h"
+#ifndef API_VPL_MFXCOMMON_H_
+#define API_VPL_MFXCOMMON_H_
+#include "./mfxdefs.h"
 
 #if !defined(__GNUC__)
     #pragma warning(disable : 4201)
@@ -29,8 +29,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MFX_MAKEFOURCC(A, B, C, D) \
-    ((((int)A)) + (((int)B) << 8) + (((int)C) << 16) + (((int)D) << 24))
+#define MFX_MAKEFOURCC(A, B, C, D)                            \
+    (((static_cast<int>(A))) + ((static_cast<int>(B)) << 8) + \
+     ((static_cast<int>(C)) << 16) + ((static_cast<int>(D)) << 24))
 
 /* Extended Configuration Header Structure */
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -284,4 +285,4 @@ MFX_PACK_END()
 }
 #endif /* __cplusplus */
 
-#endif
+#endif // API_VPL_MFXCOMMON_H_

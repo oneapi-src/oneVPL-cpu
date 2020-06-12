@@ -17,9 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXSTRUCTURES_H__
-#define __MFXSTRUCTURES_H__
-#include "mfxcommon.h"
+#ifndef API_VPL_MFXSTRUCTURES_H_
+#define API_VPL_MFXSTRUCTURES_H_
+#include "./mfxcommon.h"
 
 #if !defined(__GNUC__)
     #pragma warning(disable : 4201)
@@ -2829,8 +2829,8 @@ typedef struct {
     } PreferredRefList[32], RejectedRefList[16], LongTermRefList[16];
 
     mfxU16
-        ApplyLongTermIdx; /*!< If it is equal to zero, the SDK encoder assigns long-term index according to internal algorithm.
-                                      If it is equal to one, the SDK encoder uses LongTermIdx value as long-term index. */
+        ApplyLongTermIdx; /*!< If it is equal to zero, the SDK encoder assigns longterm index according to internal algorithm.
+                                      If it is equal to one, the SDK encoder uses LongTermIdx value as longterm index. */
     mfxU16 reserved[15];
 } mfxExtAVCRefListCtrl;
 MFX_PACK_END()
@@ -4484,7 +4484,7 @@ typedef struct {
         Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_MULTI_FRAME_CONTROL. */
 
     mfxU32
-        Timeout; /*!< Time in microseconds specifying how long this encoder will wait for internal buffer of frames to collect
+        Timeout; /*!< Time in microseconds specifying how Long this encoder will wait for internal buffer of frames to collect
                               MaxNumFrames specified during initialization through mfxExtMultiFrameParam), if elapse it'll flush internal buffer.
                               Ignored with 'MFX_MF_MANUAL'. By default calculated based on target frame rate. */
     mfxU16
@@ -4709,4 +4709,4 @@ MFX_PACK_END()
 } // extern "C"
 #endif
 
-#endif
+#endif // API_VPL_MFXSTRUCTURES_H_

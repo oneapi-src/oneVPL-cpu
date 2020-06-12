@@ -17,9 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef __MFXSESSION_H__
-#define __MFXSESSION_H__
-#include "mfxcommon.h"
+#ifndef API_VPL_MFXSESSION_H_
+#define API_VPL_MFXSESSION_H_
+#include "./mfxcommon.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -202,4 +202,4 @@ mfxStatus MFX_CDECL MFXDoWork(mfxSession session);
 }
 #endif /* __cplusplus */
 
-#endif
+#endif // API_VPL_MFXSESSION_H_
