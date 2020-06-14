@@ -58,6 +58,12 @@ git config advice.detachedHead false
 :: ffmpeg build and svt app build will fail without this fix in windows and with static lib.
 git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 
+:: checkout dav1d
+cd %build_dir%
+git clone https://code.videolan.org/videolan/dav1d.git && cd dav1d
+git config advice.detachedHead false
+git checkout 0.7.0
+
 :: set path for build
 set PATH=%MINGWPATH%
 
@@ -76,6 +82,12 @@ cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off
 if ERRORLEVEL 1 exit /b 1
 cmake --build . --target install
+
+:: dav1d build and install
+cd %build_dir%\dav1d
+meson build --prefix %install_dir%\ --libdir %install_dir%\lib --buildtype release --default-library=static -Denable_avx512=false
+ninja -C build && cd build
+ninja install
 
 cd %build_dir%
 :: set path for git
@@ -167,7 +179,9 @@ bash -c './configure ^
 --enable-libsvthevc ^
 --enable-encoder=libsvt_hevc ^
 --enable-libsvtav1 ^
---enable-encoder=libsvt_av1'
+--enable-encoder=libsvt_av1 ^
+--enable-libdav1d ^
+--enable-decoder=libdav1d'
 
 make -j %NUMBER_OF_PROCESSORS% && make install
 

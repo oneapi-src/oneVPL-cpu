@@ -18,6 +18,7 @@ endif()
 
 set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
 set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
+set(DAV1DDEC_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
 set(AVCODEC_LIB ${VPL_DEP_DIR}/lib/libavcodec.a)
 set(AVUTIL_LIB ${VPL_DEP_DIR}/lib/libavutil.a)
 
@@ -83,7 +84,20 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-target_link_libraries(
-  ${TARGET}
-  INTERFACE ${VPL_DEP_DIR}/lib/libavcodec.a ${VPL_DEP_DIR}/lib/libavutil.a
-            ${SVTHEVCENC_LIB} ${SVTAV1ENC_LIB} Threads::Threads)
+if(MSVC)
+  target_link_libraries(
+    ${TARGET}
+    INTERFACE ${VPL_DEP_DIR}/lib/libavcodec.a ${VPL_DEP_DIR}/lib/libavutil.a
+              ${SVTHEVCENC_LIB} ${SVTAV1ENC_LIB} ${DAV1DDEC_LIB}
+              Threads::Threads)
+else()
+  target_link_libraries(
+    ${TARGET}
+    INTERFACE ${VPL_DEP_DIR}/lib/libavcodec.a
+              ${VPL_DEP_DIR}/lib/libavutil.a
+              ${SVTHEVCENC_LIB}
+              ${SVTAV1ENC_LIB}
+              ${DAV1DDEC_LIB}
+              Threads::Threads
+              dl)
+endif()

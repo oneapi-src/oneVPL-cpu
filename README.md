@@ -19,7 +19,7 @@ It comes with bindings for C, C++, and Python.
 - [Python3](https://www.python.org/)
 - [git](https://git-scm.com/)
 - [Doxygen](http://www.doxygen.nl/) (to build documentation)
-
+- [Ninja-build](https://ninja-build.org/), [Meson](https://mesonbuild.com/) (to build AV1 decoder - libav1d)
 
 ### Canonical build
 
