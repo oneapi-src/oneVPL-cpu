@@ -5,8 +5,10 @@
 # ##############################################################################
 cmake_minimum_required(VERSION 3.10.2)
 
-add_subdirectory(hello_decode)
-add_subdirectory(sample_common)
-add_subdirectory(sample_decode)
-add_subdirectory(sample_encode)
-add_subdirectory(vpl-app)
+set(TARGET hello_decode)
+
+set(SOURCES main.cpp)
+
+add_executable(${TARGET} ${SOURCES})
+
+target_link_libraries(${TARGET} mfx)
