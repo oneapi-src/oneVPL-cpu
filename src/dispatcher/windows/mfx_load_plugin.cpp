@@ -208,12 +208,16 @@ bool MFX::MFXPluginFactory::RunVerification( const mfxPlugin & plg, const Plugin
     {
         case MFX_PLUGINTYPE_VIDEO_DECODE:
             return VerifyDecoder(*plg.Video);
+#ifndef DISABLE_NON_VPL_DISPATCHER
         case MFX_PLUGINTYPE_AUDIO_DECODE:
             return VerifyAudioDecoder(*plg.Audio);
+#endif
         case MFX_PLUGINTYPE_VIDEO_ENCODE:
             return VerifyEncoder(*plg.Video);
+#ifndef DISABLE_NON_VPL_DISPATCHER
         case MFX_PLUGINTYPE_AUDIO_ENCODE:
             return VerifyAudioEncoder(*plg.Audio);
+#endif
         case MFX_PLUGINTYPE_VIDEO_VPP:
             return VerifyVpp(*plg.Video);
         case MFX_PLUGINTYPE_VIDEO_ENC:
@@ -249,6 +253,7 @@ bool MFX::MFXPluginFactory::VerifyEncoder( const mfxVideoCodecPlugin &encoder )
     return true;
 }
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
 bool MFX::MFXPluginFactory::VerifyAudioEncoder( const mfxAudioCodecPlugin &encoder )
 {
     if (encoder.EncodeFrameSubmit == 0)
@@ -259,6 +264,7 @@ bool MFX::MFXPluginFactory::VerifyAudioEncoder( const mfxAudioCodecPlugin &encod
 
     return true;
 }
+#endif
 
 bool MFX::MFXPluginFactory::VerifyEnc( const mfxVideoCodecPlugin &videoEnc )
 {
@@ -292,6 +298,7 @@ bool MFX::MFXPluginFactory::VerifyDecoder( const mfxVideoCodecPlugin &decoder )
     return true;
 }
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
 bool MFX::MFXPluginFactory::VerifyAudioDecoder( const mfxAudioCodecPlugin &decoder )
 {
     if (decoder.DecodeHeader == 0)
@@ -312,6 +319,7 @@ bool MFX::MFXPluginFactory::VerifyAudioDecoder( const mfxAudioCodecPlugin &decod
 
     return true;
 }
+#endif
 
 bool MFX::MFXPluginFactory::VerifyCodecCommon( const mfxVideoCodecPlugin & videoCodec )
 {
@@ -373,6 +381,7 @@ mfxStatus MFX::MFXPluginFactory::Create(const PluginDescriptionRecord & rec)
     }
 
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
     if (rec.Type == MFX_PLUGINTYPE_AUDIO_DECODE ||
         rec.Type == MFX_PLUGINTYPE_AUDIO_ENCODE)
     {
@@ -384,6 +393,7 @@ mfxStatus MFX::MFXPluginFactory::Create(const PluginDescriptionRecord & rec)
         }
     }
     else
+#else
     {
         mfxStatus sts = MFXVideoUSER_Register(mSession, plgParams.Type, &plg);
         if (MFX_ERR_NONE != sts)
@@ -392,7 +402,7 @@ mfxStatus MFX::MFXPluginFactory::Create(const PluginDescriptionRecord & rec)
             return sts;
         }
     }
-
+#endif
     mPlugins.push_back(FactoryRecord(plgParams, plgModule, plg));
 
     return MFX_ERR_NONE;
@@ -438,6 +448,7 @@ void MFX::MFXPluginFactory::Close()
 void MFX::MFXPluginFactory::DestroyPlugin( FactoryRecord & record)
 {
     mfxStatus sts;
+#ifndef DISABLE_NON_VPL_DISPATCHER
     if (record.plgParams.Type == MFX_PLUGINTYPE_AUDIO_DECODE ||
         record.plgParams.Type == MFX_PLUGINTYPE_AUDIO_ENCODE)
     {
@@ -445,10 +456,12 @@ void MFX::MFXPluginFactory::DestroyPlugin( FactoryRecord & record)
         TRACE_PLUGIN_INFO(" MFXAudioUSER_Unregister for Type=%d, returned %d\n", record.plgParams.Type, sts);
     }
     else
+#else
     {
         sts = MFXVideoUSER_Unregister(mSession, record.plgParams.Type);
         TRACE_PLUGIN_INFO(" MFXVideoUSER_Unregister for Type=%d, returned %d\n", record.plgParams.Type, sts);
     }
+#endif
 }
 
 #endif //!defined(MEDIASDK_UWP_DISPATCHER)

@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #pragma once
-#include "mfxdefs.h"
+#include "onevpl/mfxdefs.h"
 #include <cstring>
 #include <cstdio>
 

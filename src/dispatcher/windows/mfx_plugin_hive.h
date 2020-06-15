@@ -21,7 +21,7 @@
 #pragma once
 
 #include "mfx_dispatcher_defs.h"
-#include "mfxplugin.h"
+#include "onevpl/mfxplugin.h"
 #include "mfx_win_reg_key.h"
 #include "mfx_vector.h"
 #include <string.h>

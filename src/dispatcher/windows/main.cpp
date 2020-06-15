@@ -494,9 +494,10 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session)
         pHandle->callPlugInsTable[eMFXVideoUSER_Load] = (mfxFunctionPointer)MFXVideoUSER_Load;
         pHandle->callPlugInsTable[eMFXVideoUSER_LoadByPath] = (mfxFunctionPointer)MFXVideoUSER_LoadByPath;
         pHandle->callPlugInsTable[eMFXVideoUSER_UnLoad] = (mfxFunctionPointer)MFXVideoUSER_UnLoad;
+#ifndef DISABLE_NON_VPL_DISPATCHER
         pHandle->callPlugInsTable[eMFXAudioUSER_Load] = (mfxFunctionPointer)MFXAudioUSER_Load;
         pHandle->callPlugInsTable[eMFXAudioUSER_UnLoad] = (mfxFunctionPointer)MFXAudioUSER_UnLoad;
-
+#endif
     }
     catch(...)
     {

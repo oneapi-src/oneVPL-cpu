@@ -36,6 +36,7 @@
 // CORE interface functions
 FUNCTION(mfxStatus, MFXAudioCORE_SyncOperation, (mfxSession session, mfxSyncPoint syncp, mfxU32 wait), (session, syncp, wait))
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
 // ENCODE interface functions
 FUNCTION(mfxStatus, MFXAudioENCODE_Query, (mfxSession session, mfxAudioParam *in, mfxAudioParam *out), (session, in, out))
 FUNCTION(mfxStatus, MFXAudioENCODE_QueryIOSize, (mfxSession session, mfxAudioParam *par, mfxAudioAllocRequest *request), (session, par, request))
@@ -54,6 +55,7 @@ FUNCTION(mfxStatus, MFXAudioDECODE_Close, (mfxSession session), (session))
 FUNCTION(mfxStatus, MFXAudioDECODE_QueryIOSize, (mfxSession session, mfxAudioParam *par, mfxAudioAllocRequest *request), (session, par, request))
 FUNCTION(mfxStatus, MFXAudioDECODE_GetAudioParam, (mfxSession session, mfxAudioParam *par), (session, par))
 FUNCTION(mfxStatus, MFXAudioDECODE_DecodeFrameAsync, (mfxSession session, mfxBitstream *bs, mfxAudioFrame *frame_out, mfxSyncPoint *syncp), (session, bs, frame_out, syncp))
+#endif
 
 #undef API_VERSION
 

@@ -22,7 +22,7 @@
 #define __MFX_LIBRARY_ITERATOR_H
 
 
-#include <mfxvideo.h>
+#include <onevpl/mfxvideo.h>
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)
 #include "mfx_win_reg_key.h"

@@ -28,9 +28,9 @@
 #include <windows.h>
 
 #include "mfx_dxva2_device.h"
-#include "mfxvideo++.h"
+#include "onevpl/mfxvideo++.h"
 #include "mfx_vector.h"
-#include "mfxadapter.h"
+#include "onevpl/mfxadapter.h"
 #include <algorithm>
 
 #pragma warning(disable:4355)

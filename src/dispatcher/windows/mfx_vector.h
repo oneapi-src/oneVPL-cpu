@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #pragma once
-#include "mfxstructures.h"
+#include "onevpl/mfxstructures.h"
 #include <exception>
 
 namespace MFX

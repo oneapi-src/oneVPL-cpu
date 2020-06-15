@@ -17,6 +17,8 @@ if(WIN32)
       windows/mfx_function_table.cpp
       windows/mfx_library_iterator.cpp
       windows/mfx_load_dll.cpp
+      windows/mfx_load_plugin.cpp
+      windows/mfx_plugin_hive.cpp
       windows/mfx_win_reg_key.cpp)
 endif()
 
@@ -25,6 +27,10 @@ if(UNIX)
 endif()
 
 add_library(${TARGET} STATIC "")
+
+target_compile_definitions(
+  ${TARGET}
+  PRIVATE -DDISABLE_NON_VPL_DISPATCHER)
 
 # force correct name on Windows
 set_target_properties(${TARGET} PROPERTIES PREFIX "lib")

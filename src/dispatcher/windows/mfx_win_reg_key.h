@@ -22,7 +22,7 @@
 #define __MFX_WIN_REG_KEY_H
 
 #include <windows.h>
-#include "mfxplugin.h"
+#include "onevpl/mfxplugin.h"
 #include "mfx_dispatcher_log.h"
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)

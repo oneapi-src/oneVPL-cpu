@@ -21,7 +21,7 @@
 #if !defined(__MFX_CRITICAL_SECTION_H)
 #define __MFX_CRITICAL_SECTION_H
 
-#include <mfxdefs.h>
+#include <onevpl/mfxdefs.h>
 
 namespace MFX
 {

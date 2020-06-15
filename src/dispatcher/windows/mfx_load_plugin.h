@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #pragma once
-#include "mfxplugin.h"
+#include "onevpl/mfxplugin.h"
 #include "mfx_dispatcher_defs.h"
 #include "mfx_plugin_hive.h"
 
@@ -75,11 +75,13 @@ namespace MFX
         void DestroyPlugin( FactoryRecord & );
         static bool RunVerification( const mfxPlugin & plg, const PluginDescriptionRecord &dsc, mfxPluginParam &pluginParams );
         static bool VerifyEncoder( const mfxVideoCodecPlugin &videoCodec );
+#ifndef DISABLE_NON_VPL_DISPATCHER
         static bool VerifyAudioEncoder( const mfxAudioCodecPlugin &audioCodec );
+        static bool VerifyAudioDecoder( const mfxAudioCodecPlugin &audioCodec );
+#endif
         static bool VerifyEnc( const mfxVideoCodecPlugin &videoEnc );
         static bool VerifyVpp( const mfxVideoCodecPlugin &videoCodec );
         static bool VerifyDecoder( const mfxVideoCodecPlugin &videoCodec );
-        static bool VerifyAudioDecoder( const mfxAudioCodecPlugin &audioCodec );
         static bool VerifyCodecCommon( const mfxVideoCodecPlugin & Video );
     };
 }

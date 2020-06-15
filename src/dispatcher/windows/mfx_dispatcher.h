@@ -21,14 +21,18 @@
 #if !defined(__MFX_DISPATCHER_H)
 #define __MFX_DISPATCHER_H
 
-#include <mfxvideo.h>
+#include <onevpl/mfxvideo.h>
+#ifndef DISABLE_NON_VPL_DISPATCHER
 #include <mfxaudio.h>
-#include <mfxplugin.h>
+#endif
+#include <onevpl/mfxplugin.h>
 #include <stddef.h>
 #include "mfx_dispatcher_defs.h"
 #include "mfx_load_plugin.h"
+#ifndef DISABLE_NON_VPL_DISPATCHER
 #include "mfxenc.h"
 #include "mfxpak.h"
+#endif
 
 #define INTEL_VENDOR_ID 0x8086
 
