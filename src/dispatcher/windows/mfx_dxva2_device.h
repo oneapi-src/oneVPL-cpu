@@ -18,40 +18,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SRC_DISPATCHER_WINDOWS_MFX_DXVA2_DEVICE_H_
-#define SRC_DISPATCHER_WINDOWS_MFX_DXVA2_DEVICE_H_
+#if !defined(__MFX_DXVA2_DEVICE_H)
+#define __MFX_DXVA2_DEVICE_H
 
 #include <windows.h>
 
-#define TOSTRING(L)  #L
+#define TOSTRING(L) #L
 #define STRINGIFY(L) TOSTRING(L)
 
-#define MFX_D3D9_ENABLED
-#pragma message("\n\nATTENTION:\nin file\n\t" __FILE__ \
-                " (" STRINGIFY(__LINE__) "):\nUsing of D3D9 enabled!\n\n")
-
-#include <onevpl/mfxdefs.h>
-
-#ifdef DXVA2DEVICE_LOG
-    #include <stdio.h>
-    #define DXVA2DEVICE_TRACE(expr)           printf expr;
-    #define DXVA2DEVICE_TRACE_OPERATION(expr) expr;
+#if defined(MEDIASDK_UWP_DISPATCHER)
+    #if defined(MFX_D3D9_ENABLED) && !defined(MFX_FORCE_D3D9_ENABLED)
+        #undef MFX_D3D9_ENABLED
+        #pragma message("\n\nATTENTION:\nin file\n\t" __FILE__ " (" STRINGIFY(__LINE__) "):\nUsing of D3D9 disabled for UWP!\n\n")
+    #endif
+    #if defined(MFX_FORCE_D3D9_ENABLED)
+        #define MFX_D3D9_ENABLED
+    #endif
 #else
-    #define DXVA2DEVICE_TRACE(expr)
-    #define DXVA2DEVICE_TRACE_OPERATION(expr)
+    #define MFX_D3D9_ENABLED
+    #pragma message("\n\nATTENTION:\nin file\n\t" __FILE__ " (" STRINGIFY(__LINE__) "):\nUsing of D3D9 enabled!\n\n")
 #endif
 
-namespace MFX {
+#include <mfxdefs.h>
 
-class DXDevice {
+#ifdef DXVA2DEVICE_LOG
+#include <stdio.h>
+#define DXVA2DEVICE_TRACE(expr) printf expr;
+#define DXVA2DEVICE_TRACE_OPERATION(expr) expr;
+#else
+#define DXVA2DEVICE_TRACE(expr)
+#define DXVA2DEVICE_TRACE_OPERATION(expr)
+#endif
+
+namespace MFX
+{
+
+class DXDevice
+{
 public:
     // Default constructor
     DXDevice(void);
     // Destructor
-    virtual ~DXDevice(void) = 0;
+    virtual
+    ~DXDevice(void) = 0;
 
     // Initialize device using DXGI 1.1 or VAAPI interface
-    virtual bool Init(const mfxU32 adapterNum) = 0;
+    virtual
+    bool Init(const mfxU32 adapterNum) = 0;
 
     // Obtain graphic card's parameter
     mfxU32 GetVendorID(void) const;
@@ -63,12 +76,14 @@ public:
     mfxU32 GetAdapterCount(void) const;
 
     // Close the object
-    virtual void Close(void);
+    virtual
+    void Close(void);
 
     // Load the required DLL module
     void LoadDLLModule(const wchar_t *pModuleName);
 
 protected:
+
     // Free DLL module
     void UnloadDLLModule(void);
 
@@ -94,48 +109,61 @@ private:
 };
 
 #ifdef MFX_D3D9_ENABLED
-class D3D9Device : public DXDevice {
+class D3D9Device : public DXDevice
+{
 public:
     // Default constructor
     D3D9Device(void);
     // Destructor
-    virtual ~D3D9Device(void);
+    virtual
+        ~D3D9Device(void);
 
     // Initialize device using D3D v9 interface
-    virtual bool Init(const mfxU32 adapterNum);
+    virtual
+        bool Init(const mfxU32 adapterNum);
 
     // Close the object
-    virtual void Close(void);
+    virtual
+        void Close(void);
 
 protected:
+
     // Pointer to the D3D v9 interface
     void *m_pD3D9;
     // Pointer to the D3D v9 extended interface
     void *m_pD3D9Ex;
+
 };
 #endif // MFX_D3D9_ENABLED
 
-class DXGI1Device : public DXDevice {
+class DXGI1Device : public DXDevice
+{
 public:
     // Default constructor
     DXGI1Device(void);
     // Destructor
-    virtual ~DXGI1Device(void);
+    virtual
+    ~DXGI1Device(void);
 
     // Initialize device
-    virtual bool Init(const mfxU32 adapterNum);
+    virtual
+    bool Init(const mfxU32 adapterNum);
 
     // Close the object
-    virtual void Close(void);
+    virtual
+    void Close(void);
 
 protected:
+
     // Pointer to the DXGI1 factory
     void *m_pDXGIFactory1;
     // Pointer to the current DXGI1 adapter
     void *m_pDXGIAdapter1;
+
 };
 
-class DXVA2Device {
+class DXVA2Device
+{
 public:
     // Default constructor
     DXVA2Device(void);
@@ -159,6 +187,7 @@ public:
     void Close(void);
 
 protected:
+
 #ifdef MFX_D3D9_ENABLED
     // Get vendor & device IDs by alternative way (D3D9 in Remote Desktop sessions)
     void UseAlternativeWay(const D3D9Device *pD3D9Device);
@@ -181,4 +210,4 @@ private:
 
 } // namespace MFX
 
-#endif // SRC_DISPATCHER_WINDOWS_MFX_DXVA2_DEVICE_H_
+#endif // __MFX_DXVA2_DEVICE_H

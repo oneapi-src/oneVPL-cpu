@@ -18,12 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SRC_DISPATCHER_WINDOWS_MFX_CRITICAL_SECTION_H_
-#define SRC_DISPATCHER_WINDOWS_MFX_CRITICAL_SECTION_H_
+#if !defined(__MFX_CRITICAL_SECTION_H)
+#define __MFX_CRITICAL_SECTION_H
 
-#include <onevpl/mfxdefs.h>
+#include <mfxdefs.h>
 
-namespace MFX {
+namespace MFX
+{
 
 // Just set "critical section" instance to zero for initialization.
 typedef volatile mfxL32 mfxCriticalSection;
@@ -34,16 +35,19 @@ void mfxEnterCriticalSection(mfxCriticalSection *pCSection);
 // Leave the global critical section.
 void mfxLeaveCriticalSection(mfxCriticalSection *pCSection);
 
-class MFXAutomaticCriticalSection {
+class MFXAutomaticCriticalSection
+{
 public:
     // Constructor
-    explicit MFXAutomaticCriticalSection(mfxCriticalSection *pCSection) {
+    explicit MFXAutomaticCriticalSection(mfxCriticalSection *pCSection)
+    {
         m_pCSection = pCSection;
         mfxEnterCriticalSection(m_pCSection);
     }
 
     // Destructor
-    ~MFXAutomaticCriticalSection() {
+    ~MFXAutomaticCriticalSection()
+    {
         mfxLeaveCriticalSection(m_pCSection);
     }
 
@@ -59,4 +63,4 @@ private:
 
 } // namespace MFX
 
-#endif // SRC_DISPATCHER_WINDOWS_MFX_CRITICAL_SECTION_H_
+#endif // __MFX_CRITICAL_SECTION_H

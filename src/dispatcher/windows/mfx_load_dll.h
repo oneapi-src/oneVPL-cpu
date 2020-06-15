@@ -18,36 +18,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SRC_DISPATCHER_WINDOWS_MFX_LOAD_DLL_H_
-#define SRC_DISPATCHER_WINDOWS_MFX_LOAD_DLL_H_
+#if !defined(__MFX_LOAD_DLL_H)
+#define __MFX_LOAD_DLL_H
 
-#include "windows/mfx_dispatcher.h"
+#include "mfx_dispatcher.h"
 
-namespace MFX {
+namespace MFX
+{
 
-//
-// declare DLL loading routines
-//
 
-mfxStatus mfx_get_rt_dll_name(wchar_t *pPath, size_t pathSize);
-mfxStatus mfx_get_default_dll_name(wchar_t *pPath,
-                                   size_t pathSize,
-                                   eMfxImplType implType);
-mfxStatus mfx_get_default_plugin_name(wchar_t *pPath,
-                                      size_t pathSize,
-                                      eMfxImplType implType);
+    //
+    // declare DLL loading routines
+    //
 
-mfxStatus mfx_get_default_audio_dll_name(wchar_t *pPath,
-                                         size_t pathSize,
-                                         eMfxImplType implType);
+    mfxStatus mfx_get_rt_dll_name(wchar_t *pPath, size_t pathSize);
+    mfxStatus mfx_get_default_dll_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType);
+    mfxStatus mfx_get_default_plugin_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType);
+#if defined(MEDIASDK_UWP_DISPATCHER)
+    mfxStatus mfx_get_default_intel_gfx_api_dll_name(wchar_t *pPath, size_t pathSize);
+#endif
 
-mfxModuleHandle mfx_dll_load(const wchar_t *file_name);
-//increments reference counter
-mfxModuleHandle mfx_get_dll_handle(const wchar_t *file_name);
-mfxFunctionPointer mfx_dll_get_addr(mfxModuleHandle handle,
-                                    const char *func_name);
-bool mfx_dll_free(mfxModuleHandle handle);
+    mfxStatus mfx_get_default_audio_dll_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType);
+    
+
+    mfxModuleHandle mfx_dll_load(const wchar_t *file_name);
+    //increments reference counter
+    mfxModuleHandle mfx_get_dll_handle(const wchar_t *file_name);
+    mfxFunctionPointer mfx_dll_get_addr(mfxModuleHandle handle, const char *func_name);
+    bool mfx_dll_free(mfxModuleHandle handle);
 
 } // namespace MFX
 
-#endif // SRC_DISPATCHER_WINDOWS_MFX_LOAD_DLL_H_
+#endif  // __MFX_LOAD_DLL_H

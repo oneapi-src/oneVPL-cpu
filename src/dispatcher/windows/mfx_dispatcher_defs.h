@@ -18,28 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_DEFS_H_
-#define SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_DEFS_H_
-
-#include <cstdio>
+#pragma once
+#include "mfxdefs.h"
 #include <cstring>
-#include "onevpl/mfxdefs.h"
+#include <cstdio>
 
 #if defined(MFX_DISPATCHER_LOG)
-    #include <string.h>
-    #include <string>
+#include <string>
+#include <string.h>
 #endif
 
 #define MAX_PLUGIN_PATH 4096
 #define MAX_PLUGIN_NAME 4096
 
 #if _MSC_VER < 1400
-    #define wcscpy_s(to, to_size, from) wcscpy(to, from)
+#define wcscpy_s(to,to_size, from) wcscpy(to, from)
+#define wcscat_s(to,to_size, from) wcscat(to, from)
 #endif
 
 // declare library module's handle
-typedef void* mfxModuleHandle;
+typedef void * mfxModuleHandle;
 
-typedef void(MFX_CDECL* mfxFunctionPointer)(void);
-
-#endif // SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_DEFS_H_
+typedef void (MFX_CDECL * mfxFunctionPointer)(void);
