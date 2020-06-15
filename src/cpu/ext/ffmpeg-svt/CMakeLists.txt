@@ -42,12 +42,14 @@ if(MSVC)
   set(MINGWEX_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingwex.a)
   set(PTHREAD_IMPLIB
       ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libpthread.dll.a)
+  set(PTHREAD_DLL ${MSYS_ROOT}/mingw64/bin/libwinpthread-1.dll)
 
   if(NOT EXISTS ${GCC_LIB}
      OR NOT EXISTS ${GCC_EH_LIB}
      OR NOT EXISTS ${BCRYPT_LIB}
      OR NOT EXISTS ${MINGW32_LIB}
-     OR NOT EXISTS ${MINGWEX_LIB})
+     OR NOT EXISTS ${MINGWEX_LIB}
+     OR NOT EXISTS ${PTHREAD_DLL})
     message(FATAL_ERROR "Could not find expected MinGW runtime libraries")
   endif()
   target_link_libraries(
@@ -58,10 +60,19 @@ if(MSVC)
     message(FATAL_ERROR "Could not find expected MinGW runtime libraries")
   endif()
   target_link_libraries(${TARGET} INTERFACE ${PTHREAD_IMPLIB})
+
   install(
-    PROGRAMS ${MSYS_ROOT}/mingw64/bin/libwinpthread-1.dll
+    PROGRAMS ${PTHREAD_DLL}
     DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT runtime)
+  # copy pthread dll to output directory so bins work without setting paths
+  add_custom_target(mingw-pthread)
+  add_dependencies(${TARGET} mingw-pthread)
+  add_custom_command(
+    TARGET mingw-pthread
+    COMMAND ${CMAKE_COMMAND} -E copy ${PTHREAD_DLL}
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+
 endif()
 
 set_property(TARGET ${TARGET} PROPERTY INTERFACE_INCLUDE_DIRECTORIES
