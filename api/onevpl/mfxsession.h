@@ -1,15 +1,15 @@
 // Copyright (c) 2017 Intel Corporation
-//
+// 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -17,12 +17,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef API_ONEVPL_MFXSESSION_H_
-#define API_ONEVPL_MFXSESSION_H_
-#include "./mfxcommon.h"
+#ifndef __MFXSESSION_H__
+#define __MFXSESSION_H__
+#include "mfxcommon.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif /* __cplusplus */
 
 /* Global Functions */
@@ -74,8 +75,7 @@ mfxStatus MFX_CDECL MFXInit(mfxIMPL impl, mfxVersion *ver, mfxSession *session);
       the library with API v1.0. This ensures backward compatibility.
 
       The argument par.ExternalThreads specifies threading mode. Value 0 means that SDK should internally create and
-      handle work threads (this essentially equivalent of regular MFXInit). If this parameter set to 1 then SDK will expect
-      that application should create work threads and pass them to SDK via single-entry function MFXDoWork.
+      handle work threads (this essentially equivalent of regular MFXInit). I
 
    @param[in]  par     mfxInitParam structure that indicates the desired SDK implementation, minimum library version and desired threading mode.
    @param[out] session Pointer to the SDK session handle.
@@ -187,19 +187,9 @@ mfxStatus MFX_CDECL MFXSetPriority(mfxSession session, mfxPriority priority);
 */
 mfxStatus MFX_CDECL MFXGetPriority(mfxSession session, mfxPriority *priority);
 
-/*!
-   @brief This function complements MFXInitEx with external threading mode on. Application expected to
-          create no less than two work threads per session and pass them to SDK via this function.
-          This function won’t return control to application unless session is closed.
-    
-   @param[in] session    The current session handle.
-
-   @return MFX_ERR_NONE                The function completed successfully.
-*/
-mfxStatus MFX_CDECL MFXDoWork(mfxSession session);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif // API_ONEVPL_MFXSESSION_H_
+#endif
+
