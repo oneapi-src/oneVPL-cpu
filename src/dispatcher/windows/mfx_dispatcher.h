@@ -107,6 +107,7 @@ enum eMfxImplType
     MFX_LIB_HARDWARE            = 0,
     MFX_LIB_SOFTWARE            = 1,
     MFX_LIB_PSEUDO              = 2,
+    MFX_LIB_SOFTWARE_VPL        = 3,
 
     MFX_LIB_IMPL_TYPES
 };

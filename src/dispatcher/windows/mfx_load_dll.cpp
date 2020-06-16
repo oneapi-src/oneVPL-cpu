@@ -37,6 +37,8 @@ const
 wchar_t  * const defaultPluginDLLName[2] = {L"mfxplugin64_hw.dll",
                                             L"mfxplugin64_sw.dll"};
 
+const wchar_t *const defaultDLLName_VPL[1] = { L"libmfxvplsw64.dll" };
+
 #if defined(MEDIASDK_UWP_DISPATCHER)
 const
 wchar_t  * const IntelGFXAPIDLLName = {L"intel_gfx_api-x64.dll"};
@@ -73,6 +75,12 @@ mfxStatus mfx_get_default_dll_name(wchar_t *pPath, size_t pathSize, eMfxImplType
         return MFX_ERR_NULL_PTR;
     }
     
+
+    if (implType == MFX_LIB_SOFTWARE_VPL) {
+        return 0 == wcscpy_s(pPath, pathSize, defaultDLLName_VPL[0])
+                   ? MFX_ERR_NONE
+                   : MFX_ERR_UNKNOWN;
+    }
 
     // there are only 2 implementation with default DLL names
 #if _MSC_VER >= 1400

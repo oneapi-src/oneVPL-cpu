@@ -70,11 +70,10 @@ enum {
         0x0006, /*!< Hardware accelerated implementation (3rd device) */
     MFX_IMPL_HARDWARE4 =
         0x0007, /*!< Hardware accelerated implementation (4th device) */
-    MFX_IMPL_SOFTWARE_VPL = 0x0008, /*!< VPL Software Implementation */
-    MFX_IMPL_RUNTIME      = 0x0009,
+    MFX_IMPL_RUNTIME      = 0x0008,
 
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
-    MFX_IMPL_SINGLE_THREAD = 0x0010,
+    MFX_IMPL_SINGLE_THREAD = 0x0009,
 #endif
     MFX_IMPL_VIA_ANY =
         0x0100, /*!< Hardware acceleration can go through any supported OS infrastructure. This is default value,
@@ -90,6 +89,7 @@ enum {
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
     MFX_IMPL_EXTERNAL_THREADING = 0x10000,
 #endif
+    MFX_IMPL_SOFTWARE_VPL = 0x20000, /*!< VPL Software Implementation */
 
     MFX_IMPL_UNSUPPORTED = 0x0000 /*!< One of the MFXQueryIMPL returns */
 };

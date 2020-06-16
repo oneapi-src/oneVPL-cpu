@@ -28,9 +28,7 @@ endif()
 
 add_library(${TARGET} STATIC "")
 
-target_compile_definitions(
-  ${TARGET}
-  PRIVATE -DDISABLE_NON_VPL_DISPATCHER)
+target_compile_definitions(${TARGET} PRIVATE -DDISABLE_NON_VPL_DISPATCHER)
 
 # force correct name on Windows
 set_target_properties(${TARGET} PROPERTIES PREFIX "lib")

@@ -393,7 +393,7 @@ mfxStatus MFX::MFXPluginFactory::Create(const PluginDescriptionRecord & rec)
         }
     }
     else
-#else
+#endif
     {
         mfxStatus sts = MFXVideoUSER_Register(mSession, plgParams.Type, &plg);
         if (MFX_ERR_NONE != sts)
@@ -402,7 +402,6 @@ mfxStatus MFX::MFXPluginFactory::Create(const PluginDescriptionRecord & rec)
             return sts;
         }
     }
-#endif
     mPlugins.push_back(FactoryRecord(plgParams, plgModule, plg));
 
     return MFX_ERR_NONE;
@@ -456,12 +455,11 @@ void MFX::MFXPluginFactory::DestroyPlugin( FactoryRecord & record)
         TRACE_PLUGIN_INFO(" MFXAudioUSER_Unregister for Type=%d, returned %d\n", record.plgParams.Type, sts);
     }
     else
-#else
+#endif
     {
         sts = MFXVideoUSER_Unregister(mSession, record.plgParams.Type);
         TRACE_PLUGIN_INFO(" MFXVideoUSER_Unregister for Type=%d, returned %d\n", record.plgParams.Type, sts);
     }
-#endif
 }
 
 #endif //!defined(MEDIASDK_UWP_DISPATCHER)

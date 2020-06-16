@@ -89,7 +89,8 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
 
     // check error(s)
     if ((MFX_LIB_SOFTWARE != reqImplType) &&
-        (MFX_LIB_HARDWARE != reqImplType))
+        (MFX_LIB_HARDWARE != reqImplType) &&
+        (MFX_LIB_SOFTWARE_VPL != reqImplType))
     {
         DISPATCHER_LOG_ERROR((("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"), DispatcherLog_GetMFXImplString(reqImplType).c_str()));
         loadStatus = MFX_ERR_ABORTED;
@@ -104,7 +105,8 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
         (MFX_IMPL_HARDWARE != reqImpl) &&
         (MFX_IMPL_HARDWARE2 != reqImpl) &&
         (MFX_IMPL_HARDWARE3 != reqImpl) &&
-        (MFX_IMPL_HARDWARE4 != reqImpl))
+        (MFX_IMPL_HARDWARE4 != reqImpl) &&
+        (MFX_IMPL_SOFTWARE_VPL != reqImpl))
     {
         DISPATCHER_LOG_ERROR((("invalid implementation impl == %s\n"), DispatcherLog_GetMFXImplString(impl).c_str()));
         loadStatus = MFX_ERR_ABORTED;
