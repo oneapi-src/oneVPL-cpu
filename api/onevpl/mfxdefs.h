@@ -125,6 +125,37 @@ typedef mfxHDL              mfxMemId;      /*!< Memory ID type */
 typedef void*               mfxThreadTask; /*!< Thread task type */
 typedef char                mfxChar;       /*!< ASCII character, 8 bit type */
 
+/* The mfxResourceType enumerator specifies types of diffrent native data frames and buffers. */
+typedef enum {
+    MFX_RESOURCE_SYSTEM_SURFACE                  = 1, /*!< System memory. */ 
+    MFX_RESOURCE_VA_SURFACE                      = 2, /*!< VA Surface. */ 
+    MFX_RESOURCE_VA_BUFFER                       = 3, /*!< VA Buffer. */ 
+    MFX_RESOURCE_DX9_SURFACE                     = 4, /*!< IDirect3DSurface9. */ 
+    MFX_RESOURCE_DX11_TEXTURE                    = 5, /*!< ID3D11Texture2D. */ 
+    MFX_RESOURCE_DX12_RESOURCE                   = 6, /*!< ID3D12Resource. */
+    MFX_RESOURCE_DMA_RESOURCE                    = 7  /*!< DMA resource. */
+} mfxResourceType;
+
+/* MFX structures version info */
+MFX_PACK_BEGIN_USUAL_STRUCT()
+/*! Introduce field Version for any structures with modifications after API 1.XX.
+Minor number is incremented when reserved fields are used, 
+major number is incremnted when size of structure is increased.
+Assumed that any structure changes are backward binary compatible.
+ mfxStructVersion starts from {1,0} for any new API structures, if mfxStructVersion is 
+ added to the existent legacy structure (replacing reserved fields) it starts from {1, 1}.
+*/
+typedef union {
+    /*! Structure with Major and Minor fields.  */
+    /*! @struct Anonimouse */
+    struct {
+        mfxU8  Minor; /*!< Minor number of the correspondent structure */
+        mfxU8  Major; /*!< Major number of the correspondent structure  */
+    };
+    mfxU16  Version;   /*!< Structure version number */
+} mfxStructVersion;
+MFX_PACK_END()
+
 /*! The mfxVariantType enumerator data types for mfxVarianf type. */
 typedef enum {
     MFX_VARIANT_TYPE_UNSET = 0, /*!< Undefined type. */

@@ -388,20 +388,45 @@ typedef enum
     MFX_MAP_NOWAIT = 0x10 
 } mfxMemoryFlags;
 
-/* The mfxResourceType enumerator specifies types of diffrent native data frames and buffers. */
+/*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
 typedef enum {
-    MFX_RESOURCE_SYSTEM_SURFACE                  = 1, /*!< System memory. */ 
-    MFX_RESOURCE_VA_SURFACE                      = 2, /*!< VA Surface. */ 
-    MFX_RESOURCE_VA_BUFFER                       = 3, /*!< VA Buffer. */ 
-    MFX_RESOURCE_DX9_SURFACE                     = 4, /*!< IDirect3DSurface9. */ 
-    MFX_RESOURCE_DX11_TEXTURE                    = 5, /*!< ID3D11Texture2D. */ 
-    MFX_RESOURCE_DX12_RESOURCE                   = 6, /*!< ID3D12Resource. */
-    MFX_RESOURCE_DMA_RESOURCE                    = 7  /*!< DMA resource. */
-} mfxResourceType;
+    MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
+    MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
+    MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
+#if (MFX_VERSION >= 1030)
+    MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
+    MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
+#endif
+#if (MFX_VERSION >= MFX_VERSION_NEXT)
+    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
+#endif
+} mfxHandleType;
+
+/* Frame Surface */
+MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
+/*! The mfxFrameSurface1 structure defines the uncompressed frames surface information and data buffers.
+    The frame surface is in the frame or complementary field pairs of pixels up to four color-channels, in two parts:
+    mfxFrameInfo and mfxFrameData.
+*/
+typedef struct {
+    union
+    {
+        struct _mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
+        mfxU32  reserved[2];
+    };
+    mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
+    mfxU16           reserved1[3];
+    mfxFrameInfo    Info; /*!< mfxFrameInfo structure specifies surface properties. */
+    mfxFrameData    Data; /*!< mfxFrameData structure describes the actual frame buffer. */
+} mfxFrameSurface1;
+MFX_PACK_END()
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /* The mfxFrameSurfaceInterface strucutre specifies frame surface interface. */
-typedef struct {
+typedef struct _mfxFrameSurfaceInterface {
     mfxHDL              Context; /*!< This context of memory interface. User should not touch (change, set, null) this pointer. */
     mfxStructVersion    Version; /*!< The version of the structure. */
     mfxU16              reserved1[3];
@@ -560,25 +585,6 @@ typedef struct {
     mfxStatus           (MFX_CDECL *Synchronize)(mfxFrameSurface1* surface, mfxU32 wait);
     mfxHDL              reserved2[4];
 } mfxFrameSurfaceInterface;
-MFX_PACK_END()
-
-/* Frame Surface */
-MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
-/*! The mfxFrameSurface1 structure defines the uncompressed frames surface information and data buffers.
-    The frame surface is in the frame or complementary field pairs of pixels up to four color-channels, in two parts:
-    mfxFrameInfo and mfxFrameData.
-*/
-typedef struct {
-    union
-    {
-        mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
-        mfxU32  reserved[2];
-    };
-    mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
-    mfxU16           reserved1[3];
-    mfxFrameInfo    Info; /*!< mfxFrameInfo structure specifies surface properties. */
-    mfxFrameData    Data; /*!< mfxFrameData structure describes the actual frame buffer. */
-} mfxFrameSurface1;
 MFX_PACK_END()
 
 /*! The TimeStampCalc enumerator itemizes time-stamp calculation methods. */
@@ -2373,23 +2379,6 @@ enum {
     MFX_HEVC_NALU_TYPE_CRA_NUT    = (21+1)  /*!< See Table 7-1 of the ITU-T H.265 specification for the definition of these type. */
 };
 #endif
-
-/*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
-typedef enum {
-    MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
-    MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
-    MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
-#if (MFX_VERSION >= 1030)
-    MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
-    MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
-#endif
-#if (MFX_VERSION >= MFX_VERSION_NEXT)
-    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
-#endif
-} mfxHandleType;
 
 /*! The mfxSkipMode enumerator describes the decoder skip-mode options. */
 typedef enum {

@@ -10,7 +10,6 @@ EXPORTS
     MFXSetPriority
     MFXGetPriority
 
-    MFXVideoCORE_SetBufferAllocator
     MFXVideoCORE_SetFrameAllocator
     MFXVideoCORE_SetHandle
     MFXVideoCORE_GetHandle

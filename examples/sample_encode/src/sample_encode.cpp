@@ -1455,12 +1455,14 @@ void ModifyParamsUsingPresets(sInputParams& params) {
                                        params.nHeight,
                                        params.bUseHWLib);
 
+#ifndef DISABLE_NON_VPL
     if (presetParams.RateControlMethod == MFX_RATECONTROL_LA_EXT) {
         // Currently sample_encode does not support external LA, so we will use ExtBRC instead
         presetParams.RateControlMethod = MFX_RATECONTROL_VBR;
         presetParams.LookAheadDepth    = 0;
         presetParams.ExtBRCUsage       = EXTBRC_ON;
     }
+#endif
 
     if (params.shouldPrintPresets) {
         msdk_printf(MSDK_STRING("Preset-controlled parameters (%s):\n"),

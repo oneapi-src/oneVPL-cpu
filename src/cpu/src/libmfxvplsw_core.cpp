@@ -9,10 +9,6 @@
 #include "onevpl/mfxvideo.h"
 
 // stubs
-mfxStatus MFXVideoCORE_SetBufferAllocator(mfxSession session,
-                                          mfxBufferAllocator *allocator) {
-    return MFX_ERR_UNSUPPORTED;
-}
 mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session,
                                          mfxFrameAllocator *allocator) {
     return MFX_ERR_UNSUPPORTED;

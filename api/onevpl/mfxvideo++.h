@@ -68,9 +68,6 @@ public:
         return MFXGetPriority(m_session, priority);
     }
 
-    virtual mfxStatus SetBufferAllocator(mfxBufferAllocator *allocator) {
-        return MFXVideoCORE_SetBufferAllocator(m_session, allocator);
-    }
     virtual mfxStatus SetFrameAllocator(mfxFrameAllocator *allocator) {
         return MFXVideoCORE_SetFrameAllocator(m_session, allocator);
     }
@@ -86,10 +83,6 @@ public:
 
     virtual mfxStatus SyncOperation(mfxSyncPoint syncp, mfxU32 wait) {
         return MFXVideoCORE_SyncOperation(m_session, syncp, wait);
-    }
-
-    virtual mfxStatus DoWork() {
-        return MFXDoWork(m_session);
     }
 
     virtual operator mfxSession(void) {
