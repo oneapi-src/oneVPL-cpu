@@ -89,9 +89,11 @@ FUNCTION(mfxStatus, MFXVideoVPP_RunFrameVPPAsync, (mfxSession session, mfxFrameS
 
 #define API_VERSION {{1, 1}}
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
 FUNCTION(mfxStatus, MFXVideoUSER_Register, (mfxSession session, mfxU32 type, const mfxPlugin *par), (session, type, par))
 FUNCTION(mfxStatus, MFXVideoUSER_Unregister, (mfxSession session, mfxU32 type), (session, type))
 FUNCTION(mfxStatus, MFXVideoUSER_ProcessFrameAsync, (mfxSession session, const mfxHDL *in, mfxU32 in_num, const mfxHDL *out, mfxU32 out_num, mfxSyncPoint *syncp), (session, in, in_num, out, out_num, syncp))
+#endif
 
 #undef API_VERSION
 
@@ -139,8 +141,8 @@ FUNCTION(mfxStatus, MFXDoWork, (mfxSession session), (session))
 #ifndef DISABLE_NON_VPL_DISPATCHER
 FUNCTION(mfxStatus, MFXVideoENC_GetVideoParam, (mfxSession session, mfxVideoParam *par), (session, par))
 FUNCTION(mfxStatus, MFXVideoPAK_GetVideoParam, (mfxSession session, mfxVideoParam *par), (session, par))
+FUNCTION(mfxStatus, MFXVideoUSER_GetPlugin, (mfxSession session, mfxU32 type, mfxPlugin *par), (session, type, par))
 #endif
 FUNCTION(mfxStatus, MFXVideoCORE_QueryPlatform, (mfxSession session, mfxPlatform* platform), (session, platform))
-FUNCTION(mfxStatus, MFXVideoUSER_GetPlugin, (mfxSession session, mfxU32 type, mfxPlugin *par), (session, type, par))
 
 #undef API_VERSION

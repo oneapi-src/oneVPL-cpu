@@ -40,7 +40,6 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "sample_utils.h"
 
 #include "onevpl/mfxjpeg.h"
-#include "onevpl/mfxmvc.h"
 #include "onevpl/mfxvideo++.h"
 #include "onevpl/mfxvideo.h"
 #include "onevpl/mfxvp8.h"
@@ -126,10 +125,12 @@ struct sInputParams {
     }
 };
 
+#ifndef DISABLE_NON_VPL
 template <>
 struct mfx_ext_buffer_id<mfxExtMVCSeqDesc> {
     enum { id = MFX_EXTBUFF_MVC_SEQ_DESC };
 };
+#endif
 
 struct CPipelineStatistics {
     CPipelineStatistics()

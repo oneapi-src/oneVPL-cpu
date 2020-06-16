@@ -30,12 +30,15 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 // this was removed from the oneVPL API so
 //   we define it here so the samples build
 typedef struct {
-    mfxU32      reserved[4];
-    mfxHDL      pthis;
-    mfxStatus  (MFX_CDECL *Alloc)    (mfxHDL pthis, mfxU32 nbytes, mfxU16 type, mfxMemId *mid);
-    mfxStatus  (MFX_CDECL *Lock)     (mfxHDL pthis, mfxMemId mid, mfxU8 **ptr);
-    mfxStatus  (MFX_CDECL *Unlock)   (mfxHDL pthis, mfxMemId mid);
-    mfxStatus  (MFX_CDECL *Free)     (mfxHDL pthis, mfxMemId mid);
+    mfxU32 reserved[4];
+    mfxHDL pthis;
+    mfxStatus(MFX_CDECL *Alloc)(mfxHDL pthis,
+                                mfxU32 nbytes,
+                                mfxU16 type,
+                                mfxMemId *mid);
+    mfxStatus(MFX_CDECL *Lock)(mfxHDL pthis, mfxMemId mid, mfxU8 **ptr);
+    mfxStatus(MFX_CDECL *Unlock)(mfxHDL pthis, mfxMemId mid);
+    mfxStatus(MFX_CDECL *Free)(mfxHDL pthis, mfxMemId mid);
 } mfxBufferAllocator;
 
 struct mfxAllocatorParams {

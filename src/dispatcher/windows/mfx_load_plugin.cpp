@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
+
 #include "mfx_load_plugin.h"
 #include "mfx_load_dll.h"
 #include "mfx_dispatcher_log.h"
@@ -462,4 +464,7 @@ void MFX::MFXPluginFactory::DestroyPlugin( FactoryRecord & record)
     }
 }
 
-#endif //!defined(MEDIASDK_UWP_DISPATCHER)
+#endif //!defined(MEDIASDK_UWP_DISPATCHER
+
+#endif // DISABLE_NON_VPL_DISPATCHER
+

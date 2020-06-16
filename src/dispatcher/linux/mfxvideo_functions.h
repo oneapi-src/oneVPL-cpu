@@ -51,10 +51,6 @@ FUNCTION(mfxStatus,
 
 // CORE interface functions
 FUNCTION(mfxStatus,
-         MFXVideoCORE_SetBufferAllocator,
-         (mfxSession session, mfxBufferAllocator *allocator),
-         (session, allocator))
-FUNCTION(mfxStatus,
          MFXVideoCORE_SetFrameAllocator,
          (mfxSession session, mfxFrameAllocator *allocator),
          (session, allocator))

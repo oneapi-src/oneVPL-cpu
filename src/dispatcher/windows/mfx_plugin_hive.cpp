@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
+
 #include "mfx_plugin_hive.h"
 #include "mfx_library_iterator.h"
 #include "mfx_dispatcher.h"
@@ -489,3 +491,4 @@ MFX::MFXDefaultPlugins::MFXDefaultPlugins(mfxVersion currentAPIVersion, MFX_DISP
 }
 
 
+#endif // DISABLE_NON_VPL_DISPATCHER

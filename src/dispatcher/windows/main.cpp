@@ -30,6 +30,8 @@
 #include "mfx_library_iterator.h"
 #include "mfx_critical_section.h"
 
+#include "mfx_vector.h"
+
 #if defined(MEDIASDK_UWP_DISPATCHER)
 #include "mfx_driver_store_loader.h"
 #endif
@@ -491,6 +493,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session)
         mfxVersion apiVerActual = { { 0, 0 } };
         mfxStatus stsQueryVersion = MFXQueryVersion((mfxSession)pHandle, &apiVerActual);
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
         if (MFX_ERR_NONE !=  stsQueryVersion)
         {
             DISPATCHER_LOG_ERROR((("MFXQueryVersion returned: %d, cannot load plugins\n"), mfxRes))
@@ -530,7 +533,6 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session)
         pHandle->callPlugInsTable[eMFXVideoUSER_Load] = (mfxFunctionPointer)MFXVideoUSER_Load;
         pHandle->callPlugInsTable[eMFXVideoUSER_LoadByPath] = (mfxFunctionPointer)MFXVideoUSER_LoadByPath;
         pHandle->callPlugInsTable[eMFXVideoUSER_UnLoad] = (mfxFunctionPointer)MFXVideoUSER_UnLoad;
-#ifndef DISABLE_NON_VPL_DISPATCHER
         pHandle->callPlugInsTable[eMFXAudioUSER_Load] = (mfxFunctionPointer)MFXAudioUSER_Load;
         pHandle->callPlugInsTable[eMFXAudioUSER_UnLoad] = (mfxFunctionPointer)MFXAudioUSER_UnLoad;
 #endif
@@ -581,6 +583,7 @@ mfxStatus MFXClose(mfxSession session)
 
 } // mfxStatus MFXClose(mfxSession session)
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
 mfxStatus MFXVideoUSER_Load(mfxSession session, const mfxPluginUID *uid, mfxU32 version)
 {
     mfxStatus sts = MFX_ERR_NONE;
@@ -825,6 +828,8 @@ mfxStatus MFXAudioUSER_UnLoad(mfxSession session, const mfxPluginUID *uid)
 
     return bDestroyed ? MFX_ERR_NONE : MFX_ERR_NOT_FOUND;
 }
+#endif // DISABLE_NON_VPL_DISPATCHER
+
 #else // relates to !defined (MEDIASDK_UWP_DISPATCHER), i.e. #else part as if MEDIASDK_UWP_DISPATCHER defined
 
 static mfxModuleHandle hModule;

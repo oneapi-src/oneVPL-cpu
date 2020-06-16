@@ -38,8 +38,10 @@
 MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion) :
     _mfxSession()
     ,apiVersion(requiredVersion)
+#ifndef DISABLE_NON_VPL_DISPATCHER
     ,pluginHive()
     ,pluginFactory((mfxSession)this)
+#endif
 {
     actualApiVersion.Version = 0;
     implType = MFX_LIB_SOFTWARE;
@@ -286,8 +288,10 @@ mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
 {
     mfxStatus mfxRes = MFX_ERR_NONE;
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
     //unregistered plugins if any
     pluginFactory.Close();
+#endif
 
     // close the loaded DLL
     if (session)

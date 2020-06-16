@@ -31,7 +31,6 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "sample_utils.h"
 #include "time_statistics.h"
 
-#include "onevpl/mfxmvc.h"
 #include "onevpl/mfxvideo++.h"
 #include "onevpl/mfxvideo.h"
 
@@ -410,8 +409,6 @@ protected:
 
     // for disabling VPP algorithms
     mfxExtVPPDoNotUse m_VppDoNotUse;
-    // for MVC encoder and VPP configuration
-    mfxExtMVCSeqDesc m_MVCSeqDesc;
     mfxExtCodingOption m_CodingOption;
     // for look ahead BRC configuration
     mfxExtCodingOption2 m_CodingOption2;

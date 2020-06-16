@@ -20,6 +20,8 @@
 
 #pragma once
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
+
 #include "mfx_dispatcher_defs.h"
 #include "onevpl/mfxplugin.h"
 #include "mfx_win_reg_key.h"
@@ -113,3 +115,5 @@ namespace MFX {
     };
 
 }
+
+#endif // DISABLE_NON_VPL_DISPATCHER

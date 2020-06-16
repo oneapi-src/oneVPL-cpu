@@ -19,7 +19,9 @@
 // SOFTWARE.
 
 #pragma once
-#include "onevpl/mfxplugin.h"
+
+#ifndef DISABLE_NON_VPL_DISPATCHER
+#include "mfxplugin.h"
 #include "mfx_dispatcher_defs.h"
 #include "mfx_plugin_hive.h"
 
@@ -85,3 +87,6 @@ namespace MFX
         static bool VerifyCodecCommon( const mfxVideoCodecPlugin & Video );
     };
 }
+
+#endif // DISABLE_NON_VPL_DISPATCHER
+

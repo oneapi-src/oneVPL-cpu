@@ -65,9 +65,11 @@ FUNCTION(mfxStatus, MFXAudioDECODE_DecodeFrameAsync, (mfxSession session, mfxBit
 
 #define API_VERSION {{9, 1}}
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
 FUNCTION(mfxStatus, MFXAudioUSER_Register, (mfxSession session, mfxU32 type, const mfxPlugin *par), (session, type, par))
 FUNCTION(mfxStatus, MFXAudioUSER_Unregister, (mfxSession session, mfxU32 type), (session, type))
 FUNCTION(mfxStatus, MFXAudioUSER_ProcessFrameAsync, (mfxSession session, const mfxHDL *in, mfxU32 in_num, const mfxHDL *out, mfxU32 out_num, mfxSyncPoint *syncp), (session, in, in_num, out, out_num, syncp))
+#endif
 
 
 #undef API_VERSION

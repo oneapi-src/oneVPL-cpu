@@ -666,6 +666,7 @@ mfxStatus CDecodingPipeline::InitMfxParams(sInputParams *pParams) {
             continue;
         }
         else {
+#ifndef DISABLE_NON_VPL
             // Enter MVC mode
             if (m_bIsMVC) {
                 // Check for attached external parameters - if we have them already,
@@ -691,7 +692,7 @@ mfxStatus CDecodingPipeline::InitMfxParams(sInputParams *pParams) {
                     continue;
                 }
             }
-
+#endif
             // if input is interlaced JPEG stream
             if (m_mfxBS.PicStruct == MFX_PICSTRUCT_FIELD_TFF ||
                 m_mfxBS.PicStruct == MFX_PICSTRUCT_FIELD_BFF) {
@@ -824,6 +825,7 @@ mfxStatus CDecodingPipeline::InitMfxParams(sInputParams *pParams) {
     }
 #endif //MFX_VERSION >= 1022
 
+#ifndef DISABLE_NON_VPL
     // If MVC mode we need to detect number of views in stream
     if (m_bIsMVC) {
         mfxExtMVCSeqDesc *pSequenceBuffer;
@@ -845,7 +847,9 @@ mfxStatus CDecodingPipeline::InitMfxParams(sInputParams *pParams) {
                 numViews = pSequenceBuffer->View[i].ViewId + 1;
         }
     }
-    else {
+    else
+#endif
+    {
         numViews = 1;
     }
 
@@ -1399,6 +1403,7 @@ void CDecodingPipeline::DeleteExtBuffers() {
 }
 
 mfxStatus CDecodingPipeline::AllocateExtMVCBuffers() {
+#ifndef DISABLE_NON_VPL
     mfxU32 i;
 
     mfxExtMVCSeqDesc *pExtMVCBuffer =
@@ -1425,11 +1430,12 @@ mfxStatus CDecodingPipeline::AllocateExtMVCBuffers() {
         MSDK_ZERO_MEMORY(pExtMVCBuffer->OP[i]);
     }
     pExtMVCBuffer->NumOPAlloc = pExtMVCBuffer->NumOP;
-
+#endif
     return MFX_ERR_NONE;
 }
 
 void CDecodingPipeline::DeallocateExtMVCBuffers() {
+#ifndef DISABLE_NON_VPL
     mfxExtMVCSeqDesc *pExtMVCBuffer =
         (mfxExtMVCSeqDesc *)m_mfxVideoParams.ExtParam[0];
     if (pExtMVCBuffer != NULL) {
@@ -1439,7 +1445,7 @@ void CDecodingPipeline::DeallocateExtMVCBuffers() {
     }
 
     MSDK_SAFE_DELETE(m_mfxVideoParams.ExtParam[0]);
-
+#endif
     m_bIsExtBuffers = false;
 }
 
@@ -2124,9 +2130,8 @@ void CDecodingPipeline::PrintInfo() {
             ? MSDK_STRING("hw_d3d11")
             : (MFX_IMPL_SOFTWARE == MFX_IMPL_BASETYPE(m_impl))
                   ? MSDK_STRING("sw")
-                  : (MFX_IMPL_SOFTWARE_VPL == MFX_IMPL_BASETYPE(m_impl))
-                        ? MSDK_STRING("VPL SW")
-                        : MSDK_STRING("hw");
+                  : (MFX_IMPL_SOFTWARE_VPL == m_impl) ? MSDK_STRING("VPL SW")
+                                                      : MSDK_STRING("hw");
     msdk_printf(MSDK_STRING("MediaSDK impl\t\t%s\n"), sImpl);
 
     mfxVersion ver;

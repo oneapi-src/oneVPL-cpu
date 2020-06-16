@@ -24,8 +24,8 @@
 #include <onevpl/mfxvideo.h>
 #ifndef DISABLE_NON_VPL_DISPATCHER
 #include <mfxaudio.h>
+#include <mfxplugin.h>
 #endif
-#include <onevpl/mfxplugin.h>
 #include <stddef.h>
 #include "mfx_dispatcher_defs.h"
 #include "mfx_load_plugin.h"
@@ -173,8 +173,10 @@ struct MFX_DISP_HANDLE : public _mfxSession
     // Library's module handle
     mfxModuleHandle hModule;
 
+#ifndef DISABLE_NON_VPL_DISPATCHER
     MFX::MFXPluginStorage pluginHive;
     MFX::MFXPluginFactory pluginFactory;
+#endif
 
 private:
     // Declare assignment operator and copy constructor to prevent occasional assignment

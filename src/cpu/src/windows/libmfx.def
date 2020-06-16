@@ -48,10 +48,5 @@ EXPORTS
     MFXVideoVPP_RunFrameVPPAsync
     MFXVideoVPP_RunFrameVPPAsyncEx
 
-    MFXVideoUSER_GetPlugin
-    MFXVideoUSER_Register
-    MFXVideoUSER_Unregister
-    MFXVideoUSER_ProcessFrameAsync
-
     MFXInitEx
     MFXDoWork

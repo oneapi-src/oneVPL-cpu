@@ -323,6 +323,7 @@ mfxStatus CEncodingPipeline::AllocAndInitMVCSeqDesc() {
     // actually equal to the "Default dependency mode" - when the structure fields are left 0,
     // but we show how to properly allocate and fill the fields
 
+#ifndef DISABLE_NON_VPL
     mfxU32 i;
 
     // mfxMVCViewDependency array
@@ -363,7 +364,7 @@ mfxStatus CEncodingPipeline::AllocAndInitMVCSeqDesc() {
         m_MVCSeqDesc.OP[i].TargetViewId =
             m_MVCSeqDesc.ViewId; // points to mfxExtMVCSeqDesc::ViewId
     }
-
+#endif
     return MFX_ERR_NONE;
 }
 
@@ -389,9 +390,11 @@ mfxStatus CEncodingPipeline::AllocAndInitVppDoNotUse() {
 } // CEncodingPipeline::AllocAndInitVppDoNotUse()
 
 void CEncodingPipeline::FreeMVCSeqDesc() {
+#ifndef DISABLE_NON_VPL
     MSDK_SAFE_DELETE_ARRAY(m_MVCSeqDesc.View);
     MSDK_SAFE_DELETE_ARRAY(m_MVCSeqDesc.ViewId);
     MSDK_SAFE_DELETE_ARRAY(m_MVCSeqDesc.OP);
+#endif
 }
 
 void CEncodingPipeline::FreeVppDoNotUse() {
@@ -539,6 +542,7 @@ mfxStatus CEncodingPipeline::InitMfxEncParams(sInputParams *pInParams) {
         bCodingOption        = true;
     }
 
+#ifndef DISABLE_NON_VPL
     // we don't specify profile and level and let the encoder choose those basing on parameters
     // we must specify profile only for MVC codec
     if (MVC_ENABLED & m_MVCflags) {
@@ -554,6 +558,7 @@ mfxStatus CEncodingPipeline::InitMfxEncParams(sInputParams *pInParams) {
         m_CodingOption.ViewOutput = MFX_CODINGOPTION_ON;
         bCodingOption             = true;
     }
+#endif
     if (pInParams->nPicTimingSEI || pInParams->nNalHrdConformance ||
         pInParams->nVuiNalHrdParameters) {
         m_CodingOption.PicTimingSEI        = pInParams->nPicTimingSEI;
@@ -822,8 +827,10 @@ mfxStatus CEncodingPipeline::InitMfxVppParams(sInputParams *pInParams) {
     AllocAndInitVppDoNotUse();
     m_VppExtParams.push_back((mfxExtBuffer *)&m_VppDoNotUse);
 
+#ifndef DISABLE_NON_VPL
     if (MVC_ENABLED & pInParams->MVC_flags)
         m_VppExtParams.push_back((mfxExtBuffer *)&m_MVCSeqDesc);
+#endif
 
     m_mfxVppParams.ExtParam =
         &m_VppExtParams[0]; // vector is stored linearly in memory
@@ -1186,9 +1193,11 @@ CEncodingPipeline::CEncodingPipeline() {
 
     m_FileWriters.first = m_FileWriters.second = NULL;
 
+#ifndef DISABLE_NON_VPL
     MSDK_ZERO_MEMORY(m_MVCSeqDesc);
     m_MVCSeqDesc.Header.BufferId = MFX_EXTBUFF_MVC_SEQ_DESC;
     m_MVCSeqDesc.Header.BufferSz = sizeof(m_MVCSeqDesc);
+#endif
 
     MSDK_ZERO_MEMORY(m_VppDoNotUse);
     m_VppDoNotUse.Header.BufferId = MFX_EXTBUFF_VPP_DONOTUSE;
@@ -2483,7 +2492,9 @@ void CEncodingPipeline::PrintInfo() {
                               ? MSDK_STRING("hw3")
                               : (MFX_IMPL_HARDWARE4 == MFX_IMPL_BASETYPE(impl))
                                     ? MSDK_STRING("hw4")
-                                    : MSDK_STRING("sw");
+                                    : (MFX_IMPL_SOFTWARE_VPL == impl)
+                                          ? MSDK_STRING("VPL SW")
+                                          : MSDK_STRING("sw");
     msdk_printf(MSDK_STRING("Media SDK impl\t\t%s\n"), sImpl);
 
     mfxVersion ver;
