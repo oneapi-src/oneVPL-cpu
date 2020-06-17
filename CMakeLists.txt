@@ -32,6 +32,7 @@ include(cmake/CompileOptions.cmake)
 
 add_subdirectory(api)
 add_subdirectory(src)
+add_subdirectory(env)
 add_subdirectory(doc)
 add_subdirectory(examples)
 
