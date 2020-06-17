@@ -34,6 +34,10 @@ add_library(${TARGET} SHARED "")
 # force correct name on Windows
 set_target_properties(${TARGET} PROPERTIES PREFIX "lib")
 
+if(UNIX)
+  set_target_properties(${TARGET} PROPERTIES SUFFIX ".so.1")
+endif()
+
 target_sources(${TARGET} PRIVATE ${SOURCES})
 
 target_link_libraries(${TARGET} PUBLIC vpl-api)

@@ -93,9 +93,6 @@ mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *pVersion) {
 }
 
 // stubs
-mfxStatus MFXDoWork(mfxSession session) {
-    return MFX_ERR_UNSUPPORTED;
-}
 mfxStatus MFXJoinSession(mfxSession session, mfxSession child) {
     return MFX_ERR_UNSUPPORTED;
 }

@@ -24,6 +24,14 @@ endif()
 
 if(UNIX)
   set(SOURCES linux/mfxloader.cpp)
+
+  if(NOT DEFINED MFX_MODULES_DIR)
+    set(MFX_MODULES_DIR ${CMAKE_INSTALL_FULL_LIBDIR})
+  endif()
+  add_definitions(-DMFX_MODULES_DIR="${MFX_MODULES_DIR}")
+  message(STATUS "MFX_MODULES_DIR=${MFX_MODULES_DIR}")
+
+  set(SOURCES linux/mfxloader.cpp)
 endif()
 
 add_library(${TARGET} STATIC "")

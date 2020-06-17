@@ -49,4 +49,4 @@ EXPORTS
     MFXVideoVPP_RunFrameVPPAsyncEx
 
     MFXInitEx
-    MFXDoWork
+    
