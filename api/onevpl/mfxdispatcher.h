@@ -22,6 +22,7 @@
 #define __MFXDISPATCHER_H__
 
 #include "mfxdefs.h"
+
 #include "mfxcommon.h"
 #include "mfxsession.h"
 

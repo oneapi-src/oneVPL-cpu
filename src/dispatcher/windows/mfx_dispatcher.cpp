@@ -18,83 +18,84 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "mfx_dispatcher.h"
-#include "mfx_dispatcher_log.h"
-#include "mfx_load_dll.h"
+#include "windows/mfx_dispatcher.h"
+#include "windows/mfx_dispatcher_log.h"
+#include "windows/mfx_load_dll.h"
 
 #include <assert.h>
 
 #include <string.h>
 #include <windows.h>
 
-#include "mfx_dxva2_device.h"
-#include "onevpl/mfxvideo++.h"
-#include "mfx_vector.h"
-#include "onevpl/mfxadapter.h"
 #include <algorithm>
+#include "onevpl/mfxadapter.h"
+#include "onevpl/mfxvideo++.h"
+#include "windows/mfx_dxva2_device.h"
+#include "windows/mfx_vector.h"
 
-#pragma warning(disable:4355)
+#pragma warning(disable : 4355)
 
-MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion) :
-    _mfxSession()
-    ,apiVersion(requiredVersion)
+MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion)
+        : _mfxSession(),
+          apiVersion(requiredVersion)
 #ifndef DISABLE_NON_VPL_DISPATCHER
-    ,pluginHive()
-    ,pluginFactory((mfxSession)this)
+          ,
+          pluginHive(),
+          pluginFactory((mfxSession)this)
 #endif
 {
     actualApiVersion.Version = 0;
-    implType = MFX_LIB_SOFTWARE;
-    impl = MFX_IMPL_SOFTWARE;
-    loadStatus = MFX_ERR_NOT_FOUND;
-    dispVersion.Major = MFX_DISPATCHER_VERSION_MAJOR;
-    dispVersion.Minor = MFX_DISPATCHER_VERSION_MINOR;
-    storageID = 0;
-    implInterface = MFX_IMPL_HARDWARE_ANY;
+    implType                 = MFX_LIB_SOFTWARE;
+    impl                     = MFX_IMPL_SOFTWARE;
+    loadStatus               = MFX_ERR_NOT_FOUND;
+    dispVersion.Major        = MFX_DISPATCHER_VERSION_MAJOR;
+    dispVersion.Minor        = MFX_DISPATCHER_VERSION_MINOR;
+    storageID                = 0;
+    implInterface            = MFX_IMPL_HARDWARE_ANY;
 
-    hModule = (mfxModuleHandle) 0;
+    hModule = (mfxModuleHandle)0;
 
 } // MFX_DISP_HANDLE::MFX_DISP_HANDLE(const mfxVersion requiredVersion)
 
-MFX_DISP_HANDLE::~MFX_DISP_HANDLE(void)
-{
+MFX_DISP_HANDLE::~MFX_DISP_HANDLE(void) {
     Close();
 
 } // MFX_DISP_HANDLE::~MFX_DISP_HANDLE(void)
 
-mfxStatus MFX_DISP_HANDLE::Close(void)
-{
+mfxStatus MFX_DISP_HANDLE::Close(void) {
     mfxStatus mfxRes;
 
     mfxRes = UnLoadSelectedDLL();
 
     // need to reset dispatcher state after unloading dll
-    if (MFX_ERR_NONE == mfxRes)
-    {
-        implType = MFX_LIB_SOFTWARE;
-        impl = MFX_IMPL_SOFTWARE;
-        loadStatus = MFX_ERR_NOT_FOUND;
-        dispVersion.Major = MFX_DISPATCHER_VERSION_MAJOR;
-        dispVersion.Minor = MFX_DISPATCHER_VERSION_MINOR;
+    if (MFX_ERR_NONE == mfxRes) {
+        implType                         = MFX_LIB_SOFTWARE;
+        impl                             = MFX_IMPL_SOFTWARE;
+        loadStatus                       = MFX_ERR_NOT_FOUND;
+        dispVersion.Major                = MFX_DISPATCHER_VERSION_MAJOR;
+        dispVersion.Minor                = MFX_DISPATCHER_VERSION_MINOR;
         *static_cast<_mfxSession*>(this) = _mfxSession();
-        hModule = (mfxModuleHandle) 0;
+        hModule                          = (mfxModuleHandle)0;
     }
 
     return mfxRes;
 
 } // mfxStatus MFX_DISP_HANDLE::Close(void)
 
-mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType reqImplType,
-                                           mfxIMPL reqImpl, mfxIMPL reqImplInterface, mfxInitParam &par)
-{
+mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
+                                           eMfxImplType reqImplType,
+                                           mfxIMPL reqImpl,
+                                           mfxIMPL reqImplInterface,
+                                           mfxInitParam& par) {
     mfxStatus mfxRes = MFX_ERR_NONE;
 
     // check error(s)
     if ((MFX_LIB_SOFTWARE != reqImplType) &&
         (MFX_LIB_HARDWARE != reqImplType) &&
-        (MFX_LIB_SOFTWARE_VPL != reqImplType))
-    {
-        DISPATCHER_LOG_ERROR((("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"), DispatcherLog_GetMFXImplString(reqImplType).c_str()));
+        (MFX_LIB_SOFTWARE_VPL != reqImplType)) {
+        DISPATCHER_LOG_ERROR((
+            ("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"),
+            DispatcherLog_GetMFXImplString(reqImplType).c_str()));
         loadStatus = MFX_ERR_ABORTED;
         return loadStatus;
     }
@@ -103,28 +104,22 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
         !(reqImpl & MFX_IMPL_EXTERNAL_THREADING) &&
 #endif
-        (MFX_IMPL_SOFTWARE != reqImpl) &&
-        (MFX_IMPL_HARDWARE != reqImpl) &&
-        (MFX_IMPL_HARDWARE2 != reqImpl) &&
-        (MFX_IMPL_HARDWARE3 != reqImpl) &&
-        (MFX_IMPL_HARDWARE4 != reqImpl) &&
-        (MFX_IMPL_SOFTWARE_VPL != reqImpl))
-    {
-        DISPATCHER_LOG_ERROR((("invalid implementation impl == %s\n"), DispatcherLog_GetMFXImplString(impl).c_str()));
+        (MFX_IMPL_SOFTWARE != reqImpl) && (MFX_IMPL_HARDWARE != reqImpl) &&
+        (MFX_IMPL_HARDWARE2 != reqImpl) && (MFX_IMPL_HARDWARE3 != reqImpl) &&
+        (MFX_IMPL_HARDWARE4 != reqImpl) && (MFX_IMPL_SOFTWARE_VPL != reqImpl)) {
+        DISPATCHER_LOG_ERROR((("invalid implementation impl == %s\n"),
+                              DispatcherLog_GetMFXImplString(impl).c_str()));
         loadStatus = MFX_ERR_ABORTED;
         return loadStatus;
     }
     // only mfxExtThreadsParam is allowed
-    if (par.NumExtParam)
-    {
-        if ((par.NumExtParam > 1) || !par.ExtParam)
-        {
+    if (par.NumExtParam) {
+        if ((par.NumExtParam > 1) || !par.ExtParam) {
             loadStatus = MFX_ERR_ABORTED;
             return loadStatus;
         }
         if ((par.ExtParam[0]->BufferId != MFX_EXTBUFF_THREADS_PARAM) ||
-            (par.ExtParam[0]->BufferSz != sizeof(mfxExtThreadsParam)))
-        {
+            (par.ExtParam[0]->BufferSz != sizeof(mfxExtThreadsParam))) {
             loadStatus = MFX_ERR_ABORTED;
             return loadStatus;
         }
@@ -134,8 +129,8 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
     Close();
 
     // save the library's type
-    this->implType = reqImplType;
-    this->impl = reqImpl;
+    this->implType      = reqImplType;
+    this->impl          = reqImpl;
     this->implInterface = reqImplInterface;
 
     {
@@ -145,62 +140,69 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
         // load the DLL into the memory
         hModule = MFX::mfx_dll_load(pPath);
 
-        if (hModule)
-        {
+        if (hModule) {
             int i;
 
             DISPATCHER_LOG_OPERATION({
                 wchar_t modulePath[1024];
-                GetModuleFileNameW((HMODULE)hModule, modulePath, sizeof(modulePath)/sizeof(modulePath[0]));
+                GetModuleFileNameW((HMODULE)hModule,
+                                   modulePath,
+                                   sizeof(modulePath) / sizeof(modulePath[0]));
                 DISPATCHER_LOG_INFO((("loaded module %S\n"), modulePath))
             });
 
-            if (impl & MFX_IMPL_AUDIO)
-            {
+            if (impl & MFX_IMPL_AUDIO) {
                 // load audio functions: pointers to exposed functions
-                for (i = 0; i < eAudioFuncTotal; i += 1)
-                {
+                for (i = 0; i < eAudioFuncTotal; i += 1) {
                     // construct correct name of the function - remove "_a" postfix
 
-                    mfxFunctionPointer pProc = (mfxFunctionPointer) MFX::mfx_dll_get_addr(hModule, APIAudioFunc[i].pName);
-                    if (pProc)
-                    {
+                    mfxFunctionPointer pProc = (mfxFunctionPointer)
+                        MFX::mfx_dll_get_addr(hModule, APIAudioFunc[i].pName);
+                    if (pProc) {
                         // function exists in the library,
                         // save the pointer.
                         callAudioTable[i] = pProc;
                     }
-                    else
-                    {
+                    else {
                         // The library doesn't contain the function
-                        DISPATCHER_LOG_WRN((("Can't find API function \"%s\"\n"), APIAudioFunc[i].pName));
-                        if (apiVersion.Version >= APIAudioFunc[i].apiVersion.Version)
-                        {
-                            DISPATCHER_LOG_ERROR((("\"%s\" is required for API %u.%u\n"), APIAudioFunc[i].pName, apiVersion.Major, apiVersion.Minor));
+                        DISPATCHER_LOG_WRN(
+                            (("Can't find API function \"%s\"\n"),
+                             APIAudioFunc[i].pName));
+                        if (apiVersion.Version >=
+                            APIAudioFunc[i].apiVersion.Version) {
+                            DISPATCHER_LOG_ERROR(
+                                (("\"%s\" is required for API %u.%u\n"),
+                                 APIAudioFunc[i].pName,
+                                 apiVersion.Major,
+                                 apiVersion.Minor));
                             mfxRes = MFX_ERR_UNSUPPORTED;
                             break;
                         }
                     }
                 }
             }
-            else
-            {
+            else {
                 // load video functions: pointers to exposed functions
-                for (i = 0; i < eVideoFuncTotal; i += 1)
-                {
-                    mfxFunctionPointer pProc = (mfxFunctionPointer) MFX::mfx_dll_get_addr(hModule, APIFunc[i].pName);
-                    if (pProc)
-                    {
+                for (i = 0; i < eVideoFuncTotal; i += 1) {
+                    mfxFunctionPointer pProc = (mfxFunctionPointer)
+                        MFX::mfx_dll_get_addr(hModule, APIFunc[i].pName);
+                    if (pProc) {
                         // function exists in the library,
                         // save the pointer.
                         callTable[i] = pProc;
                     }
-                    else
-                    {
+                    else {
                         // The library doesn't contain the function
-                        DISPATCHER_LOG_WRN((("Can't find API function \"%s\"\n"), APIFunc[i].pName));
-                        if (apiVersion.Version >= APIFunc[i].apiVersion.Version)
-                        {
-                            DISPATCHER_LOG_ERROR((("\"%s\" is required for API %u.%u\n"), APIFunc[i].pName, apiVersion.Major, apiVersion.Minor));
+                        DISPATCHER_LOG_WRN(
+                            (("Can't find API function \"%s\"\n"),
+                             APIFunc[i].pName));
+                        if (apiVersion.Version >=
+                            APIFunc[i].apiVersion.Version) {
+                            DISPATCHER_LOG_ERROR(
+                                (("\"%s\" is required for API %u.%u\n"),
+                                 APIFunc[i].pName,
+                                 apiVersion.Major,
+                                 apiVersion.Minor));
                             mfxRes = MFX_ERR_UNSUPPORTED;
                             break;
                         }
@@ -208,72 +210,84 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
                 }
             }
         }
-        else
-        {
-            DISPATCHER_LOG_WRN((("can't find DLL: GetLastErr()=0x%x\n"), GetLastError()))
+        else {
+            DISPATCHER_LOG_WRN(
+                (("can't find DLL: GetLastErr()=0x%x\n"), GetLastError()))
             mfxRes = MFX_ERR_UNSUPPORTED;
         }
     }
 
     // initialize the loaded DLL
-    if (MFX_ERR_NONE == mfxRes)
-    {
+    if (MFX_ERR_NONE == mfxRes) {
         mfxVersion version(apiVersion);
 
         /* check whether it is audio session or video */
-        mfxFunctionPointer *actualTable = (impl & MFX_IMPL_AUDIO) ? callAudioTable : callTable;
+        mfxFunctionPointer* actualTable =
+            (impl & MFX_IMPL_AUDIO) ? callAudioTable : callTable;
 
         // Call old-style MFXInit init for older libraries and audio library
-        bool callOldInit = (impl & MFX_IMPL_AUDIO) || !actualTable[eMFXInitEx]; // if true call eMFXInit, if false - eMFXInitEx
+        bool callOldInit =
+            (impl & MFX_IMPL_AUDIO) ||
+            !actualTable
+                [eMFXInitEx]; // if true call eMFXInit, if false - eMFXInitEx
         int tableIndex = (callOldInit) ? eMFXInit : eMFXInitEx;
 
         mfxFunctionPointer pFunc = actualTable[tableIndex];
 
         {
-            if (callOldInit)
-            {
-                DISPATCHER_LOG_BLOCK(("MFXInit(%s,ver=%u.%u,session=0x%p)\n"
-                                     , DispatcherLog_GetMFXImplString(impl | implInterface).c_str()
-                                     , apiVersion.Major
-                                     , apiVersion.Minor
-                                     , &session));
+            if (callOldInit) {
+                DISPATCHER_LOG_BLOCK(
+                    ("MFXInit(%s,ver=%u.%u,session=0x%p)\n",
+                     DispatcherLog_GetMFXImplString(impl | implInterface)
+                         .c_str(),
+                     apiVersion.Major,
+                     apiVersion.Minor,
+                     &session));
 
-                mfxRes = (*(mfxStatus(MFX_CDECL *) (mfxIMPL, mfxVersion *, mfxSession *)) pFunc) (impl | implInterface, &version, &session);
+                mfxRes =
+                    (*(mfxStatus(MFX_CDECL*)(mfxIMPL, mfxVersion*, mfxSession*))
+                         pFunc)(impl | implInterface, &version, &session);
             }
-            else
-            {
-                DISPATCHER_LOG_BLOCK(("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n"
-                                     , DispatcherLog_GetMFXImplString(impl | implInterface).c_str()
-                                     , apiVersion.Major
-                                     , apiVersion.Minor
-                                     , par.ExternalThreads
-                                     , &session));
+            else {
+                DISPATCHER_LOG_BLOCK(
+                    ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
+                     DispatcherLog_GetMFXImplString(impl | implInterface)
+                         .c_str(),
+                     apiVersion.Major,
+                     apiVersion.Minor,
+                     par.ExternalThreads,
+                     &session));
 
                 mfxInitParam initPar = par;
                 // adjusting user parameters
                 initPar.Implementation = impl | implInterface;
-                initPar.Version = version;
-                mfxRes = (*(mfxStatus(MFX_CDECL *) (mfxInitParam, mfxSession *)) pFunc) (initPar, &session);
+                initPar.Version        = version;
+                mfxRes =
+                    (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(
+                        initPar,
+                        &session);
             }
         }
 
-        if (MFX_ERR_NONE != mfxRes)
-        {
-            DISPATCHER_LOG_WRN((("library can't be load. MFXInit returned %s \n"), DispatcherLog_GetMFXStatusString(mfxRes)))
+        if (MFX_ERR_NONE != mfxRes) {
+            DISPATCHER_LOG_WRN(
+                (("library can't be load. MFXInit returned %s \n"),
+                 DispatcherLog_GetMFXStatusString(mfxRes)))
         }
-        else
-        {
-            mfxRes = MFXQueryVersion((mfxSession) this, &actualApiVersion);
+        else {
+            mfxRes = MFXQueryVersion((mfxSession)this, &actualApiVersion);
 
-            if (MFX_ERR_NONE != mfxRes)
-            {
-                DISPATCHER_LOG_ERROR((("MFXQueryVersion returned: %d, skiped this library\n"), mfxRes))
+            if (MFX_ERR_NONE != mfxRes) {
+                DISPATCHER_LOG_ERROR(
+                    (("MFXQueryVersion returned: %d, skiped this library\n"),
+                     mfxRes))
             }
-            else
-            {
-                DISPATCHER_LOG_INFO((("MFXQueryVersion returned API: %d.%d\n"), actualApiVersion.Major, actualApiVersion.Minor))
+            else {
+                DISPATCHER_LOG_INFO((("MFXQueryVersion returned API: %d.%d\n"),
+                                     actualApiVersion.Major,
+                                     actualApiVersion.Minor))
                 //special hook for applications that uses sink api to get loaded library path
-                DISPATCHER_LOG_LIBRARY(("%p" , hModule));
+                DISPATCHER_LOG_LIBRARY(("%p", hModule));
                 DISPATCHER_LOG_INFO(("library loaded succesfully\n"))
             }
         }
@@ -284,8 +298,7 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType re
 
 } // mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t *pPath, eMfxImplType implType, mfxIMPL impl)
 
-mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
-{
+mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void) {
     mfxStatus mfxRes = MFX_ERR_NONE;
 
 #ifndef DISABLE_NON_VPL_DISPATCHER
@@ -294,41 +307,35 @@ mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
 #endif
 
     // close the loaded DLL
-    if (session)
-    {
+    if (session) {
         /* check whether it is audio session or video */
         int tableIndex = eMFXClose;
         mfxFunctionPointer pFunc;
-        if (impl & MFX_IMPL_AUDIO)
-        {
+        if (impl & MFX_IMPL_AUDIO) {
             pFunc = callAudioTable[tableIndex];
         }
-        else
-        {
+        else {
             pFunc = callTable[tableIndex];
         }
 
-        mfxRes = (*(mfxStatus (MFX_CDECL *) (mfxSession)) pFunc) (session);
-        if (MFX_ERR_NONE == mfxRes)
-        {
-            session = (mfxSession) 0;
+        mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxSession))pFunc)(session);
+        if (MFX_ERR_NONE == mfxRes) {
+            session = (mfxSession)0;
         }
 
-        DISPATCHER_LOG_INFO((("MFXClose(0x%x) returned %d\n"), session, mfxRes));
+        DISPATCHER_LOG_INFO(
+            (("MFXClose(0x%x) returned %d\n"), session, mfxRes));
         // actually, the return value is required to pass outside only.
     }
 
     // it is possible, that there is an active child session.
     // can't unload library in that case.
-    if ((MFX_ERR_UNDEFINED_BEHAVIOR != mfxRes) &&
-        (hModule))
-    {
+    if ((MFX_ERR_UNDEFINED_BEHAVIOR != mfxRes) && (hModule)) {
         // unload the library.
-        if (!MFX::mfx_dll_free(hModule))
-        {
+        if (!MFX::mfx_dll_free(hModule)) {
             mfxRes = MFX_ERR_UNDEFINED_BEHAVIOR;
         }
-        hModule = (mfxModuleHandle) 0;
+        hModule = (mfxModuleHandle)0;
     }
 
     return mfxRes;
@@ -336,33 +343,32 @@ mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
 } // mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
 
 #if (defined(_WIN64) || defined(_WIN32)) && (MFX_VERSION >= 1031)
-static mfxStatus InitDummySession(mfxU32 adapter_n, MFXVideoSession & dummy_session)
-{
+static mfxStatus InitDummySession(mfxU32 adapter_n,
+                                  MFXVideoSession& dummy_session) {
     mfxInitParam initPar;
     memset(&initPar, 0, sizeof(initPar));
 
     initPar.Version.Major = 1;
     initPar.Version.Minor = 0;
 
-    switch (adapter_n)
-    {
-    case 0:
-        initPar.Implementation = MFX_IMPL_HARDWARE;
-        break;
-    case 1:
-        initPar.Implementation = MFX_IMPL_HARDWARE2;
-        break;
-    case 2:
-        initPar.Implementation = MFX_IMPL_HARDWARE3;
-        break;
-    case 3:
-        initPar.Implementation = MFX_IMPL_HARDWARE4;
-        break;
+    switch (adapter_n) {
+        case 0:
+            initPar.Implementation = MFX_IMPL_HARDWARE;
+            break;
+        case 1:
+            initPar.Implementation = MFX_IMPL_HARDWARE2;
+            break;
+        case 2:
+            initPar.Implementation = MFX_IMPL_HARDWARE3;
+            break;
+        case 3:
+            initPar.Implementation = MFX_IMPL_HARDWARE4;
+            break;
 
-    default:
-        // try searching on all display adapters
-        initPar.Implementation = MFX_IMPL_HARDWARE_ANY;
-        break;
+        default:
+            // try searching on all display adapters
+            initPar.Implementation = MFX_IMPL_HARDWARE_ANY;
+            break;
     }
 
     initPar.Implementation |= MFX_IMPL_VIA_D3D11;
@@ -370,19 +376,16 @@ static mfxStatus InitDummySession(mfxU32 adapter_n, MFXVideoSession & dummy_sess
     return dummy_session.InitEx(initPar);
 }
 
-static inline bool is_iGPU(const mfxAdapterInfo& adapter_info)
-{
+static inline bool is_iGPU(const mfxAdapterInfo& adapter_info) {
     return adapter_info.Platform.MediaAdapterType == MFX_MEDIA_INTEGRATED;
 }
 
-static inline bool is_dGPU(const mfxAdapterInfo& adapter_info)
-{
+static inline bool is_dGPU(const mfxAdapterInfo& adapter_info) {
     return adapter_info.Platform.MediaAdapterType == MFX_MEDIA_DISCRETE;
 }
 
 // This function implies that iGPU has higher priority
-static inline mfxI32 iGPU_priority(const void* ll, const void* rr)
-{
+static inline mfxI32 iGPU_priority(const void* ll, const void* rr) {
     const mfxAdapterInfo& l = *(reinterpret_cast<const mfxAdapterInfo*>(ll));
     const mfxAdapterInfo& r = *(reinterpret_cast<const mfxAdapterInfo*>(rr));
 
@@ -396,47 +399,44 @@ static inline mfxI32 iGPU_priority(const void* ll, const void* rr)
     return 1;
 }
 
-
-static void RearrangeInPriorityOrder(const mfxComponentInfo & info, MFX::MFXVector<mfxAdapterInfo> & vec)
-{
+static void RearrangeInPriorityOrder(const mfxComponentInfo& info,
+                                     MFX::MFXVector<mfxAdapterInfo>& vec) {
     {
         // Move iGPU to top priority
         qsort(vec.data(), vec.size(), sizeof(mfxAdapterInfo), &iGPU_priority);
     }
 }
 
-static mfxStatus PrepareAdaptersInfo(const mfxComponentInfo * info, MFX::MFXVector<mfxAdapterInfo> & vec, mfxAdaptersInfo& adapters)
-{
+static mfxStatus PrepareAdaptersInfo(const mfxComponentInfo* info,
+                                     MFX::MFXVector<mfxAdapterInfo>& vec,
+                                     mfxAdaptersInfo& adapters) {
     // No suitable adapters on system to handle user's workload
-    if (vec.empty())
-    {
+    if (vec.empty()) {
         adapters.NumActual = 0;
         return MFX_ERR_NOT_FOUND;
     }
 
-    if (info)
-    {
+    if (info) {
         RearrangeInPriorityOrder(*info, vec);
     }
 
     mfxU32 num_to_copy = (std::min)(mfxU32(vec.size()), adapters.NumAlloc);
-    for (mfxU32 i = 0; i < num_to_copy; ++i)
-    {
+    for (mfxU32 i = 0; i < num_to_copy; ++i) {
         adapters.Adapters[i] = vec[i];
     }
 
     adapters.NumActual = num_to_copy;
 
-    if (vec.size() > adapters.NumAlloc)
-    {
+    if (vec.size() > adapters.NumAlloc) {
         return MFX_WRN_OUT_OF_RANGE;
     }
 
     return MFX_ERR_NONE;
 }
 
-static inline bool QueryAdapterInfo(mfxU32 adapter_n, mfxU32& VendorID, mfxU32& DeviceID)
-{
+static inline bool QueryAdapterInfo(mfxU32 adapter_n,
+                                    mfxU32& VendorID,
+                                    mfxU32& DeviceID) {
     MFX::DXVA2Device dxvaDevice;
 
     if (!dxvaDevice.InitD3D9(adapter_n) && !dxvaDevice.InitDXGI1(adapter_n))
@@ -448,8 +448,9 @@ static inline bool QueryAdapterInfo(mfxU32 adapter_n, mfxU32& VendorID, mfxU32& 
     return true;
 }
 
-mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAdaptersInfo* adapters)
-{
+mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
+                                 mfxU32 codec_id,
+                                 mfxAdaptersInfo* adapters) {
     if (!adapters || !bitstream)
         return MFX_ERR_NULL_PTR;
 
@@ -459,11 +460,10 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAd
 
     mfxComponentInfo input_info;
     memset(&input_info, 0, sizeof(input_info));
-    input_info.Type                     = mfxComponentType::MFX_COMPONENT_DECODE;
+    input_info.Type = mfxComponentType::MFX_COMPONENT_DECODE;
     input_info.Requirements.mfx.CodecId = codec_id;
 
-    for(;;)
-    {
+    for (;;) {
         if (!QueryAdapterInfo(adapter_n, VendorID, DeviceID))
             break;
 
@@ -476,8 +476,7 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAd
         MFXVideoSession dummy_session;
 
         mfxStatus sts = InitDummySession(adapter_n - 1, dummy_session);
-        if (sts != MFX_ERR_NONE)
-        {
+        if (sts != MFX_ERR_NONE) {
             continue;
         }
 
@@ -486,24 +485,28 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAd
         memset(&stream_params, 0, sizeof(stream_params));
         out.mfx.CodecId = stream_params.mfx.CodecId = codec_id;
 
-        sts = MFXVideoDECODE_DecodeHeader(dummy_session.operator mfxSession(), bitstream, &stream_params);
+        sts = MFXVideoDECODE_DecodeHeader(dummy_session.operator mfxSession(),
+                                          bitstream,
+                                          &stream_params);
 
-        if (sts != MFX_ERR_NONE)
-        {
+        if (sts != MFX_ERR_NONE) {
             continue;
         }
 
-        sts = MFXVideoDECODE_Query(dummy_session.operator mfxSession(), &stream_params, &out);
+        sts = MFXVideoDECODE_Query(dummy_session.operator mfxSession(),
+                                   &stream_params,
+                                   &out);
 
-        if (sts != MFX_ERR_NONE) // skip MFX_ERR_UNSUPPORTED as well as MFX_WRN_INCOMPATIBLE_VIDEO_PARAM
+        if (sts !=
+            MFX_ERR_NONE) // skip MFX_ERR_UNSUPPORTED as well as MFX_WRN_INCOMPATIBLE_VIDEO_PARAM
             continue;
 
         mfxAdapterInfo info;
         memset(&info, 0, sizeof(info));
-        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(), &info.Platform);
+        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(),
+                                         &info.Platform);
 
-        if (sts != MFX_ERR_NONE)
-        {
+        if (sts != MFX_ERR_NONE) {
             continue;
         }
 
@@ -516,8 +519,8 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream, mfxU32 codec_id, mfxAd
     return PrepareAdaptersInfo(&input_info, obtained_info, *adapters);
 }
 
-mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapters)
-{
+mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info,
+                           mfxAdaptersInfo* adapters) {
     if (!adapters)
         return MFX_ERR_NULL_PTR;
 
@@ -526,8 +529,7 @@ mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapte
 
     mfxU32 adapter_n = 0, VendorID, DeviceID;
 
-    for (;;)
-    {
+    for (;;) {
         if (!QueryAdapterInfo(adapter_n, VendorID, DeviceID))
             break;
 
@@ -540,52 +542,52 @@ mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapte
         MFXVideoSession dummy_session;
 
         mfxStatus sts = InitDummySession(adapter_n - 1, dummy_session);
-        if (sts != MFX_ERR_NONE)
-        {
+        if (sts != MFX_ERR_NONE) {
             continue;
         }
 
         // If input_info is NULL just return all Intel adapters and information about them
-        if (input_info)
-        {
+        if (input_info) {
             mfxVideoParam out;
             memset(&out, 0, sizeof(out));
 
-            switch (input_info->Type)
-            {
-            case mfxComponentType::MFX_COMPONENT_ENCODE:
-                {
+            switch (input_info->Type) {
+                case mfxComponentType::MFX_COMPONENT_ENCODE: {
                     out.mfx.CodecId = input_info->Requirements.mfx.CodecId;
 
-                    sts = MFXVideoENCODE_Query(dummy_session.operator mfxSession(), &input_info->Requirements, &out);
-                }
-                break;
-            case mfxComponentType::MFX_COMPONENT_DECODE:
-                {
+                    sts = MFXVideoENCODE_Query(
+                        dummy_session.operator mfxSession(),
+                        &input_info->Requirements,
+                        &out);
+                } break;
+                case mfxComponentType::MFX_COMPONENT_DECODE: {
                     out.mfx.CodecId = input_info->Requirements.mfx.CodecId;
 
-                    sts = MFXVideoDECODE_Query(dummy_session.operator mfxSession(), &input_info->Requirements, &out);
-                }
-                break;
-            case mfxComponentType::MFX_COMPONENT_VPP:
-                {
-                    sts = MFXVideoVPP_Query(dummy_session.operator mfxSession(), &input_info->Requirements, &out);
-                }
-                break;
-            default:
-                sts = MFX_ERR_UNSUPPORTED;
+                    sts = MFXVideoDECODE_Query(
+                        dummy_session.operator mfxSession(),
+                        &input_info->Requirements,
+                        &out);
+                } break;
+                case mfxComponentType::MFX_COMPONENT_VPP: {
+                    sts = MFXVideoVPP_Query(dummy_session.operator mfxSession(),
+                                            &input_info->Requirements,
+                                            &out);
+                } break;
+                default:
+                    sts = MFX_ERR_UNSUPPORTED;
             }
         }
 
-        if (sts != MFX_ERR_NONE) // skip MFX_ERR_UNSUPPORTED as well as MFX_WRN_INCOMPATIBLE_VIDEO_PARAM
+        if (sts !=
+            MFX_ERR_NONE) // skip MFX_ERR_UNSUPPORTED as well as MFX_WRN_INCOMPATIBLE_VIDEO_PARAM
             continue;
 
         mfxAdapterInfo info;
         memset(&info, 0, sizeof(info));
-        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(), &info.Platform);
+        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(),
+                                         &info.Platform);
 
-        if (sts != MFX_ERR_NONE)
-        {
+        if (sts != MFX_ERR_NONE) {
             continue;
         }
 
@@ -598,15 +600,13 @@ mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapte
     return PrepareAdaptersInfo(input_info, obtained_info, *adapters);
 }
 
-mfxStatus MFXQueryAdaptersNumber(mfxU32* num_adapters)
-{
+mfxStatus MFXQueryAdaptersNumber(mfxU32* num_adapters) {
     if (!num_adapters)
         return MFX_ERR_NULL_PTR;
 
     mfxU32 intel_adapter_count = 0, VendorID, DeviceID;
 
-    for (mfxU32 cur_adapter = 0; ; ++cur_adapter)
-    {
+    for (mfxU32 cur_adapter = 0;; ++cur_adapter) {
         if (!QueryAdapterInfo(cur_adapter, VendorID, DeviceID))
             break;
 

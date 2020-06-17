@@ -18,32 +18,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if !defined(__MFX_WIN_REG_KEY_H)
-#define __MFX_WIN_REG_KEY_H
+#ifndef SRC_DISPATCHER_WINDOWS_MFX_WIN_REG_KEY_H_
+#define SRC_DISPATCHER_WINDOWS_MFX_WIN_REG_KEY_H_
 
 #include <windows.h>
 #include "onevpl/mfxcommon.h"
 #ifndef DISABLE_NON_VPL_DISPATCHER
-#include "mfxplugin.h"
+    #include "mfxplugin.h"
 #endif
-#include "mfx_dispatcher_log.h"
+#include "windows/mfx_dispatcher_log.h"
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)
 namespace MFX {
 
-template<class T> struct RegKey{};
-template<> struct RegKey<bool>{enum {type = REG_DWORD};};
-template<> struct RegKey<mfxU32>{enum {type = REG_DWORD};};
-#ifndef DISABLE_NON_VPL_DISPATCHER
-template<> struct RegKey<mfxPluginUID>{enum {type = REG_BINARY};};
-#endif
-template<> struct RegKey<mfxVersion>{enum {type = REG_DWORD};};
-template<> struct RegKey<char*>{enum {type = REG_SZ};};
-template<> struct RegKey<wchar_t*>{enum {type = REG_SZ};};
+template <class T>
+struct RegKey {};
+template <>
+struct RegKey<bool> {
+    enum { type = REG_DWORD };
+};
+template <>
+struct RegKey<mfxU32> {
+    enum { type = REG_DWORD };
+};
+    #ifndef DISABLE_NON_VPL_DISPATCHER
+template <>
+struct RegKey<mfxPluginUID> {
+    enum { type = REG_BINARY };
+};
+    #endif
+template <>
+struct RegKey<mfxVersion> {
+    enum { type = REG_DWORD };
+};
+template <>
+struct RegKey<char *> {
+    enum { type = REG_SZ };
+};
+template <>
+struct RegKey<wchar_t *> {
+    enum { type = REG_SZ };
+};
 
-
-class WinRegKey
-{
+class WinRegKey {
 public:
     // Default constructor
     WinRegKey(void);
@@ -58,11 +75,14 @@ public:
     bool QueryInfo(LPDWORD lpcSubkeys);
 
     bool QueryValueSize(const wchar_t *pValueName, DWORD type, LPDWORD pcbData);
-    bool Query(const wchar_t *pValueName, DWORD type, LPBYTE pData, LPDWORD pcbData);
+    bool Query(const wchar_t *pValueName,
+               DWORD type,
+               LPBYTE pData,
+               LPDWORD pcbData);
 
     bool Query(const wchar_t *pValueName, wchar_t *pData, mfxU32 &nData) {
         DWORD dw = (DWORD)nData;
-        if (!Query(pValueName, RegKey<wchar_t*>::type, (LPBYTE)pData, &dw)){
+        if (!Query(pValueName, RegKey<wchar_t *>::type, (LPBYTE)pData, &dw)) {
             return false;
         }
         nData = dw;
@@ -70,40 +90,41 @@ public:
     }
 
     // Enumerate value names
-    bool EnumValue(DWORD index, wchar_t *pValueName, LPDWORD pcchValueName, LPDWORD pType);
+    bool EnumValue(DWORD index,
+                   wchar_t *pValueName,
+                   LPDWORD pcchValueName,
+                   LPDWORD pType);
     bool EnumKey(DWORD index, wchar_t *pValueName, LPDWORD pcchValueName);
 
 protected:
-
     // Release the object
     void Release(void);
 
-    HKEY m_hKey;                                                // (HKEY) handle to the opened key
+    HKEY m_hKey; // (HKEY) handle to the opened key
 
 private:
     // unimplemented by intent to make this class non-copyable
     WinRegKey(const WinRegKey &);
     void operator=(const WinRegKey &);
-
 };
 
-
-template<class T>
-inline bool QueryKey(WinRegKey & key, const wchar_t *pValueName, T &data ) {
+template <class T>
+inline bool QueryKey(WinRegKey &key, const wchar_t *pValueName, T &data) {
     DWORD size = sizeof(data);
-    return key.Query(pValueName, RegKey<T>::type, (LPBYTE) &data, &size);
+    return key.Query(pValueName, RegKey<T>::type, (LPBYTE)&data, &size);
 }
 
-template<>
-inline bool QueryKey<bool>(WinRegKey & key, const wchar_t *pValueName, bool &data ) {
+template <>
+inline bool QueryKey<bool>(WinRegKey &key,
+                           const wchar_t *pValueName,
+                           bool &data) {
     mfxU32 value = 0;
-    bool bRes = QueryKey(key, pValueName, value);
-    data = (1 == value);
+    bool bRes    = QueryKey(key, pValueName, value);
+    data         = (1 == value);
     return bRes;
 }
-
 
 } // namespace MFX
 #endif // #if !defined(MEDIASDK_UWP_DISPATCHER)
 
-#endif // __MFX_WIN_REG_KEY_H
+#endif // SRC_DISPATCHER_WINDOWS_MFX_WIN_REG_KEY_H_

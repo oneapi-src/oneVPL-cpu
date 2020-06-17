@@ -19,99 +19,97 @@
 // SOFTWARE.
 
 #if !defined(MEDIASDK_ARM_LOADER)
-#include <tchar.h>
+    #include <tchar.h>
 
-#include "mfx_driver_store_loader.h"
-#include "mfx_dispatcher_log.h"
-#include "mfx_load_dll.h"
+    #include "mfx_dispatcher_log.h"
+    #include "mfx_driver_store_loader.h"
+    #include "mfx_load_dll.h"
 
-namespace MFX
-{
+namespace MFX {
 
 DriverStoreLoader::DriverStoreLoader(void)
-    : m_moduleCfgMgr(NULL)
-    , m_pCM_Get_Device_ID_List_Size(NULL)
-    , m_pCM_Get_Device_ID_List(NULL)
-    , m_pCM_Locate_DevNode(NULL)
-    , m_pCM_Open_DevNode_Key(NULL)
-{
-}
+        : m_moduleCfgMgr(NULL),
+          m_pCM_Get_Device_ID_List_Size(NULL),
+          m_pCM_Get_Device_ID_List(NULL),
+          m_pCM_Locate_DevNode(NULL),
+          m_pCM_Open_DevNode_Key(NULL) {}
 
-DriverStoreLoader::~DriverStoreLoader(void)
-{
-}
+DriverStoreLoader::~DriverStoreLoader(void) {}
 
-bool DriverStoreLoader::GetDriverStorePath(wchar_t * path, DWORD dwPathSize)
-{
-    if (path == NULL || dwPathSize == 0)
-    {
+bool DriverStoreLoader::GetDriverStorePath(wchar_t *path, DWORD dwPathSize) {
+    if (path == NULL || dwPathSize == 0) {
         return false;
     }
 
     // Obtain a PnP handle to the Intel graphics adapter
-    CONFIGRET    result = CR_SUCCESS;
-    ULONG        DeviceIDListSize = 0;
+    CONFIGRET result       = CR_SUCCESS;
+    ULONG DeviceIDListSize = 0;
     MFXVector<WCHAR> DeviceIDList;
-    wchar_t      DisplayGUID[40];
-    DEVINST      DeviceInst;
+    wchar_t DisplayGUID[40];
+    DEVINST DeviceInst;
 
     DISPATCHER_LOG_INFO(("Looking for MediaSDK in DriverStore\n"));
 
-    if (!LoadCfgMgr() || !LoadCmFuncs())
-    {
+    if (!LoadCfgMgr() || !LoadCmFuncs()) {
         return false;
     }
 
-    if (StringFromGUID2(GUID_DEVCLASS_DISPLAY, DisplayGUID, sizeof(DisplayGUID)) == 0)
-    {
+    if (StringFromGUID2(GUID_DEVCLASS_DISPLAY,
+                        DisplayGUID,
+                        sizeof(DisplayGUID)) == 0) {
         DISPATCHER_LOG_WRN(("Couldn't prepare string from GUID\n"));
         return false;
     }
 
-    do
-    {
-        result = m_pCM_Get_Device_ID_List_Size(&DeviceIDListSize, DisplayGUID, CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT);
-        if (result != CR_SUCCESS)
-        {
+    do {
+        result = m_pCM_Get_Device_ID_List_Size(
+            &DeviceIDListSize,
+            DisplayGUID,
+            CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT);
+        if (result != CR_SUCCESS) {
             break;
         }
 
-        try
-        {
+        try {
             DeviceIDList.resize(DeviceIDListSize);
         }
-        catch (...)
-        {
+        catch (...) {
             return false;
         }
-        result = m_pCM_Get_Device_ID_List(DisplayGUID, DeviceIDList.data(), DeviceIDListSize, CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT);
+        result = m_pCM_Get_Device_ID_List(
+            DisplayGUID,
+            DeviceIDList.data(),
+            DeviceIDListSize,
+            CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT);
 
     } while (result == CR_BUFFER_SMALL);
 
-    if (result != CR_SUCCESS)
-    {
+    if (result != CR_SUCCESS) {
         return false;
     }
 
     //Look for MediaSDK record
     wchar_t *begin = DeviceIDList.data();
-    wchar_t *end = begin + DeviceIDList.size();
-    size_t len = 0;
+    wchar_t *end   = begin + DeviceIDList.size();
+    size_t len     = 0;
 
-    while ((begin < end) && (len = wcslen(begin)) > 0)
-    {
-        if (IsIntelDeviceInstanceID(begin))
-        {
-            result = m_pCM_Locate_DevNode(&DeviceInst, begin, CM_LOCATE_DEVNODE_NORMAL);
-            if (result != CR_SUCCESS)
-            {
+    while ((begin < end) && (len = wcslen(begin)) > 0) {
+        if (IsIntelDeviceInstanceID(begin)) {
+            result = m_pCM_Locate_DevNode(&DeviceInst,
+                                          begin,
+                                          CM_LOCATE_DEVNODE_NORMAL);
+            if (result != CR_SUCCESS) {
                 continue;
             }
 
             HKEY hKey_sw;
-            result = m_pCM_Open_DevNode_Key(DeviceInst, KEY_READ, 0, RegDisposition_OpenExisting, &hKey_sw, CM_REGISTRY_SOFTWARE);
-            if (result != CR_SUCCESS)
-            {
+            result = m_pCM_Open_DevNode_Key(DeviceInst,
+                                            KEY_READ,
+                                            0,
+                                            RegDisposition_OpenExisting,
+                                            &hKey_sw,
+                                            CM_REGISTRY_SOFTWARE);
+            if (result != CR_SUCCESS) {
                 continue;
             }
 
@@ -119,14 +117,18 @@ bool DriverStoreLoader::GetDriverStorePath(wchar_t * path, DWORD dwPathSize)
 
             DWORD pathSize = dwPathSize;
 
-            nError = RegQueryValueEx(hKey_sw, _T("DriverStorePathForMediaSDK"), 0, NULL, (LPBYTE)path, &pathSize);
+            nError = RegQueryValueEx(hKey_sw,
+                                     _T("DriverStorePathForMediaSDK"),
+                                     0,
+                                     NULL,
+                                     (LPBYTE)path,
+                                     &pathSize);
 
             RegCloseKey(hKey_sw);
 
-            if (ERROR_SUCCESS == nError)
-            {
-                if (path[wcslen(path) - 1] != '/' && path[wcslen(path) - 1] != '\\')
-                {
+            if (ERROR_SUCCESS == nError) {
+                if (path[wcslen(path) - 1] != '/' &&
+                    path[wcslen(path) - 1] != '\\') {
                     wcscat_s(path, MFX_MAX_DLL_PATH, L"\\");
                 }
                 DISPATCHER_LOG_INFO(("DriverStore path is found\n"));
@@ -141,19 +143,15 @@ bool DriverStoreLoader::GetDriverStorePath(wchar_t * path, DWORD dwPathSize)
 
 } // bool DriverStoreLoader::GetDriverStorePath(wchar_t * path, DWORD dwPathSize)
 
-bool DriverStoreLoader::IsIntelDeviceInstanceID(const wchar_t * DeviceID)
-{
+bool DriverStoreLoader::IsIntelDeviceInstanceID(const wchar_t *DeviceID) {
     return wcsstr(DeviceID, L"VEN_8086") || wcsstr(DeviceID, L"ven_8086");
 }
 
-bool DriverStoreLoader::LoadCfgMgr()
-{
-    if (!m_moduleCfgMgr)
-    {
+bool DriverStoreLoader::LoadCfgMgr() {
+    if (!m_moduleCfgMgr) {
         m_moduleCfgMgr = mfx_dll_load(L"cfgmgr32.dll");
 
-        if (!m_moduleCfgMgr)
-        {
+        if (!m_moduleCfgMgr) {
             DISPATCHER_LOG_WRN(("cfgmgr32.dll couldn't be loaded\n"));
             return false;
         }
@@ -163,17 +161,24 @@ bool DriverStoreLoader::LoadCfgMgr()
 
 } // bool DriverStoreLoader::LoadCfgMgr()
 
-bool DriverStoreLoader::LoadCmFuncs()
-{
-    if (!m_pCM_Get_Device_ID_List || !m_pCM_Get_Device_ID_List_Size || !m_pCM_Locate_DevNode || !m_pCM_Open_DevNode_Key)
-    {
-        m_pCM_Get_Device_ID_List      = (Func_CM_Get_Device_ID_ListW)      mfx_dll_get_addr((HMODULE)m_moduleCfgMgr, "CM_Get_Device_ID_ListW");
-        m_pCM_Get_Device_ID_List_Size = (Func_CM_Get_Device_ID_List_SizeW) mfx_dll_get_addr((HMODULE)m_moduleCfgMgr, "CM_Get_Device_ID_List_SizeW");
-        m_pCM_Locate_DevNode          = (Func_CM_Locate_DevNodeW)          mfx_dll_get_addr((HMODULE)m_moduleCfgMgr, "CM_Locate_DevNodeW");
-        m_pCM_Open_DevNode_Key        = (Func_CM_Open_DevNode_Key)         mfx_dll_get_addr((HMODULE)m_moduleCfgMgr, "CM_Open_DevNode_Key");
+bool DriverStoreLoader::LoadCmFuncs() {
+    if (!m_pCM_Get_Device_ID_List || !m_pCM_Get_Device_ID_List_Size ||
+        !m_pCM_Locate_DevNode || !m_pCM_Open_DevNode_Key) {
+        m_pCM_Get_Device_ID_List = (Func_CM_Get_Device_ID_ListW)
+            mfx_dll_get_addr((HMODULE)m_moduleCfgMgr, "CM_Get_Device_ID_ListW");
+        m_pCM_Get_Device_ID_List_Size =
+            (Func_CM_Get_Device_ID_List_SizeW)mfx_dll_get_addr(
+                (HMODULE)m_moduleCfgMgr,
+                "CM_Get_Device_ID_List_SizeW");
+        m_pCM_Locate_DevNode =
+            (Func_CM_Locate_DevNodeW)mfx_dll_get_addr((HMODULE)m_moduleCfgMgr,
+                                                      "CM_Locate_DevNodeW");
+        m_pCM_Open_DevNode_Key =
+            (Func_CM_Open_DevNode_Key)mfx_dll_get_addr((HMODULE)m_moduleCfgMgr,
+                                                       "CM_Open_DevNode_Key");
 
-        if (!m_pCM_Get_Device_ID_List || !m_pCM_Get_Device_ID_List_Size || !m_pCM_Locate_DevNode || !m_pCM_Open_DevNode_Key)
-        {
+        if (!m_pCM_Get_Device_ID_List || !m_pCM_Get_Device_ID_List_Size ||
+            !m_pCM_Locate_DevNode || !m_pCM_Open_DevNode_Key) {
             DISPATCHER_LOG_WRN(("One of cfgmgr32.dll function isn't found\n"));
             return false;
         }

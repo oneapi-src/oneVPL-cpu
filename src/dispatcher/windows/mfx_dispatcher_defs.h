@@ -19,24 +19,24 @@
 // SOFTWARE.
 
 #pragma once
-#include "onevpl/mfxdefs.h"
-#include <cstring>
 #include <cstdio>
+#include <cstring>
+#include "onevpl/mfxdefs.h"
 
 #if defined(MFX_DISPATCHER_LOG)
-#include <string>
-#include <string.h>
+    #include <string.h>
+    #include <string>
 #endif
 
 #define MAX_PLUGIN_PATH 4096
 #define MAX_PLUGIN_NAME 4096
 
 #if _MSC_VER < 1400
-#define wcscpy_s(to,to_size, from) wcscpy(to, from)
-#define wcscat_s(to,to_size, from) wcscat(to, from)
+    #define wcscpy_s(to, to_size, from) wcscpy(to, from)
+    #define wcscat_s(to, to_size, from) wcscat(to, from)
 #endif
 
 // declare library module's handle
-typedef void * mfxModuleHandle;
+typedef void* mfxModuleHandle;
 
-typedef void (MFX_CDECL * mfxFunctionPointer)(void);
+typedef void(MFX_CDECL* mfxFunctionPointer)(void);
