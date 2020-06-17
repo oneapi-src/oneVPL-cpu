@@ -16,3 +16,10 @@ if [ -z "$VPL_BUILD_DEPENDENCIES" ];then
     source script/bootstrap
 fi
 script/package
+
+# run smoke tests
+pushd _build
+${proj_dir}/script/test
+popd
+echo --- All Smoke Tests PASSED ---
+
