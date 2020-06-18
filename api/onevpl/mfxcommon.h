@@ -95,26 +95,6 @@ typedef union {
 } mfxVersion;
 MFX_PACK_END()
 
-/* MFX structures version info */
-MFX_PACK_BEGIN_USUAL_STRUCT()
-/*! Introduce field Version for any structures with modifications after API 1.XX.
-Minor number is incremented when reserved fields are used, 
-major number is incremnted when size of structure is increased.
-Assumed that any structure changes are backward binary compatible.
- mfxStructVersion starts from {1,0} for any new API structures, if mfxStructVersion is 
- added to the existent legacy structure (replacing reserved fields) it starts from {1, 1}.
-*/
-typedef union {
-    /*! Structure with Major and Minor fields.  */
-    /*! @struct Anonimouse */
-    struct {
-        mfxU8  Minor; /*!< Minor number of the correspondent structure */
-        mfxU8  Major; /*!< Major number of the correspondent structure  */
-    };
-    mfxU16  Version;   /*!< Structure version number */
-} mfxStructVersion;
-MFX_PACK_END()
-
 /*! The mfxPriority enumerator describes the session priority. */
 typedef enum
 {
