@@ -388,45 +388,20 @@ typedef enum
     MFX_MAP_NOWAIT = 0x10 
 } mfxMemoryFlags;
 
-/*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
+/* The mfxResourceType enumerator specifies types of diffrent native data frames and buffers. */
 typedef enum {
-    MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
-    MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
-    MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
-#if (MFX_VERSION >= 1030)
-    MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
-    MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
-#endif
-#if (MFX_VERSION >= MFX_VERSION_NEXT)
-    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
-#endif
-} mfxHandleType;
-
-/* Frame Surface */
-MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
-/*! The mfxFrameSurface1 structure defines the uncompressed frames surface information and data buffers.
-    The frame surface is in the frame or complementary field pairs of pixels up to four color-channels, in two parts:
-    mfxFrameInfo and mfxFrameData.
-*/
-typedef struct {
-    union
-    {
-        struct _mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
-        mfxU32  reserved[2];
-    };
-    mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
-    mfxU16           reserved1[3];
-    mfxFrameInfo    Info; /*!< mfxFrameInfo structure specifies surface properties. */
-    mfxFrameData    Data; /*!< mfxFrameData structure describes the actual frame buffer. */
-} mfxFrameSurface1;
-MFX_PACK_END()
+    MFX_RESOURCE_SYSTEM_SURFACE                  = 1, /*!< System memory. */ 
+    MFX_RESOURCE_VA_SURFACE                      = 2, /*!< VA Surface. */ 
+    MFX_RESOURCE_VA_BUFFER                       = 3, /*!< VA Buffer. */ 
+    MFX_RESOURCE_DX9_SURFACE                     = 4, /*!< IDirect3DSurface9. */ 
+    MFX_RESOURCE_DX11_TEXTURE                    = 5, /*!< ID3D11Texture2D. */ 
+    MFX_RESOURCE_DX12_RESOURCE                   = 6, /*!< ID3D12Resource. */
+    MFX_RESOURCE_DMA_RESOURCE                    = 7  /*!< DMA resource. */
+} mfxResourceType;
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /* The mfxFrameSurfaceInterface strucutre specifies frame surface interface. */
-typedef struct _mfxFrameSurfaceInterface {
+typedef struct {
     mfxHDL              Context; /*!< This context of memory interface. User should not touch (change, set, null) this pointer. */
     mfxStructVersion    Version; /*!< The version of the structure. */
     mfxU16              reserved1[3];
@@ -585,6 +560,25 @@ typedef struct _mfxFrameSurfaceInterface {
     mfxStatus           (MFX_CDECL *Synchronize)(mfxFrameSurface1* surface, mfxU32 wait);
     mfxHDL              reserved2[4];
 } mfxFrameSurfaceInterface;
+MFX_PACK_END()
+
+/* Frame Surface */
+MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
+/*! The mfxFrameSurface1 structure defines the uncompressed frames surface information and data buffers.
+    The frame surface is in the frame or complementary field pairs of pixels up to four color-channels, in two parts:
+    mfxFrameInfo and mfxFrameData.
+*/
+typedef struct {
+    union
+    {
+        mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
+        mfxU32  reserved[2];
+    };
+    mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
+    mfxU16           reserved1[3];
+    mfxFrameInfo    Info; /*!< mfxFrameInfo structure specifies surface properties. */
+    mfxFrameData    Data; /*!< mfxFrameData structure describes the actual frame buffer. */
+} mfxFrameSurface1;
 MFX_PACK_END()
 
 /*! The TimeStampCalc enumerator itemizes time-stamp calculation methods. */
@@ -808,10 +802,8 @@ MFX_PACK_END()
 enum {
     MFX_IOPATTERN_IN_VIDEO_MEMORY   = 0x01, /*!< Input to SDK functions is a video memory surface. */
     MFX_IOPATTERN_IN_SYSTEM_MEMORY  = 0x02, /*!< Input to SDK functions is a linear buffer directly in system memory or in system memory through an external allocator. */
-    MFX_IOPATTERN_IN_OPAQUE_MEMORY  = 0x04, /*!< Input to SDK functions maps at runtime to either a system memory buffer or a video memory surface. */
     MFX_IOPATTERN_OUT_VIDEO_MEMORY  = 0x10, /*!< Output to SDK functions is a video memory surface.  */
-    MFX_IOPATTERN_OUT_SYSTEM_MEMORY = 0x20, /*!< Output to SDK functions is a linear buffer directly in system memory or in system memory through an external allocator.  */
-    MFX_IOPATTERN_OUT_OPAQUE_MEMORY = 0x40  /*!< Output to SDK functions maps at runtime to either a system memory buffer or a video memory surface. */
+    MFX_IOPATTERN_OUT_SYSTEM_MEMORY = 0x20 /*!< Output to SDK functions is a linear buffer directly in system memory or in system memory through an external allocator.  */
 };
 
 /*! The CodecFormatFourCC enumerator itemizes codecs in the FourCC format. */
@@ -1769,11 +1761,6 @@ enum {
     */
     MFX_EXTBUFF_VPP_DOUSE                       = MFX_MAKEFOURCC('D','U','S','E'),
     /*!
-       This extended buffer defines opaque surface allocation information. See the mfxExtOpaqueSurfaceAlloc structure for details.
-       The application can attach this buffer to decoding, encoding, or video processing initialization.
-    */
-    MFX_EXTBUFF_OPAQUE_SURFACE_ALLOCATION       = MFX_MAKEFOURCC('O','P','Q','S'),
-    /*!
        This extended buffer defines additional encoding controls for reference list. See the mfxExtAVCRefListCtrl structure for details.
        The application can attach this buffer to the mfxVideoParam structure for encoding & decoding initialization, or the mfxEncodeCtrl
        structure for per-frame encoding configuration.
@@ -2291,7 +2278,6 @@ enum {
 
     MFX_MEMTYPE_INTERNAL_FRAME  = 0x0001, /*!< Allocation request for internal frames */
     MFX_MEMTYPE_EXTERNAL_FRAME  = 0x0002, /*!< Allocation request for I/O frames */
-    MFX_MEMTYPE_OPAQUE_FRAME    = 0x0004, /*!< Allocation request for opaque frames */
     MFX_MEMTYPE_EXPORT_FRAME    = 0x0008, /*!< Application requests frame handle export to some associated object. For Linux frame handle can be
                                                considered to be exported to DRM Prime FD, DRM FLink or DRM FrameBuffer Handle. Specifics of export
                                                types and export procedure depends on external frame allocator implementation */
@@ -2379,6 +2365,23 @@ enum {
     MFX_HEVC_NALU_TYPE_CRA_NUT    = (21+1)  /*!< See Table 7-1 of the ITU-T H.265 specification for the definition of these type. */
 };
 #endif
+
+/*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
+typedef enum {
+    MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
+    MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
+    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
+    MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
+#if (MFX_VERSION >= 1030)
+    MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
+    MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
+#endif
+#if (MFX_VERSION >= MFX_VERSION_NEXT)
+    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
+#endif
+} mfxHandleType;
 
 /*! The mfxSkipMode enumerator describes the decoder skip-mode options. */
 typedef enum {
@@ -2481,24 +2484,6 @@ typedef struct {
     mfxU32          NumAlg;   /*!< Number of filters (algorithms) to use */
     mfxU32          *AlgList; /*!< Pointer to a list of filters (algorithms) to use */
 } mfxExtVPPDoUse;
-MFX_PACK_END()
-
-MFX_PACK_BEGIN_STRUCT_W_PTR()
-/*! The mfxExtOpaqueSurfaceAlloc structure defines the opaque surface allocation information. */
-typedef struct {
-    mfxExtBuffer    Header;         /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_OPAQUE_SURFACE_ALLOCATION. */
-    mfxU32      reserved1[2];
-    /*!
-       In refers to surface allocation for input and out refers to surface allocation for output.
-       For decoding, In is ignored. For encoding, Out is ignored.
-    */
-    struct {
-        mfxFrameSurface1 **Surfaces; /*!< The array pointers of allocated frame surfaces. */
-        mfxU32  reserved2[5];
-        mfxU16  Type; /*!< Surface type chosen by the application. Any valid combination of flags may be used, for example: MFX_MEMTYPE_SYSTEM_MEMORY. */
-        mfxU16  NumSurface; /*!< The number of allocated frame surfaces. */
-    } In, Out;
-} mfxExtOpaqueSurfaceAlloc;
 MFX_PACK_END()
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -2875,13 +2860,7 @@ MFX_PACK_BEGIN_STRUCT_W_PTR()
    required to process all input video streams. The function sets frame size in the mfxFrameAllocRequest equal to the size provided by
    application in the mfxVideoParam.
 
-   Composition process supports all types of surfaces, but opaque type has next limitations:
-
-   - all input surfaces should have the same size,
-
-   - all input surfaces should have the same color format,
-
-   - all input surfaces should be described in one mfxExtOpaqueSurfaceAlloc structure.
+   Composition process supports all types of surfaces
 
    All input surfaces should have the same type and color format, except per pixel alpha blending case, where it is allowed to mix NV12 and RGB
    surfaces.
@@ -3698,21 +3677,33 @@ typedef struct {
 } mfxExtEncodedSlicesInfo;
 MFX_PACK_END()
 
-/*! The ScalingMode enumerator itemizes sacaling variants of scaling filter implementation. */
+/*! The ScalingMode enumerator itemizes variants of scaling filter implementation. */
 enum {
-    MFX_SCALING_MODE_DEFAULT    = 0,
-    MFX_SCALING_MODE_LOWPOWER   = 1,
-    MFX_SCALING_MODE_QUALITY    = 2
+    MFX_SCALING_MODE_DEFAULT    = 0, /*!< Default scaling mode. SDK selects the most appropriate scaling method. */
+    MFX_SCALING_MODE_LOWPOWER   = 1, /*!< Low power scaling mode which is applicable for platform SDK implementations. 
+                                         The exact scaling algorithm is defined by the SDK. */
+    MFX_SCALING_MODE_QUALITY    = 2  /*!< The best quality scaling mode */
+};
+
+/*! The InterpolationMode enumerator specifies type of interpolation method used by VPP scaling filter. */
+enum {
+    MFX_INTERPOLATION_DEFAULT                = 0, /*!< Default interpolation mode for scaling. SDK selects the most appropriate     
+                                                    scaling method. */
+    MFX_INTERPOLATION_NEAREST_NEIGHBOR       = 1, /*!< Nearest neighbor interpolation method */
+    MFX_INTERPOLATION_BILINEAR               = 2, /*!< Bilinear interpolation method */
+    MFX_INTERPOLATION_ADVANCED               = 3  /*!< Advanced interpolation method is defined by each SDK and usually gives best                                                          quality */
 };
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
    The mfxExtVPPScaling structure configures the VPP Scaling filter algorithm.
+   Not all combinations of ScalingMode and InterpolationMethod are supported in the SDK. The application has to use query function to    determine if a combination is supported.
 */
 typedef struct {
     mfxExtBuffer Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_VPP_SCALING. */
 
     mfxU16 ScalingMode;  /*!< Scaling mode. See ScalingMode for possible values. */
+    mfxU16 InterpolationMethod; /*!< Interpolation mode for scaling algorithm. See InterpolationMode for possible values. */
     mfxU16 reserved[11];
 } mfxExtVPPScaling;
 MFX_PACK_END()
@@ -4100,7 +4091,7 @@ MFX_PACK_END()
 
 #if (MFX_VERSION >= 1026)
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
-/*! Еhe MCTFTemporalMode enumerator itemazes temporal filtering modes. */
+/*! The MCTFTemporalMode enumerator itemazes temporal filtering modes. */
 enum {
     MFX_MCTF_TEMPORAL_MODE_UNKNOWN  = 0,
     MFX_MCTF_TEMPORAL_MODE_SPATIAL  = 1,

@@ -29,14 +29,79 @@ extern "C"
 
 
 MFX_PACK_BEGIN_STRUCT_W_PTR()
+/*!
+   The mfxFrameAllocator structure describes the callback functions Alloc, Lock, Unlock, GetHDL and Free that the SDK
+   implementation might use for allocating internal frames. Applications that operate on OS-specific video surfaces must
+   implement these callback functions.
+
+   Using the default allocator implies that frame data passes in or out of SDK functions through pointers,
+   as opposed to using memory IDs.
+
+   The SDK behavior is undefined when using an incompletely defined external allocator. See the section Memory
+   Allocation and External Allocators for additional information.
+*/
 typedef struct {
     mfxU32      reserved[4];
-    mfxHDL      pthis;
+    mfxHDL      pthis;    /*!< Pointer to the allocator object. */
 
+    /*!
+       @brief This function allocates surface frames. For decoders, MFXVideoDECODE_Init calls Alloc only once. That call
+              includes all frame allocation requests. For encoders, MFXVideoENCODE_Init calls Alloc twice: once for the
+              input surfaces and again for the internal reconstructed surfaces.
+
+              If two SDK components must share DirectX* surfaces, this function should pass the pre-allocated surface
+              chain to SDK instead of allocating new DirectX surfaces. See the Surface Pool Allocation section for
+              additional information.
+       @param[in]  pthis    Pointer to the allocator object.
+       @param[in]  request  Pointer to the mfxFrameAllocRequest structure that specifies the type and number of required frames.
+       @param[out] response Pointer to the mfxFrameAllocResponse structure that retrieves frames actually allocated.
+       @return
+             MFX_ERR_NONE               The function successfully allocated the memory block. \n
+             MFX_ERR_MEMORY_ALLOC       The function failed to allocate the video frames. \n
+             MFX_ERR_UNSUPPORTED        The function does not support allocating the specified type of memory.
+    */
     mfxStatus  (MFX_CDECL  *Alloc)    (mfxHDL pthis, mfxFrameAllocRequest *request, mfxFrameAllocResponse *response);
+
+    /*!
+       @brief This function locks a frame and returns its pointer.
+       @param[in]  pthis    Pointer to the allocator object.
+       @param[in]  mid      Memory block ID.
+       @param[out] ptr      Pointer to the returned frame structure.
+       @return
+             MFX_ERR_NONE               The function successfully locked the memory block. \n
+             MFX_ERR_LOCK_MEMORY        This function failed to lock the frame.
+    */
     mfxStatus  (MFX_CDECL  *Lock)     (mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
+
+    /*!
+       @brief This function unlocks a frame and invalidates the specified frame structure.
+       @param[in]  pthis    Pointer to the allocator object.
+       @param[in]  mid      Memory block ID.
+       @param[out] ptr      Pointer to the frame structure; This pointer can be NULL.
+       @return
+             MFX_ERR_NONE               The function successfully locked the memory block.
+    */
     mfxStatus  (MFX_CDECL  *Unlock)   (mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
+
+    /*!
+       @brief This function returns the OS-specific handle associated with a video frame. If the handle is a COM interface,
+              the reference counter must increase. The SDK will release the interface afterward.
+       @param[in]  pthis    Pointer to the allocator object.
+       @param[in]  mid      Memory block ID.
+       @param[out] handle   Pointer to the returned OS-specific handle.
+       @return
+             MFX_ERR_NONE               The function successfully returned the OS-specific handle. \n
+             MFX_ERR_UNSUPPORTED        The function does not support obtaining OS-specific handle..
+    */
     mfxStatus  (MFX_CDECL  *GetHDL)   (mfxHDL pthis, mfxMemId mid, mfxHDL *handle);
+
+    /*!
+       @brief This function de-allocates all allocated frames.
+       @param[in]  pthis    Pointer to the allocator object.
+       @param[in]  response Pointer to the mfxFrameAllocResponse structure returned by the Alloc function.
+       @return
+             MFX_ERR_NONE               The function successfully de-allocated the memory block.
+    */
     mfxStatus  (MFX_CDECL  *Free)     (mfxHDL pthis, mfxFrameAllocResponse *response);
 } mfxFrameAllocator;
 MFX_PACK_END()

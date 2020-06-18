@@ -22,7 +22,6 @@
 #define __MFXDISPATCHER_H__
 
 #include "mfxdefs.h"
-
 #include "mfxcommon.h"
 #include "mfxsession.h"
 
@@ -148,9 +147,10 @@ mfxStatus MFX_CDECL MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* na
 
 /*!
    @brief This function used to iterate over filtered out implementations to gather their details. This function allocates memory to store
-          mfxImplDescription structure instance. Use MFXReleaseImplDescription function to free memory allocated to the mfxImplDescription structure.
+          mfxImplDescription structure instance. Use MFXDispReleaseImplDescription function to free memory allocated to the mfxImplDescription structure.
    @param[in] loader SDK loader handle.
    @param[in] i Index of the implementation.
+   @param[in] format Format in which capabilities need to be delivered. See mfxImplCapsDeliveryFormat enumerator for more details.
    @param[out] idesc Poiner to the mfxImplDescription structure.
    @return
       MFX_ERR_NONE        The function completed successfully. The idesc contains valid information.\n 
@@ -158,7 +158,7 @@ mfxStatus MFX_CDECL MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* na
       MFX_ERR_NULL_PTR    If idesc is NULL. \n
       MFX_ERR_NOT_FOUND   Provided index is out of possible range.
 */
-mfxStatus MFX_CDECL MFXEnumImplementations(mfxLoader loader, mfxU32 i, mfxImplDescription* idesc);
+mfxStatus MFX_CDECL MFXEnumImplementations(mfxLoader loader, mfxU32 i, mfxImplCapsDeliveryFormat format, mfxHDL* idesc);
 
 
 /*!
@@ -168,15 +168,15 @@ mfxStatus MFX_CDECL MFXEnumImplementations(mfxLoader loader, mfxU32 i, mfxImplDe
       int i=0;
       while(1) {
          mfxImplDescription *idesc;
-         MFXEnumImplementations(loader, i, idesc);
+         MFXEnumImplementations(loader, i, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, (mfxHDL*)&idesc);
          if(is_good(idesc)) {
              MFXCreateSession(loader, i,&session);
              // ...
-             MFXReleaseImplDescription(idesc);
+             MFXDispReleaseImplDescription(loader, idesc);
          }
          else
          {
-             MFXReleaseImplDescription(idesc);
+             MFXDispReleaseImplDescription(loader, idesc);
              break;
          }
       }
@@ -191,6 +191,18 @@ mfxStatus MFX_CDECL MFXEnumImplementations(mfxLoader loader, mfxU32 i, mfxImplDe
       MFX_ERR_NOT_FOUND   Provided index is out of possible range.
 */
 mfxStatus MFX_CDECL MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* session);
+
+/*!
+   @brief
+      This function destoys handle allocated by MFXQueryImplCapabilities function.
+
+   @param[in] loader   SDK loader handle.
+   @param[in] hdl      Handle to destroy. Can be equal to NULL.
+
+   @return
+      MFX_ERR_NONE The function completed successfully.
+*/
+mfxStatus MFX_CDECL MFXDispReleaseImplDescription(mfxLoader loader, mfxHDL hdl);
 
 #ifdef __cplusplus
 }

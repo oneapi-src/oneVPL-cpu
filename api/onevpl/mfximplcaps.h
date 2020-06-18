@@ -30,12 +30,6 @@ extern "C"
 {
 #endif
 
-/* The mfxImplCapsDeliveryFormat enumerator specifies delivery format of the implementation capability. */
-typedef enum {
-    MFX_IMPLCAPS_YAML_STRING             = 1, /*!< Deliver capabilities as YAML string. */ 
-    MFX_IMPLCAPS_IMPLDESCSTRUCTURE       = 2  /*!< Deliver capabilities as mfxImplDescription structure. */ 
-} mfxImplCapsDeliveryFormat;
-
 /*!
    @brief
       This function delivers implementation capabilities in the requested format according to the format value.
