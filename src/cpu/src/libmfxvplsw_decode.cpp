@@ -28,33 +28,8 @@ mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session,
     }
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-    mfxFrameSurface1 *surface_out;
 
-    if (ws->m_decInit == false) {
-        sts = ws->InitDecode(par->mfx.CodecId);
-        if (sts < 0) {
-            // error - can't continue
-            return sts;
-        }
-        ws->m_decInit = true;
-    }
-
-    sts = ws->DecodeFrame(bs, nullptr, &surface_out);
-    if (sts < 0) {
-        // may return MFX_ERR_MORE_DATA
-        return sts;
-    }
-
-    // just fills in the minimum parameters required to alloc buffers and start decoding
-    // in next step, the app will call DECODE_Query() to confirm that it can decode this stream
-    sts = ws->DecodeGetVideoParams(par);
-    if (sts < 0)
-        return sts;
-
-    ws->FreeDecode();
-    ws->m_decInit = false;
-
-    return sts;
+    return ws->DecodeHeader(bs, par);
 }
 
 // NOTES - only support the minimum parameters for basic decode
@@ -195,7 +170,7 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
     if (ws->m_decInit == false)
         return MFX_ERR_NOT_INITIALIZED;
 
-    sts = ws->DecodeFrame(bs, surface_work, surface_out);
+    sts = ws->DecodeFrame(bs, surface_work, surface_out, true);
 
     // consumes whole frame every time
     if (bs) {
@@ -224,7 +199,8 @@ mfxStatus MFXVideoCORE_SyncOperation(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    return sts;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    return ws->Sync(wait);
 }
 
 mfxStatus MFXVideoDECODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {

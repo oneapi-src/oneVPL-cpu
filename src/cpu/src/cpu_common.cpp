@@ -10,6 +10,7 @@
 
 CpuWorkstream::CpuWorkstream()
         : m_decInit(false),
+          m_decDrain(false),
           m_vppInit(false),
           m_vppBypass(false),
           m_encInit(false),
@@ -37,6 +38,14 @@ CpuWorkstream::CpuWorkstream()
 }
 
 CpuWorkstream::~CpuWorkstream() {}
+
+mfxStatus CpuWorkstream::Sync(mfxU32 wait) {
+    if (decode_future.valid()) {
+        std::future_status dec_future_sts =
+            decode_future.wait_for(std::chrono::milliseconds(wait));
+    }
+    return MFX_ERR_NONE;
+}
 
 #else
 

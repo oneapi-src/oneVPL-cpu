@@ -8,7 +8,8 @@
 #define SRC_CPU_SRC_CPU_WORKSTREAM_H_
 
 #include <string.h>
-
+#include <chrono>
+#include <future>
 #include "onevpl/mfxstructures.h"
 
 #include "onevpl/mfxjpeg.h"
@@ -51,9 +52,11 @@ public:
 
     // decode
     mfxStatus InitDecode(mfxU32 FourCC);
+    mfxStatus DecodeHeader(mfxBitstream *bs, mfxVideoParam *par);
     mfxStatus DecodeFrame(mfxBitstream *bs,
                           mfxFrameSurface1 *surface_work,
-                          mfxFrameSurface1 **surface_out);
+                          mfxFrameSurface1 **surface_out,
+                          bool blocking);
     void FreeDecode(void);
     mfxStatus DecodeGetVideoParams(mfxVideoParam *par);
 
@@ -67,7 +70,10 @@ public:
     mfxStatus EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs);
     void FreeEncode(void);
 
+    mfxStatus Sync(mfxU32 wait);
+
     bool m_decInit;
+    bool m_decDrain;
     bool m_vppInit;
     bool m_vppBypass;
     bool m_encInit;
@@ -78,6 +84,22 @@ private:
     CpuWorkstream &operator=(const CpuWorkstream &) {
         return *this; /* copy not allowed */
     }
+
+    void AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work);
+
+    mfxStatus DecodeFrameInternalBlocking(int bytesParsed,
+                                          mfxBitstream *bs,
+                                          mfxFrameSurface1 *surface_work,
+                                          mfxFrameSurface1 **surface_out);
+
+    void DecodeFrameInternal(int bytesParsed,
+                             mfxBitstream *bs,
+                             mfxFrameSurface1 *surface_work,
+                             mfxFrameSurface1 **surface_out);
+
+    void RemoveUsedDataFromBitstream(int bytesParsed);
+
+    std::future<void> decode_future;
 
 #ifndef DISABLE_LIBAV
 

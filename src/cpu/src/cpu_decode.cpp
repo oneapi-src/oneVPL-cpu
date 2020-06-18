@@ -90,8 +90,8 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
         return MFX_ERR_MEMORY_ALLOC;
     }
 
-    m_decInit = true;
-
+    m_decInit  = true;
+    m_decDrain = false;
     return MFX_ERR_NONE;
 }
 
@@ -118,12 +118,41 @@ void CpuWorkstream::FreeDecode() {
     m_bsDecData = nullptr;
 }
 
+mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {
+    mfxFrameSurface1 *surface_out;
+    mfxStatus sts;
+
+    if (m_decInit == false) {
+        sts = InitDecode(par->mfx.CodecId);
+        if (sts < 0) {
+            // error - can't continue
+            return sts;
+        }
+        m_decInit = true;
+    }
+
+    sts = DecodeFrame(bs, nullptr, &surface_out, true);
+    if (sts < 0) {
+        // may return MFX_ERR_MORE_DATA
+        return sts;
+    }
+
+    // just fills in the minimum parameters required to alloc buffers and start decoding
+    // in next step, the app will call DECODE_Query() to confirm that it can decode this stream
+    sts = DecodeGetVideoParams(par);
+    if (sts < 0)
+        return sts;
+
+    FreeDecode();
+    m_decInit = false;
+    return sts;
+}
+
 // bs == 0 is a signal to drain
 mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
                                      mfxFrameSurface1 *surface_work,
-                                     mfxFrameSurface1 **surface_out) {
-    int av_ret = 0;
-
+                                     mfxFrameSurface1 **surface_out,
+                                     bool blocking) {
     if (!m_decInit) {
         ERR_EXIT(VPL_WORKSTREAM_DECODE);
     }
@@ -138,8 +167,62 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
         m_bsDecValidBytes += (uint32_t)bs->DataLength;
     }
 
-    int bytesParsed = 0;
+    // parse a packet
+    // if packet is ready, m_avDecPacket->data and m_avDecPacket->size will be non-zero
+    // otherwise, m_avDecPacket->size is 0 and parser needs more data to produce a packet
+    // returns number of bytes consumed
+    //
+    // m_avDecPacket->data may point to the input buffer m_bsDecData after calling this,
+    //   so do not overwrite m_bsDecData until calling avcodec_send_packet()
+    int bytesParsed = av_parser_parse2(m_avDecParser,
+                                       m_avDecContext,
+                                       &m_avDecPacket->data,
+                                       &m_avDecPacket->size,
+                                       m_bsDecData,
+                                       m_bsDecValidBytes,
+                                       AV_NOPTS_VALUE,
+                                       AV_NOPTS_VALUE,
+                                       0);
 
+    if (m_avDecPacket->size == 0) {
+        if (bs == 0 && bytesParsed == 0) {
+            // start draining
+            m_avDecPacket->data = NULL;
+            m_avDecPacket->size = 0;
+        }
+        else if (m_bsDecValidBytes - bytesParsed == 0) {
+            // bitstream is empty - need more data from app
+            m_bsDecValidBytes = 0;
+            m_decDrain        = true;
+            return MFX_ERR_MORE_DATA;
+        }
+    }
+
+    if (blocking || m_decDrain) {
+        return DecodeFrameInternalBlocking(bytesParsed,
+                                           bs,
+                                           surface_work,
+                                           surface_out);
+    }
+
+    *surface_out  = surface_work;
+    decode_future = std::async(std::launch::async,
+                               &CpuWorkstream::DecodeFrameInternal,
+                               this,
+                               bytesParsed,
+                               bs,
+                               surface_work,
+                               surface_out);
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuWorkstream::DecodeFrameInternalBlocking(
+    int bytesParsed,
+    mfxBitstream *bs,
+    mfxFrameSurface1 *surface_work,
+    mfxFrameSurface1 **surface_out) {
+    int av_ret = 0;
     while (1) {
         // parse a packet
         // if packet is ready, m_avDecPacket->data and m_avDecPacket->size will be non-zero
@@ -148,125 +231,123 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
         //
         // m_avDecPacket->data may point to the input buffer m_bsDecData after calling this,
         //   so do not overwrite m_bsDecData until calling avcodec_send_packet()
-        bytesParsed += av_parser_parse2(m_avDecParser,
-                                        m_avDecContext,
-                                        &m_avDecPacket->data,
-                                        &m_avDecPacket->size,
-                                        m_bsDecData + bytesParsed,
-                                        m_bsDecValidBytes - bytesParsed,
-                                        AV_NOPTS_VALUE,
-                                        AV_NOPTS_VALUE,
-                                        0);
 
-        if (m_avDecPacket->size == 0) {
-            if (bs == 0 && bytesParsed == 0) {
-                // start draining
-                m_avDecPacket->data = NULL;
-                m_avDecPacket->size = 0;
-            }
-            else if (m_bsDecValidBytes - bytesParsed == 0) {
-                // bitstream is empty - need more data from app
-                m_bsDecValidBytes = 0;
-                return MFX_ERR_MORE_DATA;
-            }
-        }
-
-        // TODO(jon): get_buffer2_msdk() will be called from inside avcodec_send_packet()
-        // this is where we can associate the user-allocated decoded output frame buffer
-        //   (surface_work) with the compressed frame
-        // so need to break up this function so it only calls avcodec_send_packet() one time
-        // avcodec_receive_frame() should be part of SyncOp (or separate thread)
-
-        // send prepared packets from parser
-        //printf("Sending packet - size = % 8d bytes\n", m_avDecPacket->size);
         av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
-        if (av_ret < 0 && av_ret != AVERROR_EOF)
-            ERR_EXIT(VPL_WORKSTREAM_DECODE);
 
-        // remove used data from bitstream after sending packet
-        // packets are not ref counted, so data will be copied internally by avcodec_send_packet()
-        memmove(m_bsDecData,
-                m_bsDecData + bytesParsed,
-                m_bsDecValidBytes - bytesParsed);
-        m_bsDecValidBytes -= bytesParsed;
-        bytesParsed = 0;
+        RemoveUsedDataFromBitstream(bytesParsed);
 
         // try to get a decoded frame
         av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
 
-        if (av_ret == AVERROR(EAGAIN)) {
-            // need more data
-            continue;
+        if (av_ret != AVERROR(EAGAIN)) {
+            // don't need more data
+            break;
         }
-        else if (av_ret == AVERROR_EOF) {
-            // all done
-            return MFX_ERR_MORE_DATA;
-        }
-        else if (av_ret < 0) {
-            // unknown error
-            ERR_EXIT(VPL_WORKSTREAM_DECODE);
-        }
-        else {
-            // frame successfully decoded
-            // don't save output frame if surface_work is 0 (e.g. DecodeHeader)
-            if (surface_work) {
-                mfxU32 w, h, y, pitch, offset;
 
-                surface_work->Info.Width  = m_avDecContext->width;
-                surface_work->Info.Height = m_avDecContext->height;
+        bytesParsed = av_parser_parse2(m_avDecParser,
+                                       m_avDecContext,
+                                       &m_avDecPacket->data,
+                                       &m_avDecPacket->size,
+                                       m_bsDecData,
+                                       m_bsDecValidBytes,
+                                       AV_NOPTS_VALUE,
+                                       AV_NOPTS_VALUE,
+                                       0);
+    }
 
-                surface_work->Info.CropX = 0;
-                surface_work->Info.CropY = 0;
-                surface_work->Info.CropW = m_avDecContext->width;
-                surface_work->Info.CropH = m_avDecContext->height;
+    if (av_ret == AVERROR_EOF) {
+        // no more data left to drain, processing is done
+        return MFX_ERR_MORE_DATA;
+    }
 
-                surface_work->Data.Pitch = m_avDecContext->width;
+    // frame successfully decoded
+    // don't save output frame if surface_work is 0 (e.g. DecodeHeader)
+    if (surface_work) {
+        AVFrame2mfxFrameSurface(surface_work);
+        *surface_out = surface_work;
+    }
 
-                w     = surface_work->Info.Width;
-                h     = surface_work->Info.Height;
-                pitch = surface_work->Data.Pitch;
+    return MFX_ERR_NONE;
+}
 
-                // copy Y plane
-                for (y = 0; y < h; y++) {
-                    offset = pitch * (y + surface_work->Info.CropY) +
-                             surface_work->Info.CropX;
-                    memcpy(surface_work->Data.Y + offset,
-                           m_avDecFrameOut->data[0] +
-                               y * m_avDecFrameOut->linesize[0],
-                           m_avDecFrameOut->width);
-                }
+// remove used data from bitstream after sending packet
+// packets are not ref counted, so data will be copied internally by avcodec_send_packet()
+void CpuWorkstream::RemoveUsedDataFromBitstream(int bytesParsed) {
+    memmove(m_bsDecData,
+            m_bsDecData + bytesParsed,
+            m_bsDecValidBytes - bytesParsed);
+    m_bsDecValidBytes -= bytesParsed;
+}
 
-                // copy U plane
-                for (y = 0; y < h / 2; y++) {
-                    offset = pitch / 2 * (y + surface_work->Info.CropY) +
-                             surface_work->Info.CropX;
-                    memcpy(surface_work->Data.U + offset,
-                           m_avDecFrameOut->data[1] +
-                               y * m_avDecFrameOut->linesize[1],
-                           m_avDecFrameOut->width / 2);
-                }
+void CpuWorkstream::DecodeFrameInternal(int bytesParsed,
+                                        mfxBitstream *bs,
+                                        mfxFrameSurface1 *surface_work,
+                                        mfxFrameSurface1 **surface_out) {
+    while (1) {
+        int av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
 
-                // copy V plane
-                for (y = 0; y < h / 2; y++) {
-                    offset = pitch / 2 * (y + surface_work->Info.CropY) +
-                             surface_work->Info.CropX;
-                    memcpy(surface_work->Data.V + offset,
-                           m_avDecFrameOut->data[2] +
-                               y * m_avDecFrameOut->linesize[2],
-                           m_avDecFrameOut->width / 2);
-                }
+        RemoveUsedDataFromBitstream(bytesParsed);
 
-                *surface_out = surface_work;
-            }
+        av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
+        if (av_ret != AVERROR(EAGAIN))
+            break;
 
-    #if 0
-            // TODO(jon) - if codec capability AV_CODEC_CAP_DR1 is set, can use user-provided buffers (callback)
-            int wTmp = 1280, hTmp = 720, linesize_align[AV_NUM_DATA_POINTERS];
-            avcodec_align_dimensions2(m_avDecContext, &wTmp, &hTmp, linesize_align);
-    #endif
+        bytesParsed = av_parser_parse2(m_avDecParser,
+                                       m_avDecContext,
+                                       &m_avDecPacket->data,
+                                       &m_avDecPacket->size,
+                                       m_bsDecData,
+                                       m_bsDecValidBytes,
+                                       AV_NOPTS_VALUE,
+                                       AV_NOPTS_VALUE,
+                                       0);
+    }
 
-            return MFX_ERR_NONE;
-        }
+    AVFrame2mfxFrameSurface(surface_work);
+}
+
+void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
+    mfxU32 w, h, y, pitch, offset;
+
+    surface_work->Info.Width  = m_avDecContext->width;
+    surface_work->Info.Height = m_avDecContext->height;
+
+    surface_work->Info.CropX = 0;
+    surface_work->Info.CropY = 0;
+    surface_work->Info.CropW = m_avDecContext->width;
+    surface_work->Info.CropH = m_avDecContext->height;
+
+    surface_work->Data.Pitch = m_avDecContext->width;
+
+    w     = surface_work->Info.Width;
+    h     = surface_work->Info.Height;
+    pitch = surface_work->Data.Pitch;
+
+    // copy Y plane
+    for (y = 0; y < h; y++) {
+        offset =
+            pitch * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
+        memcpy(surface_work->Data.Y + offset,
+               m_avDecFrameOut->data[0] + y * m_avDecFrameOut->linesize[0],
+               m_avDecFrameOut->width);
+    }
+
+    // copy U plane
+    for (y = 0; y < h / 2; y++) {
+        offset = pitch / 2 * (y + surface_work->Info.CropY) +
+                 surface_work->Info.CropX;
+        memcpy(surface_work->Data.U + offset,
+               m_avDecFrameOut->data[1] + y * m_avDecFrameOut->linesize[1],
+               m_avDecFrameOut->width / 2);
+    }
+
+    // copy V plane
+    for (y = 0; y < h / 2; y++) {
+        offset = pitch / 2 * (y + surface_work->Info.CropY) +
+                 surface_work->Info.CropX;
+        memcpy(surface_work->Data.V + offset,
+               m_avDecFrameOut->data[2] + y * m_avDecFrameOut->linesize[2],
+               m_avDecFrameOut->width / 2);
     }
 }
 
