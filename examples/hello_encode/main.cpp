@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
 #include <vector>
 #include "onevpl/mfxvideo.h"
 
@@ -168,10 +170,13 @@ int main(int argc, char* argv[]) {
     std::vector<mfxU8> bstData(mfxBS.MaxLength);
     mfxBS.Data = bstData.data();
 
+    double encode_time = 0;
+    double sync_time   = 0;
+
     // Start encoding the frames
     mfxU16 nEncSurfIdx = 0;
     mfxSyncPoint syncp;
-    mfxU32 nFrame = 0;
+    mfxU32 framenum = 0;
 
     puts("start encoding");
 
@@ -190,11 +195,17 @@ int main(int argc, char* argv[]) {
 
         for (;;) {
             // Encode a frame asychronously (returns immediately)
-            sts = MFXVideoENCODE_EncodeFrameAsync(session,
+            auto t0 = std::chrono::high_resolution_clock::now();
+            sts     = MFXVideoENCODE_EncodeFrameAsync(session,
                                                   NULL,
                                                   &pEncSurfaces[nEncSurfIdx],
                                                   &mfxBS,
                                                   &syncp);
+            auto t1 = std::chrono::high_resolution_clock::now();
+            encode_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                    .count();
+
             if (MFX_ERR_NONE < sts && syncp) {
                 sts = MFX_ERR_NONE; // Ignore warnings if output is available
                 break;
@@ -209,12 +220,17 @@ int main(int argc, char* argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
+            auto t0 = std::chrono::high_resolution_clock::now();
+            sts     = MFXVideoCORE_SyncOperation(
                 session,
                 syncp,
                 60000); // Synchronize. Wait until encoded frame is ready
-            ++nFrame;
-            WriteEncodedStream(nFrame,
+            auto t1 = std::chrono::high_resolution_clock::now();
+            sync_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                    .count();
+            ++framenum;
+            WriteEncodedStream(framenum,
                                g_conf,
                                mfxBS.Data + mfxBS.DataOffset,
                                mfxBS.DataLength,
@@ -230,11 +246,17 @@ int main(int argc, char* argv[]) {
     while (MFX_ERR_NONE <= sts) {
         for (;;) {
             // Encode a frame asychronously (returns immediately)
-            sts = MFXVideoENCODE_EncodeFrameAsync(session,
+            auto t0 = std::chrono::high_resolution_clock::now();
+            sts     = MFXVideoENCODE_EncodeFrameAsync(session,
                                                   NULL,
                                                   NULL,
                                                   &mfxBS,
                                                   &syncp);
+            auto t1 = std::chrono::high_resolution_clock::now();
+            encode_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                    .count();
+
             if (MFX_ERR_NONE < sts && syncp) {
                 sts = MFX_ERR_NONE; // Ignore warnings if output is available
                 break;
@@ -245,17 +267,23 @@ int main(int argc, char* argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
+            auto t0 = std::chrono::high_resolution_clock::now();
+            sts     = MFXVideoCORE_SyncOperation(
                 session,
                 syncp,
                 60000); // Synchronize. Wait until encoded frame is ready
-            ++nFrame;
-            WriteEncodedStream(nFrame,
+            auto t1 = std::chrono::high_resolution_clock::now();
+            sync_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                    .count();
+            ++framenum;
+            WriteEncodedStream(framenum,
                                g_conf,
                                mfxBS.Data + mfxBS.DataOffset,
                                mfxBS.DataLength,
                                codecID,
                                fSink);
+
             mfxBS.DataLength = 0;
         }
     }
@@ -271,7 +299,11 @@ int main(int argc, char* argv[]) {
     fclose(fSource);
     fclose(fSink);
 
-    puts("done!");
+    printf("encoded %d frames\n", framenum);
+    printf("encode avg=%f usec, sync avg=%f usec\n",
+           encode_time / framenum,
+           sync_time / framenum);
+
     return 0;
 }
 
