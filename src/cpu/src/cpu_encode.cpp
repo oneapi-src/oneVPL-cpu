@@ -20,6 +20,9 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
         case MFX_CODEC_HEVC:
             cid = AV_CODEC_ID_HEVC;
             break;
+        case MFX_CODEC_AV1:
+            cid = AV_CODEC_ID_AV1;
+            break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -56,7 +59,7 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
                              m_avEncContext->framerate.den);
 
     // set codec-specific parameters
-    if (m_encCodecId == MFX_CODEC_HEVC) {
+    if (m_encCodecId == MFX_CODEC_HEVC || m_encCodecId == MFX_CODEC_AV1) {
         // set rate control
         if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
             // TODO(jon) - plumb QPI/QPP/QPB
