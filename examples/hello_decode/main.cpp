@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <chrono>
+#include <iostream>
 #include "onevpl/mfxvideo.h"
 
 int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
@@ -35,12 +37,12 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // init Media SDK
+    // init bitstream
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = 2000000;
     mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
 
-    // initialize Media SDK session
+    // initialize  session
     mfxInitParam initPar   = { 0 };
     initPar.Version.Major  = 1;
     initPar.Version.Minor  = 1;
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]) {
         puts("MFXInitEx error.  Could not initialize session");
         exit(1);
     }
-    puts("initialized");
+    puts("oneVPL initialized");
 
     // set up input bitstream
     memmove(mfxBS.Data, mfxBS.Data + mfxBS.DataOffset, mfxBS.DataLength);
@@ -109,8 +111,11 @@ int main(int argc, char *argv[]) {
     // ------------------
     // main loop
     // ------------------
-    int framenum = 0;
-    while (framenum <= 200) {
+    int framenum       = 0;
+    double decode_time = 0;
+    double sync_time   = 0;
+
+    for (;;) {
         mfxSyncPoint syncp               = { 0 };
         mfxFrameSurface1 *pmfxOutSurface = nullptr;
 
@@ -118,11 +123,16 @@ int main(int argc, char *argv[]) {
         int nIndex      = GetFreeSurfaceIndex(decSurfaces, nSurfNumDec);
         while (stillgoing) {
             // submit async decode request
-            sts = MFXVideoDECODE_DecodeFrameAsync(session,
+            auto t0 = std::chrono::high_resolution_clock::now();
+            sts     = MFXVideoDECODE_DecodeFrameAsync(session,
                                                   &mfxBS,
                                                   &decSurfaces[nIndex],
                                                   &pmfxOutSurface,
                                                   &syncp);
+            auto t1 = std::chrono::high_resolution_clock::now();
+            decode_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                    .count();
 
             // next step actions provided by application
             switch (sts) {
@@ -157,7 +167,12 @@ int main(int argc, char *argv[]) {
             break;
 
         // data available to app only after sync
+        auto t0 = std::chrono::high_resolution_clock::now();
         MFXVideoCORE_SyncOperation(session, syncp, 60000);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        sync_time +=
+            std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                .count();
 
         // write output if output file specified
         if (fSink) {
@@ -189,6 +204,9 @@ int main(int argc, char *argv[]) {
         framenum++;
     }
     printf("read %d frames\n", framenum);
+    printf("decode avg=%f usec, sync avg=%f usec\n",
+           decode_time / framenum,
+           sync_time / framenum);
 
     if (fSink)
         fclose(fSink);
