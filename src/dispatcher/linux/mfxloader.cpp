@@ -53,9 +53,8 @@ namespace MFX {
         #define LIBMFXSW "libmfxsw64.so"
         #define LIBMFXHW "libmfxhw64.so"
     #else
-        #define LIBMFXSW    "libmfxsw64.so.1"
-        #define LIBMFXHW    "libmfxhw64.so.1"
-        #define LIBMFXSWVPL "libmfxvplsw64.so.1"
+        #define LIBMFXSW "libmfxsw64.so.1"
+        #define LIBMFXHW "libmfxhw64.so.1"
     #endif
 #else
     #error Unsupported architecture
@@ -197,12 +196,8 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par) {
 
     std::vector<std::string> libs;
 
-    if (par.Implementation & MFX_IMPL_SOFTWARE_VPL) {
-        libs.emplace_back(LIBMFXSWVPL);
-        libs.emplace_back(MFX_MODULES_DIR "/" LIBMFXSWVPL);
-    }
-    else if (MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO ||
-             MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO_ANY) {
+    if (MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO ||
+        MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO_ANY) {
         libs.emplace_back(LIBMFXHW);
         libs.emplace_back(MFX_MODULES_DIR "/" LIBMFXHW);
         libs.emplace_back(LIBMFXSW);
@@ -233,6 +228,11 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par) {
                 for (int i = 0; i < eFunctionsNum; ++i) {
                     assert(i == g_mfxFuncTable[i].id);
                     m_table[i] = dlsym(hdl.get(), g_mfxFuncTable[i].name);
+                    // TODO(JR) - shouldn't the first check be >=
+                    // user requests version >= par.Version and
+                    //   and a missing function is supposed to be
+                    //   there for all versions >= g_mfxFuncTable[i].version
+                    // see equivalent Windows code
                     if (!m_table[i] &&
                         ((par.Version <= g_mfxFuncTable[i].version) ||
                          (g_mfxFuncTable[i].version <=

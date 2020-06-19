@@ -315,7 +315,9 @@ FUNCTION(mfxStatus,
     }
 
 // FUNCTION(mfxStatus, MFXInitEx, (mfxInitParam par, mfxSession session), (par, session))
+#ifndef DISABLE_NON_VPL_DISPATCHER
 FUNCTION(mfxStatus, MFXDoWork, (mfxSession session), (session))
+#endif
 
 #undef API_VERSION
 

@@ -249,6 +249,7 @@ protected: // variables
 
     MFXVideoSession m_mfxSession;
     mfxIMPL m_impl;
+    bool m_bUseVPLLib;
     MFXVideoDECODE* m_pmfxDEC;
     MFXVideoVPP* m_pmfxVPP;
     mfxVideoParam m_mfxVideoParams;

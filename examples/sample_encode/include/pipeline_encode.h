@@ -396,6 +396,7 @@ protected:
     MemType m_memType;
     mfxU16 m_nMemBuffer;
     bool m_bExternalAlloc; // use memory allocator as external for Media SDK
+    bool m_bUseVPLLib;
 
     mfxFrameSurface1*
         m_pEncSurfaces; // frames array for encoder input (vpp output)

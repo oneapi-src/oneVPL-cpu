@@ -67,9 +67,10 @@ CDecodingPipeline::CDecodingPipeline() {
     m_bVppIsUsed         = false;
     MSDK_ZERO_MEMORY(m_mfxBS);
 
-    m_pmfxDEC = NULL;
-    m_pmfxVPP = NULL;
-    m_impl    = 0;
+    m_pmfxDEC    = NULL;
+    m_pmfxVPP    = NULL;
+    m_impl       = 0;
+    m_bUseVPLLib = false;
 
     MSDK_ZERO_MEMORY(m_mfxVideoParams);
     MSDK_ZERO_MEMORY(m_mfxVppVideoParams);
@@ -251,9 +252,17 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams) {
     MSDK_ZERO_MEMORY(initPar);
     MSDK_ZERO_MEMORY(threadsPar);
 
-    // we set version to 1.0 and later we will query actual version of the library which will got leaded
-    initPar.Version.Major = 1;
-    initPar.Version.Minor = 0;
+    if (pParams->bUseVPLLib) {
+        // require version >= 1.35 for VPL-SW
+        initPar.Version.Major = 1;
+        initPar.Version.Minor = 35;
+        m_bUseVPLLib          = true;
+    }
+    else {
+        // we set version to 1.0 and later we will query actual version of the library which will got leaded
+        initPar.Version.Major = 1;
+        initPar.Version.Minor = 0;
+    }
 
     initPar.GPUCopy = pParams->gpuCopy;
 
@@ -289,7 +298,7 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams) {
 
     // Init session
     if (pParams->bUseVPLLib) {
-        initPar.Implementation = MFX_IMPL_SOFTWARE_VPL;
+        initPar.Implementation = MFX_IMPL_SOFTWARE;
         sts                    = m_mfxSession.InitEx(initPar);
     }
     else if (pParams->bUseHWLib) {
@@ -2128,10 +2137,11 @@ void CDecodingPipeline::PrintInfo() {
     const msdk_char *sImpl =
         (MFX_IMPL_VIA_D3D11 == MFX_IMPL_VIA_MASK(m_impl))
             ? MSDK_STRING("hw_d3d11")
-            : (MFX_IMPL_SOFTWARE == MFX_IMPL_BASETYPE(m_impl))
-                  ? MSDK_STRING("sw")
-                  : (MFX_IMPL_SOFTWARE_VPL == m_impl) ? MSDK_STRING("VPL SW")
-                                                      : MSDK_STRING("hw");
+            : (m_bUseVPLLib == true)
+                  ? MSDK_STRING("VPL SW")
+                  : (MFX_IMPL_SOFTWARE == MFX_IMPL_BASETYPE(m_impl))
+                        ? MSDK_STRING("sw")
+                        : MSDK_STRING("hw");
     msdk_printf(MSDK_STRING("MediaSDK impl\t\t%s\n"), sImpl);
 
     mfxVersion ver;

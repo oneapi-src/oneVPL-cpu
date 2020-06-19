@@ -7,6 +7,8 @@
 #include "./cpu_workstream.h"
 #include "onevpl/mfxvideo.h"
 
+#include "onevpl/mfxdispatcher.h"
+
 mfxStatus MFXInit(mfxIMPL implParam, mfxVersion *ver, mfxSession *session) {
     mfxInitParam par = {};
 
@@ -34,7 +36,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
 
     // SW plugin only
     if ((MFX_IMPL_AUTO != impl) && (MFX_IMPL_AUTO_ANY != impl) &&
-        (MFX_IMPL_SOFTWARE_VPL != impl)) {
+        (MFX_IMPL_SOFTWARE != impl)) {
         return MFX_ERR_UNSUPPORTED;
     }
 
@@ -72,7 +74,7 @@ mfxStatus MFXQueryIMPL(mfxSession session, mfxIMPL *impl) {
         return MFX_ERR_NULL_PTR;
     }
 
-    *impl = MFX_IMPL_SOFTWARE_VPL;
+    *impl = MFX_IMPL_SOFTWARE;
 
     return MFX_ERR_NONE;
 }

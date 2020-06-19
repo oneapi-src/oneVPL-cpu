@@ -15,10 +15,9 @@
 
 /// Main entry point.
 int main(int argc, char* argv[]) {
-    mfxStatus sts = MFX_ERR_NONE;
-    //    mfxIMPL impl       = MFX_IMPL_AUTO_ANY;
-    mfxIMPL impl       = MFX_IMPL_SOFTWARE_VPL;
-    mfxVersion version = { { 0, 1 } };
+    mfxStatus sts      = MFX_ERR_NONE;
+    mfxIMPL impl       = MFX_IMPL_SOFTWARE;
+    mfxVersion version = { { 1, 35 } };
     MFXVideoSession session;
 
     sts = session.Init(impl, &version);
@@ -41,7 +40,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "oneVPL " << version.Major << "." << version.Minor << " ("
-              << ((impl == MFX_IMPL_SOFTWARE_VPL) ? "VPL-CPU" : "HARDWARE")
+              << ((impl == MFX_IMPL_SOFTWARE) ? "VPL-CPU" : "HARDWARE")
               << ")\n";
 
     session.Close();

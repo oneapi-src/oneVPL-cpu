@@ -22,6 +22,9 @@
 #define SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_
 
 #include <onevpl/mfxvideo.h>
+
+#include <onevpl/mfxdispatcher.h>
+
 #ifndef DISABLE_NON_VPL_DISPATCHER
     #include <mfxaudio.h>
     #include <mfxplugin.h>
@@ -94,10 +97,9 @@ enum { MFX_MAX_DLL_PATH = 1024 };
 
 // declare library's implementation types
 enum eMfxImplType {
-    MFX_LIB_HARDWARE     = 0,
-    MFX_LIB_SOFTWARE     = 1,
-    MFX_LIB_PSEUDO       = 2,
-    MFX_LIB_SOFTWARE_VPL = 3,
+    MFX_LIB_HARDWARE = 0,
+    MFX_LIB_SOFTWARE = 1,
+    MFX_LIB_PSEUDO   = 2,
 
     MFX_LIB_IMPL_TYPES
 };

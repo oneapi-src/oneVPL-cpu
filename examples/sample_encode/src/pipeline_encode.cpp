@@ -1175,6 +1175,7 @@ CEncodingPipeline::CEncodingPipeline() {
     m_pmfxAllocatorParams = NULL;
     m_memType             = SYSTEM_MEMORY;
     m_bExternalAlloc      = false;
+    m_bUseVPLLib          = false;
     m_pEncSurfaces        = NULL;
     m_pVppSurfaces        = NULL;
     m_InputFourCC         = 0;
@@ -1375,16 +1376,24 @@ mfxStatus CEncodingPipeline::Init(sInputParams *pParams) {
 
     MSDK_ZERO_MEMORY(initPar);
 
-    // we set version to 1.0 and later we will query actual version of the library which will got leaded
-    initPar.Version.Major = 1;
-    initPar.Version.Minor = 0;
+    if (pParams->bUseVPLLib) {
+        // require version >= 1.35 for VPL-SW
+        initPar.Version.Major = 1;
+        initPar.Version.Minor = 35;
+        m_bUseVPLLib          = true;
+    }
+    else {
+        // we set version to 1.0 and later we will query actual version of the library which will got leaded
+        initPar.Version.Major = 1;
+        initPar.Version.Minor = 0;
+    }
 
     initPar.GPUCopy  = pParams->gpuCopy;
     m_bSingleTexture = pParams->bSingleTexture;
 
     // Init session
     if (pParams->bUseVPLLib) {
-        initPar.Implementation = MFX_IMPL_SOFTWARE_VPL;
+        initPar.Implementation = MFX_IMPL_SOFTWARE;
         sts                    = m_mfxSession.InitEx(initPar);
     }
     else if (pParams->bUseHWLib) {
@@ -2492,7 +2501,7 @@ void CEncodingPipeline::PrintInfo() {
                               ? MSDK_STRING("hw3")
                               : (MFX_IMPL_HARDWARE4 == MFX_IMPL_BASETYPE(impl))
                                     ? MSDK_STRING("hw4")
-                                    : (MFX_IMPL_SOFTWARE_VPL == impl)
+                                    : (m_bUseVPLLib == true)
                                           ? MSDK_STRING("VPL SW")
                                           : MSDK_STRING("sw");
     msdk_printf(MSDK_STRING("Media SDK impl\t\t%s\n"), sImpl);

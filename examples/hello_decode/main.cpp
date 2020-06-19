@@ -45,8 +45,8 @@ int main(int argc, char *argv[]) {
     // initialize  session
     mfxInitParam initPar   = { 0 };
     initPar.Version.Major  = 1;
-    initPar.Version.Minor  = 1;
-    initPar.Implementation = MFX_IMPL_SOFTWARE_VPL;
+    initPar.Version.Minor  = 35;
+    initPar.Implementation = MFX_IMPL_SOFTWARE;
 
     mfxSession session;
     mfxStatus sts = MFXInitEx(initPar, &session);
