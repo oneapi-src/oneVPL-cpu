@@ -312,16 +312,38 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
     surface_work->Info.Width  = m_avDecContext->width;
     surface_work->Info.Height = m_avDecContext->height;
 
+    if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE) {
+        surface_work->Info.FourCC = MFX_FOURCC_I010;
+        surface_work->Data.Pitch  = (m_avDecContext->width * 2);
+
+        w     = surface_work->Info.Width * 2;
+        h     = surface_work->Info.Height;
+        pitch = surface_work->Data.Pitch;
+    }
+    else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P) {
+        // this must be updated to i420 format later, like MFX_FOURCC_I420 or MFX_FOURCC_IYUV
+        surface_work->Info.FourCC =
+            MFX_MAKEFOURCC('I', '4', '2', '0'); // MFX_FOURCC_I420
+        surface_work->Data.Pitch = m_avDecContext->width;
+
+        w     = surface_work->Info.Width;
+        h     = surface_work->Info.Height;
+        pitch = surface_work->Data.Pitch;
+    }
+    else { // default
+        surface_work->Info.FourCC =
+            MFX_MAKEFOURCC('I', '4', '2', '0'); // MFX_FOURCC_I420
+        surface_work->Data.Pitch = m_avDecContext->width;
+
+        w     = surface_work->Info.Width;
+        h     = surface_work->Info.Height;
+        pitch = surface_work->Data.Pitch;
+    }
+
     surface_work->Info.CropX = 0;
     surface_work->Info.CropY = 0;
     surface_work->Info.CropW = m_avDecContext->width;
     surface_work->Info.CropH = m_avDecContext->height;
-
-    surface_work->Data.Pitch = m_avDecContext->width;
-
-    w     = surface_work->Info.Width;
-    h     = surface_work->Info.Height;
-    pitch = surface_work->Data.Pitch;
 
     // copy Y plane
     for (y = 0; y < h; y++) {
@@ -329,7 +351,7 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
             pitch * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
         memcpy(surface_work->Data.Y + offset,
                m_avDecFrameOut->data[0] + y * m_avDecFrameOut->linesize[0],
-               m_avDecFrameOut->width);
+               w);
     }
 
     // copy U plane
@@ -338,7 +360,7 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
                  surface_work->Info.CropX;
         memcpy(surface_work->Data.U + offset,
                m_avDecFrameOut->data[1] + y * m_avDecFrameOut->linesize[1],
-               m_avDecFrameOut->width / 2);
+               w / 2);
     }
 
     // copy V plane
@@ -347,7 +369,7 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
                  surface_work->Info.CropX;
         memcpy(surface_work->Data.V + offset,
                m_avDecFrameOut->data[2] + y * m_avDecFrameOut->linesize[2],
-               m_avDecFrameOut->width / 2);
+               w / 2);
     }
 }
 
@@ -355,6 +377,16 @@ mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par) {
     // call after decoding at least one frame
     par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;
     par->mfx.FrameInfo.Height = (uint16_t)m_avDecContext->height;
+
+    if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
+    else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
+        // this must be updated to i420 format later, like MFX_FOURCC_I420 or MFX_FOURCC_IYUV
+        par->mfx.FrameInfo.FourCC =
+            MFX_MAKEFOURCC('I', '4', '2', '0'); // MFX_FOURCC_I420
+    else
+        par->mfx.FrameInfo.FourCC =
+            MFX_MAKEFOURCC('I', '4', '2', '0'); // MFX_FOURCC_I420
 
     if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
         return MFX_ERR_NOT_INITIALIZED;

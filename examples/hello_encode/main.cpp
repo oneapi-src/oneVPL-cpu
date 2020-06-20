@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
         }
     }
     else {
-        fourCC = MFX_FOURCC_YV12;
+        fourCC = MFX_MAKEFOURCC('I', '4', '2', '0');
         puts("8bit input");
     }
 
@@ -420,7 +420,7 @@ mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource) {
     h = pInfo->Height;
 
     switch (pInfo->FourCC) {
-        case MFX_FOURCC_YV12:
+        case MFX_MAKEFOURCC('I', '4', '2', '0'):
             // read luminance plane (Y)
             pitch = pData->Pitch;
             ptr   = pData->Y;
@@ -488,7 +488,7 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     mfxU32 nbytes = 0;
 
     switch (FourCC) {
-        case MFX_FOURCC_YV12:
+        case MFX_MAKEFOURCC('I', '4', '2', '0'):
             nbytes = width * height + (width >> 1) * (height >> 1) +
                      (width >> 1) * (height >> 1);
             break;

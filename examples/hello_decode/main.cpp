@@ -12,30 +12,39 @@
 #include <iostream>
 #include "onevpl/mfxvideo.h"
 
-int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
-    for (mfxU16 i = 0; i < nPoolSize; i++) {
-        if (0 == SurfacesPool[i].Data.Locked)
-            return i;
-    }
-    return MFX_ERR_NOT_FOUND;
-}
+void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
+mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
+int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize);
+void Usage(void);
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("usage: hello_decode in.h265\n\n");
-        printf("decodes an h265/hevc file to out.raw\n");
-        printf("to view:\n");
-        printf(" ffplay -s 1280x720 -pix_fmt yuv420p -f rawvideo out.raw\n");
-        exit(1);
+    if (argc != 4) {
+        Usage();
+        return 1; // return 1 as error code
     }
 
-    FILE *fSink = fopen("out.raw", "wb");
-    printf("opening %s\n", argv[1]);
-    FILE *fSource = fopen(argv[1], "rb");
-    if (!fSource) {
-        puts("could not open input file");
-        exit(1);
+    mfxU32 codecID;
+    if (strncmp("h265", argv[1], 4) == 0) {
+        codecID = MFX_CODEC_HEVC;
+        puts("h265 decoding");
     }
+    else if (strncmp("av1", argv[1], 3) == 0) {
+        codecID = MFX_CODEC_AV1;
+        puts("av1 decoding");
+    }
+    else {
+        printf("%s is not supported\n", argv[1]);
+        Usage();
+        return 1;
+    }
+
+    printf("opening %s\n", argv[2]);
+    FILE *fSource = fopen(argv[2], "rb");
+    if (!fSource) {
+        printf("could not open input file, %s\n", argv[2]);
+        return 1;
+    }
+    FILE *fSink = fopen(argv[3], "wb");
 
     // init bitstream
     mfxBitstream mfxBS = { 0 };
@@ -52,8 +61,9 @@ int main(int argc, char *argv[]) {
     mfxStatus sts = MFXInitEx(initPar, &session);
     if (sts != MFX_ERR_NONE) {
         puts("MFXInitEx error.  Could not initialize session");
-        exit(1);
+        return 1;
     }
+
     puts("oneVPL initialized");
 
     // set up input bitstream
@@ -63,12 +73,12 @@ int main(int argc, char *argv[]) {
 
     // initialize decode parameters from stream header
     mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.mfx.CodecId   = codecID;
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     if (sts != MFX_ERR_NONE) {
         printf("Problem decoding header.  DecodeHeader sts=%d\n", sts);
-        exit(1);
+        return 1;
     }
 
     // Query number required surfaces for decoder
@@ -81,25 +91,30 @@ int main(int argc, char *argv[]) {
     mfxFrameSurface1 *decSurfaces = new mfxFrameSurface1[nSurfNumDec];
 
     // initialize surface pool for decode (I420 format)
-    size_t framePoolBufSize = static_cast<size_t>(
-        mfxDecParams.mfx.FrameInfo.Width * mfxDecParams.mfx.FrameInfo.Height *
-        1.5 * nSurfNumDec);
-    mfxU8 *DECoutbuf = new mfxU8[framePoolBufSize];
+    mfxU32 surfaceSize = GetSurfaceSize(mfxDecParams.mfx.FrameInfo.FourCC,
+                                        mfxDecParams.mfx.FrameInfo.Width,
+                                        mfxDecParams.mfx.FrameInfo.Height);
+    if (surfaceSize == 0) {
+        puts("Surface size is wrong");
+        return 1;
+    }
+    size_t framePoolBufSize = static_cast<size_t>(surfaceSize * nSurfNumDec);
+    mfxU8 *DECoutbuf        = new mfxU8[framePoolBufSize];
+
+    mfxU16 surfW = (mfxDecParams.mfx.FrameInfo.FourCC == MFX_FOURCC_I010)
+                       ? mfxDecParams.mfx.FrameInfo.Width * 2
+                       : mfxDecParams.mfx.FrameInfo.Width;
+    mfxU16 surfH = mfxDecParams.mfx.FrameInfo.Height;
 
     for (int i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]      = { 0 };
-        decSurfaces[i].Info = mfxDecParams.mfx.FrameInfo;
-        size_t buf_offset =
-            static_cast<size_t>(i * mfxDecParams.mfx.FrameInfo.Height *
-                                mfxDecParams.mfx.FrameInfo.Width * 1.5);
+        decSurfaces[i]        = { 0 };
+        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
+        size_t buf_offset     = static_cast<size_t>(i * surfaceSize);
         decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset +
-                                mfxDecParams.mfx.FrameInfo.Height *
-                                    mfxDecParams.mfx.FrameInfo.Width;
+        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
         decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + mfxDecParams.mfx.FrameInfo.Height / 2 *
-                                        mfxDecParams.mfx.FrameInfo.Width / 2;
-        decSurfaces[i].Data.Pitch = mfxDecParams.mfx.FrameInfo.Width;
+            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i].Data.Pitch = surfW;
     }
 
     // input parameters finished, now initialize decode
@@ -111,14 +126,14 @@ int main(int argc, char *argv[]) {
     // ------------------
     // main loop
     // ------------------
-    int framenum       = 0;
-    double decode_time = 0;
-    double sync_time   = 0;
+    int framenum                     = 0;
+    double decode_time               = 0;
+    double sync_time                 = 0;
+    mfxSyncPoint syncp               = { 0 };
+    mfxFrameSurface1 *pmfxOutSurface = nullptr;
 
+    puts("start decoding");
     for (;;) {
-        mfxSyncPoint syncp               = { 0 };
-        mfxFrameSurface1 *pmfxOutSurface = nullptr;
-
         bool stillgoing = true;
         int nIndex      = GetFreeSurfaceIndex(decSurfaces, nSurfNumDec);
         while (stillgoing) {
@@ -175,34 +190,58 @@ int main(int argc, char *argv[]) {
                 .count();
 
         // write output if output file specified
-        if (fSink) {
-            // write the output to disk
-            //Y
-            for (int r = 0; r < pmfxOutSurface->Info.CropH; r++) {
-                fwrite(pmfxOutSurface->Data.Y + r * pmfxOutSurface->Data.Pitch,
-                       1,
-                       pmfxOutSurface->Info.CropW,
-                       fSink);
-            }
-            //U
-            for (int r = 0; r < pmfxOutSurface->Info.CropH / 2; r++) {
-                fwrite(
-                    pmfxOutSurface->Data.U + r * pmfxOutSurface->Data.Pitch / 2,
-                    1,
-                    pmfxOutSurface->Info.CropW / 2,
-                    fSink);
-            }
-            //V
-            for (int r = 0; r < pmfxOutSurface->Info.CropH / 2; r++) {
-                fwrite(
-                    pmfxOutSurface->Data.V + r * pmfxOutSurface->Data.Pitch / 2,
-                    1,
-                    pmfxOutSurface->Info.CropW / 2,
-                    fSink);
-            }
-        }
+        if (fSink)
+            WriteRawFrame(pmfxOutSurface, fSink);
+
         framenum++;
     }
+
+    sts = MFX_ERR_NONE;
+    memset(&syncp, 0, sizeof(mfxSyncPoint));
+    pmfxOutSurface = nullptr;
+
+    // retrieve the buffered decoded frames
+    while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_SURFACE == sts) {
+        int nIndex =
+            GetFreeSurfaceIndex(decSurfaces,
+                                nSurfNumDec); // Find free frame surface
+
+        // Decode a frame asychronously (returns immediately)
+        auto t0 = std::chrono::high_resolution_clock::now();
+        sts     = MFXVideoDECODE_DecodeFrameAsync(session,
+                                              NULL,
+                                              &decSurfaces[nIndex],
+                                              &pmfxOutSurface,
+                                              &syncp);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        decode_time +=
+            std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                .count();
+
+        // Ignore warnings if output is available,
+        // if no output and no action required just repeat the DecodeFrameAsync call
+        if (MFX_ERR_NONE < sts && syncp)
+            sts = MFX_ERR_NONE;
+
+        if (sts == MFX_ERR_NONE) {
+            t0  = std::chrono::high_resolution_clock::now();
+            sts = MFXVideoCORE_SyncOperation(
+                session,
+                syncp,
+                60000); // Synchronize. Waits until decoded frame is ready
+            t1 = std::chrono::high_resolution_clock::now();
+            sync_time +=
+                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
+                    .count();
+
+            // write output if output file specified
+            if (fSink)
+                WriteRawFrame(pmfxOutSurface, fSink);
+
+            framenum++;
+        }
+    }
+
     printf("read %d frames\n", framenum);
     printf("decode avg=%f usec, sync avg=%f usec\n",
            decode_time / framenum,
@@ -217,4 +256,100 @@ int main(int argc, char *argv[]) {
     delete[] decSurfaces;
 
     return 0;
+}
+
+mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
+    mfxU32 nbytes = 0;
+
+    switch (FourCC) {
+        case MFX_MAKEFOURCC('I', '4', '2', '0'):
+            nbytes = width * height + (width >> 1) * (height >> 1) +
+                     (width >> 1) * (height >> 1);
+            break;
+        case MFX_FOURCC_I010:
+            nbytes = width * height + (width >> 1) * (height >> 1) +
+                     (width >> 1) * (height >> 1);
+            nbytes *= 2;
+            break;
+        default:
+            break;
+    }
+
+    return nbytes;
+}
+
+int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
+    for (mfxU16 i = 0; i < nPoolSize; i++) {
+        if (0 == SurfacesPool[i].Data.Locked)
+            return i;
+    }
+    return MFX_ERR_NOT_FOUND;
+}
+
+void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
+    mfxU16 w, h, i, pitch;
+    mfxFrameInfo *pInfo = &pSurface->Info;
+    mfxFrameData *pData = &pSurface->Data;
+
+    w = pInfo->Width;
+    h = pInfo->Height;
+
+    // write the output to disk
+    switch (pInfo->FourCC) {
+        case MFX_MAKEFOURCC('I', '4', '2', '0'):
+            //Y
+            pitch = pData->Pitch;
+            for (i = 0; i < h; i++) {
+                fwrite(pData->Y + i * pitch, 1, w, f);
+            }
+
+            //U
+            pitch /= 2;
+            h /= 2;
+            w /= 2;
+            for (i = 0; i < h; i++) {
+                fwrite(pData->U + i * pitch, 1, w, f);
+            }
+            //V
+            for (i = 0; i < h; i++) {
+                fwrite(pData->V + i * pitch, 1, w, f);
+            }
+            break;
+
+        case MFX_FOURCC_I010:
+            //Y
+            pitch = pData->Pitch;
+            w *= 2;
+            for (i = 0; i < h; i++) {
+                fwrite(pSurface->Data.Y + i * pitch, 1, w, f);
+            }
+
+            //U
+            pitch /= 2;
+            w /= 2;
+            h /= 2;
+            for (i = 0; i < h; i++) {
+                fwrite(pSurface->Data.U + i * pitch, 1, w, f);
+            }
+            //V
+            for (i = 0; i < h; i++) {
+                fwrite(pSurface->Data.V + i * pitch, 1, w, f);
+            }
+            break;
+        default:
+            break;
+    }
+
+    return;
+}
+
+void Usage(void) {
+    printf("Usage: hello_decode [decoder] [input filename] [out filename]\n\n");
+    printf("\t[decoder]         : h265|av1\n");
+    printf("\t[input filename]  : encoded stream\n");
+    printf("\t[out filename]    : filename to store the output\n");
+    printf("To view:\n");
+    printf(
+        " ffplay -video_size [width]x[height] -pixel_format [pixel format] -f rawvideo [out filename]\n");
+    return;
 }
