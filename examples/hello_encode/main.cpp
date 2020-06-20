@@ -41,44 +41,57 @@ void WriteEncodedStream(mfxU32 nframe,
                         mfxU32 codecID,
                         FILE* f);
 mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource);
+mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 int GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool);
+void Usage(void);
 
 int main(int argc, char* argv[]) {
-    if (argc != 6) {
-    help:
-        printf(
-            "Usage: hello_encode [encoder] [input filename] [out filename] [width] [height]\n\n");
-        printf("\t[encoder]         : h265|av1\n");
-        printf("\t[input filename]  : raw video file (i420 only)\n");
-        printf("\t[out filename]    : filename to store the output\n");
-        printf("\t[width]           : width of input video\n");
-        printf("\t[height]          : height of input video\n\n");
-        printf("In case of AV1, output will be contained with IVF headers.\n");
-        printf("To view:\n");
-        printf(" ffplay [out filename]\n");
+    if (argc < 6) {
+        Usage();
         return 1; // return 1 as error code
     }
 
     mfxU32 codecID;
-    if (strncmp("h265", argv[1], 4) == 0)
+    if (strncmp("h265", argv[1], 4) == 0) {
         codecID = MFX_CODEC_HEVC;
-    else if (strncmp("av1", argv[1], 3) == 0)
+        puts("h265 encoding");
+    }
+    else if (strncmp("av1", argv[1], 3) == 0) {
         codecID = MFX_CODEC_AV1;
+        puts("av1 encoding");
+    }
     else {
         printf("%s is not supported\n", argv[1]);
-        goto help;
+        Usage();
+        return 1;
     }
 
     printf("opening %s\n", argv[2]);
     FILE* fSource = fopen(argv[2], "rb");
     if (!fSource) {
-        printf("could not open input file\n");
+        printf("could not open input file, %s\n", argv[2]);
         return 1;
     }
     FILE* fSink = fopen(argv[3], "wb");
 
     mfxU16 inputWidth  = atoi(argv[4]);
     mfxU16 inputHeight = atoi(argv[5]);
+    mfxU32 fourCC;
+
+    if (argv[6]) {
+        if (strncmp("10", argv[6], 2) == 0) {
+            fourCC = MFX_FOURCC_I010;
+            puts("10bit input");
+        }
+        else {
+            Usage();
+            return 1;
+        }
+    }
+    else {
+        fourCC = MFX_FOURCC_YV12;
+        puts("8bit input");
+    }
 
     // Initialize Media SDK session
     mfxInitParam initPar   = { 0 };
@@ -104,7 +117,7 @@ int main(int argc, char* argv[]) {
     mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_VBR;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
-    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_YV12;
+    mfxEncParams.mfx.FrameInfo.FourCC        = fourCC;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxEncParams.mfx.FrameInfo.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxEncParams.mfx.FrameInfo.CropX         = 0;
@@ -115,6 +128,16 @@ int main(int argc, char* argv[]) {
     // Height must be a multiple of 16 in case of frame picture and a multiple of 32 in case of field picture
     mfxEncParams.mfx.FrameInfo.Width  = ALIGN_UP(inputWidth, 16);
     mfxEncParams.mfx.FrameInfo.Height = ALIGN_UP(inputHeight, 16);
+
+    if (fourCC == MFX_FOURCC_I010) {
+        mfxEncParams.mfx.FrameInfo.BitDepthLuma   = 10;
+        mfxEncParams.mfx.FrameInfo.BitDepthChroma = 10;
+        mfxEncParams.mfx.FrameInfo.Shift          = 1;
+        if (codecID == MFX_CODEC_HEVC) {
+            mfxEncParams.mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN10;
+            mfxEncParams.mfx.CodecLevel   = MFX_LEVEL_HEVC_51;
+        }
+    }
 
     mfxEncParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
@@ -132,17 +155,29 @@ int main(int argc, char* argv[]) {
 
     // Query number required surfaces for encoder
     mfxFrameAllocRequest EncRequest = { 0 };
-    MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
+    sts = MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
+
+    if (sts != MFX_ERR_NONE) {
+        puts("QueryIOSurf error");
+        return 1;
+    }
 
     // Determine the required number of surfaces for encoder
     mfxU16 nEncSurfNum = EncRequest.NumFrameSuggested;
 
     // Allocate surfaces for encoder
     // - Frame surface array keeps pointers all surface planes and general frame info
-    mfxU8 bitsPerPixel = 12; // I420 format is a 12 bits per pixel format
-    mfxU32 surfaceSize = inputWidth * inputHeight * bitsPerPixel / 8;
+    mfxU32 surfaceSize = GetSurfaceSize(fourCC, inputWidth, inputHeight);
+    if (surfaceSize == 0) {
+        puts("Surface size is wrong");
+        return 1;
+    }
+
     std::vector<mfxU8> surfaceBuffersData(surfaceSize * nEncSurfNum);
     mfxU8* surfaceBuffers = surfaceBuffersData.data();
+
+    mfxU16 surfW = (fourCC == MFX_FOURCC_I010) ? inputWidth * 2 : inputWidth;
+    mfxU16 surfH = inputHeight;
 
     // Allocate surface headers (mfxFrameSurface1) for encoder
     std::vector<mfxFrameSurface1> pEncSurfaces(nEncSurfNum);
@@ -150,11 +185,11 @@ int main(int argc, char* argv[]) {
         memset(&pEncSurfaces[i], 0, sizeof(mfxFrameSurface1));
         pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
         pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
-        pEncSurfaces[i].Data.U =
-            pEncSurfaces[i].Data.Y + inputWidth * inputHeight;
+
+        pEncSurfaces[i].Data.U = pEncSurfaces[i].Data.Y + surfW * surfH;
         pEncSurfaces[i].Data.V =
-            pEncSurfaces[i].Data.U + ((inputWidth / 2) * (inputHeight / 2));
-        pEncSurfaces[i].Data.Pitch = inputWidth;
+            pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        pEncSurfaces[i].Data.Pitch = surfW;
     }
 
     // Initialize the Media SDK encoder
@@ -384,34 +419,89 @@ mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource) {
     w = pInfo->Width;
     h = pInfo->Height;
 
-    // read luminance plane (Y)
-    pitch = pData->Pitch;
-    ptr   = pData->Y;
-    for (i = 0; i < h; i++) {
-        nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
-        if (w != nBytesRead)
-            return MFX_ERR_MORE_DATA;
-    }
+    switch (pInfo->FourCC) {
+        case MFX_FOURCC_YV12:
+            // read luminance plane (Y)
+            pitch = pData->Pitch;
+            ptr   = pData->Y;
+            for (i = 0; i < h; i++) {
+                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
+                if (w != nBytesRead)
+                    return MFX_ERR_MORE_DATA;
+            }
 
-    // read chrominance (U, V)
-    pitch /= 2;
-    h /= 2;
-    w /= 2;
-    ptr = pData->U;
-    for (i = 0; i < h; i++) {
-        nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
-        if (w != nBytesRead)
-            return MFX_ERR_MORE_DATA;
-    }
+            // read chrominance (U, V)
+            pitch /= 2;
+            h /= 2;
+            w /= 2;
+            ptr = pData->U;
+            for (i = 0; i < h; i++) {
+                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
+                if (w != nBytesRead)
+                    return MFX_ERR_MORE_DATA;
+            }
 
-    ptr = pData->V;
-    for (i = 0; i < h; i++) {
-        nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
-        if (w != nBytesRead)
-            return MFX_ERR_MORE_DATA;
+            ptr = pData->V;
+            for (i = 0; i < h; i++) {
+                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
+                if (w != nBytesRead)
+                    return MFX_ERR_MORE_DATA;
+            }
+            break;
+        case MFX_FOURCC_I010:
+            // read luminance plane (Y)
+            pitch = pData->Pitch;
+            w *= 2;
+            ptr = pData->Y;
+            for (i = 0; i < h; i++) {
+                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
+                if (w != nBytesRead)
+                    return MFX_ERR_MORE_DATA;
+            }
+
+            // read chrominance (U, V)
+            pitch /= 2;
+            w /= 2;
+            h /= 2;
+            ptr = pData->U;
+            for (i = 0; i < h; i++) {
+                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
+                if (w != nBytesRead)
+                    return MFX_ERR_MORE_DATA;
+            }
+
+            ptr = pData->V;
+            for (i = 0; i < h; i++) {
+                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
+                if (w != nBytesRead)
+                    return MFX_ERR_MORE_DATA;
+            }
+            break;
+        default:
+            break;
     }
 
     return MFX_ERR_NONE;
+}
+
+mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
+    mfxU32 nbytes = 0;
+
+    switch (FourCC) {
+        case MFX_FOURCC_YV12:
+            nbytes = width * height + (width >> 1) * (height >> 1) +
+                     (width >> 1) * (height >> 1);
+            break;
+        case MFX_FOURCC_I010:
+            nbytes = width * height + (width >> 1) * (height >> 1) +
+                     (width >> 1) * (height >> 1);
+            nbytes *= 2;
+            break;
+        default:
+            break;
+    }
+
+    return nbytes;
 }
 
 int GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool) {
@@ -425,4 +515,19 @@ int GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool) {
         return MFX_ERR_NOT_FOUND;
     else
         return static_cast<int>(it - pSurfacesPool.begin());
+}
+
+void Usage(void) {
+    printf(
+        "Usage: hello_encode [encoder] [input filename] [out filename] [width] [height] [10]\n\n");
+    printf("\t[encoder]         : h265|av1\n");
+    printf("\t[input filename]  : raw video file (i420 only)\n");
+    printf("\t[out filename]    : filename to store the output\n");
+    printf("\t[width]           : width of input video\n");
+    printf("\t[height]          : height of input video\n");
+    printf("\t[10]              : 10 bit input (option)\n\n");
+    printf("In case of AV1, output will be contained with IVF headers.\n");
+    printf("To view:\n");
+    printf(" ffplay [out filename]\n");
+    return;
 }
