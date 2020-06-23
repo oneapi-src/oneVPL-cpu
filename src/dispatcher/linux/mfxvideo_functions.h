@@ -279,8 +279,6 @@ FUNCTION(mfxStatus,
           mfxENCOutput *out,
           mfxSyncPoint *syncp),
          (session, in, out, syncp))
-#endif
-
 FUNCTION(mfxStatus,
          MFXVideoVPP_RunFrameVPPAsyncEx,
          (mfxSession session,
@@ -289,6 +287,7 @@ FUNCTION(mfxStatus,
           mfxFrameSurface1 **out,
           mfxSyncPoint *syncp),
          (session, in, work, out, syncp))
+#endif
 
 #undef API_VERSION
 

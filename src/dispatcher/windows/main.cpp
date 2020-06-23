@@ -64,7 +64,7 @@ const struct {
     { MFX_LIB_HARDWARE, MFX_IMPL_HARDWARE3, 2 },
     { MFX_LIB_HARDWARE, MFX_IMPL_HARDWARE4, 3 },
     { MFX_LIB_SOFTWARE, MFX_IMPL_SOFTWARE, 0 },
-    { MFX_LIB_SOFTWARE, MFX_IMPL_SOFTWARE | MFX_IMPL_AUDIO, 0 },
+    { MFX_LIB_SOFTWARE, MFX_IMPL_SOFTWARE, 0 }, // unused - was MFX_IMPL_AUDIO
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
     //MFX_SINGLE_THREAD case
     { MFX_LIB_HARDWARE, MFX_IMPL_HARDWARE | MFX_IMPL_EXTERNAL_THREADING, 0 },
@@ -93,7 +93,6 @@ const struct {
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
     { 8, 11 }, // MFX_SINGLE_THREAD,
 #endif
-    { 7, 7 } // MFX_IMPL_AUDIO
 };
 
 MFX::mfxCriticalSection dispGuard = 0;
@@ -175,10 +174,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     mfxU32 curImplIdx, maxImplIdx;
     // implementation method masked from the input parameter
     // special case for audio library
-    const mfxIMPL implMethod =
-        (par.Implementation & MFX_IMPL_AUDIO)
-            ? (sizeof(implTypesRange) / sizeof(implTypesRange[0]) - 1)
-            : (par.Implementation & (MFX_IMPL_VIA_ANY - 1));
+    const mfxIMPL implMethod = par.Implementation & (MFX_IMPL_VIA_ANY - 1);
 
     // implementation interface masked from the input parameter
     mfxIMPL implInterface      = par.Implementation & -MFX_IMPL_VIA_ANY;
@@ -191,12 +187,9 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     }
 
     #if (MFX_VERSION >= MFX_VERSION_NEXT)
-    if (((MFX_IMPL_AUTO > implMethod) ||
-         (MFX_IMPL_SINGLE_THREAD < implMethod)) &&
-        !(par.Implementation & MFX_IMPL_AUDIO))
+    if (((MFX_IMPL_AUTO > implMethod) || (MFX_IMPL_SINGLE_THREAD < implMethod)))
     #else
-    if (((MFX_IMPL_AUTO > implMethod) || (MFX_IMPL_RUNTIME < implMethod)) &&
-        !(par.Implementation & MFX_IMPL_AUDIO))
+    if (((MFX_IMPL_AUTO > implMethod) || (MFX_IMPL_RUNTIME < implMethod)))
     #endif
     {
         return MFX_ERR_UNSUPPORTED;
@@ -359,18 +352,10 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     do {
         implInterface = implInterfaceOrig;
 
-        if (par.Implementation & MFX_IMPL_AUDIO) {
-            mfxRes = MFX::mfx_get_default_audio_dll_name(
-                dllName,
-                sizeof(dllName) / sizeof(dllName[0]),
-                implTypes[curImplIdx].implType);
-        }
-        else {
-            mfxRes = MFX::mfx_get_default_dll_name(
-                dllName,
-                sizeof(dllName) / sizeof(dllName[0]),
-                implTypes[curImplIdx].implType);
-        }
+        mfxRes =
+            MFX::mfx_get_default_dll_name(dllName,
+                                          sizeof(dllName) / sizeof(dllName[0]),
+                                          implTypes[curImplIdx].implType);
 
         if (MFX_ERR_NONE == mfxRes) {
             DISPATCHER_LOG_INFO((("loading default library %S\n"), dllName))
@@ -924,12 +909,7 @@ mfxStatus MFXJoinSession(mfxSession session, mfxSession child_session) {
         /* check whether it is audio session or video */
         int tableIndex = eMFXJoinSession;
         mfxFunctionPointer pFunc;
-        if (pHandle->impl & MFX_IMPL_AUDIO) {
-            pFunc = pHandle->callAudioTable[tableIndex];
-        }
-        else {
-            pFunc = pHandle->callTable[tableIndex];
-        }
+        pFunc = pHandle->callTable[tableIndex];
 
         if (pFunc) {
             // pass down the call
@@ -1008,12 +988,7 @@ mfxStatus MFXInit(mfxIMPL impl, mfxVersion *pVer, mfxSession *session) {
             /* check whether it is audio session or video */               \
             int tableIndex = e##func_name;                                 \
             mfxFunctionPointer pFunc;                                      \
-            if (pHandle->impl & MFX_IMPL_AUDIO) {                          \
-                pFunc = pHandle->callAudioTable[tableIndex];               \
-            }                                                              \
-            else {                                                         \
-                pFunc = pHandle->callTable[tableIndex];                    \
-            }                                                              \
+            pFunc = pHandle->callTable[tableIndex];                        \
             if (pFunc) {                                                   \
                 /* get the real session pointer */                         \
                 session = pHandle->session;                                \

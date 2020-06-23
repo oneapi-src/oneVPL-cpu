@@ -29,8 +29,9 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     mfxIMPL impl = par.Implementation & (MFX_IMPL_VIA_ANY - 1);
 
     // check the library version
-    if ((MFX_VERSION_MAJOR != par.Version.Major) ||
-        (MFX_VERSION_MINOR < par.Version.Minor)) {
+    if ((MFX_VERSION_MAJOR < par.Version.Major) ||
+        (MFX_VERSION_MAJOR == par.Version.Major &&
+         MFX_VERSION_MINOR < par.Version.Minor)) {
         return MFX_ERR_UNSUPPORTED;
     }
 

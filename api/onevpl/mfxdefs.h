@@ -20,8 +20,8 @@
 #ifndef __MFXDEFS_H__
 #define __MFXDEFS_H__
 
-#define MFX_VERSION_MAJOR 1
-#define MFX_VERSION_MINOR 35 //need to add VPP and EncTools chanegs froms versions 1.33 and 1.34
+#define MFX_VERSION_MAJOR 2
+#define MFX_VERSION_MINOR 0 
 
 // MFX_VERSION_NEXT is always +1 from last public release
 // may be enforced by MFX_VERSION_USE_LATEST define
@@ -125,36 +125,10 @@ typedef mfxHDL              mfxMemId;      /*!< Memory ID type */
 typedef void*               mfxThreadTask; /*!< Thread task type */
 typedef char                mfxChar;       /*!< ASCII character, 8 bit type */
 
-/*! The mfxVariantType enumerator data types for mfxVarianf type. */
-typedef enum {
-    MFX_VARIANT_TYPE_UNSET = 0, /*!< Undefined type. */
-    MFX_VARIANT_TYPE_U8 = 1,   /*!< 8-bit unsigned integer. */
-    MFX_VARIANT_TYPE_I8,       /*!< 8-bit signed integer. */
-    MFX_VARIANT_TYPE_U16,      /*!< 16-bit unsigned integer. */
-    MFX_VARIANT_TYPE_I16,      /*!< 16-bit signed integer. */
-    MFX_VARIANT_TYPE_U32,      /*!< 32-bit unsigned integer. */
-    MFX_VARIANT_TYPE_I32,      /*!< 32-bit signed integer. */
-    MFX_VARIANT_TYPE_U64,      /*!< 64-bit unsigned integer. */
-    MFX_VARIANT_TYPE_I64,      /*!< 64-bit signed integer. */
-    MFX_VARIANT_TYPE_F32,      /*!< 32-bit single precision floating point. */
-    MFX_VARIANT_TYPE_F64,      /*!< 64-bit double precision floating point. */
-    MFX_VARIANT_TYPE_PTR,      /*!< Generic type pointer. */
-} mfxVariantType;
-
-/* The mfxResourceType enumerator specifies types of diffrent native data frames and buffers. */
-typedef enum {
-    MFX_RESOURCE_SYSTEM_SURFACE                  = 1, /*!< System memory. */ 
-    MFX_RESOURCE_VA_SURFACE                      = 2, /*!< VA Surface. */ 
-    MFX_RESOURCE_VA_BUFFER                       = 3, /*!< VA Buffer. */ 
-    MFX_RESOURCE_DX9_SURFACE                     = 4, /*!< IDirect3DSurface9. */ 
-    MFX_RESOURCE_DX11_TEXTURE                    = 5, /*!< ID3D11Texture2D. */ 
-    MFX_RESOURCE_DX12_RESOURCE                   = 6, /*!< ID3D12Resource. */
-    MFX_RESOURCE_DMA_RESOURCE                    = 7  /*!< DMA resource. */
-} mfxResourceType;
-
+#if (MFX_VERSION >= 1034)
 /* MFX structures version info */
 MFX_PACK_BEGIN_USUAL_STRUCT()
-/*! Introduce field Version for any structures with modifications after API 1.XX.
+/*! Introduce field Version for any structures.
 Minor number is incremented when reserved fields are used, 
 major number is incremnted when size of structure is increased.
 Assumed that any structure changes are backward binary compatible.
@@ -171,6 +145,24 @@ typedef union {
     mfxU16  Version;   /*!< Structure version number */
 } mfxStructVersion;
 MFX_PACK_END()
+#endif
+
+#if (MFX_VERSION >= 2000)
+/*! The mfxVariantType enumerator data types for mfxVarianf type. */
+typedef enum {
+    MFX_VARIANT_TYPE_UNSET = 0, /*!< Undefined type. */
+    MFX_VARIANT_TYPE_U8 = 1,   /*!< 8-bit unsigned integer. */
+    MFX_VARIANT_TYPE_I8,       /*!< 8-bit signed integer. */
+    MFX_VARIANT_TYPE_U16,      /*!< 16-bit unsigned integer. */
+    MFX_VARIANT_TYPE_I16,      /*!< 16-bit signed integer. */
+    MFX_VARIANT_TYPE_U32,      /*!< 32-bit unsigned integer. */
+    MFX_VARIANT_TYPE_I32,      /*!< 32-bit signed integer. */
+    MFX_VARIANT_TYPE_U64,      /*!< 64-bit unsigned integer. */
+    MFX_VARIANT_TYPE_I64,      /*!< 64-bit signed integer. */
+    MFX_VARIANT_TYPE_F32,      /*!< 32-bit single precision floating point. */
+    MFX_VARIANT_TYPE_F64,      /*!< 64-bit double precision floating point. */
+    MFX_VARIANT_TYPE_PTR,      /*!< Generic type pointer. */
+} mfxVariantType;
 
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 /*! The mfxVariantType enumerator data types for mfxVarianf type. */
@@ -202,6 +194,8 @@ typedef struct {
     mfxU32 Step; /*!< Value incrementation step */
 } mfxRange32U;
 MFX_PACK_END()
+
+#endif
 
 /*! Thus structure represents pair of numbers of mfxI16 type */
 typedef struct {
@@ -245,8 +239,6 @@ typedef enum
     MFX_ERR_UNDEFINED_BEHAVIOR          = -16,  /*!< undefined behavior */
     MFX_ERR_DEVICE_FAILED               = -17,  /*!< device operation failure */
     MFX_ERR_MORE_BITSTREAM              = -18,  /*!< expect more bitstream buffers at output */
-    MFX_ERR_INCOMPATIBLE_AUDIO_PARAM    = -19,  /*!< incompatible audio parameters */
-    MFX_ERR_INVALID_AUDIO_PARAM         = -20,  /*!< invalid audio parameters */
     MFX_ERR_GPU_HANG                    = -21,  /*!< device operation failure caused by GPU hang */
     MFX_ERR_REALLOC_SURFACE             = -22,  /*!< bigger output surface required */
 
@@ -259,7 +251,6 @@ typedef enum
     MFX_WRN_VALUE_NOT_CHANGED           = 6,    /*!< the value is saturated based on its valid range */
     MFX_WRN_OUT_OF_RANGE                = 7,    /*!< the value is out of valid range */
     MFX_WRN_FILTER_SKIPPED              = 10,   /*!< one of requested filters has been skipped */
-    MFX_WRN_INCOMPATIBLE_AUDIO_PARAM    = 11,   /*!< incompatible audio parameters */
 #if MFX_VERSION >= 1031
     /* low-delay partial output */
     MFX_ERR_NONE_PARTIAL_OUTPUT         = 12,   /*!< frame is not ready, but bitstream contains partial output */

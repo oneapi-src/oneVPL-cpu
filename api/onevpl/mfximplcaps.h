@@ -30,6 +30,7 @@ extern "C"
 {
 #endif
 
+#if (MFX_VERSION >= 2000)
 /*!
    @brief
       This function delivers implementation capabilities in the requested format according to the format value.
@@ -37,7 +38,7 @@ extern "C"
    @param[in] format   Format in which capabilities must be delivered. See mfxImplCapsDeliveryFormat for more details.
 
    @return
-      Handle to the capability report.
+      Handle to the capability report or NULL in case of unsupported format.
 */
 mfxHDL MFX_CDECL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format);
 
@@ -51,6 +52,7 @@ mfxHDL MFX_CDECL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format);
       MFX_ERR_NONE The function completed successfully.
 */
 mfxStatus MFX_CDECL MFXReleaseImplDescription(mfxHDL hdl);
+#endif
 
 
 #ifdef __cplusplus

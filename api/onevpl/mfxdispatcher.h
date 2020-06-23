@@ -22,7 +22,6 @@
 #define __MFXDISPATCHER_H__
 
 #include "mfxdefs.h"
-
 #include "mfxcommon.h"
 #include "mfxsession.h"
 
@@ -157,7 +156,8 @@ mfxStatus MFX_CDECL MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* na
       MFX_ERR_NONE        The function completed successfully. The idesc contains valid information.\n 
       MFX_ERR_NULL_PTR    If loader is NULL. \n
       MFX_ERR_NULL_PTR    If idesc is NULL. \n
-      MFX_ERR_NOT_FOUND   Provided index is out of possible range.
+      MFX_ERR_NOT_FOUND   Provided index is out of possible range. \n
+      MFX_ERR_UNSUPPORTED If requested format isn't supported.
 */
 mfxStatus MFX_CDECL MFXEnumImplementations(mfxLoader loader, mfxU32 i, mfxImplCapsDeliveryFormat format, mfxHDL* idesc);
 
@@ -201,7 +201,9 @@ mfxStatus MFX_CDECL MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* ses
    @param[in] hdl      Handle to destroy. Can be equal to NULL.
 
    @return
-      MFX_ERR_NONE The function completed successfully.
+      MFX_ERR_NONE           The function completed successfully. \n
+      MFX_ERR_NULL_PTR       If loader is NULL. \n
+      MFX_ERR_INVALID_HANDLE Provided hdl handle isn't assotiated with this loader.
 */
 mfxStatus MFX_CDECL MFXDispReleaseImplDescription(mfxLoader loader, mfxHDL hdl);
 

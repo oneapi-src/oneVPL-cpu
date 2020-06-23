@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Intel Corporation
+// Copyright (c) 2017-2020 Intel Corporation
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -140,7 +140,7 @@
 #define MFXVideoCORE_QueryPlatform       disp_MFXVideoCORE_QueryPlatform
 #define MFXVideoUSER_GetPlugin           disp_MFXVideoUSER_GetPlugin
 
-// API x.yy functions
+// API 2.0 functions
 #define MFXMemory_GetSurfaceForVPP       disp_MFXMemory_GetSurfaceForVPP
 #define MFXMemory_GetSurfaceForEncode    disp_MFXMemory_GetSurfaceForEncode
 #define MFXMemory_GetSurfaceForDecode    disp_MFXMemory_GetSurfaceForDecode

@@ -190,10 +190,6 @@ std::shared_ptr<void> make_dlopen(const char* filename, int flags) {
 }
 
 mfxStatus LoaderCtx::Init(mfxInitParam& par) {
-    if (par.Implementation & MFX_IMPL_AUDIO) {
-        return MFX_ERR_UNSUPPORTED;
-    }
-
     std::vector<std::string> libs;
 
     if (MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO ||

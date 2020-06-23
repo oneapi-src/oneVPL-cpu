@@ -41,10 +41,3 @@ mfxStatus MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
                                        mfxSyncPoint *syncp) {
     return MFX_ERR_UNSUPPORTED;
 }
-mfxStatus MFXVideoVPP_RunFrameVPPAsyncEx(mfxSession session,
-                                         mfxFrameSurface1 *in,
-                                         mfxFrameSurface1 *surface_work,
-                                         mfxFrameSurface1 **surface_out,
-                                         mfxSyncPoint *syncp) {
-    return MFX_ERR_UNSUPPORTED;
-}

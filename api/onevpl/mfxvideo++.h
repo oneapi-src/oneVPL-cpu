@@ -239,12 +239,6 @@ public:
                                        mfxSyncPoint *syncp) {
         return MFXVideoVPP_RunFrameVPPAsync(m_session, in, out, aux, syncp);
     }
-    virtual mfxStatus RunFrameVPPAsyncEx(mfxFrameSurface1 *in,
-                                         mfxFrameSurface1 *work,
-                                         mfxFrameSurface1 **out,
-                                         mfxSyncPoint *syncp) {
-        return MFXVideoVPP_RunFrameVPPAsyncEx(m_session, in, work, out, syncp);
-    }
 
 protected:
     mfxSession m_session; // (mfxSession) handle to the owning session

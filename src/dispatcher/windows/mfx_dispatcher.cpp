@@ -99,7 +99,7 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
         return loadStatus;
     }
     // only exact types of implementation is allowed
-    if (!(reqImpl & MFX_IMPL_AUDIO) &&
+    if (
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
         !(reqImpl & MFX_IMPL_EXTERNAL_THREADING) &&
 #endif
@@ -150,61 +150,28 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
                 DISPATCHER_LOG_INFO((("loaded module %S\n"), modulePath))
             });
 
-            if (impl & MFX_IMPL_AUDIO) {
-                // load audio functions: pointers to exposed functions
-                for (i = 0; i < eAudioFuncTotal; i += 1) {
-                    // construct correct name of the function - remove "_a" postfix
-
-                    mfxFunctionPointer pProc = (mfxFunctionPointer)
-                        MFX::mfx_dll_get_addr(hModule, APIAudioFunc[i].pName);
-                    if (pProc) {
-                        // function exists in the library,
-                        // save the pointer.
-                        callAudioTable[i] = pProc;
-                    }
-                    else {
-                        // The library doesn't contain the function
-                        DISPATCHER_LOG_WRN(
-                            (("Can't find API function \"%s\"\n"),
-                             APIAudioFunc[i].pName));
-                        if (apiVersion.Version >=
-                            APIAudioFunc[i].apiVersion.Version) {
-                            DISPATCHER_LOG_ERROR(
-                                (("\"%s\" is required for API %u.%u\n"),
-                                 APIAudioFunc[i].pName,
-                                 apiVersion.Major,
-                                 apiVersion.Minor));
-                            mfxRes = MFX_ERR_UNSUPPORTED;
-                            break;
-                        }
-                    }
+            // load video functions: pointers to exposed functions
+            for (i = 0; i < eVideoFuncTotal; i += 1) {
+                mfxFunctionPointer pProc =
+                    (mfxFunctionPointer)MFX::mfx_dll_get_addr(hModule,
+                                                              APIFunc[i].pName);
+                if (pProc) {
+                    // function exists in the library,
+                    // save the pointer.
+                    callTable[i] = pProc;
                 }
-            }
-            else {
-                // load video functions: pointers to exposed functions
-                for (i = 0; i < eVideoFuncTotal; i += 1) {
-                    mfxFunctionPointer pProc = (mfxFunctionPointer)
-                        MFX::mfx_dll_get_addr(hModule, APIFunc[i].pName);
-                    if (pProc) {
-                        // function exists in the library,
-                        // save the pointer.
-                        callTable[i] = pProc;
-                    }
-                    else {
-                        // The library doesn't contain the function
-                        DISPATCHER_LOG_WRN(
-                            (("Can't find API function \"%s\"\n"),
-                             APIFunc[i].pName));
-                        if (apiVersion.Version >=
-                            APIFunc[i].apiVersion.Version) {
-                            DISPATCHER_LOG_ERROR(
-                                (("\"%s\" is required for API %u.%u\n"),
-                                 APIFunc[i].pName,
-                                 apiVersion.Major,
-                                 apiVersion.Minor));
-                            mfxRes = MFX_ERR_UNSUPPORTED;
-                            break;
-                        }
+                else {
+                    // The library doesn't contain the function
+                    DISPATCHER_LOG_WRN((("Can't find API function \"%s\"\n"),
+                                        APIFunc[i].pName));
+                    if (apiVersion.Version >= APIFunc[i].apiVersion.Version) {
+                        DISPATCHER_LOG_ERROR(
+                            (("\"%s\" is required for API %u.%u\n"),
+                             APIFunc[i].pName,
+                             apiVersion.Major,
+                             apiVersion.Minor));
+                        mfxRes = MFX_ERR_UNSUPPORTED;
+                        break;
                     }
                 }
             }
@@ -220,52 +187,28 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
     if (MFX_ERR_NONE == mfxRes) {
         mfxVersion version(apiVersion);
 
-        /* check whether it is audio session or video */
-        mfxFunctionPointer* actualTable =
-            (impl & MFX_IMPL_AUDIO) ? callAudioTable : callTable;
+        mfxFunctionPointer* actualTable = callTable;
 
-        // Call old-style MFXInit init for older libraries and audio library
-        bool callOldInit =
-            (impl & MFX_IMPL_AUDIO) ||
-            !actualTable
-                [eMFXInitEx]; // if true call eMFXInit, if false - eMFXInitEx
-        int tableIndex = (callOldInit) ? eMFXInit : eMFXInitEx;
-
+        // only support MFXInitEx
+        int tableIndex           = eMFXInitEx;
         mfxFunctionPointer pFunc = actualTable[tableIndex];
 
         {
-            if (callOldInit) {
-                DISPATCHER_LOG_BLOCK(
-                    ("MFXInit(%s,ver=%u.%u,session=0x%p)\n",
-                     DispatcherLog_GetMFXImplString(impl | implInterface)
-                         .c_str(),
-                     apiVersion.Major,
-                     apiVersion.Minor,
-                     &session));
+            DISPATCHER_LOG_BLOCK(
+                ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
+                 DispatcherLog_GetMFXImplString(impl | implInterface).c_str(),
+                 apiVersion.Major,
+                 apiVersion.Minor,
+                 par.ExternalThreads,
+                 &session));
 
-                mfxRes =
-                    (*(mfxStatus(MFX_CDECL*)(mfxIMPL, mfxVersion*, mfxSession*))
-                         pFunc)(impl | implInterface, &version, &session);
-            }
-            else {
-                DISPATCHER_LOG_BLOCK(
-                    ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
-                     DispatcherLog_GetMFXImplString(impl | implInterface)
-                         .c_str(),
-                     apiVersion.Major,
-                     apiVersion.Minor,
-                     par.ExternalThreads,
-                     &session));
-
-                mfxInitParam initPar = par;
-                // adjusting user parameters
-                initPar.Implementation = impl | implInterface;
-                initPar.Version        = version;
-                mfxRes =
-                    (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(
-                        initPar,
-                        &session);
-            }
+            mfxInitParam initPar = par;
+            // adjusting user parameters
+            initPar.Implementation = impl | implInterface;
+            initPar.Version        = version;
+            mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(
+                initPar,
+                &session);
         }
 
         if (MFX_ERR_NONE != mfxRes) {
@@ -310,12 +253,7 @@ mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void) {
         /* check whether it is audio session or video */
         int tableIndex = eMFXClose;
         mfxFunctionPointer pFunc;
-        if (impl & MFX_IMPL_AUDIO) {
-            pFunc = callAudioTable[tableIndex];
-        }
-        else {
-            pFunc = callTable[tableIndex];
-        }
+        pFunc = callTable[tableIndex];
 
         mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxSession))pFunc)(session);
         if (MFX_ERR_NONE == mfxRes) {

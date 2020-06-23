@@ -375,19 +375,6 @@ typedef struct {
 } mfxFrameData;
 MFX_PACK_END()
 
-/*! The mfxMemoryFlags enumerator specifies memory access mode. */
-typedef enum
-{
-    MFX_MAP_READ  = 0x1, /*!< The surface is mapped for reading. */
-    MFX_MAP_WRITE = 0x2, /*!< The surface is mapped for writing. */
-    MFX_MAP_READ_WRITE = MFX_MAP_READ|MFX_MAP_WRITE, /*!< The surface is mapped for reading and writing.  */
-    /*! 
-     * The mapping would be done immediatly without any implicit synchronizations. 
-     * \attention This flag is optional
-     */
-    MFX_MAP_NOWAIT = 0x10 
-} mfxMemoryFlags;
-
 /*! The mfxHandleType enumerator itemizes system handle types that SDK implementations might use. */
 typedef enum {
     MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9         =1,      /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
@@ -405,6 +392,22 @@ typedef enum {
 #endif
 } mfxHandleType;
 
+#if (MFX_VERSION >= 2000)
+/*! The mfxMemoryFlags enumerator specifies memory access mode. */
+typedef enum
+{
+    MFX_MAP_READ  = 0x1, /*!< The surface is mapped for reading. */
+    MFX_MAP_WRITE = 0x2, /*!< The surface is mapped for writing. */
+    MFX_MAP_READ_WRITE = MFX_MAP_READ|MFX_MAP_WRITE, /*!< The surface is mapped for reading and writing.  */
+    /*! 
+     * The mapping would be done immediatly without any implicit synchronizations. 
+     * \attention This flag is optional
+     */
+    MFX_MAP_NOWAIT = 0x10 
+} mfxMemoryFlags;
+
+//typedef struct _mfxFrameSurfaceInterface mfxFrameSurfaceInterface;
+
 /* Frame Surface */
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /*! The mfxFrameSurface1 structure defines the uncompressed frames surface information and data buffers.
@@ -414,7 +417,9 @@ MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 typedef struct {
     union
     {
-        struct _mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
+#if (MFX_VERSION >= 2000)
+        struct mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
+#endif 
         mfxU32  reserved[2];
     };
     mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
@@ -426,7 +431,7 @@ MFX_PACK_END()
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /* The mfxFrameSurfaceInterface strucutre specifies frame surface interface. */
-typedef struct _mfxFrameSurfaceInterface {
+typedef struct mfxFrameSurfaceInterface {
     mfxHDL              Context; /*!< This context of memory interface. User should not touch (change, set, null) this pointer. */
     mfxStructVersion    Version; /*!< The version of the structure. */
     mfxU16              reserved1[3];
@@ -586,6 +591,7 @@ typedef struct _mfxFrameSurfaceInterface {
     mfxHDL              reserved2[4];
 } mfxFrameSurfaceInterface;
 MFX_PACK_END()
+#endif
 
 /*! The TimeStampCalc enumerator itemizes time-stamp calculation methods. */
 enum {
@@ -2021,6 +2027,13 @@ enum {
        See the mfxExtPartialBitstreamParam structure for details.
     */
     MFX_EXTBUFF_PARTIAL_BITSTREAM_PARAM         = MFX_MAKEFOURCC('P','B','O','P'),
+#endif
+
+#if (MFX_VERSION >= 1034)
+   /*!
+       See the mfxExtEncToolsConfig structure for details.
+    */
+MFX_EXTBUFF_ENCTOOLS_CONFIG = MFX_MAKEFOURCC('E', 'E', 'T', 'C'),
 #endif
 
 #if (MFX_VERSION >= 1035)
@@ -4207,6 +4220,40 @@ typedef struct {
     mfxU16          Granularity; /*!< Granulatiry of the partial bitstream: slice/block/any, all types of granularity state in PartialBitstreamOutput enum. */
     mfxU16          reserved[8];
 } mfxExtPartialBitstreamParam;
+MFX_PACK_END()
+#endif
+
+#if (MFX_VERSION >= 1034)
+MFX_PACK_BEGIN_USUAL_STRUCT()
+/*!
+The mfxExtEncToolsConfig structure configures EncTools for SDK encoders. It can be attached to the mfxVideoParam structure during MFXVideoENCODE_Init or MFXVideoENCODE_Reset call. If mfxEncToolsConfig buffer isn’t attached during initialization, EncTools is disabled. If the buffer isn’t attached for MFXVideoENCODE_Reset  call, encoder continues to use 
+mfxEncToolsConfig which was actual before. 
+
+If the EncTools are unsupported in encoder, MFX_ERR_UNSUPPORTED is returned from MFXVideoENCODE_Query, MFX_ERR_INVALID_VIDEO_PARAM is returned from MFXVideoENCODE_Init. If any EncTools feature is on and not compatible with other video parameters, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM is returned from Init and Query functions.
+
+Some features can require delay before encoding can start. Parameter  mfxExtCodingOption2::LookaheadDepth can be used to limit the delay. EncTools features requiring longer delay will be disabled. 
+
+If a field in mfxEncToolsConfig is set to MFX_CODINGOPTION_UNKNOWN, the corresponding feature will be enabled if it is compatible with other video parameters .
+
+Actual EncTools configuration can be obtained using MFXVideoENCODE_GetVideoParam function with attached mfxEncToolsConfig buffer.
+*/
+typedef struct
+{
+    mfxExtBuffer       Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_ENCTOOLS_CONFIG. */
+    mfxStructVersion   Version; /*!< The version of the strucure. */
+    mfxU16             SceneChange; /*!< Tri-state flag for enabling/disabling “Scene change analysis” feature. */
+    mfxU16             AdaptiveI; /*!< Tri-state flag for configuring “Frame type calculation” feature. Distance between Intra frames depends on the content.*/
+    mfxU16             AdaptiveB; /*!< Tri-state flag for configuring “Frame type calculation” feature. Distance between nearest P (or I) frames depends on the content. */
+    mfxU16             AdaptiveRefP; /*!< Tri-stae flag for configuring “Reference frame list calculation” feature. The most useful reference frames are calculated for P frames.*/
+    mfxU16             AdaptiveRefB; /*!< Tri-stae flag for configuring “Reference frame list calculation” feature. The most useful reference frames are calculated for B frames.*/
+    mfxU16             AdaptiveLTR; /*!< Tri-stae flag for configuring “Reference frame list calculation” feature. The most useful reference frames are calculated as LTR.*/
+    mfxU16             AdaptivePyramidQuantP; /*!< Tri-state flag for configuring “Delta QP hints” feature. Delta QP is calculated for P frames.*/
+    mfxU16             AdaptivePyramidQuantB; /*!< Tri-state flag for configuring “Delta QP hints” feature. Delta QP is calculated for B frames.*/
+    mfxU16             AdaptiveQuantMatrices; /*!< Tri-state flag for configuring “Adaptive quantization matrix” feature. */
+    mfxU16             BRCBufferHints; /*!< Tri-stae flag for enabling/disabling “BRC buffer hints” feature: calculation of optimal frame size, HRD buffer fullness, etc. */
+    mfxU16             BRC; /*!< Tri- state flag for enabling/disabling “BRC” functionality: QP calculation for frame encoding, encoding status calculation after frame encoding. */
+    mfxU16             reserved[20];
+} mfxExtEncToolsConfig; 
 MFX_PACK_END()
 #endif
 
