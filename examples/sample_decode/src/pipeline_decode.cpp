@@ -762,9 +762,9 @@ mfxStatus CDecodingPipeline::InitMfxParams(sInputParams *pParams) {
         }
     }
 
-    // only supports I420 for now
+    // only supports IYUV(I420) for now
     if (pParams->bUseVPLLib) {
-        m_mfxVideoParams.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+        m_mfxVideoParams.mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
     }
 
 #if MFX_VERSION >= 1022

@@ -742,7 +742,7 @@ mfxStatus CEncodingPipeline::InitMfxEncParams(sInputParams *pInParams) {
 
 mfxU32 CEncodingPipeline::FileFourCC2EncFourCC(mfxU32 fcc) {
     // File reader automatically converts I420 and YV12 to NV12
-    if (fcc == MFX_FOURCC_I420 || fcc == MFX_FOURCC_YV12)
+    if (fcc == MFX_FOURCC_IYUV || fcc == MFX_FOURCC_YV12)
         return MFX_FOURCC_NV12;
     else
         return fcc;
@@ -1364,7 +1364,7 @@ mfxStatus CEncodingPipeline::Init(sInputParams *pParams) {
     m_MVCflags = pParams->MVC_flags;
 
     // FileReader can convert yv12->nv12 without vpp
-    m_InputFourCC = (pParams->FileInputFourCC == MFX_FOURCC_I420 &&
+    m_InputFourCC = ((pParams->FileInputFourCC == MFX_FOURCC_IYUV) &&
                      pParams->bUseVPLLib == false)
                         ? MFX_FOURCC_NV12
                         : pParams->FileInputFourCC;

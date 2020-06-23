@@ -83,6 +83,9 @@ mfxStatus CSmplYUVReader::Init(std::list<msdk_string> inputs,
 #if (MFX_VERSION >= 1027)
         && MFX_FOURCC_Y210 != ColorFormat && MFX_FOURCC_Y410 != ColorFormat
 #endif
+#if (MFX_VERSION >= 1035)
+        && MFX_FOURCC_IYUV != ColorFormat
+#endif
     ) {
         return MFX_ERR_UNSUPPORTED;
     }
@@ -235,8 +238,12 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
     else if (MFX_FOURCC_NV12 == pInfo.FourCC ||
              MFX_FOURCC_YV12 == pInfo.FourCC ||
              MFX_FOURCC_P010 == pInfo.FourCC ||
-             MFX_FOURCC_P210 == pInfo.FourCC ||
-             MFX_FOURCC_I420 == pInfo.FourCC) {
+             MFX_FOURCC_P210 == pInfo.FourCC || MFX_FOURCC_I420 == pInfo.FourCC
+#if (MFX_VERSION >= 1035)
+             || MFX_FOURCC_IYUV == pInfo.FourCC
+#endif
+    ) {
+
         pitch = pData.Pitch;
         ptr   = pData.Y + pInfo.CropX + pInfo.CropY * pData.Pitch;
 
@@ -265,6 +272,9 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
         {
             case MFX_FOURCC_I420:
             case MFX_FOURCC_YV12:
+#if (MFX_VERSION >= 1035)
+            case MFX_FOURCC_IYUV:
+#endif
                 switch (pInfo.FourCC) {
                     case MFX_FOURCC_NV12:
 
@@ -279,7 +289,11 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
                             return MFX_ERR_UNSUPPORTED;
                         }
 
-                        if (m_ColorFormat == MFX_FOURCC_I420) {
+                        if (m_ColorFormat == MFX_FOURCC_I420
+#if (MFX_VERSION >= 1035)
+                            || m_ColorFormat == MFX_FOURCC_IYUV
+#endif
+                        ) {
                             dstOffset[0] = 0;
                             dstOffset[1] = 1;
                         }
@@ -314,11 +328,18 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
                         break;
                     case MFX_FOURCC_YV12:
                     case MFX_FOURCC_I420:
+#if (MFX_VERSION >= 1035)
+                    case MFX_FOURCC_IYUV:
+#endif
                         w /= 2;
                         h /= 2;
                         pitch /= 2;
 
-                        if (m_ColorFormat == MFX_FOURCC_I420) {
+                        if (m_ColorFormat == MFX_FOURCC_I420
+#if (MFX_VERSION >= 1035)
+                            || m_ColorFormat == MFX_FOURCC_IYUV
+#endif
+                        ) {
                             ptr = pData.U + (pInfo.CropX / 2) +
                                   (pInfo.CropY / 2) * pitch;
                             ptr2 = pData.V + (pInfo.CropX / 2) +
@@ -806,6 +827,9 @@ mfxStatus CSmplYUVWriter::WriteNextFrame(mfxFrameSurface1* pSurface) {
         case MFX_FOURCC_YV12:
         case MFX_FOURCC_NV12:
         case MFX_FOURCC_I420:
+#if (MFX_VERSION >= 1035)
+        case MFX_FOURCC_IYUV:
+#endif
             for (i = 0; i < pInfo.CropH; i++) {
                 MSDK_CHECK_NOT_EQUAL(
                     fwrite(pData.Y + (pInfo.CropY * pData.Pitch + pInfo.CropX) +
@@ -947,6 +971,9 @@ mfxStatus CSmplYUVWriter::WriteNextFrame(mfxFrameSurface1* pSurface) {
             return MFX_ERR_UNSUPPORTED;
     }
     switch (pInfo.FourCC) {
+#if (MFX_VERSION >= 1035)
+        case MFX_FOURCC_IYUV:
+#endif
         case MFX_FOURCC_I420: {
             for (i = 0; i < (mfxU32)pInfo.CropH / 2; i++) {
                 MSDK_CHECK_NOT_EQUAL(fwrite(pData.U +
@@ -1612,6 +1639,10 @@ const msdk_char* ColorFormatToStr(mfxU32 format) {
             return MSDK_STRING("YV12");
         case MFX_FOURCC_I420:
             return MSDK_STRING("YUV420");
+#if (MFX_VERSION >= 1035)
+        case MFX_FOURCC_IYUV:
+            return MSDK_STRING("IYUV");
+#endif
         case MFX_FOURCC_RGB4:
             return MSDK_STRING("RGB4");
         case MFX_FOURCC_YUY2:

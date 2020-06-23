@@ -262,7 +262,7 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     mfxU32 nbytes = 0;
 
     switch (FourCC) {
-        case MFX_MAKEFOURCC('I', '4', '2', '0'):
+        case MFX_FOURCC_IYUV:
             nbytes = width * height + (width >> 1) * (height >> 1) +
                      (width >> 1) * (height >> 1);
             break;
@@ -296,7 +296,7 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
 
     // write the output to disk
     switch (pInfo->FourCC) {
-        case MFX_MAKEFOURCC('I', '4', '2', '0'):
+        case MFX_FOURCC_IYUV:
             //Y
             pitch = pData->Pitch;
             for (i = 0; i < h; i++) {
