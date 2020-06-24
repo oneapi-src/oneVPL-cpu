@@ -10,9 +10,9 @@
 #include <string.h>
 #include <chrono>
 #include <future>
-#include "onevpl/mfxstructures.h"
+#include "vpl/mfxstructures.h"
 
-#include "onevpl/mfxjpeg.h"
+#include "vpl/mfxjpeg.h"
 
 // TMP - define this to build stub library without ffmpeg
 #ifndef DISABLE_LIBAV

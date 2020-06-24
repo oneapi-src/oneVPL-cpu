@@ -5,13 +5,13 @@
   ############################################################################*/
 
 ///
-/// C API for the oneAPI Video Processing Library (oneVPL).
+/// C++ API for the oneAPI Video Processing Library (oneVPL).
 ///
 /// @file
 
-#ifndef API_ONEVPL_VPL_H_
-#define API_ONEVPL_VPL_H_
+#ifndef API_ONEVPL_VPL_HPP_
+#define API_ONEVPL_VPL_HPP_
 
-#incllude "onevpl/version.h"
+#include "vpl/version.hpp"
 
-#endif // API_ONEVPL_VPL_H_
+#endif // API_ONEVPL_VPL_HPP_

@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-#include "onevpl/export.h"
+#include "vpl/export.h"
 
 /// The library version
 typedef struct vpl_library_version {

@@ -28,8 +28,8 @@
 #include <windows.h>
 
 #include <algorithm>
-#include "onevpl/mfxadapter.h"
-#include "onevpl/mfxvideo++.h"
+#include "vpl/mfxadapter.h"
+#include "vpl/mfxvideo++.h"
 #include "windows/mfx_dxva2_device.h"
 #include "windows/mfx_vector.h"
 

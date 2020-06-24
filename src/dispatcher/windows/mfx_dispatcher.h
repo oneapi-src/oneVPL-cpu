@@ -21,9 +21,9 @@
 #ifndef SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_
 #define SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_
 
-#include <onevpl/mfxvideo.h>
+#include <vpl/mfxvideo.h>
 
-#include <onevpl/mfxdispatcher.h>
+#include <vpl/mfxdispatcher.h>
 
 #ifndef DISABLE_NON_VPL_DISPATCHER
     #include <mfxaudio.h>

@@ -39,10 +39,10 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "base_allocator.h"
 #include "sample_utils.h"
 
-#include "onevpl/mfxjpeg.h"
-#include "onevpl/mfxvideo++.h"
-#include "onevpl/mfxvideo.h"
-#include "onevpl/mfxvp8.h"
+#include "vpl/mfxjpeg.h"
+#include "vpl/mfxvideo++.h"
+#include "vpl/mfxvideo.h"
+#include "vpl/mfxvp8.h"
 
 #include "general_allocator.h"
 

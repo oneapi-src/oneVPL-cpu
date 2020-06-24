@@ -21,7 +21,7 @@
 #ifndef SRC_DISPATCHER_WINDOWS_MFX_LIBRARY_ITERATOR_H_
 #define SRC_DISPATCHER_WINDOWS_MFX_LIBRARY_ITERATOR_H_
 
-#include <onevpl/mfxvideo.h>
+#include <vpl/mfxvideo.h>
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)
     #include "mfx_win_reg_key.h"

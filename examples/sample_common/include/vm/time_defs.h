@@ -23,7 +23,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #ifndef DISABLE_NON_VPL
     #include "mfx_itt_trace.h"
 #endif
-#include "onevpl/mfxdefs.h"
+#include "vpl/mfxdefs.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 

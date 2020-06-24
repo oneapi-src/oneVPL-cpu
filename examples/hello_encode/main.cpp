@@ -12,7 +12,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
-#include "onevpl/mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
 #define ALIGN_UP(addr, size) \
     (((addr) + ((size)-1)) & (~((decltype(addr))(size)-1)))

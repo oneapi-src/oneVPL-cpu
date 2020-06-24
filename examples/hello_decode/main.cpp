@@ -10,7 +10,7 @@
 #include <string.h>
 #include <chrono>
 #include <iostream>
-#include "onevpl/mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
 void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);

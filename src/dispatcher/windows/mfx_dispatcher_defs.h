@@ -21,7 +21,7 @@
 #pragma once
 #include <cstdio>
 #include <cstring>
-#include "onevpl/mfxdefs.h"
+#include "vpl/mfxdefs.h"
 
 #if defined(MFX_DISPATCHER_LOG)
     #include <string.h>

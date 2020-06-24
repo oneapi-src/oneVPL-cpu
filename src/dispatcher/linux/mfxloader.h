@@ -27,7 +27,7 @@
 #include <sstream>
 #include <string>
 
-#include "onevpl/mfxdefs.h"
+#include "vpl/mfxdefs.h"
 #ifndef DISABLE_NON_VPL_DISPATCHER
     #include "mfxplugin.h"
 #endif

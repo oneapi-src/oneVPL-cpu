@@ -22,7 +22,7 @@
 #define SRC_DISPATCHER_WINDOWS_MFX_WIN_REG_KEY_H_
 
 #include <windows.h>
-#include "onevpl/mfxcommon.h"
+#include "vpl/mfxcommon.h"
 #ifndef DISABLE_NON_VPL_DISPATCHER
     #include "mfxplugin.h"
 #endif

@@ -28,7 +28,7 @@
     #include "mfx_dispatcher_defs.h"
     #include "mfx_vector.h"
     #include "mfx_win_reg_key.h"
-    #include "onevpl/mfxplugin.h"
+    #include "vpl/mfxplugin.h"
 
 struct MFX_DISP_HANDLE;
 

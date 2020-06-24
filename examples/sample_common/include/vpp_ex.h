@@ -21,8 +21,8 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #define __VPP_EX_H__
 
 #include <vector>
-#include "onevpl/mfxvideo++.h"
 #include "sample_utils.h"
+#include "vpl/mfxvideo++.h"
 
 /* #define USE_VPP_EX */
 

@@ -5,7 +5,7 @@
   ############################################################################*/
 
 #include "./cpu_workstream.h"
-#include "onevpl/mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
 // stubs
 mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session,

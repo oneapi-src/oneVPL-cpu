@@ -25,7 +25,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <list>
 #include <memory>
 #include <mutex>
-#include "onevpl/mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
 // this was removed from the oneVPL API so
 //   we define it here so the samples build

@@ -5,7 +5,7 @@
   ############################################################################*/
 
 #include "./cpu_workstream.h"
-#include "onevpl/mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
 mfxStatus MFXVideoENCODE_Query(mfxSession session,
                                mfxVideoParam *in,

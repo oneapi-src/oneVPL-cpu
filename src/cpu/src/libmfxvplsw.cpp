@@ -5,9 +5,9 @@
   ############################################################################*/
 
 #include "./cpu_workstream.h"
-#include "onevpl/mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
-#include "onevpl/mfxdispatcher.h"
+#include "vpl/mfxdispatcher.h"
 
 mfxStatus MFXInit(mfxIMPL implParam, mfxVersion *ver, mfxSession *session) {
     mfxInitParam par = {};
