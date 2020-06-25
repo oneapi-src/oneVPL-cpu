@@ -23,6 +23,7 @@ set(SOURCES
     src/libmfxvplsw_core.cpp
     src/libmfxvplsw_decode.cpp
     src/libmfxvplsw_encode.cpp
+    src/libmfxvplsw_onevpl.cpp
     src/libmfxvplsw_vpp.cpp)
 
 if(WIN32)

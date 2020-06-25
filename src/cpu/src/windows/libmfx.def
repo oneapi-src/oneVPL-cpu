@@ -48,4 +48,12 @@ EXPORTS
     MFXVideoVPP_RunFrameVPPAsync
 
     MFXInitEx
+
+    MFXQueryImplDescription
+    MFXReleaseImplDescription
+
+    MFXMemory_GetSurfaceForVPP
+    MFXMemory_GetSurfaceForEncode
+    MFXMemory_GetSurfaceForDecode
+
     

@@ -493,6 +493,64 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
 
 } // mfxStatus MFXInitEx(mfxIMPL impl, mfxVersion *ver, mfxSession *session)
 
+// internal function - load a specific DLL, return unsupported if it fails
+mfxStatus MFXInitEx2(mfxInitParam par, mfxSession *session, wchar_t *dllName) {
+    MFX::MFXAutomaticCriticalSection guard(&dispGuard);
+
+    mfxStatus mfxRes = MFX_ERR_NONE;
+    HandleVector allocatedHandle;
+    VectorHandleGuard handleGuard(allocatedHandle);
+
+    MFX_DISP_HANDLE *pHandle;
+
+    eMfxImplType implType =
+        (par.Implementation == MFX_IMPL_SOFTWARE ? MFX_LIB_SOFTWARE
+                                                 : MFX_LIB_HARDWARE);
+
+    // check error(s)
+    if (NULL == session || NULL == dllName) {
+        return MFX_ERR_NULL_PTR;
+    }
+
+    try {
+        // reset the session value
+        *session = 0;
+
+        // allocate the dispatching handle and call-table
+        pHandle = new MFX_DISP_HANDLE(par.Version);
+    }
+    catch (...) {
+        return MFX_ERR_MEMORY_ALLOC;
+    }
+
+    if (MFX_ERR_NONE == mfxRes) {
+        DISPATCHER_LOG_INFO((("loading default library %S\n"), dllName))
+
+        if (MFX_ERR_NONE == mfxRes) {
+            // try to load the selected DLL using given DLL name
+            mfxRes = pHandle->LoadSelectedDLL(dllName,
+                                              MFX_LIB_SOFTWARE,
+                                              par.Implementation,
+                                              0,
+                                              par);
+        }
+        // unload the failed DLL
+        if ((MFX_ERR_NONE != mfxRes) &&
+            (MFX_WRN_PARTIAL_ACCELERATION != mfxRes)) {
+            pHandle->Close();
+            return MFX_ERR_UNSUPPORTED;
+        }
+        else {
+            pHandle->storageID = MFX::MFX_UNKNOWN_KEY;
+        }
+    }
+
+    // everything is OK. Save pointers to the output variable
+    *((MFX_DISP_HANDLE **)session) = pHandle;
+
+    return pHandle->loadStatus;
+} // mfxStatus MFXInitEx2(mfxIMPL impl, mfxVersion *ver, mfxSession *session, wchar_t *dllName)
+
 mfxStatus MFXClose(mfxSession session) {
     MFX::MFXAutomaticCriticalSection guard(&dispGuard);
 

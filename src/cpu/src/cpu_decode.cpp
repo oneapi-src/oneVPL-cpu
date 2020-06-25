@@ -27,7 +27,6 @@ static int get_buffer2_msdk(struct AVCodecContext *s,
 }
 
 mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
-    // TODO(jon) - get rid of internal BS buffer (use mfxBitstream)
     // alloc bitstream buffer
     m_bsDecValidBytes = 0;
     m_bsDecMaxBytes =
@@ -156,8 +155,6 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
     if (!m_decInit) {
         ERR_EXIT(VPL_WORKSTREAM_DECODE);
     }
-
-    // TODO(jon) - get rid of internal BS buffer (use mfxBitstream)
 
     // copy new data into bitstream buffer
     if (bs && bs->DataLength > 0) {
