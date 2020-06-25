@@ -41,4 +41,14 @@ install(
   DESTINATION ${CMAKE_INSTALL_LICENSEDIR}
   COMPONENT runtime)
 
+execute_process(
+  COMMAND git rev-parse HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_FILE "VPL-ID.txt")
+
+install(
+  FILES VPL-ID.txt
+  DESTINATION ${CMAKE_INSTALL_DOCDIR}
+  COMPONENT runtime)
+
 include(cmake/PackageTarget.cmake)
