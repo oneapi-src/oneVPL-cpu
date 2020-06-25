@@ -23,3 +23,4 @@ export VPL_BIN="$VPL_ROOT/bin"
 export CPATH=$(append_path $VPL_INCLUDE $CPATH)
 export LIBRARY_PATH=$(append_path "$VPL_LIB" $LIBRARY_PATH)
 export PATH=$(append_path "$VPL_BIN" "$PATH")
+export LD_LIBRARY_PATH=$(append_path "$VPL_LIB" $LD_LIBRARY_PATH)
