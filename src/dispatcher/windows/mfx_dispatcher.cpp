@@ -175,6 +175,29 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
                     }
                 }
             }
+
+            // if version >= 2.0, load these functions as well
+            if (apiVersion.Major >= 2) {
+                for (i = 0; i < eVideoFunc2Total; i += 1) {
+                    mfxFunctionPointer pProc = (mfxFunctionPointer)
+                        MFX::mfx_dll_get_addr(hModule, APIVideoFunc2[i].pName);
+                    if (pProc) {
+                        // function exists in the library,
+                        // save the pointer.
+                        callVideoTable2[i] = pProc;
+                    }
+                    else {
+                        // The library doesn't contain the function
+                        DISPATCHER_LOG_ERROR(
+                            (("\"%s\" is required for API %u.%u\n"),
+                             APIVideoFunc2[i].pName,
+                             apiVersion.Major,
+                             apiVersion.Minor));
+                        mfxRes = MFX_ERR_UNSUPPORTED;
+                        break;
+                    }
+                }
+            }
         }
         else {
             DISPATCHER_LOG_WRN(

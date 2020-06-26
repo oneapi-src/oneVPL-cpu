@@ -50,3 +50,18 @@ mfxStatus MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* session) {
 mfxStatus MFXDispReleaseImplDescription(mfxLoader loader, mfxHDL hdl) {
     return MFX_ERR_UNSUPPORTED;
 }
+
+mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
+                                     mfxFrameSurface1** surface) {
+    return MFX_ERR_UNSUPPORTED;
+}
+
+mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
+                                        mfxFrameSurface1** surface) {
+    return MFX_ERR_UNSUPPORTED;
+}
+
+mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
+                                        mfxFrameSurface1** surface) {
+    return MFX_ERR_UNSUPPORTED;
+}

@@ -55,6 +55,15 @@ const FUNCTION_DESCRIPTION APIAudioFunc[eAudioFuncTotal] = {
 #include "windows/mfxaudio_exposed_functions_list.h"
 };
 
+// new functions for API >= 2.0
+const FUNCTION_DESCRIPTION APIVideoFunc2[eVideoFunc2Total] = {
+    { "MFXQueryImplDescription", { { 0, 2 } } },
+    { "MFXReleaseImplDescription", { { 0, 2 } } },
+    { "MFXMemory_GetSurfaceForVPP", { { 0, 2 } } },
+    { "MFXMemory_GetSurfaceForEncode", { { 0, 2 } } },
+    { "MFXMemory_GetSurfaceForDecode", { { 0, 2 } } },
+};
+
 // static section of the file
 namespace {
 

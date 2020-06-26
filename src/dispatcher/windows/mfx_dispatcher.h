@@ -48,7 +48,7 @@ enum {
     DEFAULT_API_VERSION_MINOR = MFX_VERSION_MINOR
 };
 
-enum { VPL_MINIMUM_VERSION_MAJOR = 1, VPL_MINIMUM_VERSION_MINOR = 35 };
+enum { VPL_MINIMUM_VERSION_MAJOR = 2, VPL_MINIMUM_VERSION_MINOR = 0 };
 
 //
 // declare functions' integer identifiers.
@@ -91,6 +91,16 @@ enum eAudioFunc {
     eAudioFuncTotal
 };
 
+enum eVideoFunc2 {
+    eMFXQueryImplDescription,
+    eMFXReleaseImplDescription,
+    eMFXMemory_GetSurfaceForVPP,
+    eMFXMemory_GetSurfaceForEncode,
+    eMFXMemory_GetSurfaceForDecode,
+
+    eVideoFunc2Total
+};
+
 // declare max buffer length for regsitry key name
 enum { MFX_MAX_REGISTRY_KEY_NAME = 256 };
 
@@ -118,6 +128,8 @@ struct _mfxSession {
         callPlugInsTable[ePluginFuncTotal]; // NOLINT(runtime/arrays)
     mfxFunctionPointer
         callAudioTable[eAudioFuncTotal]; // NOLINT(runtime/arrays)
+    mfxFunctionPointer
+        callVideoTable2[eVideoFunc2Total]; // NOLINT(runtime/arrays)
 
     // Current library's implementation (exact implementation)
     mfxIMPL impl;
@@ -206,4 +218,7 @@ typedef struct FUNCTION_DESCRIPTION {
 extern const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal];
 
 extern const FUNCTION_DESCRIPTION APIAudioFunc[eAudioFuncTotal];
+
+extern const FUNCTION_DESCRIPTION APIVideoFunc2[eVideoFunc2Total];
+
 #endif // SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_H_

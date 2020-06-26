@@ -75,13 +75,6 @@ int main(int argc, char *argv[]) {
     MFXSetConfigFilterProperty(cfg,
                                (const mfxU8 *)"mfxImplDescription.Impl",
                                ImplValue);
-#if 1
-    sts = MFXCreateSession(loader, 0, &session);
-    if (sts != MFX_ERR_NONE) {
-        printf("Problem creating session. sts=%d\n", sts);
-        exit(1);
-    }
-#else
 
     mfxU32 implIdx = 0;
     while (1) {
@@ -89,23 +82,26 @@ int main(int argc, char *argv[]) {
         sts = MFXEnumImplementations(loader,
                                      implIdx,
                                      MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                     reinterpret_cast<mfxHDL *> & implDesc);
+                                     reinterpret_cast<mfxHDL *>(&implDesc));
 
         // out of range - we've tested all implementations
         if (sts == MFX_ERR_NOT_FOUND)
             break;
 
-        if (CheckImplCaps(implDesc, inCodecFourCC) == 0) {
+        if (CheckImplCaps(implDesc, inCodecFourCC) == true) {
             // this implementation is capable of decoding the input stream
             MFXCreateSession(loader, implIdx, &session);
-            MFXDispReleaseImplDescription(loader, implDesc);
         }
-        else {
-            MFXDispReleaseImplDescription(loader, implDesc);
-            break;
-        }
+        MFXDispReleaseImplDescription(loader, implDesc);
+
+        implIdx++;
     }
-#endif
+
+    // DBG - test dispatcher calls
+    mfxFrameSurface1 *testSurface;
+    MFXMemory_GetSurfaceForDecode(session, &testSurface);
+    MFXMemory_GetSurfaceForEncode(session, &testSurface);
+    MFXMemory_GetSurfaceForVPP(session, &testSurface);
 
     // set up input bitstream
     memmove(mfxBS.Data, mfxBS.Data + mfxBS.DataOffset, mfxBS.DataLength);

@@ -506,6 +506,7 @@ mfxStatus MFXInitEx2(mfxInitParam par, mfxSession *session, wchar_t *dllName) {
     eMfxImplType implType =
         (par.Implementation == MFX_IMPL_SOFTWARE ? MFX_LIB_SOFTWARE
                                                  : MFX_LIB_HARDWARE);
+    mfxIMPL implInterface = par.Implementation & -MFX_IMPL_VIA_ANY;
 
     // check error(s)
     if (NULL == session || NULL == dllName) {
@@ -529,9 +530,9 @@ mfxStatus MFXInitEx2(mfxInitParam par, mfxSession *session, wchar_t *dllName) {
         if (MFX_ERR_NONE == mfxRes) {
             // try to load the selected DLL using given DLL name
             mfxRes = pHandle->LoadSelectedDLL(dllName,
-                                              MFX_LIB_SOFTWARE,
+                                              implType,
                                               par.Implementation,
-                                              0,
+                                              implInterface,
                                               par);
         }
         // unload the failed DLL

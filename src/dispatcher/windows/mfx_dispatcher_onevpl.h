@@ -27,17 +27,6 @@ static const char* ExtVPLFunctions[] = {
     "MFXMemory_GetSurfaceForDecode",
 };
 
-// TODO(JR) - automatic index generation (macro or struct)
-enum ExtVPLFunctionsIdx {
-    eMFXQueryImplDescription       = 0,
-    eMFXReleaseImplDescription     = 1,
-    eMFXMemory_GetSurfaceForVPP    = 2,
-    eMFXMemory_GetSurfaceForEncode = 3,
-    eMFXMemory_GetSurfaceForDecode = 4,
-};
-
-#define NumExtVPLFunctions (sizeof(ExtVPLFunctions) / sizeof(char*))
-
 mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, wchar_t* dllName);
 
 // priority of runtime loading, based on oneAPI-spec
@@ -74,7 +63,14 @@ struct LibInfo {
     // if valid oneVPL library, store file handle
     //   and table of exported functions
     mfxModuleHandle hModuleVPL;
-    mfxFunctionPointer vplFuncTable[NumExtVPLFunctions];
+    mfxFunctionPointer vplFuncTable[eVideoFunc2Total]; // NOLINT
+    mfxHDL implDesc;
+
+    // used for session initialization with this implementation
+    mfxInitParam initPar;
+
+    // assign unique index after validating library
+    mfxU32 libIdx;
 };
 
 // loader class implementation
@@ -83,31 +79,37 @@ public:
     LoaderCtxOneVPL();
     ~LoaderCtxOneVPL();
 
-    mfxStatus SearchDirForLibs(wchar_t* searchDir,
-                               std::list<LibInfo*>& libInfoList,
-                               mfxU32 priority);
     mfxStatus BuildListOfCandidateLibs();
     mfxU32 CheckValidLibraries();
 
-    mfxStatus Free();
-
-    mfxStatus QueryImpl(mfxU32 i,
+    mfxStatus QueryImpl(mfxU32 idx,
                         mfxImplCapsDeliveryFormat format,
                         mfxHDL* idesc);
-    mfxStatus CreateSession();
 
+    mfxStatus ReleaseImpl(mfxHDL idesc);
+
+    mfxStatus CreateSession(mfxU32 idx, mfxSession* session);
+
+    mfxStatus UnloadAllLibraries();
+
+    // TODO(JR) - should be a list of any number of configs
     ConfigCtxOneVPL* m_configCtx;
-    mfxSession m_session;
 
 private:
+    // helper functions
+    mfxStatus SearchDirForLibs(wchar_t* searchDir,
+                               std::list<LibInfo*>& libInfoList,
+                               mfxU32 priority);
+    LibInfo* GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx);
+
     std::list<LibInfo*> m_libInfoList;
     wchar_t m_vplPackageDir[MFX_MAX_DLL_PATH];
-
-    //mfxModuleHandle m_hModuleVPL;
-    //mfxFunctionPointer m_vplFuncTable[NumExtVPLFunctions];
 };
 
-LoaderCtxOneVPL::LoaderCtxOneVPL() : m_configCtx(), m_session() {
+LoaderCtxOneVPL::LoaderCtxOneVPL()
+        : m_configCtx(),
+          m_libInfoList(),
+          m_vplPackageDir() {
     return;
 }
 
