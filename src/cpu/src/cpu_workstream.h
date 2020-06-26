@@ -99,6 +99,9 @@ private:
 
     void RemoveUsedDataFromBitstream(int bytesParsed);
 
+    mfxStatus InitHEVCParams(mfxVideoParam *par);
+    mfxStatus InitAV1Params(mfxVideoParam *par);
+
     std::future<void> decode_future;
 
 #ifndef DISABLE_LIBAV
