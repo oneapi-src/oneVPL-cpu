@@ -1,22 +1,9 @@
-// Copyright (c) 2018-2020 Intel Corporation
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+/*############################################################################
+  # Copyright (C) 2018-2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
 #ifndef __MFXCOMMON_H__
 #define __MFXCOMMON_H__
 #include "mfxdefs.h"
@@ -71,7 +58,7 @@ enum  {
                                           it is used by the SDK if none of MFX_IMPL_VIA_xxx flag is specified by application. */
     MFX_IMPL_VIA_D3D9     = 0x0200,  /*!< Hardware acceleration goes through the Microsoft* Direct3D9* infrastructure. */
     MFX_IMPL_VIA_D3D11    = 0x0300,  /*!< Hardware acceleration goes through the Microsoft* Direct3D11* infrastructure. */
-    MFX_IMPL_VIA_VAAPI    = 0x0400,  /*!< Hardware acceleration goes through the Linux* VA API infrastructure. */
+    MFX_IMPL_VIA_VAAPI    = 0x0400,  /*!< Hardware acceleration goes through the Linux* VA-API infrastructure. */
 
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
     MFX_IMPL_EXTERNAL_THREADING        = 0x10000,
@@ -182,7 +169,7 @@ typedef struct {
 } mfxExtThreadsParam;
 MFX_PACK_END()
 
-/*! The PlatformCodeName enumerator itemizes Intel® microarchitecture code names. For details about any particular code name, see ark.intel.com. */
+/*! The PlatformCodeName enumerator itemizes microarchitecture code names. For details about any particular code name, see ark.intel.com. */
 enum {
     MFX_PLATFORM_UNKNOWN        = 0,  /*!< Unknown platform */
     MFX_PLATFORM_SANDYBRIDGE    = 1,  /*!< Sandy Bridge */
@@ -220,7 +207,7 @@ typedef enum
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*! The mfxPlatform structure contains information about hardware platform. */
 typedef struct {
-    mfxU16 CodeName;         /*!< Intel® microarchitecture code name. See the PlatformCodeName enumerator for a list of possible values. */
+    mfxU16 CodeName;         /*!< Microarchitecture code name. See the PlatformCodeName enumerator for a list of possible values. */
     mfxU16 DeviceId;         /*!< Unique identifier of graphics device. */
 #if (MFX_VERSION >= 1031)
     mfxU16 MediaAdapterType; /*!< Description of Intel Gen Graphics adapter type. See the mfxMediaAdapterType enumerator for a list of possible values. */

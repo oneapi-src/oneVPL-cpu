@@ -1,22 +1,9 @@
-// Copyright (c) 2018-2020 Intel Corporation
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+/*############################################################################
+  # Copyright (C) 2018-2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+
 #ifndef __MFXSTRUCTURES_H__
 #define __MFXSTRUCTURES_H__
 #include "mfxcommon.h"
@@ -381,14 +368,14 @@ typedef enum {
     MFX_HANDLE_D3D9_DEVICE_MANAGER              = MFX_HANDLE_DIRECT3D_DEVICE_MANAGER9, /*!< Pointer to the IDirect3DDeviceManager9 interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
     MFX_HANDLE_RESERVED1                        = 2, /* Reserved  */
     MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
-    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA API Applications for more details on how to use this handle. */
+    MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA-API Applications for more details on how to use this handle. */
     MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
 #if (MFX_VERSION >= 1030)
     MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
     MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
 #endif
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
-    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for media ). */
+    MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for Metal Runtime ). */
 #endif
 } mfxHandleType;
 
@@ -528,7 +515,7 @@ typedef struct mfxFrameSurfaceInterface {
     /*! @brief
     This function returns a native resource's handle and type. The handle is returned *as-is* that means 
     the reference counter of base resources is not incremented. Native resource is not detached from surface, 
-    oneVPL still owns the resource. User must not anyhow destroy native resource or rely that this resource will be alive after (*Release).
+    the library still owns the resource. User must not anyhow destroy native resource or rely that this resource will be alive after (*Release).
 
 
     
@@ -549,7 +536,7 @@ typedef struct mfxFrameSurfaceInterface {
     /*! @brief
     This function returns a device abstraction which was used to create that resource. 
     The handle is returned *as-is* that means the reference counter for device abstraction is not incremented. 
-    Native resource is not detached from surface, oneVPL still has a reference to the resource. 
+    Native resource is not detached from surface, the library still has a reference to the resource. 
     User must not anyhow destroy device or rely that this device will be alive after (*Release).
 
 
@@ -682,7 +669,7 @@ typedef struct {
                 /*! Initial size of the Video Buffering Verifier (VBV) buffer.
                     @note In this context, KB is 1000 bytes and Kbps is 1000 bps. */
                 mfxU16  InitialDelayInKB;
-                /*! Quantization Parameter (QP) for I frames for constant QP mode (CQP). Zero QP is not valid and means that default value is assigned by oneVPL.
+                /*! Quantization Parameter (QP) for I frames for constant QP mode (CQP). Zero QP is not valid and means that default value is assigned by the library.
                     Non-zero QPI might be clipped to supported QPI range.
                     @note Default QPI value is implementation dependent and subject to change without additional notice in this document. */
                 mfxU16  QPI;
@@ -692,7 +679,7 @@ typedef struct {
             union {
                 /*! Constant bitrate TargetKbps. Used to estimate the targeted frame size by dividing the framerate by the bitrate. */
                 mfxU16  TargetKbps;
-                /*! Quantization Parameter (QP) for P frames for constant QP mode (CQP). Zero QP is not valid and means that default value is assigned by oneVPL.
+                /*! Quantization Parameter (QP) for P frames for constant QP mode (CQP). Zero QP is not valid and means that default value is assigned by the library.
                     Non-zero QPP might be clipped to supported QPI range.
                     @note Default QPP value is implementation dependent and subject to change without additional notice in this document. */
                 mfxU16  QPP;
@@ -701,7 +688,7 @@ typedef struct {
             union {
                 /*! the maximum bitrate at which the encoded data enters the Video Buffering Verifier (VBV) buffer. */
                 mfxU16  MaxKbps;
-                /*! Quantization Parameter (QP) for B frames for constant QP mode (CQP). Zero QP is not valid and means that default value is assigned by oneVPL.
+                /*! Quantization Parameter (QP) for B frames for constant QP mode (CQP). Zero QP is not valid and means that default value is assigned by the library.
                     Non-zero QPI might be clipped to supported QPB range.
                     @note Default QPB value is implementation dependent and subject to change without additional notice in this document. */
                 mfxU16  QPB;
