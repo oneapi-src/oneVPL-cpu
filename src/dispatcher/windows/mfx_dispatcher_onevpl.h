@@ -106,15 +106,4 @@ private:
     wchar_t m_vplPackageDir[MFX_MAX_DLL_PATH];
 };
 
-LoaderCtxOneVPL::LoaderCtxOneVPL()
-        : m_configCtx(),
-          m_libInfoList(),
-          m_vplPackageDir() {
-    return;
-}
-
-LoaderCtxOneVPL::~LoaderCtxOneVPL() {
-    return;
-}
-
 #endif // SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_ONEVPL_H_

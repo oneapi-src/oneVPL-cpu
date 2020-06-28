@@ -20,6 +20,7 @@ set(SOURCES
     src/cpu_encode.cpp
     src/cpu_vpp.cpp
     src/libmfxvplsw.cpp
+    src/libmfxvplsw_caps.cpp
     src/libmfxvplsw_core.cpp
     src/libmfxvplsw_decode.cpp
     src/libmfxvplsw_encode.cpp

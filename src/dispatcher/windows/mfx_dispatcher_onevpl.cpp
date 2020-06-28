@@ -6,6 +6,17 @@
 
 #include "windows/mfx_dispatcher_onevpl.h"
 
+LoaderCtxOneVPL::LoaderCtxOneVPL()
+        : m_configCtx(),
+          m_libInfoList(),
+          m_vplPackageDir() {
+    return;
+}
+
+LoaderCtxOneVPL::~LoaderCtxOneVPL() {
+    return;
+}
+
 mfxStatus LoaderCtxOneVPL::SearchDirForLibs(wchar_t* searchDir,
                                             std::list<LibInfo*>& libInfoList,
                                             mfxU32 priority) {

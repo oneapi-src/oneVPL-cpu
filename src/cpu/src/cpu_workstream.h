@@ -7,9 +7,10 @@
 #ifndef SRC_CPU_SRC_CPU_WORKSTREAM_H_
 #define SRC_CPU_SRC_CPU_WORKSTREAM_H_
 
-#include <string.h>
 #include <chrono>
 #include <future>
+#include <string>
+
 #include "vpl/mfxstructures.h"
 
 #include "vpl/mfxjpeg.h"

@@ -4,17 +4,9 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "./cpu_workstream.h"
-
 #include "vpl/mfxdispatcher.h"
-#include "vpl/mfxvideo.h"
 
-#if defined(_WIN32) || defined(_WIN64)
-#else
-    // Linux
-    #define strcpy_s(dst, size, src)       strcpy((dst), (src)) // NOLINT
-    #define strncpy_s(dst, size, src, cnt) strcpy((dst), (src)) // NOLINT
-#endif
+#include "./libmfxvplsw_caps.h"
 
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
@@ -25,10 +17,11 @@ mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
 
     mfxImplDescription *implDesc = new mfxImplDescription;
 
+    // clear everything, only allocate new structures as needed
     memset(implDesc, 0, sizeof(mfxImplDescription));
 
-    implDesc->Version.Major = 1; // should be defined in header
-    implDesc->Version.Minor = 0;
+    implDesc->Version.Major = DEF_STRUCT_VERSION_MAJOR;
+    implDesc->Version.Minor = DEF_STRUCT_VERSION_MINOR;
 
     implDesc->Impl             = MFX_IMPL_SOFTWARE;
     implDesc->accelerationMode = 0;
@@ -53,49 +46,16 @@ mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
     implDesc->VendorImplID = 0;
     implDesc->NumExtParam  = 0;
 
-    mfxU32 i;
+    InitDecoderCaps(&(implDesc->Dec));
 
-    // fill decoder caps
-    implDesc->Dec.Version.Major = 1;
-    implDesc->Dec.Version.Minor = 0;
-    implDesc->Dec.NumCodecs     = 1;
+    InitEncoderCaps(&(implDesc->Enc));
 
-    // allocate one structure per supported codec
-    implDesc->Dec.Codecs =
-        new struct mfxDecoderDescription::decoder[implDesc->Dec.NumCodecs];
-    for (i = 0; i < implDesc->Dec.NumCodecs; i++) {
-        mfxDecoderDescription::decoder *currDec = &(implDesc->Dec.Codecs[i]);
-        memset(currDec, 0, sizeof(mfxDecoderDescription::decoder));
-
-        currDec->CodecID = MFX_CODEC_HEVC;
-        // TODO(JR) - fill in levels, profiles, etc.
-        // add some utility functions to automate all this
-    }
-
-    // fill encoder caps
-    implDesc->Enc.Version.Major = 1;
-    implDesc->Enc.Version.Minor = 0;
-    implDesc->Enc.NumCodecs     = 1;
-
-    // allocate one structure per supported codec
-    implDesc->Enc.Codecs =
-        new struct mfxEncoderDescription::encoder[implDesc->Enc.NumCodecs];
-    for (i = 0; i < implDesc->Enc.NumCodecs; i++) {
-        mfxEncoderDescription::encoder *currEnc = &(implDesc->Enc.Codecs[i]);
-        memset(currEnc, 0, sizeof(mfxEncoderDescription::encoder));
-
-        currEnc->CodecID = MFX_CODEC_HEVC;
-        // TODO(JR) - fill in levels, profiles, etc.
-    }
-
-    // fill VPP caps
-    implDesc->VPP.Version.Major = 1;
-    implDesc->VPP.Version.Minor = 0;
-    implDesc->VPP.NumFilters    = 0;
+    InitVPPCaps(&(implDesc->VPP));
 
     return (mfxHDL)implDesc;
 }
 
+// walk through implDesc and delete dynamically-allocated structs
 mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
     mfxImplDescription *implDesc = (mfxImplDescription *)hdl;
 
@@ -103,8 +63,11 @@ mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
         return MFX_ERR_NULL_PTR;
     }
 
-    // TODO(JR) - walk through implDesc and delete dynamically-allocated structs
+    FreeDecoderCaps(&(implDesc->Dec));
+    FreeEncoderCaps(&(implDesc->Enc));
+    FreeVPPCaps(&(implDesc->VPP));
 
+    memset(implDesc, 0, sizeof(mfxImplDescription));
     delete implDesc;
 
     return MFX_ERR_NONE;
