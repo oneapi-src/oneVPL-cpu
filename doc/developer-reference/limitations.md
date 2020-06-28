@@ -1,4 +1,4 @@
 ## Known Limitations
 
  * Implementation is blocking
- * Most parameters are not supported -- see supported parameters list
+ * Only a limited set of parameters are supported -- see supported parameters 
