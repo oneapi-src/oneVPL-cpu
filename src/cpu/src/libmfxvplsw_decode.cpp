@@ -67,6 +67,7 @@ mfxStatus MFXVideoDECODE_Query(mfxSession session,
 
         if (in->mfx.CodecId != MFX_CODEC_AVC &&
             in->mfx.CodecId != MFX_CODEC_HEVC &&
+            in->mfx.CodecId != MFX_CODEC_AV1 &&
             in->mfx.CodecId != MFX_CODEC_JPEG &&
             in->mfx.CodecId != MFX_CODEC_MPEG2)
             sts = MFX_ERR_UNSUPPORTED;

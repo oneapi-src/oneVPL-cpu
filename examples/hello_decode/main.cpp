@@ -12,6 +12,7 @@
 #include <iostream>
 #include "vpl/mfxvideo.h"
 
+mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f);
 void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize);
@@ -46,11 +47,6 @@ int main(int argc, char *argv[]) {
     }
     FILE *fSink = fopen(argv[3], "wb");
 
-    // init bitstream
-    mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 2000000;
-    mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
-
     // initialize  session
     mfxInitParam initPar   = { 0 };
     initPar.Version.Major  = 1;
@@ -66,10 +62,12 @@ int main(int argc, char *argv[]) {
 
     puts("oneVPL initialized");
 
-    // set up input bitstream
-    memmove(mfxBS.Data, mfxBS.Data + mfxBS.DataOffset, mfxBS.DataLength);
-    mfxBS.DataLength =
-        static_cast<mfxU32>(fread(mfxBS.Data, 1, mfxBS.MaxLength, fSource));
+    // prepare input bitstream
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength    = 2000000;
+    mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
+
+    ReadEncodedStream(mfxBS, codecID, fSource);
 
     // initialize decode parameters from stream header
     mfxVideoParam mfxDecParams = { 0 };
@@ -152,19 +150,10 @@ int main(int argc, char *argv[]) {
             // next step actions provided by application
             switch (sts) {
                 case MFX_ERR_MORE_DATA: // more data is needed to decode
-                {
-                    memmove(mfxBS.Data,
-                            mfxBS.Data + mfxBS.DataOffset,
-                            mfxBS.DataLength);
-                    mfxBS.DataOffset = 0;
-                    mfxBS.DataLength = static_cast<mfxU32>(
-                        fread(mfxBS.Data + mfxBS.DataLength,
-                              1,
-                              mfxBS.MaxLength - mfxBS.DataLength,
-                              fSource));
+                    ReadEncodedStream(mfxBS, codecID, fSource);
                     if (mfxBS.DataLength == 0)
                         stillgoing = false; // stop if end of file
-                } break;
+                    break;
                 case MFX_ERR_MORE_SURFACE: // feed a fresh surface to decode
                     nIndex = GetFreeSurfaceIndex(decSurfaces, nSurfNumDec);
                     break;
@@ -284,6 +273,61 @@ int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
             return i;
     }
     return MFX_ERR_NOT_FOUND;
+}
+
+mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f) {
+    memmove(bs.Data, bs.Data + bs.DataOffset, bs.DataLength);
+
+    if (codecid == MFX_CODEC_AV1) {
+        // spec for IVF headers
+        // https://wiki.multimedia.cx/index.php/IVF
+
+        // extract AV1 elementary stream from IVF file.
+        // should remove stream header and frame header.
+        // and use the frame size information to read AV1 frame.
+        mfxU32 nBytesInFrame = 0;
+        mfxU64 nTimeStamp    = 0;
+        mfxU32 nBytesRead    = 0;
+        static bool bread_streamheader;
+
+        // read stream header, only once at the beginning, 32 bytes
+        if (bread_streamheader == false) {
+            mfxU8 header[32]   = { 0 };
+            mfxU32 nBytesRead  = (mfxU32)fread(header, 1, 32, f);
+            bread_streamheader = true;
+        }
+
+        bs.DataLength = 0;
+
+        // read frame header and parse frame data
+        while (!feof(f)) {
+            nBytesRead = (mfxU32)fread(&nBytesInFrame, 1, 4, f);
+            if (nBytesRead == 0)
+                return MFX_ERR_MORE_DATA;
+
+            // check whether buffer is over if we read this frame or not
+            if (bs.DataLength + nBytesInFrame > bs.MaxLength) {
+                // set file pointer location back to -4
+                // so, the access pointer for next frame will be the "bytesinframe" location and break
+                fseek(f, -4, SEEK_CUR);
+                break;
+            }
+            nBytesRead = (mfxU32)fread(&nTimeStamp, 1, 8, f);
+            if (nBytesRead == 0)
+                return MFX_ERR_MORE_DATA;
+
+            nBytesRead =
+                (mfxU32)fread(bs.Data + bs.DataLength, 1, nBytesInFrame, f);
+            if (nBytesRead == 0)
+                return MFX_ERR_MORE_DATA;
+
+            bs.DataLength += nBytesRead;
+        }
+    }
+    else {
+        bs.DataLength = static_cast<mfxU32>(fread(bs.Data, 1, bs.MaxLength, f));
+    }
+    return MFX_ERR_NONE;
 }
 
 void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {

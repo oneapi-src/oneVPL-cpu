@@ -50,6 +50,9 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
         case MFX_CODEC_MPEG2:
             cid = AV_CODEC_ID_MPEG2VIDEO;
             break;
+        case MFX_CODEC_AV1:
+            cid = AV_CODEC_ID_AV1;
+            break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }

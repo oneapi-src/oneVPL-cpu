@@ -169,6 +169,7 @@ bash -c './configure ^
 --enable-demuxer=hevc ^
 --enable-decoder=hevc ^
 --enable-parser=hevc ^
+--enable-parser=av1 ^
 --enable-decoder=mpeg2video ^
 --enable-encoder=mpeg2video ^
 --enable-decoder=mjpeg ^
