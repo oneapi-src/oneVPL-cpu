@@ -28,7 +28,7 @@ set(SOURCES
     src/libmfxvplsw_vpp.cpp)
 
 if(WIN32)
-  list(APPEND SOURCES src/windows/libmfx.def)
+  list(APPEND SOURCES src/windows/libmfxsw.def)
 endif()
 
 add_library(${TARGET} SHARED "")

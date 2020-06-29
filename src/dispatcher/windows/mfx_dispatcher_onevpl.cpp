@@ -97,7 +97,6 @@ mfxU32 LoaderCtxOneVPL::CheckValidLibraries() {
     std::list<LibInfo*>::iterator it = m_libInfoList.begin();
     while (it != m_libInfoList.end()) {
         LibInfo* libInfo = (*it);
-        printf("LibInfo2 name (pre-sort)  = %ws\n", libInfo->libNameFull);
 
         // load DLL
         libInfo->hModuleVPL = MFX::mfx_dll_load(libInfo->libNameFull);
@@ -258,12 +257,8 @@ mfxStatus LoaderCtxOneVPL::CreateSession(mfxU32 idx, mfxSession* session) {
     if (libInfo == nullptr)
         return MFX_ERR_NOT_FOUND;
 
-    printf("MFXInitEx2 %ws\n", libInfo->libNameFull);
-
     // initialize this library via MFXInitEx
     sts = MFXInitEx2(libInfo->initPar, session, libInfo->libNameFull);
-
-    printf("Result = %d\n", sts);
 
     return sts;
 }

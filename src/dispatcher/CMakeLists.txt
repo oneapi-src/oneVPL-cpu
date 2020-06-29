@@ -20,7 +20,8 @@ if(WIN32)
       windows/mfx_load_dll.cpp
       windows/mfx_load_plugin.cpp
       windows/mfx_plugin_hive.cpp
-      windows/mfx_win_reg_key.cpp)
+      windows/mfx_win_reg_key.cpp
+      windows/libmfx.def)
 endif()
 
 if(UNIX)
@@ -33,12 +34,13 @@ if(UNIX)
   message(STATUS "MFX_MODULES_DIR=${MFX_MODULES_DIR}")
 endif()
 
-add_library(${TARGET} STATIC "")
+add_library(${TARGET} SHARED "")
 
 target_compile_definitions(${TARGET} PRIVATE -DDISABLE_NON_VPL_DISPATCHER)
 
 # force correct name on Windows
 set_target_properties(${TARGET} PROPERTIES PREFIX "lib")
+set_target_properties(${TARGET} PROPERTIES IMPORT_PREFIX "lib")
 
 target_sources(${TARGET} PRIVATE ${SOURCES})
 
