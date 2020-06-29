@@ -217,10 +217,31 @@ mfxStatus MFXVideoDECODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {
     return sts;
 }
 
-// stubs
 mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
-    return MFX_ERR_UNSUPPORTED;
+    mfxStatus sts = MFX_ERR_NONE;
+
+    if (0 == session) {
+        return MFX_ERR_INVALID_HANDLE;
+    }
+    if (0 == par) {
+        return MFX_ERR_NULL_PTR;
+    }
+
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+
+    if (ws->m_decInit == false)
+        return MFX_ERR_NOT_INITIALIZED;
+
+    ws->FreeDecode();
+
+    sts = ws->InitDecode(par->mfx.CodecId);
+    if (sts == MFX_ERR_NONE)
+        ws->m_decInit = true;
+
+    return sts;
 }
+
+// stubs
 mfxStatus MFXVideoDECODE_GetDecodeStat(mfxSession session,
                                        mfxDecodeStat *stat) {
     return MFX_ERR_UNSUPPORTED;
