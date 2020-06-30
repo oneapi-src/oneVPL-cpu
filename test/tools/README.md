@@ -13,19 +13,26 @@ as part of their environment setup.
 
 ex:
 
-```bash
-py -3 -m test/tools/python/get_content file://foo.bar
+Note: in these examples "foo" is used as the test name. The actual tools
+are stored in test/tools/python with each tool stored in a folder named
+the same as the tool.
 
-#or
-
-python3 -m test/tools/python/get_content file://foo.bar
-
+```batch
+:: Windows
+test/env/vars.bat
+py -3 -m foo --help
 ```
 
-or 
+```bash
+# Bash
+source test/env/vars.sh
+python3 -m foo --help
+```
 
 ```python
-import get_content
-get_content("file://foo.bar")
+# Python
+import foo
+foo.foo()
 ```
+
 
