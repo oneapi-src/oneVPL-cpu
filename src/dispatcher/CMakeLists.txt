@@ -14,6 +14,7 @@ if(WIN32)
       windows/mfx_dispatcher.cpp
       windows/mfx_dispatcher_log.cpp
       windows/mfx_dispatcher_onevpl.cpp
+      windows/mfx_dispatcher_util.cpp
       windows/mfx_dxva2_device.cpp
       windows/mfx_function_table.cpp
       windows/mfx_library_iterator.cpp

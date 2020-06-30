@@ -40,6 +40,7 @@
 #define INTEL_VENDOR_ID 0x8086
 
 mfxStatus MFXQueryVersion(mfxSession session, mfxVersion *version);
+mfxStatus MFXInitEx2(mfxInitParam par, mfxSession *session, wchar_t *dllName);
 
 enum {
     // to avoid code changing versions are just inherited

@@ -12,6 +12,8 @@
 
 #include <list>
 #include <memory>
+#include <sstream>
+#include <string>
 
 #include "vpl/mfxvideo.h"
 
@@ -27,8 +29,6 @@ static const char* ExtVPLFunctions[] = {
     "MFXMemory_GetSurfaceForDecode",
 };
 
-mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, wchar_t* dllName);
-
 // priority of runtime loading, based on oneAPI-spec
 enum LibPriority {
     LIB_PRIORITY_USE_DEFINED    = 1,
@@ -42,16 +42,17 @@ public:
     ConfigCtxOneVPL();
     ~ConfigCtxOneVPL();
 
+    void SetFilterProperty(const mfxU8* name, mfxVariant value) {
+        m_propName = std::string((char*)name);
+
+        m_propValue.Type = value.Type;
+        m_propValue.Data = value.Data;
+    }
+
 private:
+    std::string m_propName;
+    mfxVariant m_propValue;
 };
-
-ConfigCtxOneVPL::ConfigCtxOneVPL() {
-    return;
-}
-
-ConfigCtxOneVPL::~ConfigCtxOneVPL() {
-    return;
-}
 
 struct LibInfo {
     // during search store candidate file names
@@ -79,21 +80,23 @@ public:
     LoaderCtxOneVPL();
     ~LoaderCtxOneVPL();
 
+    // manage library implementations
     mfxStatus BuildListOfCandidateLibs();
     mfxU32 CheckValidLibraries();
+    mfxStatus UnloadAllLibraries();
 
+    // query capabilities of each implementation
     mfxStatus QueryImpl(mfxU32 idx,
                         mfxImplCapsDeliveryFormat format,
                         mfxHDL* idesc);
-
     mfxStatus ReleaseImpl(mfxHDL idesc);
 
+    // create mfxSession
     mfxStatus CreateSession(mfxU32 idx, mfxSession* session);
 
-    mfxStatus UnloadAllLibraries();
-
-    // TODO(JR) - should be a list of any number of configs
-    ConfigCtxOneVPL* m_configCtx;
+    // manage configuration filters
+    ConfigCtxOneVPL* AddConfigFilter();
+    mfxStatus FreeConfigFilters();
 
 private:
     // helper functions
@@ -103,6 +106,8 @@ private:
     LibInfo* GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx);
 
     std::list<LibInfo*> m_libInfoList;
+    std::list<ConfigCtxOneVPL*> m_configCtxList;
+
     wchar_t m_vplPackageDir[MFX_MAX_DLL_PATH];
 };
 

@@ -66,15 +66,24 @@ int main(int argc, char *argv[]) {
 
     mfxLoader loader = MFXLoad();
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-
     mfxVariant ImplValue;
+    mfxConfig cfg;
+
+    cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_SOFTWARE;
-
     MFXSetConfigFilterProperty(cfg,
                                (const mfxU8 *)"mfxImplDescription.Impl",
                                ImplValue);
+
+    cfg                = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_HEVC;
+    MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8
+             *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
 
     mfxU32 implIdx = 0;
     while (1) {
