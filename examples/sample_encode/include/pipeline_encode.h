@@ -31,7 +31,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "sample_utils.h"
 #include "time_statistics.h"
 
-#include "vpl/mfxvideo++.h"
+#include "mfxvideo++.h"
 #include "vpl/mfxvideo.h"
 
 #include <memory>

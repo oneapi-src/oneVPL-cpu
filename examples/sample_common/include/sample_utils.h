@@ -28,8 +28,8 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <string>
 #include <vector>
 
+#include "mfxvideo++.h"
 #include "vpl/mfxstructures.h"
-#include "vpl/mfxvideo++.h"
 #include "vpl/mfxvideo.h"
 
 #include "vpl/mfxjpeg.h"

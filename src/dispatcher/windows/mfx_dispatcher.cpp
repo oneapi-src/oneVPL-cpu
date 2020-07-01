@@ -29,9 +29,9 @@
 
 #include <algorithm>
 #include "vpl/mfxadapter.h"
-#include "vpl/mfxvideo++.h"
 #include "windows/mfx_dxva2_device.h"
 #include "windows/mfx_vector.h"
+#include "windows/mfxvideo++.h"
 
 #pragma warning(disable : 4355)
 

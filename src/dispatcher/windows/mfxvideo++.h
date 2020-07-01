@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef API_ONEVPL_MFXVIDEO___H_
-#define API_ONEVPL_MFXVIDEO___H_
+#ifndef SRC_DISPATCHER_WINDOWS_MFXVIDEO___H_
+#define SRC_DISPATCHER_WINDOWS_MFXVIDEO___H_
 
-#include "./mfxvideo.h"
+#include "vpl/mfxvideo.h"
 
 class MFXVideoSession {
 public:
@@ -244,4 +244,4 @@ protected:
     mfxSession m_session; // (mfxSession) handle to the owning session
 };
 
-#endif // API_ONEVPL_MFXVIDEO___H_
+#endif // SRC_DISPATCHER_WINDOWS_MFXVIDEO___H_
