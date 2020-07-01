@@ -14,3 +14,11 @@ install(
   DIRECTORY vpl
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   COMPONENT dev)
+
+set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")
+configure_file("onevpl.pc.in" "onevpl.pc" @ONLY)
+
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/onevpl.pc
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+  COMPONENT dev)
