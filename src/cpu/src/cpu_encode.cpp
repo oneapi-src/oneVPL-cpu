@@ -7,8 +7,6 @@
 #include <sstream>
 #include "./cpu_workstream.h"
 
-#ifdef ENABLE_ENCODE
-
 mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
     m_encCodecId = par->mfx.CodecId;
 
@@ -101,9 +99,9 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
             break;
     }
 
-    #ifdef ENABLE_LIBAV_AUTO_THREADS
+#ifdef ENABLE_LIBAV_AUTO_THREADS
     m_avEncContext->thread_count = 0;
-    #endif
+#endif
 
     int err = 0;
     err     = avcodec_open2(m_avEncContext, m_avEncCodec, NULL);
@@ -118,6 +116,7 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
     m_avEncFrameIn->width  = m_avEncContext->width;
     m_avEncFrameIn->height = m_avEncContext->height;
 
+    m_encInit = true;
     return MFX_ERR_NONE;
 }
 
@@ -467,20 +466,3 @@ mfxStatus CpuWorkstream::EncodeFrame(mfxFrameSurface1 *surface,
 
     return MFX_ERR_NONE;
 }
-
-#else // ENABLE_ENCODE
-
-mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
-    return MFX_ERR_UNSUPPORTED;
-}
-
-void CpuWorkstream::FreeEncode(void) {
-    return;
-}
-
-mfxStatus CpuWorkstream::EncodeFrame(mfxFrameSurface1 *surface,
-                                     mfxBitstream *bs) {
-    return MFX_ERR_UNSUPPORTED;
-}
-
-#endif // ENABLE_ENCODE

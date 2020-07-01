@@ -6,9 +6,7 @@
 
 #include "./cpu_workstream.h"
 
-#ifdef ENABLE_DECODE
-
-    #define DEFAULT_MAX_DEC_BITSTREAM_SIZE (1024 * 1024 * 64)
+#define DEFAULT_MAX_DEC_BITSTREAM_SIZE (1024 * 1024 * 64)
 
 // callback:
 // int (*get_buffer2)(struct AVCodecContext *s, AVFrame *frame, int flags);
@@ -74,9 +72,9 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    #ifdef ENABLE_LIBAV_AUTO_THREADS
+#ifdef ENABLE_LIBAV_AUTO_THREADS
     m_avDecContext->thread_count = 0;
-    #endif
+#endif
 
     if (avcodec_open2(m_avDecContext, m_avDecCodec, NULL) < 0) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -92,8 +90,8 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
         return MFX_ERR_MEMORY_ALLOC;
     }
 
-    m_decInit  = true;
-    m_decDrain = false;
+    m_decInit = true;
+
     return MFX_ERR_NONE;
 }
 
@@ -133,7 +131,7 @@ mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {
         m_decInit = true;
     }
 
-    sts = DecodeFrame(bs, nullptr, &surface_out, true);
+    sts = DecodeFrame(bs, nullptr, &surface_out);
     if (sts < 0) {
         // may return MFX_ERR_MORE_DATA
         return sts;
@@ -141,20 +139,32 @@ mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {
 
     // just fills in the minimum parameters required to alloc buffers and start decoding
     // in next step, the app will call DECODE_Query() to confirm that it can decode this stream
-    sts = DecodeGetVideoParams(par);
-    if (sts < 0)
-        return sts;
+    par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;
+    par->mfx.FrameInfo.Height = (uint16_t)m_avDecContext->height;
 
+    if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
+    else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
+    else
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
+
+    if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
+        return MFX_ERR_NOT_INITIALIZED;
+    }
+
+    //reset the decoder
     FreeDecode();
+
     m_decInit = false;
-    return sts;
+
+    return MFX_ERR_NONE;
 }
 
 // bs == 0 is a signal to drain
 mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
                                      mfxFrameSurface1 *surface_work,
-                                     mfxFrameSurface1 **surface_out,
-                                     bool blocking) {
+                                     mfxFrameSurface1 **surface_out) {
     if (!m_decInit) {
         ERR_EXIT(VPL_WORKSTREAM_DECODE);
     }
@@ -193,35 +203,11 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
         else if (m_bsDecValidBytes - bytesParsed == 0) {
             // bitstream is empty - need more data from app
             m_bsDecValidBytes = 0;
-            m_decDrain        = true;
+
             return MFX_ERR_MORE_DATA;
         }
     }
 
-    if (blocking || m_decDrain) {
-        return DecodeFrameInternalBlocking(bytesParsed,
-                                           bs,
-                                           surface_work,
-                                           surface_out);
-    }
-
-    *surface_out  = surface_work;
-    decode_future = std::async(std::launch::async,
-                               &CpuWorkstream::DecodeFrameInternal,
-                               this,
-                               bytesParsed,
-                               bs,
-                               surface_work,
-                               surface_out);
-
-    return MFX_ERR_NONE;
-}
-
-mfxStatus CpuWorkstream::DecodeFrameInternalBlocking(
-    int bytesParsed,
-    mfxBitstream *bs,
-    mfxFrameSurface1 *surface_work,
-    mfxFrameSurface1 **surface_out) {
     int av_ret = 0;
     while (1) {
         // parse a packet
@@ -234,7 +220,10 @@ mfxStatus CpuWorkstream::DecodeFrameInternalBlocking(
 
         av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
 
-        RemoveUsedDataFromBitstream(bytesParsed);
+        memmove(m_bsDecData,
+                m_bsDecData + bytesParsed,
+                m_bsDecValidBytes - bytesParsed);
+        m_bsDecValidBytes -= bytesParsed;
 
         // try to get a decoded frame
         av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
@@ -268,42 +257,6 @@ mfxStatus CpuWorkstream::DecodeFrameInternalBlocking(
     }
 
     return MFX_ERR_NONE;
-}
-
-// remove used data from bitstream after sending packet
-// packets are not ref counted, so data will be copied internally by avcodec_send_packet()
-void CpuWorkstream::RemoveUsedDataFromBitstream(int bytesParsed) {
-    memmove(m_bsDecData,
-            m_bsDecData + bytesParsed,
-            m_bsDecValidBytes - bytesParsed);
-    m_bsDecValidBytes -= bytesParsed;
-}
-
-void CpuWorkstream::DecodeFrameInternal(int bytesParsed,
-                                        mfxBitstream *bs,
-                                        mfxFrameSurface1 *surface_work,
-                                        mfxFrameSurface1 **surface_out) {
-    while (1) {
-        int av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
-
-        RemoveUsedDataFromBitstream(bytesParsed);
-
-        av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
-        if (av_ret != AVERROR(EAGAIN))
-            break;
-
-        bytesParsed = av_parser_parse2(m_avDecParser,
-                                       m_avDecContext,
-                                       &m_avDecPacket->data,
-                                       &m_avDecPacket->size,
-                                       m_bsDecData,
-                                       m_bsDecValidBytes,
-                                       AV_NOPTS_VALUE,
-                                       AV_NOPTS_VALUE,
-                                       0);
-    }
-
-    AVFrame2mfxFrameSurface(surface_work);
 }
 
 void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
@@ -369,42 +322,3 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
                w / 2);
     }
 }
-
-mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par) {
-    // call after decoding at least one frame
-    par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;
-    par->mfx.FrameInfo.Height = (uint16_t)m_avDecContext->height;
-
-    if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
-    else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
-    else
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
-
-    if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
-        return MFX_ERR_NOT_INITIALIZED;
-    }
-
-    return MFX_ERR_NONE;
-}
-
-#else // ENABLE_DECODE
-
-mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
-    return MFX_ERR_UNSUPPORTED;
-}
-
-void CpuWorkstream::FreeDecode() {}
-
-mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
-                                     mfxFrameSurface1 *surface_work,
-                                     mfxFrameSurface1 **surface_out) {
-    return MFX_ERR_UNSUPPORTED;
-}
-
-mfxStatus CpuWorkstream::DecodeGetVideoParams(mfxVideoParam *par) {
-    return MFX_ERR_UNSUPPORTED;
-}
-
-#endif // ENABLE_DECODE

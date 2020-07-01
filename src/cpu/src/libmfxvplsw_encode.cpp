@@ -83,8 +83,6 @@ mfxStatus MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par) {
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     sts = ws->InitEncode(par);
-    if (sts == MFX_ERR_NONE)
-        ws->m_encInit = true;
 
     return sts;
 }
@@ -96,7 +94,7 @@ mfxStatus MFXVideoENCODE_Close(mfxSession session) {
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->m_encInit == false)
+    if (ws->getEncInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
     ws->FreeEncode();
@@ -120,7 +118,7 @@ mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->m_encInit == false)
+    if (ws->getEncInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
     sts = ws->EncodeFrame(surface, bs);

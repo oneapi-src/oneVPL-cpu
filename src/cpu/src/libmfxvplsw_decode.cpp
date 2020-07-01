@@ -122,9 +122,9 @@ mfxStatus MFXVideoDECODE_Init(mfxSession session, mfxVideoParam *par) {
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    sts = ws->InitDecode(par->mfx.CodecId);
-    if (sts == MFX_ERR_NONE)
-        ws->m_decInit = true;
+    if (!ws->getDecInit()) {
+        sts = ws->InitDecode(par->mfx.CodecId);
+    }
 
     return sts;
 }
@@ -140,7 +140,7 @@ mfxStatus MFXVideoDECODE_Close(mfxSession session) {
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->m_decInit == false)
+    if (ws->getDecInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
     ws->FreeDecode();
@@ -168,10 +168,10 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->m_decInit == false)
+    if (ws->getDecInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
-    sts = ws->DecodeFrame(bs, surface_work, surface_out, true);
+    sts = ws->DecodeFrame(bs, surface_work, surface_out);
 
     // consumes whole frame every time
     if (bs) {
@@ -229,14 +229,12 @@ mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->m_decInit == false)
+    if (ws->getDecInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
     ws->FreeDecode();
 
     sts = ws->InitDecode(par->mfx.CodecId);
-    if (sts == MFX_ERR_NONE)
-        ws->m_decInit = true;
 
     return sts;
 }
