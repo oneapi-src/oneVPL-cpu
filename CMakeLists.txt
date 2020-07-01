@@ -35,6 +35,7 @@ add_subdirectory(src)
 add_subdirectory(env)
 add_subdirectory(doc)
 add_subdirectory(examples)
+add_subdirectory(test/tools/legacy)
 
 install(
   FILES third-party-programs.txt LICENSE
