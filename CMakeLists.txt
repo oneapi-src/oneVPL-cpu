@@ -35,6 +35,7 @@ add_subdirectory(src)
 add_subdirectory(env)
 add_subdirectory(doc)
 add_subdirectory(test/tools/cli)
+add_subdirectory(examples/hello-decode)
 add_subdirectory(test/tools/legacy)
 
 install(
