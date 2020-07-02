@@ -126,7 +126,7 @@ def parse_auto_query(terms):
             else:
                 args = urllib.parse.unquote(term)
     if size is None:
-        size = ContentSize(1280, 720, 60 / 1.001, False)
+        size = ContentSize(128, 96, 60 / 1.001, False)
     if bitdepth is None:
         bitdepth = 8
     return AutoParams(args, kwargs, size, bitdepth)

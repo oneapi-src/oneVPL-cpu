@@ -132,11 +132,11 @@ export LD_LIBRARY_PATH=`pwd`/_build
 
 Run the hello_decode sample:
 ```
-_build/hello_decode h265 examples/content/cars_1280x720.h265 cars_1280x720.i420
+_build/hello_decode h265 test/content/cars_128x96.h265 cars_128x96.i420
 ```
 
 
 Run the hello_encode sample:
 ```
-./_build/hello_encode h265 cars_1280x720.i420 test.h265 1280 720
+./_build/hello_encode h265 cars_128x96.i420 test.h265 128 96
 ```

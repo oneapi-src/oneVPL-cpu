@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
         printf("usage: hello_decode_onevpl in.h265\n\n");
         printf("decodes an h265/hevc file to out.raw\n");
         printf("to view:\n");
-        printf(" ffplay -s 1280x720 -pix_fmt yuv420p -f rawvideo out.raw\n");
+        printf(" ffplay -s 128x96 -pix_fmt yuv420p -f rawvideo out.raw\n");
         exit(1);
     }
 
