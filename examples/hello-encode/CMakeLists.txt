@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(hello-decode)
+project(hello-encode)
 
-set(TARGET hello-decode)
-set(SOURCES src/hello-decode.cpp)
+set(TARGET hello-encode)
+set(SOURCES src/hello-encode.cpp)
 set(VPL_NAME mfx)
-set(RUNARGS ${CMAKE_CURRENT_SOURCE_DIR}/cars_128x96.h265)
+set(RUNARGS ${CMAKE_CURRENT_SOURCE_DIR}/content/cars_128x96.i420 128 96)
 
 # Set default build type to RelWithDebInfo if not specified
 if(NOT CMAKE_BUILD_TYPE)
