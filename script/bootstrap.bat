@@ -69,6 +69,9 @@ set PATH=%MINGWPATH%
 
 :: SVT-HEVC build and install
 cd %build_dir%\SVT-HEVC
+:::: to turn off log on screen, modify header file
+sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' ^
+Source\Lib\Codec\EbDefinitions.h
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
@@ -76,10 +79,12 @@ if ERRORLEVEL 1 exit /b 1
 cmake --build . --target install
 
 :: SVT-AV1 build and install
+:: -DSVT_LOG_QUIET=1 is for turning off logs
 cd %build_dir%\SVT-AV1
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
--DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off
+-DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off ^
+-DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
 if ERRORLEVEL 1 exit /b 1
 cmake --build . --target install
 

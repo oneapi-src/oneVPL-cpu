@@ -64,7 +64,7 @@ From a shell as root:
 
 ```
 apt update
-apt install -y autoconf automake build-essential git pkg-config python3 python3-pip gdb cmake nasm yasm ninja-build meson
+apt install -y autoconf automake build-essential git pkg-config python3 python3-pip gdb cmake nasm yasm ninja-build meson sed
 
 ```
 

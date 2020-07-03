@@ -39,6 +39,8 @@ cd ${build_dir}
 git clone https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 git config advice.detachedHead false
 git checkout v1.4.3
+sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' \
+      ./Source/Lib/Codec/EbDefinitions.h
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
@@ -53,7 +55,7 @@ git config advice.detachedHead false
 git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off
+      -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
 cmake --build . --target install
 
 ## build libdav1d
