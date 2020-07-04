@@ -4,14 +4,14 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "common/mfx_dispatcher_onevpl.h"
+#include "vpl/mfx_dispatcher_vpl.h"
 
 // exported functions for API >= 2.0
 
+// create unique loader context
 mfxLoader MFXLoad() {
     LoaderCtxOneVPL* loaderCtx;
 
-    // create unique loader context
     try {
         std::unique_ptr<LoaderCtxOneVPL> pLoaderCtx;
         pLoaderCtx.reset(new LoaderCtxOneVPL{});
@@ -38,8 +38,8 @@ mfxLoader MFXLoad() {
     return (mfxLoader)loaderCtx;
 }
 
+// unload libraries, destroy all created mfxConfig objects, free other memory
 void MFXUnload(mfxLoader loader) {
-    // destroy all created mfxConfig objects, other memory
     if (loader) {
         LoaderCtxOneVPL* loaderCtx = (LoaderCtxOneVPL*)loader;
 
@@ -54,7 +54,7 @@ void MFXUnload(mfxLoader loader) {
 }
 
 // create config context
-// each loader may have more than one config
+// each loader may have more than one config context
 mfxConfig MFXCreateConfig(mfxLoader loader) {
     if (!loader)
         return nullptr;
@@ -74,6 +74,8 @@ mfxConfig MFXCreateConfig(mfxLoader loader) {
     return (mfxConfig)(configCtx);
 }
 
+// set a config proprerty to use in enumerating implementations
+// each config context may have only one property
 mfxStatus MFXSetConfigFilterProperty(mfxConfig config,
                                      const mfxU8* name,
                                      mfxVariant value) {
@@ -87,6 +89,8 @@ mfxStatus MFXSetConfigFilterProperty(mfxConfig config,
     return sts;
 }
 
+// iterate over available implementations
+// capabilities are returned in idesc
 mfxStatus MFXEnumImplementations(mfxLoader loader,
                                  mfxU32 i,
                                  mfxImplCapsDeliveryFormat format,
@@ -101,6 +105,7 @@ mfxStatus MFXEnumImplementations(mfxLoader loader,
     return sts;
 }
 
+// create a new session with implementation i
 mfxStatus MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* session) {
     if (!loader || !session)
         return MFX_ERR_NULL_PTR;
@@ -112,6 +117,7 @@ mfxStatus MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* session) {
     return sts;
 }
 
+// release memory associated with implementation description hdl
 mfxStatus MFXDispReleaseImplDescription(mfxLoader loader, mfxHDL hdl) {
     if (!loader)
         return MFX_ERR_NULL_PTR;

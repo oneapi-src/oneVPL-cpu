@@ -33,8 +33,8 @@ if(UNIX)
   message(STATUS "MFX_MODULES_DIR=${MFX_MODULES_DIR}")
 endif()
 
-list(APPEND SOURCES common/mfx_dispatcher_onevpl.cpp
-     common/mfx_dispatcher_util.cpp)
+list(APPEND SOURCES vpl/mfx_dispatcher_vpl.cpp
+     vpl/mfx_dispatcher_vpl_loader.cpp vpl/mfx_dispatcher_vpl_config.cpp)
 
 add_library(${TARGET} SHARED "")
 

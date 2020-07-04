@@ -37,6 +37,98 @@ bool CheckImplCaps(mfxImplDescription *implDesc, mfxU32 codecID) {
     return false;
 }
 
+#define TEST_CFG(type, dType, val)                                           \
+    cfg                  = MFXCreateConfig(loader);                          \
+    ImplValue.Type       = (type);                                           \
+    ImplValue.Data.dType = (val);                                            \
+    sts                  = MFXSetConfigFilterProperty(cfg, name, ImplValue); \
+    printf("Test config: sts = %d, name = %s\n", sts, name);
+
+static void TestCfgPropsMain(mfxLoader loader) {
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+    const mfxU8 *name;
+
+    name = (const mfxU8 *)"mfxImplDescription.Impl";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_IMPL_SOFTWARE);
+
+    name = (const mfxU8 *)"mfxImplDescription.accelerationMode";
+    TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 3);
+
+    name = (const mfxU8 *)"mfxImplDescription.VendorID";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, 0xabcd);
+
+    name = (const mfxU8 *)"mfxImplDescription.VendorImplID";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, 0x1234);
+}
+
+static void TestCfgPropsDec(mfxLoader loader) {
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+    const mfxU8 *name;
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_CODEC_HEVC);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.MaxcodecLevel";
+    TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 54);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.Profile";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, 150);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.MemHandleType";
+    TEST_CFG(MFX_VARIANT_TYPE_I32, I32, MFX_RESOURCE_SYSTEM_SURFACE);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.ColorFormats";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
+}
+
+static void TestCfgPropsEnc(mfxLoader loader) {
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+    const mfxU8 *name;
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_CODEC_HEVC);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.MaxcodecLevel";
+    TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 54);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.BiDirectionalPrediction";
+    TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 1);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.Profile";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, 150);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.MemHandleType";
+    TEST_CFG(MFX_VARIANT_TYPE_I32, I32, MFX_RESOURCE_SYSTEM_SURFACE);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.ColorFormats";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
+}
+
+static void TestCfgPropsVPP(mfxLoader loader) {
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+    const mfxU8 *name;
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.FilterFourCC";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_CODEC_HEVC);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.MaxDelayInFrames";
+    TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 3);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.MemHandleType";
+    TEST_CFG(MFX_VARIANT_TYPE_I32, I32, MFX_RESOURCE_SYSTEM_SURFACE);
+
+    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormats";
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
+}
+
 int main(int argc, char *argv[]) {
     mfxStatus sts      = MFX_ERR_NONE;
     mfxSession session = nullptr;
@@ -68,6 +160,12 @@ int main(int argc, char *argv[]) {
 
     mfxVariant ImplValue;
     mfxConfig cfg;
+
+    // DBG
+    TestCfgPropsMain(loader);
+    TestCfgPropsDec(loader);
+    TestCfgPropsEnc(loader);
+    TestCfgPropsVPP(loader);
 
     cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;

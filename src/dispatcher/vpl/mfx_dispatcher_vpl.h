@@ -4,8 +4,8 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#ifndef SRC_DISPATCHER_COMMON_MFX_DISPATCHER_ONEVPL_H_
-#define SRC_DISPATCHER_COMMON_MFX_DISPATCHER_ONEVPL_H_
+#ifndef SRC_DISPATCHER_VPL_MFX_DISPATCHER_VPL_H_
+#define SRC_DISPATCHER_VPL_MFX_DISPATCHER_VPL_H_
 
 #include <list>
 #include <memory>
@@ -73,18 +73,24 @@ public:
     ConfigCtxOneVPL();
     ~ConfigCtxOneVPL();
 
-    mfxStatus SetFilterProperty(const mfxU8* name, mfxVariant value) {
-        m_propName = std::string((char*)name);
-
-        m_propValue.Type = value.Type;
-        m_propValue.Data = value.Data;
-
-        return MFX_ERR_NONE;
-    }
+    mfxStatus SetFilterProperty(const mfxU8* name, mfxVariant value);
 
 private:
+    __inline std::string GetNextProp(std::list<std::string>* s) {
+        std::string t = s->front();
+        s->pop_front();
+        return t;
+    }
+
+    mfxStatus ValidateAndSetProp(mfxI32 idx, mfxVariant value);
+    mfxStatus SetFilterPropertyDec(mfxVariant value);
+    mfxStatus SetFilterPropertyEnc(mfxVariant value);
+    mfxStatus SetFilterPropertyVPP(mfxVariant value);
+
     std::string m_propName;
     mfxVariant m_propValue;
+    mfxI32 m_propIdx;
+    std::list<std::string> m_propParsedString;
 };
 
 struct LibInfo {
@@ -144,4 +150,4 @@ private:
     STRING_TYPE m_vplPackageDir;
 };
 
-#endif // SRC_DISPATCHER_COMMON_MFX_DISPATCHER_ONEVPL_H_
+#endif // SRC_DISPATCHER_VPL_MFX_DISPATCHER_VPL_H_

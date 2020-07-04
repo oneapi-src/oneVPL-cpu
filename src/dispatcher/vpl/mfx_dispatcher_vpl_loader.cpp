@@ -4,7 +4,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "common/mfx_dispatcher_onevpl.h"
+#include "vpl/mfx_dispatcher_vpl.h"
 
 // new functions for API >= 2.0
 static const OneVPLFunctionDesc FunctionDesc2[NumOneVPLFunctions] = {
@@ -14,21 +14,6 @@ static const OneVPLFunctionDesc FunctionDesc2[NumOneVPLFunctions] = {
     { "MFXMemory_GetSurfaceForEncode", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForDecode", { { 0, 2 } } },
 };
-
-// implementation of config context (mfxConfig)
-// each loader instance can have one or more configs
-//   associated with it - used for filtering implementations
-//   based on what they support (codec types, etc.)
-ConfigCtxOneVPL::ConfigCtxOneVPL() : m_propName(), m_propValue() {
-    m_propValue.Version = { 0, 1 };
-    m_propValue.Type    = MFX_VARIANT_TYPE_UNSET;
-
-    return;
-}
-
-ConfigCtxOneVPL::~ConfigCtxOneVPL() {
-    return;
-}
 
 // implementation of loader context (mfxLoader)
 // each loader instance will build a list of
