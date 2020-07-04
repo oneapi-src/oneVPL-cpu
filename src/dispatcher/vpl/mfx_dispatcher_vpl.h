@@ -44,18 +44,18 @@ mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, CHAR_TYPE* dllName);
 
 typedef void(MFX_CDECL* oneVPLFunctionPtr)(void);
 
-enum OneVPLFunctionIdx {
+enum VPLFunctionIdx {
     IdxMFXQueryImplDescription = 0,
     IdxMFXReleaseImplDescription,
     IdxMFXMemory_GetSurfaceForVPP,
     IdxMFXMemory_GetSurfaceForEncode,
     IdxMFXMemory_GetSurfaceForDecode,
 
-    NumOneVPLFunctions
+    NumVPLFunctions
 };
 
 // both Windows and Linux use char* for function names
-struct OneVPLFunctionDesc {
+struct VPLFunctionDesc {
     const char* pName;
     mfxVersion apiVersion;
 };
@@ -68,10 +68,10 @@ enum LibPriority {
 };
 
 // config class implementation
-class ConfigCtxOneVPL {
+class ConfigCtxVPL {
 public:
-    ConfigCtxOneVPL();
-    ~ConfigCtxOneVPL();
+    ConfigCtxVPL();
+    ~ConfigCtxVPL();
 
     mfxStatus SetFilterProperty(const mfxU8* name, mfxVariant value);
 
@@ -103,7 +103,7 @@ struct LibInfo {
     // if valid oneVPL library, store file handle
     //   and table of exported functions
     void* hModuleVPL;
-    oneVPLFunctionPtr vplFuncTable[NumOneVPLFunctions]; // NOLINT
+    oneVPLFunctionPtr vplFuncTable[NumVPLFunctions]; // NOLINT
     mfxHDL implDesc;
 
     // used for session initialization with this implementation
@@ -114,10 +114,10 @@ struct LibInfo {
 };
 
 // loader class implementation
-class LoaderCtxOneVPL {
+class LoaderCtxVPL {
 public:
-    LoaderCtxOneVPL();
-    ~LoaderCtxOneVPL();
+    LoaderCtxVPL();
+    ~LoaderCtxVPL();
 
     // manage library implementations
     mfxStatus BuildListOfCandidateLibs();
@@ -134,7 +134,7 @@ public:
     mfxStatus CreateSession(mfxU32 idx, mfxSession* session);
 
     // manage configuration filters
-    ConfigCtxOneVPL* AddConfigFilter();
+    ConfigCtxVPL* AddConfigFilter();
     mfxStatus FreeConfigFilters();
 
 private:
@@ -145,7 +145,7 @@ private:
     LibInfo* GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx);
 
     std::list<LibInfo*> m_libInfoList;
-    std::list<ConfigCtxOneVPL*> m_configCtxList;
+    std::list<ConfigCtxVPL*> m_configCtxList;
 
     STRING_TYPE m_vplPackageDir;
 };

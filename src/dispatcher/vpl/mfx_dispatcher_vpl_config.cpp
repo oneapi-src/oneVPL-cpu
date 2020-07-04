@@ -10,7 +10,7 @@
 // each loader instance can have one or more configs
 //   associated with it - used for filtering implementations
 //   based on what they support (codec types, etc.)
-ConfigCtxOneVPL::ConfigCtxOneVPL()
+ConfigCtxVPL::ConfigCtxVPL()
         : m_propName(),
           m_propValue(),
           m_propIdx(),
@@ -21,7 +21,7 @@ ConfigCtxOneVPL::ConfigCtxOneVPL()
     return;
 }
 
-ConfigCtxOneVPL::~ConfigCtxOneVPL() {
+ConfigCtxVPL::~ConfigCtxVPL() {
     return;
 }
 
@@ -89,7 +89,7 @@ static const PropVariant PropIdxTab[] = {
     { "ePropVPP_OutFormats", MFX_VARIANT_TYPE_U32 },
 };
 
-mfxStatus ConfigCtxOneVPL::ValidateAndSetProp(mfxI32 idx, mfxVariant value) {
+mfxStatus ConfigCtxVPL::ValidateAndSetProp(mfxI32 idx, mfxVariant value) {
     if (idx < 0 || idx >= eProp_TotalProps)
         return MFX_ERR_NOT_FOUND;
 
@@ -104,7 +104,7 @@ mfxStatus ConfigCtxOneVPL::ValidateAndSetProp(mfxI32 idx, mfxVariant value) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus ConfigCtxOneVPL::SetFilterPropertyDec(mfxVariant value) {
+mfxStatus ConfigCtxVPL::SetFilterPropertyDec(mfxVariant value) {
     std::string nextProp;
 
     nextProp = GetNextProp(&m_propParsedString);
@@ -147,7 +147,7 @@ mfxStatus ConfigCtxOneVPL::SetFilterPropertyDec(mfxVariant value) {
     return MFX_ERR_NOT_FOUND;
 }
 
-mfxStatus ConfigCtxOneVPL::SetFilterPropertyEnc(mfxVariant value) {
+mfxStatus ConfigCtxVPL::SetFilterPropertyEnc(mfxVariant value) {
     std::string nextProp;
 
     nextProp = GetNextProp(&m_propParsedString);
@@ -193,7 +193,7 @@ mfxStatus ConfigCtxOneVPL::SetFilterPropertyEnc(mfxVariant value) {
     return MFX_ERR_NOT_FOUND;
 }
 
-mfxStatus ConfigCtxOneVPL::SetFilterPropertyVPP(mfxVariant value) {
+mfxStatus ConfigCtxVPL::SetFilterPropertyVPP(mfxVariant value) {
     std::string nextProp;
 
     nextProp = GetNextProp(&m_propParsedString);
@@ -236,8 +236,7 @@ mfxStatus ConfigCtxOneVPL::SetFilterPropertyVPP(mfxVariant value) {
 // return codes (from spec):
 //   MFX_ERR_NOT_FOUND - name contains unknown parameter name
 //   MFX_ERR_UNSUPPORTED - value data type != parameter with provided name
-mfxStatus ConfigCtxOneVPL::SetFilterProperty(const mfxU8* name,
-                                             mfxVariant value) {
+mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8* name, mfxVariant value) {
     m_propName = std::string((char*)name);
 
     // definitions will be added to API

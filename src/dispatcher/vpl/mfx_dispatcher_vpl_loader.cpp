@@ -7,7 +7,7 @@
 #include "vpl/mfx_dispatcher_vpl.h"
 
 // new functions for API >= 2.0
-static const OneVPLFunctionDesc FunctionDesc2[NumOneVPLFunctions] = {
+static const VPLFunctionDesc FunctionDesc2[NumVPLFunctions] = {
     { "MFXQueryImplDescription", { { 0, 2 } } },
     { "MFXReleaseImplDescription", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForVPP", { { 0, 2 } } },
@@ -19,20 +19,20 @@ static const OneVPLFunctionDesc FunctionDesc2[NumOneVPLFunctions] = {
 // each loader instance will build a list of
 //   valid oneVPL runtimes and allow application
 //   to create sessions with them
-LoaderCtxOneVPL::LoaderCtxOneVPL()
+LoaderCtxVPL::LoaderCtxVPL()
         : m_libInfoList(),
           m_configCtxList(),
           m_vplPackageDir() {
     return;
 }
 
-LoaderCtxOneVPL::~LoaderCtxOneVPL() {
+LoaderCtxVPL::~LoaderCtxVPL() {
     return;
 }
 
-mfxStatus LoaderCtxOneVPL::SearchDirForLibs(STRING_TYPE searchDir,
-                                            std::list<LibInfo*>& libInfoList,
-                                            mfxU32 priority) {
+mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
+                                         std::list<LibInfo*>& libInfoList,
+                                         mfxU32 priority) {
     // okay to call with empty searchDir
     if (searchDir.empty())
         return MFX_ERR_NONE;
@@ -125,7 +125,7 @@ mfxStatus LoaderCtxOneVPL::SearchDirForLibs(STRING_TYPE searchDir,
 //   in the spec
 // for now, we only look in the current working directory
 // TODO(JR) - need to add categories 1 and 3
-mfxStatus LoaderCtxOneVPL::BuildListOfCandidateLibs() {
+mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     mfxStatus sts = MFX_ERR_NONE;
 
     STRING_TYPE emptyPath; // default construction = empty
@@ -149,7 +149,7 @@ mfxStatus LoaderCtxOneVPL::BuildListOfCandidateLibs() {
 }
 
 // return number of valid libraries found
-mfxU32 LoaderCtxOneVPL::CheckValidLibraries() {
+mfxU32 LoaderCtxVPL::CheckValidLibraries() {
     // unique index assigned to each valid library
     mfxU32 libIdx = 0;
 
@@ -165,7 +165,7 @@ mfxU32 LoaderCtxOneVPL::CheckValidLibraries() {
 
         // load video functions: pointers to exposed functions
         if (libInfo->hModuleVPL) {
-            for (i = 0; i < NumOneVPLFunctions; i += 1) {
+            for (i = 0; i < NumVPLFunctions; i += 1) {
                 oneVPLFunctionPtr pProc =
                     (oneVPLFunctionPtr)MFX::mfx_dll_get_addr(
                         libInfo->hModuleVPL,
@@ -185,7 +185,7 @@ mfxU32 LoaderCtxOneVPL::CheckValidLibraries() {
             dlopen(libInfo->libNameFull.c_str(), RTLD_LOCAL | RTLD_NOW);
 
         if (libInfo->hModuleVPL) {
-            for (i = 0; i < NumOneVPLFunctions; i += 1) {
+            for (i = 0; i < NumVPLFunctions; i += 1) {
                 oneVPLFunctionPtr pProc =
                     (oneVPLFunctionPtr)dlsym(libInfo->hModuleVPL,
                                              FunctionDesc2[i].pName);
@@ -200,7 +200,7 @@ mfxU32 LoaderCtxOneVPL::CheckValidLibraries() {
             }
         }
 #endif
-        if (i == NumOneVPLFunctions) {
+        if (i == NumVPLFunctions) {
             libInfo->libIdx = libIdx++;
             it++;
         }
@@ -217,8 +217,7 @@ mfxU32 LoaderCtxOneVPL::CheckValidLibraries() {
 }
 
 // helper function to get library with given index
-LibInfo* LoaderCtxOneVPL::GetLibInfo(std::list<LibInfo*> libInfoList,
-                                     mfxU32 idx) {
+LibInfo* LoaderCtxVPL::GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx) {
     std::list<LibInfo*>::iterator it = m_libInfoList.begin();
     while (it != m_libInfoList.end()) {
         LibInfo* libInfo = (*it);
@@ -234,7 +233,7 @@ LibInfo* LoaderCtxOneVPL::GetLibInfo(std::list<LibInfo*> libInfoList,
     return nullptr; // not found
 }
 
-mfxStatus LoaderCtxOneVPL::UnloadAllLibraries() {
+mfxStatus LoaderCtxVPL::UnloadAllLibraries() {
     LibInfo* libInfo;
     mfxU32 i = 0;
 
@@ -260,9 +259,9 @@ mfxStatus LoaderCtxOneVPL::UnloadAllLibraries() {
 }
 
 // query implementation i
-mfxStatus LoaderCtxOneVPL::QueryImpl(mfxU32 idx,
-                                     mfxImplCapsDeliveryFormat format,
-                                     mfxHDL* idesc) {
+mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx,
+                                  mfxImplCapsDeliveryFormat format,
+                                  mfxHDL* idesc) {
     mfxStatus sts = MFX_ERR_NONE;
 
     if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
@@ -295,7 +294,7 @@ mfxStatus LoaderCtxOneVPL::QueryImpl(mfxU32 idx,
     return MFX_ERR_NONE;
 }
 
-mfxStatus LoaderCtxOneVPL::ReleaseImpl(mfxHDL idesc) {
+mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
     mfxStatus sts = MFX_ERR_NONE;
 
     if (idesc == nullptr)
@@ -334,7 +333,7 @@ mfxStatus LoaderCtxOneVPL::ReleaseImpl(mfxHDL idesc) {
     return sts;
 }
 
-mfxStatus LoaderCtxOneVPL::CreateSession(mfxU32 idx, mfxSession* session) {
+mfxStatus LoaderCtxVPL::CreateSession(mfxU32 idx, mfxSession* session) {
     mfxStatus sts = MFX_ERR_NONE;
 
     // find library with given index
@@ -351,29 +350,29 @@ mfxStatus LoaderCtxOneVPL::CreateSession(mfxU32 idx, mfxSession* session) {
     return sts;
 }
 
-ConfigCtxOneVPL* LoaderCtxOneVPL::AddConfigFilter() {
+ConfigCtxVPL* LoaderCtxVPL::AddConfigFilter() {
     // create new config filter context and add
     //   to list associated with this loader
-    std::unique_ptr<ConfigCtxOneVPL> configCtx;
+    std::unique_ptr<ConfigCtxVPL> configCtx;
     try {
-        configCtx.reset(new ConfigCtxOneVPL{});
+        configCtx.reset(new ConfigCtxVPL{});
     }
     catch (...) {
         return nullptr;
     }
 
-    ConfigCtxOneVPL* config = (ConfigCtxOneVPL*)(configCtx.release());
+    ConfigCtxVPL* config = (ConfigCtxVPL*)(configCtx.release());
 
     m_configCtxList.push_back(config);
 
     return config;
 }
 
-mfxStatus LoaderCtxOneVPL::FreeConfigFilters() {
-    std::list<ConfigCtxOneVPL*>::iterator it = m_configCtxList.begin();
+mfxStatus LoaderCtxVPL::FreeConfigFilters() {
+    std::list<ConfigCtxVPL*>::iterator it = m_configCtxList.begin();
 
     while (it != m_configCtxList.end()) {
-        ConfigCtxOneVPL* config = (*it);
+        ConfigCtxVPL* config = (*it);
         if (config)
             delete config;
         it++;

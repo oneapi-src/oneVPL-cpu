@@ -10,12 +10,12 @@
 
 // create unique loader context
 mfxLoader MFXLoad() {
-    LoaderCtxOneVPL* loaderCtx;
+    LoaderCtxVPL* loaderCtx;
 
     try {
-        std::unique_ptr<LoaderCtxOneVPL> pLoaderCtx;
-        pLoaderCtx.reset(new LoaderCtxOneVPL{});
-        loaderCtx = (LoaderCtxOneVPL*)pLoaderCtx.release();
+        std::unique_ptr<LoaderCtxVPL> pLoaderCtx;
+        pLoaderCtx.reset(new LoaderCtxVPL{});
+        loaderCtx = (LoaderCtxVPL*)pLoaderCtx.release();
     }
     catch (...) {
         return nullptr;
@@ -41,7 +41,7 @@ mfxLoader MFXLoad() {
 // unload libraries, destroy all created mfxConfig objects, free other memory
 void MFXUnload(mfxLoader loader) {
     if (loader) {
-        LoaderCtxOneVPL* loaderCtx = (LoaderCtxOneVPL*)loader;
+        LoaderCtxVPL* loaderCtx = (LoaderCtxVPL*)loader;
 
         loaderCtx->UnloadAllLibraries();
 
@@ -59,12 +59,12 @@ mfxConfig MFXCreateConfig(mfxLoader loader) {
     if (!loader)
         return nullptr;
 
-    LoaderCtxOneVPL* loaderCtx = (LoaderCtxOneVPL*)loader;
-    ConfigCtxOneVPL* configCtx;
+    LoaderCtxVPL* loaderCtx = (LoaderCtxVPL*)loader;
+    ConfigCtxVPL* configCtx;
 
     try {
-        std::unique_ptr<ConfigCtxOneVPL> pConfigCtx;
-        pConfigCtx.reset(new ConfigCtxOneVPL{});
+        std::unique_ptr<ConfigCtxVPL> pConfigCtx;
+        pConfigCtx.reset(new ConfigCtxVPL{});
         configCtx = loaderCtx->AddConfigFilter();
     }
     catch (...) {
@@ -82,7 +82,7 @@ mfxStatus MFXSetConfigFilterProperty(mfxConfig config,
     if (!config)
         return MFX_ERR_NULL_PTR;
 
-    ConfigCtxOneVPL* configCtx = (ConfigCtxOneVPL*)config;
+    ConfigCtxVPL* configCtx = (ConfigCtxVPL*)config;
 
     mfxStatus sts = configCtx->SetFilterProperty(name, value);
 
@@ -98,7 +98,7 @@ mfxStatus MFXEnumImplementations(mfxLoader loader,
     if (!loader || !idesc)
         return MFX_ERR_NULL_PTR;
 
-    LoaderCtxOneVPL* loaderCtx = (LoaderCtxOneVPL*)loader;
+    LoaderCtxVPL* loaderCtx = (LoaderCtxVPL*)loader;
 
     mfxStatus sts = loaderCtx->QueryImpl(i, format, idesc);
 
@@ -110,7 +110,7 @@ mfxStatus MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* session) {
     if (!loader || !session)
         return MFX_ERR_NULL_PTR;
 
-    LoaderCtxOneVPL* loaderCtx = (LoaderCtxOneVPL*)loader;
+    LoaderCtxVPL* loaderCtx = (LoaderCtxVPL*)loader;
 
     mfxStatus sts = loaderCtx->CreateSession(i, session);
 
@@ -122,7 +122,7 @@ mfxStatus MFXDispReleaseImplDescription(mfxLoader loader, mfxHDL hdl) {
     if (!loader)
         return MFX_ERR_NULL_PTR;
 
-    LoaderCtxOneVPL* loaderCtx = (LoaderCtxOneVPL*)loader;
+    LoaderCtxVPL* loaderCtx = (LoaderCtxVPL*)loader;
 
     mfxStatus sts = loaderCtx->ReleaseImpl(hdl);
 
