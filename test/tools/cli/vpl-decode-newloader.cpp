@@ -69,19 +69,28 @@ static void TestCfgPropsDec(mfxLoader loader) {
     mfxVariant ImplValue;
     const mfxU8 *name;
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID";
+    name = (const mfxU8
+                *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_CODEC_HEVC);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.MaxcodecLevel";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxDecoderDescription.decoder.MaxcodecLevel";
     TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 54);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.Profile";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.Profile";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, 150);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.MemHandleType";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.MemHandleType";
     TEST_CFG(MFX_VARIANT_TYPE_I32, I32, MFX_RESOURCE_SYSTEM_SURFACE);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.ColorFormats";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.ColorFormats";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
 }
 
@@ -91,22 +100,33 @@ static void TestCfgPropsEnc(mfxLoader loader) {
     mfxVariant ImplValue;
     const mfxU8 *name;
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID";
+    name = (const mfxU8
+                *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_CODEC_HEVC);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.MaxcodecLevel";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxEncoderDescription.encoder.MaxcodecLevel";
     TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 54);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.BiDirectionalPrediction";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxEncoderDescription.encoder.BiDirectionalPrediction";
     TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 1);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.Profile";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.Profile";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, 150);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.MemHandleType";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.MemHandleType";
     TEST_CFG(MFX_VARIANT_TYPE_I32, I32, MFX_RESOURCE_SYSTEM_SURFACE);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.ColorFormats";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.ColorFormats";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
 }
 
@@ -116,16 +136,23 @@ static void TestCfgPropsVPP(mfxLoader loader) {
     mfxVariant ImplValue;
     const mfxU8 *name;
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.FilterFourCC";
+    name = (const mfxU8
+                *)"mfxImplDescription.mfxVPPDescription.filter.FilterFourCC";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_CODEC_HEVC);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.MaxDelayInFrames";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxVPPDescription.filter.MaxDelayInFrames";
     TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 3);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.MemHandleType";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.MemHandleType";
     TEST_CFG(MFX_VARIANT_TYPE_I32, I32, MFX_RESOURCE_SYSTEM_SURFACE);
 
-    name = (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormats";
+    name =
+        (const mfxU8
+             *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormats";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
 }
 
@@ -162,10 +189,10 @@ int main(int argc, char *argv[]) {
     mfxConfig cfg;
 
     // DBG
-    TestCfgPropsMain(loader);
-    TestCfgPropsDec(loader);
-    TestCfgPropsEnc(loader);
-    TestCfgPropsVPP(loader);
+    //TestCfgPropsMain(loader);
+    //TestCfgPropsDec(loader);
+    //TestCfgPropsEnc(loader);
+    //TestCfgPropsVPP(loader);
 
     cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;

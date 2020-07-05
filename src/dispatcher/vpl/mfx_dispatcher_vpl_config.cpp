@@ -26,7 +26,7 @@ ConfigCtxVPL::~ConfigCtxVPL() {
 }
 
 struct PropVariant {
-    const char* Name;
+    const char *Name;
     mfxVariantType Type;
 };
 
@@ -236,8 +236,8 @@ mfxStatus ConfigCtxVPL::SetFilterPropertyVPP(mfxVariant value) {
 // return codes (from spec):
 //   MFX_ERR_NOT_FOUND - name contains unknown parameter name
 //   MFX_ERR_UNSUPPORTED - value data type != parameter with provided name
-mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8* name, mfxVariant value) {
-    m_propName = std::string((char*)name);
+mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8 *name, mfxVariant value) {
+    m_propName = std::string((char *)name);
 
     // definitions will be added to API
     m_propValue.Version.Major = 1;
@@ -252,7 +252,7 @@ mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8* name, mfxVariant value) {
 
     // parse property string into individual properties,
     //   separated by '.'
-    std::stringstream prop((char*)name);
+    std::stringstream prop((char *)name);
     std::string s;
     while (getline(prop, s, '.')) {
         m_propParsedString.push_back(s);
@@ -295,4 +295,142 @@ mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8* name, mfxVariant value) {
     }
 
     return MFX_ERR_NOT_FOUND;
+}
+
+// for now only test the first child structure if there is > 1
+// TODO(xx) verify configuration test logic, test correct combinations
+CfgPropState ConfigCtxVPL::CheckProp(mfxI32 propIdx,
+                                     mfxVariant value,
+                                     mfxImplDescription *libImplDesc) {
+    mfxDecoderDescription *Dec = &(libImplDesc->Dec);
+    mfxEncoderDescription *Enc = &(libImplDesc->Enc);
+    mfxVPPDescription *VPP     = &(libImplDesc->VPP);
+
+    // first check if requested operation is supported at all
+    if (propIdx >= ePropDec_CodecID && propIdx <= ePropDec_ColorFormats &&
+        !Dec->NumCodecs)
+        return CFG_PROP_STATE_UNSUPPORTED;
+
+    if (propIdx >= ePropEnc_CodecID && propIdx <= ePropEnc_ColorFormats &&
+        !Enc->NumCodecs)
+        return CFG_PROP_STATE_UNSUPPORTED;
+
+    if (propIdx >= ePropVPP_FilterFourCC && propIdx <= ePropVPP_OutFormats &&
+        !VPP->NumFilters)
+        return CFG_PROP_STATE_UNSUPPORTED;
+
+    bool propMatch = false;
+
+    switch (propIdx) {
+        // top-level properties
+        case ePropMain_Impl:
+            propMatch = (libImplDesc->Impl == value.Data.U32);
+            break;
+        case ePropMain_accelerationMode:
+            propMatch = (libImplDesc->accelerationMode == value.Data.U16);
+            break;
+        case ePropMain_VendorID:
+            propMatch = (libImplDesc->VendorID == value.Data.U32);
+            break;
+        case ePropMain_VendorImplID:
+            propMatch = (libImplDesc->VendorImplID == value.Data.U32);
+            break;
+
+        // decoder properties
+        case ePropDec_CodecID:
+            propMatch = (Dec->Codecs[0].CodecID == value.Data.U32);
+            break;
+        case ePropDec_MaxcodecLevel:
+            propMatch = (Dec->Codecs[0].MaxcodecLevel == value.Data.U16);
+            break;
+        case ePropDec_Profile:
+            propMatch = (Dec->Codecs[0].Profiles[0].Profile == value.Data.U32);
+            break;
+        case ePropDec_MemHandleType:
+            propMatch = (Dec->Codecs[0].Profiles[0].MemDesc[0].MemHandleType ==
+                         value.Data.I32);
+            break;
+        case ePropDec_ColorFormats:
+            propMatch =
+                (Dec->Codecs[0].Profiles[0].MemDesc[0].ColorFormats[0] ==
+                 value.Data.U32);
+            break;
+
+        // encoder properties
+        case ePropEnc_CodecID:
+            propMatch = (Enc->Codecs[0].CodecID == value.Data.U32);
+            break;
+        case ePropEnc_MaxcodecLevel:
+            propMatch = (Enc->Codecs[0].MaxcodecLevel == value.Data.U16);
+            break;
+        case ePropEnc_Profile:
+            propMatch = (Enc->Codecs[0].Profiles[0].Profile == value.Data.U32);
+            break;
+        case ePropEnc_MemHandleType:
+            propMatch = (Enc->Codecs[0].Profiles[0].MemDesc[0].MemHandleType ==
+                         value.Data.I32);
+            break;
+        case ePropEnc_ColorFormats:
+            propMatch =
+                (Enc->Codecs[0].Profiles[0].MemDesc[0].ColorFormats[0] ==
+                 value.Data.U32);
+            break;
+
+        // VPP properties
+        case ePropVPP_FilterFourCC:
+            propMatch = (VPP->Filters[0].FilterFourCC == value.Data.U32);
+            break;
+        case ePropVPP_MaxDelayInFrames:
+            propMatch = (VPP->Filters[0].MaxDelayInFrames == value.Data.U16);
+            break;
+        case ePropVPP_MemHandleType:
+            propMatch =
+                (VPP->Filters[0].MemDesc[0].MemHandleType == value.Data.I32);
+            break;
+        case ePropVPP_OutFormats:
+            propMatch = (VPP->Filters[0].MemDesc[0].Formats[0].OutFormats[0] ==
+                         value.Data.U32);
+            break;
+    }
+
+    if (propMatch)
+        return CFG_PROP_STATE_SUPPORTED;
+    else
+        return CFG_PROP_STATE_UNSUPPORTED;
+}
+
+mfxStatus ConfigCtxVPL::ValidateConfig(
+    mfxImplDescription *libImplDesc,
+    std::list<ConfigCtxVPL *> m_configCtxList) {
+    // initially all properties are unset
+    CfgPropState cfgPropState[eProp_TotalProps]; // NOLINT
+    mfxI32 idx;
+    for (idx = 0; idx < eProp_TotalProps; idx++) {
+        if (cfgPropState[idx] == CFG_PROP_STATE_UNSUPPORTED)
+            return MFX_ERR_UNSUPPORTED;
+    }
+
+    // iterate through all filters and populate cfgImplDesc
+    // spec: applying a new filter on the same property
+    //   will overwrite any previous value, so we iterate
+    //   over all of them from oldest to newest
+    std::list<ConfigCtxVPL *>::iterator it = m_configCtxList.begin();
+    while (it != m_configCtxList.end()) {
+        ConfigCtxVPL *config = (*it);
+
+        cfgPropState[config->m_propIdx] =
+            CheckProp(config->m_propIdx, config->m_propValue, libImplDesc);
+
+        it++;
+    }
+
+    // if all properties are either SUPPORTED or NOT_SET then
+    //   then this implementation is considered valid
+    // otherwise return unsupported
+    for (idx = 0; idx < eProp_TotalProps; idx++) {
+        if (cfgPropState[idx] == CFG_PROP_STATE_UNSUPPORTED)
+            return MFX_ERR_UNSUPPORTED;
+    }
+
+    return MFX_ERR_NONE;
 }

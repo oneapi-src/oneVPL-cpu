@@ -67,13 +67,27 @@ enum LibPriority {
     LIB_PRIORITY_MSDK_PACKAGE   = 3,
 };
 
+enum CfgPropState {
+    CFG_PROP_STATE_NOT_SET = 0,
+    CFG_PROP_STATE_SUPPORTED,
+    CFG_PROP_STATE_UNSUPPORTED,
+};
+
 // config class implementation
 class ConfigCtxVPL {
 public:
     ConfigCtxVPL();
     ~ConfigCtxVPL();
 
+    // set a single filter property (KV pair)
     mfxStatus SetFilterProperty(const mfxU8* name, mfxVariant value);
+
+    // compare library caps vs. set of configuration filters
+    static mfxStatus ValidateConfig(mfxImplDescription* libImplDesc,
+                                    std::list<ConfigCtxVPL*> m_configCtxList);
+    static CfgPropState CheckProp(mfxI32 propIdx,
+                                  mfxVariant value,
+                                  mfxImplDescription* libImplDesc);
 
 private:
     __inline std::string GetNextProp(std::list<std::string>* s) {

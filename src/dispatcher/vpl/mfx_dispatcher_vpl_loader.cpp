@@ -341,11 +341,17 @@ mfxStatus LoaderCtxVPL::CreateSession(mfxU32 idx, mfxSession* session) {
     if (libInfo == nullptr)
         return MFX_ERR_NOT_FOUND;
 
-    // initialize this library via MFXInitEx, or else fail
-    //   (specify full path to library)
-    sts = MFXInitEx2(libInfo->initPar,
-                     session,
-                     (CHAR_TYPE*)libInfo->libNameFull.c_str());
+    // compare caps from this library vs. config filters
+    mfxImplDescription* implDesc = (mfxImplDescription*)(libInfo->implDesc);
+    sts = ConfigCtxVPL::ValidateConfig(implDesc, m_configCtxList);
+
+    if (sts == MFX_ERR_NONE) {
+        // initialize this library via MFXInitEx, or else fail
+        //   (specify full path to library)
+        sts = MFXInitEx2(libInfo->initPar,
+                         session,
+                         (CHAR_TYPE*)libInfo->libNameFull.c_str());
+    }
 
     return sts;
 }
