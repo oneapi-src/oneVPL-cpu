@@ -99,11 +99,24 @@ int main(int argc, char *argv[]) {
 
         if (CheckImplCaps(implDesc, inCodecFourCC) == true) {
             // this implementation is capable of decoding the input stream
-            MFXCreateSession(loader, implIdx, &session);
+            sts = MFXCreateSession(loader, implIdx, &session);
+            if (sts != MFX_ERR_NONE) {
+                printf("Error in MFXCreateSession, sts = %d", sts);
+                return -1;
+            }
+            MFXDispReleaseImplDescription(loader, implDesc);
+            break;
         }
-        MFXDispReleaseImplDescription(loader, implDesc);
+        else {
+            MFXDispReleaseImplDescription(loader, implDesc);
+        }
 
         implIdx++;
+    }
+
+    if (session == nullptr) {
+        printf("Error - unable to create session");
+        return -1;
     }
 
     // DBG - test dispatcher calls

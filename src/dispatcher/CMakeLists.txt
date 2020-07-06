@@ -13,8 +13,6 @@ if(WIN32)
       windows/mfx_critical_section.cpp
       windows/mfx_dispatcher.cpp
       windows/mfx_dispatcher_log.cpp
-      windows/mfx_dispatcher_onevpl.cpp
-      windows/mfx_dispatcher_util.cpp
       windows/mfx_dxva2_device.cpp
       windows/mfx_function_table.cpp
       windows/mfx_library_iterator.cpp
@@ -26,7 +24,7 @@ if(WIN32)
 endif()
 
 if(UNIX)
-  set(SOURCES linux/mfxloader.cpp linux/mfxloader_onevpl.cpp)
+  set(SOURCES linux/mfxloader.cpp)
 
   if(NOT DEFINED MFX_MODULES_DIR)
     set(MFX_MODULES_DIR ${CMAKE_INSTALL_FULL_LIBDIR})
@@ -34,6 +32,9 @@ if(UNIX)
   add_definitions(-DMFX_MODULES_DIR="${MFX_MODULES_DIR}")
   message(STATUS "MFX_MODULES_DIR=${MFX_MODULES_DIR}")
 endif()
+
+list(APPEND SOURCES common/mfx_dispatcher_onevpl.cpp
+     common/mfx_dispatcher_util.cpp)
 
 add_library(${TARGET} SHARED "")
 

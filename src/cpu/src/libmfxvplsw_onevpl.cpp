@@ -8,6 +8,10 @@
 
 #include "./libmfxvplsw_caps.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
 mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
@@ -88,3 +92,7 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
     return MFX_ERR_UNSUPPORTED;
 }
+
+#ifdef __cplusplus
+}
+#endif

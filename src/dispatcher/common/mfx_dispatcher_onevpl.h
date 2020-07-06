@@ -4,29 +4,60 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#ifndef SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_ONEVPL_H_
-#define SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_ONEVPL_H_
-
-#include <wchar.h>
-#include <windows.h>
+#ifndef SRC_DISPATCHER_COMMON_MFX_DISPATCHER_ONEVPL_H_
+#define SRC_DISPATCHER_COMMON_MFX_DISPATCHER_ONEVPL_H_
 
 #include <list>
 #include <memory>
 #include <sstream>
 #include <string>
 
+#include "vpl/mfxdispatcher.h"
 #include "vpl/mfxvideo.h"
 
-#include "vpl/mfxdispatcher.h"
+#if defined(_WIN32) || defined(_WIN64)
+    #include <windows.h>
 
-#include "windows/mfx_dispatcher.h"
-#include "windows/mfx_dispatcher_log.h"
-#include "windows/mfx_load_dll.h"
+    #include "windows/mfx_dispatcher.h"
+    #include "windows/mfx_load_dll.h"
 
-static const char* ExtVPLFunctions[] = {
-    "MFXQueryImplDescription",       "MFXReleaseImplDescription",
-    "MFXMemory_GetSurfaceForVPP",    "MFXMemory_GetSurfaceForEncode",
-    "MFXMemory_GetSurfaceForDecode",
+    // use wide char on Windows
+    #define MAKE_STRING(x) L##x
+typedef std::wstring STRING_TYPE;
+typedef wchar_t CHAR_TYPE;
+
+#else
+    #include <dirent.h>
+    #include <dlfcn.h>
+    #include <string.h>
+
+    // use standard char on Linux
+    #define MAKE_STRING(x) x
+typedef std::string STRING_TYPE;
+typedef char CHAR_TYPE;
+#endif
+
+#define MAX_ONEVPL_SEARCH_PATH 1024
+
+// internal function to load dll by full path, fail if unsuccessful
+mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, CHAR_TYPE* dllName);
+
+typedef void(MFX_CDECL* oneVPLFunctionPtr)(void);
+
+enum OneVPLFunctionIdx {
+    IdxMFXQueryImplDescription = 0,
+    IdxMFXReleaseImplDescription,
+    IdxMFXMemory_GetSurfaceForVPP,
+    IdxMFXMemory_GetSurfaceForEncode,
+    IdxMFXMemory_GetSurfaceForDecode,
+
+    NumOneVPLFunctions
+};
+
+// both Windows and Linux use char* for function names
+struct OneVPLFunctionDesc {
+    const char* pName;
+    mfxVersion apiVersion;
 };
 
 // priority of runtime loading, based on oneAPI-spec
@@ -42,11 +73,13 @@ public:
     ConfigCtxOneVPL();
     ~ConfigCtxOneVPL();
 
-    void SetFilterProperty(const mfxU8* name, mfxVariant value) {
+    mfxStatus SetFilterProperty(const mfxU8* name, mfxVariant value) {
         m_propName = std::string((char*)name);
 
         m_propValue.Type = value.Type;
         m_propValue.Data = value.Data;
+
+        return MFX_ERR_NONE;
     }
 
 private:
@@ -57,14 +90,14 @@ private:
 struct LibInfo {
     // during search store candidate file names
     //   and priority based on rules in spec
-    wchar_t libNameFull[MFX_MAX_DLL_PATH];
-    wchar_t* libNameBase;
+    STRING_TYPE libNameFull;
+    STRING_TYPE libNameBase;
     mfxU32 libPriority;
 
     // if valid oneVPL library, store file handle
     //   and table of exported functions
-    mfxModuleHandle hModuleVPL;
-    mfxFunctionPointer vplFuncTable[eVideoFunc2Total]; // NOLINT
+    void* hModuleVPL;
+    oneVPLFunctionPtr vplFuncTable[NumOneVPLFunctions]; // NOLINT
     mfxHDL implDesc;
 
     // used for session initialization with this implementation
@@ -100,7 +133,7 @@ public:
 
 private:
     // helper functions
-    mfxStatus SearchDirForLibs(wchar_t* searchDir,
+    mfxStatus SearchDirForLibs(STRING_TYPE searchDir,
                                std::list<LibInfo*>& libInfoList,
                                mfxU32 priority);
     LibInfo* GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx);
@@ -108,7 +141,7 @@ private:
     std::list<LibInfo*> m_libInfoList;
     std::list<ConfigCtxOneVPL*> m_configCtxList;
 
-    wchar_t m_vplPackageDir[MFX_MAX_DLL_PATH];
+    STRING_TYPE m_vplPackageDir;
 };
 
-#endif // SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_ONEVPL_H_
+#endif // SRC_DISPATCHER_COMMON_MFX_DISPATCHER_ONEVPL_H_

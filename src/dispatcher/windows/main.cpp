@@ -1027,6 +1027,70 @@ mfxStatus MFXInit(mfxIMPL impl, mfxVersion *pVer, mfxSession *session) {
     return MFXInitEx(par, session);
 }
 
+// passthrough functions to implementation
+mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
+                                     mfxFrameSurface1 **surface) {
+    mfxStatus sts = MFX_ERR_INVALID_HANDLE;
+
+    if (!session || !surface)
+        return MFX_ERR_NULL_PTR;
+
+    struct _mfxSession *pHandle = (struct _mfxSession *)session;
+
+    mfxFunctionPointer pFunc;
+    pFunc = pHandle->callVideoTable2[eMFXMemory_GetSurfaceForVPP];
+    if (pFunc) {
+        session = pHandle->session;
+        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(
+            session,
+            surface);
+    }
+
+    return sts;
+}
+
+mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
+                                        mfxFrameSurface1 **surface) {
+    mfxStatus sts = MFX_ERR_INVALID_HANDLE;
+
+    if (!session || !surface)
+        return MFX_ERR_NULL_PTR;
+
+    struct _mfxSession *pHandle = (struct _mfxSession *)session;
+
+    mfxFunctionPointer pFunc;
+    pFunc = pHandle->callVideoTable2[eMFXMemory_GetSurfaceForEncode];
+    if (pFunc) {
+        session = pHandle->session;
+        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(
+            session,
+            surface);
+    }
+
+    return sts;
+}
+
+mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
+                                        mfxFrameSurface1 **surface) {
+    mfxStatus sts = MFX_ERR_INVALID_HANDLE;
+
+    if (!session || !surface)
+        return MFX_ERR_NULL_PTR;
+
+    struct _mfxSession *pHandle = (struct _mfxSession *)session;
+
+    mfxFunctionPointer pFunc;
+    pFunc = pHandle->callVideoTable2[eMFXMemory_GetSurfaceForDecode];
+    if (pFunc) {
+        session = pHandle->session;
+        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(
+            session,
+            surface);
+    }
+
+    return sts;
+}
+
 //
 //
 // implement all other calling functions.

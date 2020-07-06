@@ -77,8 +77,25 @@ enum Function {
     eNoMoreFunctions = eFunctionsNum
 };
 
+// new functions for API 2.0
+enum Function2 {
+    eMFXQueryImplDescription = 0,
+    eMFXReleaseImplDescription,
+    eMFXMemory_GetSurfaceForVPP,
+    eMFXMemory_GetSurfaceForEncode,
+    eMFXMemory_GetSurfaceForDecode,
+
+    eFunctionsNum2,
+};
+
 struct FunctionsTable {
     Function id;
+    const char* name;
+    mfxVersion version;
+};
+
+struct FunctionsTable2 {
+    Function2 id;
     const char* name;
     mfxVersion version;
 };
@@ -102,6 +119,20 @@ static const FunctionsTable g_mfxFuncTable[] = {
     { eMFXJoinSession, "MFXJoinSession", VERSION(1, 1) },
 #include "linux/mfxvideo_functions.h" // NOLINT(build/include)
     { eNoMoreFunctions }
+};
+
+static const FunctionsTable2 g_mfxFuncTable2[] = {
+    { eMFXQueryImplDescription, "MFXQueryImplDescription", VERSION(0, 2) },
+    { eMFXReleaseImplDescription, "MFXReleaseImplDescription", VERSION(0, 2) },
+    { eMFXMemory_GetSurfaceForVPP,
+      "MFXMemory_GetSurfaceForVPP",
+      VERSION(0, 2) },
+    { eMFXMemory_GetSurfaceForEncode,
+      "MFXMemory_GetSurfaceForEncode",
+      VERSION(0, 2) },
+    { eMFXMemory_GetSurfaceForDecode,
+      "MFXMemory_GetSurfaceForDecode",
+      VERSION(0, 2) },
 };
 
 #ifndef DISABLE_NON_VPL_DISPATCHER
@@ -134,7 +165,7 @@ private:
 
 class LoaderCtx {
 public:
-    mfxStatus Init(mfxInitParam& par);
+    mfxStatus Init(mfxInitParam& par, char* dllName);
     mfxStatus Close();
 
 #ifndef DISABLE_NON_VPL_DISPATCHER
@@ -146,6 +177,10 @@ public:
 
     inline void* getFunction(Function func) const {
         return m_table[func];
+    }
+
+    inline void* getFunction2(Function2 func) const {
+        return m_table2[func];
     }
 
     inline mfxSession getSession() const {
@@ -166,6 +201,7 @@ private:
     mfxIMPL m_implementation{};
     mfxSession m_session = nullptr;
     void* m_table[eFunctionsNum]{};
+    void* m_table2[eFunctionsNum2]{};
 
 #ifndef DISABLE_NON_VPL_DISPATCHER
     std::mutex m_guard;
@@ -189,11 +225,16 @@ std::shared_ptr<void> make_dlopen(const char* filename, int flags) {
     });
 }
 
-mfxStatus LoaderCtx::Init(mfxInitParam& par) {
+mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
     std::vector<std::string> libs;
 
-    if (MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO ||
-        MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO_ANY) {
+    if (dllName) {
+        // attempt to load only this DLL, fail if unsuccessful
+        std::string libToLoad(dllName);
+        libs.emplace_back(libToLoad);
+    }
+    else if (MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO ||
+             MFX_IMPL_BASETYPE(par.Implementation) == MFX_IMPL_AUTO_ANY) {
         libs.emplace_back(LIBMFXHW);
         libs.emplace_back(MFX_MODULES_DIR "/" LIBMFXHW);
         libs.emplace_back(LIBMFXSW);
@@ -224,13 +265,8 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par) {
                 for (int i = 0; i < eFunctionsNum; ++i) {
                     assert(i == g_mfxFuncTable[i].id);
                     m_table[i] = dlsym(hdl.get(), g_mfxFuncTable[i].name);
-                    // TODO(JR) - shouldn't the first check be >=
-                    // user requests version >= par.Version and
-                    //   and a missing function is supposed to be
-                    //   there for all versions >= g_mfxFuncTable[i].version
-                    // see equivalent Windows code
                     if (!m_table[i] &&
-                        ((par.Version <= g_mfxFuncTable[i].version) ||
+                        ((g_mfxFuncTable[i].version <= par.Version) ||
                          (g_mfxFuncTable[i].version <=
                           mfxVersion(VERSION(1, 14))))) {
                         // this version of dispatcher requires MFXInitEx which appeared
@@ -239,6 +275,19 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par) {
                         break;
                     }
                 }
+
+                // if version >= 2.0, load these functions as well
+                if (par.Version.Major >= 2) {
+                    for (int i = 0; i < eFunctionsNum2; ++i) {
+                        assert(i == g_mfxFuncTable2[i].id);
+                        m_table2[i] = dlsym(hdl.get(), g_mfxFuncTable2[i].name);
+                        if (!m_table2[i]) {
+                            wrong_version = true;
+                            break;
+                        }
+                    }
+                }
+
                 if (wrong_version) {
                     mfx_res = MFX_ERR_UNSUPPORTED;
                     break;
@@ -410,6 +459,31 @@ mfxStatus LoaderCtx::UnloadPlugin(const mfxPluginUID& uid) {
 
 } // namespace MFX
 
+// internal function - load a specific DLL, return unsupported if it fails
+mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, char* dllName) {
+    if (!session)
+        return MFX_ERR_NULL_PTR;
+
+    try {
+        std::unique_ptr<MFX::LoaderCtx> loader;
+
+        loader.reset(new MFX::LoaderCtx{});
+
+        mfxStatus mfx_res = loader->Init(par, dllName);
+        if (MFX_ERR_NONE == mfx_res) {
+            *session = (mfxSession)loader.release();
+        }
+        else {
+            *session = nullptr;
+        }
+
+        return mfx_res;
+    }
+    catch (...) {
+        return MFX_ERR_MEMORY_ALLOC;
+    }
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -437,7 +511,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession* session) {
 
         loader.reset(new MFX::LoaderCtx{});
 
-        mfxStatus mfx_res = loader->Init(par);
+        mfxStatus mfx_res = loader->Init(par, nullptr);
         if (MFX_ERR_NONE == mfx_res) {
             *session = (mfxSession)loader.release();
         }
@@ -470,6 +544,55 @@ mfxStatus MFXClose(mfxSession session) {
     catch (...) {
         return MFX_ERR_MEMORY_ALLOC;
     }
+}
+
+// passthrough functions to implementation
+mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
+                                     mfxFrameSurface1** surface) {
+    if (!session || !surface)
+        return MFX_ERR_NULL_PTR;
+
+    MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
+
+    auto proc = (decltype(MFXMemory_GetSurfaceForVPP)*)loader->getFunction2(
+        MFX::eMFXMemory_GetSurfaceForVPP);
+    if (!proc) {
+        return MFX_ERR_INVALID_HANDLE;
+    }
+
+    return (*proc)(loader->getSession(), surface);
+}
+
+mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
+                                        mfxFrameSurface1** surface) {
+    if (!session || !surface)
+        return MFX_ERR_NULL_PTR;
+
+    MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
+
+    auto proc = (decltype(MFXMemory_GetSurfaceForEncode)*)loader->getFunction2(
+        MFX::eMFXMemory_GetSurfaceForEncode);
+    if (!proc) {
+        return MFX_ERR_INVALID_HANDLE;
+    }
+
+    return (*proc)(loader->getSession(), surface);
+}
+
+mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
+                                        mfxFrameSurface1** surface) {
+    if (!session || !surface)
+        return MFX_ERR_NULL_PTR;
+
+    MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
+
+    auto proc = (decltype(MFXMemory_GetSurfaceForDecode)*)loader->getFunction2(
+        MFX::eMFXMemory_GetSurfaceForDecode);
+    if (!proc) {
+        return MFX_ERR_INVALID_HANDLE;
+    }
+
+    return (*proc)(loader->getSession(), surface);
 }
 
 #ifndef DISABLE_NON_VPL_DISPATCHER
