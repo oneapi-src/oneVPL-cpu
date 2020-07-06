@@ -12,7 +12,7 @@ FOR /D %%i IN ("%~dp0\..") DO (
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
-call "test/env/vars.bat"
+call "test/tools/env/vars.bat"
 call "script/lint.bat" || exit /b 1
 if not defined VPL_BUILD_DEPENDENCIES (
    call "script/bootstrap.bat" || exit /b 1

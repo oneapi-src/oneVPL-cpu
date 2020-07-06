@@ -25,6 +25,6 @@ append_path ()
 
 # Configure enviroment variables
 ENV_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export VPL_TEST_DIR="$(dirname "$ENV_DIR" )"
-export VPL_TEST_PYTHONPATH=$VPL_TEST_DIR/tools/python
-export PYTHONPATH=$(append_path "$VPL_TEST_PYTHONPATH" $PYTHONPATH)
+export VPL_TOOLS_DIR="$(dirname "$ENV_DIR" )"
+export VPL_TOOLS_PYTHONPATH=$VPL_TOOLS_DIR/python
+export PYTHONPATH=$(append_path "$VPL_TOOLS_PYTHONPATH" $PYTHONPATH)

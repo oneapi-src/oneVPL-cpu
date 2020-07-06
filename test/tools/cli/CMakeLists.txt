@@ -5,12 +5,11 @@
 # ##############################################################################
 cmake_minimum_required(VERSION 3.10.2)
 
-set(TARGET vpl-app)
-set(SOURCES vpl-app.cpp)
+add_executable(vpl-encode vpl-encode.cpp)
+target_link_libraries(vpl-encode mfx)
 
-set(DEPENDENCIES mfx)
+add_executable(vpl-decode vpl-decode.cpp)
+target_link_libraries(vpl-decode mfx)
 
-add_executable(${TARGET} ${SOURCES})
-add_dependencies(${TARGET} ${DEPENDENCIES})
-
-target_link_libraries(${TARGET} ${DEPENDENCIES})
+add_executable(vpl-decode-newloader vpl-decode-newloader.cpp)
+target_link_libraries(vpl-decode-newloader mfx)

@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    puts("oneVPL initialized");
+    puts("library initialized");
 
     // Initialize encoder parameters
     mfxVideoParam mfxEncParams;

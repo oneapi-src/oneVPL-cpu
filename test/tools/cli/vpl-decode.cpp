@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    puts("oneVPL initialized");
+    puts("library initialized");
 
     // prepare input bitstream
     mfxBitstream mfxBS = { 0 };

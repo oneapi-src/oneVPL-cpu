@@ -34,7 +34,7 @@ add_subdirectory(api)
 add_subdirectory(src)
 add_subdirectory(env)
 add_subdirectory(doc)
-add_subdirectory(examples)
+add_subdirectory(test/tools/cli)
 add_subdirectory(test/tools/legacy)
 
 install(
