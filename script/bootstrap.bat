@@ -164,6 +164,7 @@ bash -c './configure ^
 --enable-muxer=mpeg2video ^
 --enable-muxer=mjpeg ^
 --enable-muxer=hevc ^
+--enable-muxer=ivf ^
 --enable-filter=testsrc ^
 --enable-filter=testsrc2 ^
 --enable-filter=rgbtestsrc ^
@@ -174,6 +175,7 @@ bash -c './configure ^
 --enable-demuxer=hevc ^
 --enable-decoder=hevc ^
 --enable-parser=hevc ^
+--enable-demuxer=ivf ^
 --enable-parser=av1 ^
 --enable-decoder=mpeg2video ^
 --enable-encoder=mpeg2video ^
