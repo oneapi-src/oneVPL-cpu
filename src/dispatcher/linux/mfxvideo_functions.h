@@ -36,12 +36,6 @@ FUNCTION(mfxStatus,
          (session, version))
 
 // CORE interface functions
-#ifndef DISABLE_NON_VPL_DISPATCHER
-FUNCTION(mfxStatus,
-         MFXVideoCORE_SetBufferAllocator,
-         (mfxSession session, mfxBufferAllocator *allocator),
-         (session, allocator))
-#endif
 FUNCTION(mfxStatus,
          MFXVideoCORE_SetFrameAllocator,
          (mfxSession session, mfxFrameAllocator *allocator),
@@ -207,122 +201,6 @@ FUNCTION(mfxStatus,
          (mfxSession session, mfxPriority *priority),
          (session, priority))
 
-#ifndef DISABLE_NON_VPL_DISPATCHER
-FUNCTION(mfxStatus,
-         MFXVideoUSER_Register,
-         (mfxSession session, mfxU32 type, const mfxPlugin *par),
-         (session, type, par))
-FUNCTION(mfxStatus,
-         MFXVideoUSER_Unregister,
-         (mfxSession session, mfxU32 type),
-         (session, type))
-FUNCTION(mfxStatus,
-         MFXVideoUSER_ProcessFrameAsync,
-         (mfxSession session,
-          const mfxHDL *in,
-          mfxU32 in_num,
-          const mfxHDL *out,
-          mfxU32 out_num,
-          mfxSyncPoint *syncp),
-         (session, in, in_num, out, out_num, syncp))
-#endif
-
-#undef API_VERSION
-
-//
-// API version 1.10 functions
-//
-
-#define API_VERSION \
-    {               \
-        { 10, 1 }   \
-    }
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-FUNCTION(mfxStatus,
-         MFXVideoENC_Query,
-         (mfxSession session, mfxVideoParam *in, mfxVideoParam *out),
-         (session, in, out))
-FUNCTION(mfxStatus,
-         MFXVideoENC_QueryIOSurf,
-         (mfxSession session,
-          mfxVideoParam *par,
-          mfxFrameAllocRequest *request),
-         (session, par, request))
-FUNCTION(mfxStatus,
-         MFXVideoENC_Init,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoENC_Reset,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus, MFXVideoENC_Close, (mfxSession session), (session))
-FUNCTION(mfxStatus,
-         MFXVideoENC_ProcessFrameAsync,
-         (mfxSession session,
-          mfxENCInput *in,
-          mfxENCOutput *out,
-          mfxSyncPoint *syncp),
-         (session, in, out, syncp))
-FUNCTION(mfxStatus,
-         MFXVideoVPP_RunFrameVPPAsyncEx,
-         (mfxSession session,
-          mfxFrameSurface1 *in,
-          mfxFrameSurface1 *work,
-          mfxFrameSurface1 **out,
-          mfxSyncPoint *syncp),
-         (session, in, work, out, syncp))
-#endif
-
-#undef API_VERSION
-
-#define API_VERSION \
-    {               \
-        { 13, 1 }   \
-    }
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-FUNCTION(mfxStatus,
-         MFXVideoPAK_Query,
-         (mfxSession session, mfxVideoParam *in, mfxVideoParam *out),
-         (session, in, out))
-FUNCTION(mfxStatus,
-         MFXVideoPAK_QueryIOSurf,
-         (mfxSession session,
-          mfxVideoParam *par,
-          mfxFrameAllocRequest *request),
-         (session, par, request))
-FUNCTION(mfxStatus,
-         MFXVideoPAK_Init,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoPAK_Reset,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus, MFXVideoPAK_Close, (mfxSession session), (session))
-FUNCTION(mfxStatus,
-         MFXVideoPAK_ProcessFrameAsync,
-         (mfxSession session,
-          mfxPAKInput *in,
-          mfxPAKOutput *out,
-          mfxSyncPoint *syncp),
-         (session, in, out, syncp))
-#endif
-
-#undef API_VERSION
-
-#define API_VERSION \
-    {               \
-        { 14, 1 }   \
-    }
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-// FUNCTION(mfxStatus, MFXInitEx, (mfxInitParam par, mfxSession session), (par, session))
-FUNCTION(mfxStatus, MFXDoWork, (mfxSession session), (session))
-#endif
-
 #undef API_VERSION
 
 #define API_VERSION \
@@ -330,20 +208,6 @@ FUNCTION(mfxStatus, MFXDoWork, (mfxSession session), (session))
         { 19, 1 }   \
     }
 
-#ifndef DISABLE_NON_VPL_DISPATCHER
-FUNCTION(mfxStatus,
-         MFXVideoENC_GetVideoParam,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoPAK_GetVideoParam,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoUSER_GetPlugin,
-         (mfxSession session, mfxU32 type, mfxPlugin *par),
-         (session, type, par))
-#endif
 FUNCTION(mfxStatus,
          MFXVideoCORE_QueryPlatform,
          (mfxSession session, mfxPlatform *platform),

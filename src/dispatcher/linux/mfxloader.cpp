@@ -17,10 +17,6 @@
 #include <vector>
 
 #include "vpl/mfxvideo.h"
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    #include "linux/mfxpak.h"
-    #include "linux/mfxplugin.h"
-#endif
 
 #include "linux/mfxloader.h"
 
@@ -121,45 +117,10 @@ static const FunctionsTable2 g_mfxFuncTable2[] = {
       VERSION(0, 2) },
 };
 
-#ifndef DISABLE_NON_VPL_DISPATCHER
-typedef mfxStatus(MFX_CDECL* CreatePluginPtr)(mfxPluginUID, mfxPlugin*);
-#endif
-
-class LoaderCtx;
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-class PluginCtx {
-public:
-    explicit PluginCtx(LoaderCtx& loader) : m_loader(loader) {}
-
-    mfxStatus Load(const mfxPluginUID& uid, mfxU32 version, const char* path);
-    mfxStatus Unload();
-
-    inline mfxPluginUID getUID() const {
-        return m_uid;
-    }
-
-private:
-    LoaderCtx& m_loader;
-    std::shared_ptr<void> m_dlh;
-    CreatePluginPtr m_create_plugin = nullptr;
-    mfxPluginUID m_uid{};
-    mfxPlugin m_plugin{};
-    mfxPluginParam m_plugin_param{};
-};
-#endif
-
 class LoaderCtx {
 public:
     mfxStatus Init(mfxInitParam& par, char* dllName);
     mfxStatus Close();
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    mfxStatus LoadPlugin(const mfxPluginUID& uid,
-                         mfxU32 version,
-                         const char* path);
-    mfxStatus UnloadPlugin(const mfxPluginUID& uid);
-#endif
 
     inline void* getFunction(Function func) const {
         return m_table[func];
@@ -188,21 +149,7 @@ private:
     mfxSession m_session = nullptr;
     void* m_table[eFunctionsNum]{};
     void* m_table2[eFunctionsNum2]{};
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    std::mutex m_guard;
-    std::list<PluginCtx> m_plugins;
-#endif
 };
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-struct GlobalCtx {
-    std::mutex m_mutex;
-    std::list<PluginInfo> m_plugins;
-};
-
-static GlobalCtx g_GlobalCtx;
-#endif
 
 std::shared_ptr<void> make_dlopen(const char* filename, int flags) {
     return std::shared_ptr<void>(dlopen(filename, flags), [](void* handle) {
@@ -334,114 +281,6 @@ mfxStatus LoaderCtx::Close() {
     std::fill(std::begin(m_table), std::end(m_table), nullptr);
     return mfx_res;
 }
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-mfxStatus PluginCtx::Load(const mfxPluginUID& uid,
-                          mfxU32 version,
-                          const char* path) {
-    if (!path) {
-        return MFX_ERR_NULL_PTR;
-    }
-
-    mfxStatus mfx_res         = MFX_ERR_NONE;
-    std::shared_ptr<void> hdl = make_dlopen(path, RTLD_LOCAL | RTLD_NOW);
-
-    if (!hdl) {
-        return MFX_ERR_NOT_FOUND;
-    }
-
-    do {
-        m_uid           = uid;
-        m_create_plugin = (CreatePluginPtr)dlsym(hdl.get(), "CreatePlugin");
-        if (!m_create_plugin) {
-            mfx_res = MFX_ERR_NOT_FOUND;
-            break;
-        }
-
-        mfx_res = m_create_plugin(m_uid, &m_plugin);
-        if (MFX_ERR_NONE != mfx_res) {
-            break;
-        }
-
-        mfx_res = m_plugin.GetPluginParam(m_plugin.pthis, &m_plugin_param);
-        if (MFX_ERR_NONE != mfx_res) {
-            break;
-        }
-
-        mfx_res = MFXVideoUSER_Register((mfxSession)&m_loader,
-                                        m_plugin_param.Type,
-                                        &m_plugin);
-        if (MFX_ERR_NONE != mfx_res) {
-            break;
-        }
-    } while (false);
-
-    if (MFX_ERR_NONE == mfx_res) {
-        m_dlh = std::move(hdl);
-    }
-    else {
-        m_uid           = {};
-        m_create_plugin = nullptr;
-        m_plugin        = {};
-        m_plugin_param  = {};
-    }
-    return mfx_res;
-}
-
-mfxStatus PluginCtx::Unload() {
-    return MFXVideoUSER_Unregister((mfxSession)&m_loader, m_plugin_param.Type);
-}
-
-mfxStatus LoaderCtx::LoadPlugin(const mfxPluginUID& uid,
-                                mfxU32 version,
-                                const char* path) {
-    if (!path)
-        return MFX_ERR_NULL_PTR;
-
-    std::lock_guard<std::mutex> lock(m_guard);
-
-    for (auto& it : m_plugins) {
-        if (it.getUID() == uid)
-            return MFX_ERR_UNDEFINED_BEHAVIOR;
-    }
-
-    PluginCtx ctx(*this);
-
-    mfxStatus mfx_res = ctx.Load(uid, version, path);
-    if (MFX_ERR_NONE != mfx_res) {
-        return mfx_res;
-    }
-
-    m_plugins.emplace_back(std::move(ctx));
-
-    return MFX_ERR_NONE;
-}
-
-mfxStatus LoaderCtx::UnloadPlugin(const mfxPluginUID& uid) {
-    std::list<PluginCtx> ctx;
-    {
-        // We will move plugin ctx which we are going to delete to the
-        // array allocated on stack. In this way we will move bottom half
-        // of plugin ctx destroy, including potentially long dlclose, out
-        // of the mutex.
-        std::lock_guard<std::mutex> lock(m_guard);
-        auto it = std::find_if(std::begin(m_plugins),
-                               std::end(m_plugins),
-                               [&uid](const PluginCtx& cur_ctx) {
-                                   return cur_ctx.getUID() == uid;
-                               });
-
-        if (it != std::end(m_plugins)) {
-            mfxStatus mfx_res = it->Unload();
-            if (MFX_ERR_NONE != mfx_res) {
-                return mfx_res;
-            }
-            ctx.splice(ctx.end(), m_plugins, it);
-        }
-    }
-    return MFX_ERR_NONE;
-}
-#endif // DISABLE_NON_VPL_DISPATCHER
 
 } // namespace MFX
 
@@ -581,98 +420,6 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
     return (*proc)(loader->getSession(), surface);
 }
 
-#ifndef DISABLE_NON_VPL_DISPATCHER
-mfxStatus MFXVideoUSER_Load(mfxSession session,
-                            const mfxPluginUID* uid,
-                            mfxU32 version) {
-    if (!session)
-        return MFX_ERR_INVALID_HANDLE;
-    if (!uid)
-        return MFX_ERR_NULL_PTR;
-
-    try {
-        MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
-        std::string path;
-
-        {
-            std::lock_guard<std::mutex> lock(MFX::g_GlobalCtx.m_mutex);
-
-            auto find_uid = [](const mfxPluginUID& puid) {
-                return std::find_if(MFX::g_GlobalCtx.m_plugins.begin(),
-                                    MFX::g_GlobalCtx.m_plugins.end(),
-                                    [&puid](MFX::PluginInfo& item) {
-                                        return item.getUID() == puid;
-                                    });
-            };
-
-            if (MFX::g_GlobalCtx.m_plugins.empty()) {
-                // Parsing plugin configuration file and loading information of
-                // _all_ plugins registered on the system.
-                parse(MFX_PLUGINS_CONF_DIR "/plugins.cfg",
-                      MFX::g_GlobalCtx.m_plugins);
-            }
-
-            // search for plugin description
-            auto it = find_uid(*uid);
-            if (it == MFX::g_GlobalCtx.m_plugins.end()) {
-                return MFX_ERR_NOT_FOUND;
-            }
-
-            path = it->getPath();
-        }
-
-        return loader->LoadPlugin(*uid, version, path.c_str());
-    }
-    catch (...) {
-        return MFX_ERR_MEMORY_ALLOC;
-    }
-}
-
-mfxStatus MFXVideoUSER_LoadByPath(mfxSession session,
-                                  const mfxPluginUID* uid,
-                                  mfxU32 version,
-                                  const mfxChar* path,
-                                  mfxU32 /*len*/) {
-    if (!session)
-        return MFX_ERR_INVALID_HANDLE;
-    if (!uid)
-        return MFX_ERR_NULL_PTR;
-
-    try {
-        MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
-        return loader->LoadPlugin(*uid, version, path);
-    }
-    catch (...) {
-        return MFX_ERR_MEMORY_ALLOC;
-    }
-}
-
-mfxStatus MFXVideoUSER_UnLoad(mfxSession session, const mfxPluginUID* uid) {
-    if (!session)
-        return MFX_ERR_INVALID_HANDLE;
-    if (!uid)
-        return MFX_ERR_NULL_PTR;
-
-    try {
-        MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
-        return loader->UnloadPlugin(*uid);
-    }
-    catch (...) {
-        return MFX_ERR_MEMORY_ALLOC;
-    }
-}
-
-mfxStatus MFXAudioUSER_Load(mfxSession session,
-                            const mfxPluginUID* uid,
-                            mfxU32 version) {
-    return MFX_ERR_NOT_FOUND;
-}
-
-mfxStatus MFXAudioUSER_UnLoad(mfxSession session, const mfxPluginUID* uid) {
-    return MFX_ERR_NOT_FOUND;
-}
-#endif // DISABLE_NON_VPL_DISPATCHER
-
 mfxStatus MFXJoinSession(mfxSession session, mfxSession child_session) {
     if (!session || !child_session) {
         return MFX_ERR_INVALID_HANDLE;
@@ -741,15 +488,6 @@ mfxStatus MFXCloneSession(mfxSession session, mfxSession* clone) {
     }
 
 #include "linux/mfxvideo_functions.h" // NOLINT(build/include)
-
-#undef FUNCTION
-#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list)
-// as of now we don't expose audio support, but we still want to check certain
-// consistency of mfxaudio_functions.h file, so include it here
-
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    #include "linux/mfxaudio_functions.h"
-#endif
 
 #ifdef __cplusplus
 }

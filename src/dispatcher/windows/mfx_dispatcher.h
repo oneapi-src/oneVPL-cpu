@@ -11,17 +11,8 @@
 
 #include <vpl/mfxdispatcher.h>
 
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    #include <mfxaudio.h>
-    #include <mfxplugin.h>
-#endif
 #include <stddef.h>
 #include "windows/mfx_dispatcher_defs.h"
-#include "windows/mfx_load_plugin.h"
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    #include "mfxenc.h"
-    #include "mfxpak.h"
-#endif
 
 #define INTEL_VENDOR_ID 0x8086
 
@@ -71,12 +62,6 @@ enum ePluginFunc {
     ePluginFuncTotal
 };
 
-enum eAudioFunc {
-    eFakeAudioEnum = eMFXGetPriority,
-#include "windows/mfxaudio_exposed_functions_list.h"
-    eAudioFuncTotal
-};
-
 enum eVideoFunc2 {
     eMFXQueryImplDescription,
     eMFXReleaseImplDescription,
@@ -112,8 +97,6 @@ struct _mfxSession {
     mfxFunctionPointer callTable[eVideoFuncTotal]; // NOLINT(runtime/arrays)
     mfxFunctionPointer
         callPlugInsTable[ePluginFuncTotal]; // NOLINT(runtime/arrays)
-    mfxFunctionPointer
-        callAudioTable[eAudioFuncTotal]; // NOLINT(runtime/arrays)
     mfxFunctionPointer
         callVideoTable2[eVideoFunc2Total]; // NOLINT(runtime/arrays)
 
@@ -165,11 +148,6 @@ struct MFX_DISP_HANDLE : public _mfxSession {
     // Library's module handle
     mfxModuleHandle hModule;
 
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    MFX::MFXPluginStorage pluginHive;
-    MFX::MFXPluginFactory pluginFactory;
-#endif
-
 private:
     // Declare assignment operator and copy constructor to prevent occasional assignment
     MFX_DISP_HANDLE(const MFX_DISP_HANDLE &);
@@ -202,8 +180,6 @@ typedef struct FUNCTION_DESCRIPTION {
 } FUNCTION_DESCRIPTION;
 
 extern const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal];
-
-extern const FUNCTION_DESCRIPTION APIAudioFunc[eAudioFuncTotal];
 
 extern const FUNCTION_DESCRIPTION APIVideoFunc2[eVideoFunc2Total];
 

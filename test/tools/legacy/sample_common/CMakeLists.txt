@@ -25,7 +25,7 @@ set(SOURCES
 set(EXTRA_LINUX_SOURCES src/vm/atomic_linux.cpp src/vm/shared_object_linux.cpp
                         src/vm/thread_linux.cpp src/vm/time_linux.cpp)
 
-add_library(${TARGET} STATIC)
+add_library(${TARGET} STATIC "")
 
 target_sources(${TARGET} PRIVATE ${SOURCES})
 

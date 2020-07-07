@@ -122,9 +122,16 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 
 // this is where we implement searching for
 //   potential oneVPL libraries according to the rules
-//   in the spec
+//   in the spec:
+//
+// "Dispatcher searches implementation in the following folders at runtime (in priority order):
+//    1) User-defined search folders.
+//    2) oneVPL package.
+//    3) Standalone MSDK package (or driver).
+// "
+//
 // for now, we only look in the current working directory
-// TODO(JR) - need to add categories 1 and 3
+// TO DO - need to add categories 1 and 3
 mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     mfxStatus sts = MFX_ERR_NONE;
 
@@ -132,7 +139,7 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
 
     // first priority: user-defined directories in
     //   environment variable ONEVPL_SEARCH_PATH
-    // TODO(JR) - parse env var and iterate over directories found
+    // TO DO - parse env var and iterate over directories found
     sts = SearchDirForLibs(emptyPath, m_libInfoList, LIB_PRIORITY_USE_DEFINED);
 
     // second priority: oneVPL package (current location for now)

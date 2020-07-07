@@ -35,15 +35,15 @@ mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
 
     strncpy_s((char *)implDesc->ImplName,
               sizeof(implDesc->ImplName),
-              "TODO(JR) - implementation name",
+              "",
               sizeof(implDesc->ImplName) - 1);
     strncpy_s((char *)implDesc->License,
               sizeof(implDesc->License),
-              "TODO(JR) - license name",
+              "",
               sizeof(implDesc->ImplName) - 1);
     strncpy_s((char *)implDesc->Keywords,
               sizeof(implDesc->Keywords),
-              "TODO(JR) - keyword1, keyword2...",
+              "",
               sizeof(implDesc->ImplName) - 1);
 
     implDesc->VendorID     = 0x8086;

@@ -9,9 +9,6 @@
 
 #include <windows.h>
 #include "vpl/mfxcommon.h"
-#ifndef DISABLE_NON_VPL_DISPATCHER
-    #include "mfxplugin.h"
-#endif
 #include "windows/mfx_dispatcher_log.h"
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)
@@ -27,12 +24,6 @@ template <>
 struct RegKey<mfxU32> {
     enum { type = REG_DWORD };
 };
-    #ifndef DISABLE_NON_VPL_DISPATCHER
-template <>
-struct RegKey<mfxPluginUID> {
-    enum { type = REG_BINARY };
-};
-    #endif
 template <>
 struct RegKey<mfxVersion> {
     enum { type = REG_DWORD };

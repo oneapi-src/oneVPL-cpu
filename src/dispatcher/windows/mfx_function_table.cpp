@@ -30,17 +30,6 @@ const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal] = {
 #include "windows/mfx_exposed_functions_list.h"
 };
 
-const FUNCTION_DESCRIPTION APIAudioFunc[eAudioFuncTotal] = {
-    { "MFXInit", { { 8, 1 } } },         { "MFXClose", { { 8, 1 } } },
-    { "MFXQueryIMPL", { { 8, 1 } } },    { "MFXQueryVersion", { { 8, 1 } } },
-
-    { "MFXJoinSession", { { 8, 1 } } },  { "MFXDisjoinSession", { { 8, 1 } } },
-    { "MFXCloneSession", { { 8, 1 } } }, { "MFXSetPriority", { { 8, 1 } } },
-    { "MFXGetPriority", { { 8, 1 } } },
-
-#include "windows/mfxaudio_exposed_functions_list.h"
-};
-
 // new functions for API >= 2.0
 const FUNCTION_DESCRIPTION APIVideoFunc2[eVideoFunc2Total] = {
     { "MFXQueryImplDescription", { { 0, 2 } } },
