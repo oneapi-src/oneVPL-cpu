@@ -52,7 +52,6 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
             LibInfo* libInfo = new LibInfo;
             if (!libInfo)
                 return MFX_ERR_MEMORY_ALLOC;
-            memset(libInfo, 0, sizeof(LibInfo));
 
             err = GetFullPathNameW(testFileData.cFileName,
                                    MAX_VPL_SEARCH_PATH,
@@ -90,7 +89,6 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
                 LibInfo* libInfo = new LibInfo;
                 if (!libInfo)
                     return MFX_ERR_MEMORY_ALLOC;
-                memset(libInfo, 0, sizeof(LibInfo));
 
                 // get full path to found library
                 snprintf(filePathC,
@@ -265,8 +263,6 @@ mfxStatus LoaderCtxVPL::UnloadAllLibraries() {
 mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx,
                                   mfxImplCapsDeliveryFormat format,
                                   mfxHDL* idesc) {
-    mfxStatus sts = MFX_ERR_NONE;
-
     if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
         return MFX_ERR_UNSUPPORTED;
 

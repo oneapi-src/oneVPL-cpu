@@ -30,7 +30,8 @@ CpuWorkstream::CpuWorkstream()
           m_avDecFrameOut(nullptr),
           m_avVppFrameIn(nullptr),
           m_avVppFrameOut(nullptr),
-          m_avEncFrameIn(nullptr) {
+          m_avEncFrameIn(nullptr),
+          m_encCodecId(MFX_CODEC_HEVC) {
     av_log_set_level(AV_LOG_QUIET);
 }
 

@@ -23,7 +23,7 @@ perform a simple video encode.
 
 This sample is a command line application that takes a file containing a raw
 I420 format video elementary stream as an argument, encodes it with oneVPL
-writes the decoded output to `out.h265` in H.265 format. 
+writes the decoded output to `out.h265` in H.265 format.
 
 
 | Configuration     | Default setting

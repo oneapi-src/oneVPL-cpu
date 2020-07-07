@@ -405,9 +405,10 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     try {
         pHandle = *candidate;
         //pulling up current mediasdk version, that required to match plugin version
-        mfxVersion apiVerActual = { { 0, 0 } };
-        mfxStatus stsQueryVersion =
-            MFXQueryVersion((mfxSession)pHandle, &apiVerActual);
+        //block for now to avoid KW scanning failure (UNUSED)
+        //mfxVersion apiVerActual = { { 0, 0 } };
+        //mfxStatus stsQueryVersion =
+        //    MFXQueryVersion((mfxSession)pHandle, &apiVerActual);
     }
     catch (...) {
         DISPATCHER_LOG_ERROR((("unknown exception while loading plugins\n")))

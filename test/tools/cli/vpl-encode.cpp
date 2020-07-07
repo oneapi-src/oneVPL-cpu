@@ -19,6 +19,9 @@
 
 // IVF container helper functions and definitions
 #define AV1_FOURCC 0x31305641
+#define MAX_WIDTH  3840
+#define MAX_HEIGHT 2160
+#define MAX_PATH   260
 
 typedef struct {
     mfxU32 width;
@@ -42,7 +45,9 @@ void WriteEncodedStream(mfxU32 nframe,
                         FILE* f);
 mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
-int GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool);
+mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool);
+char* ValidateFileName(char* in);
+
 void Usage(void);
 
 int main(int argc, char* argv[]) {
@@ -51,6 +56,8 @@ int main(int argc, char* argv[]) {
         return 1; // return 1 as error code
     }
 
+    char* in_filename  = NULL;
+    char* out_filename = NULL;
     mfxU32 codecID;
     if (strncmp("h265", argv[1], 4) == 0) {
         codecID = MFX_CODEC_HEVC;
@@ -66,16 +73,51 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    printf("opening %s\n", argv[2]);
-    FILE* fSource = fopen(argv[2], "rb");
-    if (!fSource) {
-        printf("could not open input file, %s\n", argv[2]);
+    in_filename = ValidateFileName(argv[2]);
+    if (!in_filename) {
+        printf("Input filename is not valid\n");
+        Usage();
         return 1;
     }
-    FILE* fSink = fopen(argv[3], "wb");
 
-    mfxU16 inputWidth  = atoi(argv[4]);
-    mfxU16 inputHeight = atoi(argv[5]);
+    out_filename = ValidateFileName(argv[3]);
+    if (!out_filename) {
+        printf("Output filename is not valid\n");
+        Usage();
+        return 1;
+    }
+
+    printf("opening %s\n", in_filename);
+    FILE* fSource = fopen(in_filename, "rb");
+    if (!fSource) {
+        printf("could not open input file, %s\n", in_filename);
+        return 1;
+    }
+
+    FILE* fSink = fopen(out_filename, "wb");
+    if (!fSink) {
+        fclose(fSource);
+        printf("could not create output file, %s\n", out_filename);
+        return 1;
+    }
+
+    mfxI32 isize = strtol(argv[4], NULL, 10);
+    if (isize <= 0 || isize > MAX_WIDTH) {
+        fclose(fSource);
+        fclose(fSink);
+        puts("input size is not valid\n");
+        return 1;
+    }
+    mfxI32 inputWidth = isize;
+
+    isize = strtol(argv[5], NULL, 10);
+    if (isize <= 0 || isize > MAX_HEIGHT) {
+        fclose(fSource);
+        fclose(fSink);
+        puts("input size is not valid\n");
+        return 1;
+    }
+    mfxI32 inputHeight = isize;
     mfxU32 fourCC;
 
     if (argv[6]) {
@@ -85,6 +127,8 @@ int main(int argc, char* argv[]) {
         }
         else {
             Usage();
+            fclose(fSource);
+            fclose(fSink);
             return 1;
         }
     }
@@ -103,6 +147,8 @@ int main(int argc, char* argv[]) {
     mfxStatus sts = MFXInitEx(initPar, &session);
     if (sts != MFX_ERR_NONE) {
         puts("MFXInitEx error. could not initialize session");
+        fclose(fSource);
+        fclose(fSink);
         return 1;
     }
 
@@ -158,6 +204,8 @@ int main(int argc, char* argv[]) {
     sts = MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
 
     if (sts != MFX_ERR_NONE) {
+        fclose(fSource);
+        fclose(fSink);
         puts("QueryIOSurf error");
         return 1;
     }
@@ -169,6 +217,8 @@ int main(int argc, char* argv[]) {
     // - Frame surface array keeps pointers all surface planes and general frame info
     mfxU32 surfaceSize = GetSurfaceSize(fourCC, inputWidth, inputHeight);
     if (surfaceSize == 0) {
+        fclose(fSource);
+        fclose(fSink);
         puts("Surface size is wrong");
         return 1;
     }
@@ -181,7 +231,7 @@ int main(int argc, char* argv[]) {
 
     // Allocate surface headers (mfxFrameSurface1) for encoder
     std::vector<mfxFrameSurface1> pEncSurfaces(nEncSurfNum);
-    for (int i = 0; i < nEncSurfNum; i++) {
+    for (mfxI32 i = 0; i < nEncSurfNum; i++) {
         memset(&pEncSurfaces[i], 0, sizeof(mfxFrameSurface1));
         pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
         pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
@@ -195,6 +245,8 @@ int main(int argc, char* argv[]) {
     // Initialize the Media SDK encoder
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     if (sts != MFX_ERR_NONE) {
+        fclose(fSource);
+        fclose(fSink);
         puts("could not initialize encode");
         return 1;
     }
@@ -209,7 +261,7 @@ int main(int argc, char* argv[]) {
     double sync_time   = 0;
 
     // Start encoding the frames
-    mfxU16 nEncSurfIdx = 0;
+    mfxI32 nEncSurfIdx = 0;
     mfxSyncPoint syncp;
     mfxU32 framenum = 0;
 
@@ -220,6 +272,8 @@ int main(int argc, char* argv[]) {
         nEncSurfIdx =
             GetFreeSurfaceIndex(pEncSurfaces); // Find free frame surface
         if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
+            fclose(fSource);
+            fclose(fSink);
             puts("no available surface");
             return 1;
         }
@@ -324,7 +378,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (g_conf)
-        delete[] g_conf;
+        delete g_conf;
 
     // Clean up resources
     //  - It is recommended to close Media SDK components first, before releasing allocated surfaces, since
@@ -335,9 +389,11 @@ int main(int argc, char* argv[]) {
     fclose(fSink);
 
     printf("encoded %d frames\n", framenum);
-    printf("encode avg=%f usec, sync avg=%f usec\n",
-           encode_time / framenum,
-           sync_time / framenum);
+    if (framenum) {
+        printf("encode avg=%f usec, sync avg=%f usec\n",
+               encode_time / framenum,
+               sync_time / framenum);
+    }
 
     return 0;
 }
@@ -409,7 +465,6 @@ void WriteEncodedStream(mfxU32 nframe,
 }
 
 mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource) {
-    mfxStatus sts = MFX_ERR_NONE;
     mfxU16 w, h, i, pitch;
     mfxU32 nBytesRead;
     mfxU8* ptr;
@@ -504,7 +559,7 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     return nbytes;
 }
 
-int GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool) {
+mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool) {
     auto it = std::find_if(pSurfacesPool.begin(),
                            pSurfacesPool.end(),
                            [](const mfxFrameSurface1& surface) {
@@ -514,7 +569,16 @@ int GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool) {
     if (it == pSurfacesPool.end())
         return MFX_ERR_NOT_FOUND;
     else
-        return static_cast<int>(it - pSurfacesPool.begin());
+        return static_cast<mfxI32>(it - pSurfacesPool.begin());
+}
+
+char* ValidateFileName(char* in) {
+    if (in) {
+        if (strlen(in) > MAX_PATH)
+            return NULL;
+    }
+
+    return in;
 }
 
 void Usage(void) {

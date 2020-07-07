@@ -125,6 +125,17 @@ struct LibInfo {
 
     // assign unique index after validating library
     mfxU32 libIdx;
+
+    // avoid warnings
+    LibInfo()
+            : libNameFull(),
+              libNameBase(),
+              libPriority(0),
+              hModuleVPL(nullptr),
+              vplFuncTable(),
+              implDesc(),
+              initPar(),
+              libIdx(0) {}
 };
 
 // loader class implementation

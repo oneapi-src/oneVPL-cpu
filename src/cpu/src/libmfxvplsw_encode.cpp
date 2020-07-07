@@ -19,13 +19,12 @@ mfxStatus MFXVideoENCODE_Query(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-
-    // save a local copy of in, since user may set out == in
-    mfxVideoParam inCopy = *in;
-    in                   = &inCopy;
-
+    //CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     if (in) {
+        // save a local copy of in, since user may set out == in
+        mfxVideoParam inCopy = *in;
+        in                   = &inCopy;
+
         // start with out = copy of in (does not deep copy extBufs)
         *out = *in;
 

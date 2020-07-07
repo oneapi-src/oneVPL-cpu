@@ -13,6 +13,8 @@
 #include "vpl/mfxdispatcher.h"
 #include "vpl/mfxvideo.h"
 
+#define MAX_PATH 260
+
 int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
     for (mfxU16 i = 0; i < nPoolSize; i++) {
         if (0 == SurfacesPool[i].Data.Locked)
@@ -34,6 +36,15 @@ bool CheckImplCaps(mfxImplDescription *implDesc, mfxU32 codecID) {
     }
 
     return false;
+}
+
+char *ValidateFileName(char *in) {
+    if (in) {
+        if (strlen(in) > MAX_PATH)
+            return NULL;
+    }
+
+    return in;
 }
 
 #define TEST_CFG(type, dType, val)                                           \
@@ -167,11 +178,23 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    FILE *fSink = fopen("out.raw", "wb");
-    printf("opening %s\n", argv[1]);
-    FILE *fSource = fopen(argv[1], "rb");
+    char *in_filename = NULL;
+    in_filename       = ValidateFileName(argv[1]);
+    if (!in_filename) {
+        printf("Input filename is not valid\n");
+        exit(1);
+    }
+
+    printf("opening %s\n", in_filename);
+    FILE *fSource = fopen(in_filename, "rb");
     if (!fSource) {
-        puts("could not open input file");
+        printf("could not open input file, %s\n", in_filename);
+        exit(1);
+    }
+    FILE *fSink = fopen("out.raw", "wb");
+    if (!fSink) {
+        fclose(fSource);
+        puts("could not open output file");
         exit(1);
     }
 
@@ -181,6 +204,7 @@ int main(int argc, char *argv[]) {
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = 2000000;
     mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
+    memset(mfxBS.Data, 0, mfxBS.MaxLength);
 
     mfxLoader loader = MFXLoad();
 
@@ -225,6 +249,9 @@ int main(int argc, char *argv[]) {
             // this implementation is capable of decoding the input stream
             sts = MFXCreateSession(loader, implIdx, &session);
             if (sts != MFX_ERR_NONE) {
+                delete[] mfxBS.Data;
+                fclose(fSink);
+                fclose(fSource);
                 printf("Error in MFXCreateSession, sts = %d", sts);
                 return -1;
             }
@@ -238,7 +265,10 @@ int main(int argc, char *argv[]) {
         implIdx++;
     }
 
-    if (session == nullptr) {
+    if (session == nullptr || sts == MFX_ERR_NOT_FOUND) {
+        delete[] mfxBS.Data;
+        fclose(fSource);
+        fclose(fSink);
         printf("Error - unable to create session");
         return -1;
     }
@@ -255,9 +285,10 @@ int main(int argc, char *argv[]) {
         static_cast<mfxU32>(fread(mfxBS.Data, 1, mfxBS.MaxLength, fSource));
 
     // initialize decode parameters from stream header
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = inCodecFourCC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = inCodecFourCC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     if (sts != MFX_ERR_NONE) {
         printf("Problem decoding header.  DecodeHeader sts=%d\n", sts);
@@ -398,8 +429,7 @@ int main(int argc, char *argv[]) {
     }
     printf("read %d frames\n", framenum);
 
-    if (fSink)
-        fclose(fSink);
+    fclose(fSink);
     fclose(fSource);
     MFXVideoDECODE_Close(session);
     delete[] mfxBS.Data;

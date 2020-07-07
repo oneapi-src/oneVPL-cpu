@@ -18,8 +18,6 @@
 mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session,
                                       mfxBitstream *bs,
                                       mfxVideoParam *par) {
-    mfxStatus sts = MFX_ERR_NONE;
-
     if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
@@ -50,13 +48,12 @@ mfxStatus MFXVideoDECODE_Query(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-
-    // save a local copy of in, since user may set out == in
-    mfxVideoParam inCopy = *in;
-    in                   = &inCopy;
-
+    //CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     if (in) {
+        // save a local copy of in, since user may set out == in
+        mfxVideoParam inCopy = *in;
+        in                   = &inCopy;
+
         // start with out = copy of in (does not deep copy extBufs)
         *out = *in;
 
@@ -191,8 +188,6 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
 mfxStatus MFXVideoCORE_SyncOperation(mfxSession session,
                                      mfxSyncPoint syncp,
                                      mfxU32 wait) {
-    mfxStatus sts = MFX_ERR_NONE;
-
     if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }

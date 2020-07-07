@@ -14,14 +14,8 @@
 static int get_buffer2_msdk(struct AVCodecContext *s,
                             AVFrame *frame,
                             int flags) {
-    if (1) {
-        // if AV_CODEC_CAP_DR1 is not set, use default method
-        return avcodec_default_get_buffer2(s, frame, flags);
-    }
-    else {
-    }
-
-    return 0;
+    // if AV_CODEC_CAP_DR1 is not set, use default method
+    return avcodec_default_get_buffer2(s, frame, flags);
 }
 
 mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
@@ -171,9 +165,10 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
 
     // copy new data into bitstream buffer
     if (bs && bs->DataLength > 0) {
-        memcpy(m_bsDecData + m_bsDecValidBytes,
-               bs->Data + bs->DataOffset,
-               bs->DataLength);
+        memcpy_s(m_bsDecData + m_bsDecValidBytes,
+                 bs->DataLength,
+                 bs->Data + bs->DataOffset,
+                 bs->DataLength);
         m_bsDecValidBytes += (uint32_t)bs->DataLength;
     }
 
@@ -299,26 +294,29 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
     for (y = 0; y < h; y++) {
         offset =
             pitch * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
-        memcpy(surface_work->Data.Y + offset,
-               m_avDecFrameOut->data[0] + y * m_avDecFrameOut->linesize[0],
-               w);
+        memcpy_s(surface_work->Data.Y + offset,
+                 w,
+                 m_avDecFrameOut->data[0] + y * m_avDecFrameOut->linesize[0],
+                 w);
     }
 
     // copy U plane
     for (y = 0; y < h / 2; y++) {
         offset = pitch / 2 * (y + surface_work->Info.CropY) +
                  surface_work->Info.CropX;
-        memcpy(surface_work->Data.U + offset,
-               m_avDecFrameOut->data[1] + y * m_avDecFrameOut->linesize[1],
-               w / 2);
+        memcpy_s(surface_work->Data.U + offset,
+                 w / 2,
+                 m_avDecFrameOut->data[1] + y * m_avDecFrameOut->linesize[1],
+                 w / 2);
     }
 
     // copy V plane
     for (y = 0; y < h / 2; y++) {
         offset = pitch / 2 * (y + surface_work->Info.CropY) +
                  surface_work->Info.CropX;
-        memcpy(surface_work->Data.V + offset,
-               m_avDecFrameOut->data[2] + y * m_avDecFrameOut->linesize[2],
-               w / 2);
+        memcpy_s(surface_work->Data.V + offset,
+                 w / 2,
+                 m_avDecFrameOut->data[2] + y * m_avDecFrameOut->linesize[2],
+                 w / 2);
     }
 }

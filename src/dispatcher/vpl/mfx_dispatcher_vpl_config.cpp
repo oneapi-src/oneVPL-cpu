@@ -406,8 +406,7 @@ mfxStatus ConfigCtxVPL::ValidateConfig(
     CfgPropState cfgPropState[eProp_TotalProps]; // NOLINT
     mfxI32 idx;
     for (idx = 0; idx < eProp_TotalProps; idx++) {
-        if (cfgPropState[idx] == CFG_PROP_STATE_UNSUPPORTED)
-            return MFX_ERR_UNSUPPORTED;
+        cfgPropState[idx] = CFG_PROP_STATE_NOT_SET;
     }
 
     // iterate through all filters and populate cfgImplDesc

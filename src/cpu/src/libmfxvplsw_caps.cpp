@@ -127,6 +127,8 @@ mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec) {
 
     // fill decoder caps
     Codecs = AddDecoderDescription(Dec, DefaultStructVersion, 2);
+    if (Codecs == nullptr)
+        return MFX_ERR_MEMORY_ALLOC;
 
     // add codec type HEVC
     Profiles = AddDecoderCodec(Codecs, 0, MFX_CODEC_HEVC, MFX_LEVEL_HEVC_51, 2);
@@ -284,6 +286,8 @@ mfxStatus InitEncoderCaps(mfxEncoderDescription *Enc) {
 
     // fill encoder caps
     Codecs = AddEncoderDescription(Enc, DefaultStructVersion, 2);
+    if (Codecs == nullptr)
+        return MFX_ERR_MEMORY_ALLOC;
 
     // add codec type HEVC
     Profiles =
