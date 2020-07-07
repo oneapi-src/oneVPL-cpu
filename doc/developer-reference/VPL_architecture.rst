@@ -1,6 +1,10 @@
+=====================
+Architecture Overview
+=====================
+
 SDK functions fall into the following categories:
 
-======================================     ====================================== 
+======================================     ======================================
 Category                                   Description
 ======================================     ======================================
 CORE	                                     Auxiliary functions for synchronization
@@ -11,15 +15,17 @@ VPP	                                       Perform video processing on raw video
 Global	                                   Auxiliary functions for queries, device selection, init, etc.
 ======================================     ======================================
 
-With the exception of the global auxiliary functions, SDK functions are named after their functioning
-domain and category, as illustrated below. Here, SDK only exposes video domain functions.
+With the exception of the global auxiliary functions, SDK functions are named
+after their functioning domain and category, as shown in the following image.
+The image shows video domain functions.
 
 .. image:: images/sdk_function_naming_convention.png
    :alt: SDK function name notation
 
-Applications use SDK functions by linking with the SDK dispatcher library, as illustrated below.
-The dispatcher library identifies the hardware acceleration device on the running platform,
-determines the most suitable platform library, and then redirects function calls.
+Applications use SDK functions by linking with the SDK dispatcher library, as
+shown in the following image. The dispatcher library identifies the hardware
+acceleration device on the running platform, determines the most suitable platform
+library, and then redirects function calls.
 
 .. graphviz::
 
@@ -36,7 +42,8 @@ determines the most suitable platform library, and then redirects function calls
     Sdk->Lib3;
   }
 
-The application must use the include file, **mfxvideo.h** for C/C++ programming) and link the SDK dispatcher library, **libmfx.so**.
+The application must use the include file, **mfxvideo.h** for C/C++ programming)
+and link the SDK dispatcher library, **libmfx.so**.
 
 Include these files:
 
@@ -50,27 +57,37 @@ Link this library:
 
    libmfx.so                /* The SDK dynamic dispatcher library (Linux)*/
 
-The SDK functions organize into classes for easy reference. The classes include **ENCODE** (encoding functions),
-**DECODE** (decoding functions), and **VPP** (video processing functions).
+The SDK functions are organized into classes for easy reference. The classes
+include **ENCODE** (encoding functions), **DECODE** (decoding functions), and
+**VPP** (video processing functions).
 
-**Init**, **Reset** and **Close** are member functions within the **ENCODE**, **DECODE** and **VPP** classes that initialize, restart
-and de-initialize specific operations defined for the class. Call all other member functions within a given class
-(except **Query** and **QueryIOSurf**) within the **Init** … **Reset** (optional) … **Close** sequence.
+**Init**, **Reset**, and **Close** are member functions within the **ENCODE**,
+**DECODE**, and **VPP** classes that initialize, restart, and deinitialize
+specific operations defined for the class. Call all other member functions within
+a given class (except **Query** and **QueryIOSurf**) within the **Init** … **Reset**
+(optional) … **Close** sequence.
 
-The **Init** and **Reset** member functions both set up necessary internal structures for media processing. The difference between
-the two is that the **Init** functions allocate memory while the **Reset** functions only reuse allocated internal memory. Therefore,
-**Reset** can fail if the SDK needs to allocate additional memory. **Reset** functions can also fine-tune **ENCODE** and **VPP** parameters
-during those processes or reposition a bitstream during **DECODE**.
+The **Init** and **Reset** member functions both set up necessary internal
+structures for media processing. The difference between the two is that the
+**Init** functions allocate memory while the **Reset** functions only reuse
+allocated internal memory. **Reset** can fail if the SDK needs to allocate
+additional memory. **Reset** functions can also fine-tune **ENCODE** and **VPP**
+parameters during those processes or reposition a bitstream during **DECODE**.
 
-All SDK functions return status codes to indicate whether an operation succeeded or failed. See the mfxStatus enumerator
-for all defined status codes. The status code :cpp:enumerator:`MFX_ERR_NONE` indicates that the function successfully completed its operation.
-Status codes are less than :cpp:enumerator:`MFX_ERR_NONE` for all errors and greater than :cpp:enumerator:`MFX_ERR_NONE` for all warnings.
+All SDK functions return status codes to indicate whether an operation succeeded
+or failed. See the mfxStatus enumerator for all defined status codes. The status
+code :cpp:enumerator:`MFX_ERR_NONE` indicates that the function successfully
+completed its operation. Status codes are less than :cpp:enumerator:`MFX_ERR_NONE`
+for all errors and greater than :cpp:enumerator:`MFX_ERR_NONE` for all warnings.
 
-If an SDK function returns a warning, it has sufficiently completed its operation, although the output of the function might
-not be strictly reliable. The application must check the validity of the output generated by the function.
+If an SDK function returns a warning, it has sufficiently completed its operation,
+although the output of the function might not be strictly reliable. The application
+must check the validity of the output generated by the function.
 
-If an SDK function returns an error (except :cpp:enumerator:`MFX_ERR_MORE_DATA` or :cpp:enumerator:`MFX_ERR_MORE_SURFACE` or
-:cpp:enumerator:`MFX_ERR_MORE_BITSTREAM`), the function
-aborts the operation. The application must call either the **Reset** function to put the class back to a clean state, or the **Close**
-function to terminate the operation. The behavior is undefined if the application continues to call any class member functions
-without a **Reset** or **Close**. To avoid memory leaks, always call the Close function after Init.
+If an SDK function returns an error (except :cpp:enumerator:`MFX_ERR_MORE_DATA`,
+:cpp:enumerator:`MFX_ERR_MORE_SURFACE`, or :cpp:enumerator:`MFX_ERR_MORE_BITSTREAM`),
+the function aborts the operation. The application must call either the **Reset**
+function to put the class back to a clean state, or the **Close** function to
+terminate the operation. The behavior is undefined if the application continues
+to call any class member functions without a **Reset** or **Close**. To avoid
+memory leaks, always call the **Close** function after **Init**.

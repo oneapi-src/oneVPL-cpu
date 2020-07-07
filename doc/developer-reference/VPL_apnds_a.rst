@@ -1,55 +1,67 @@
-The mfxFrameInfo structure is used by both the :cpp:struct:`mfxVideoParam` structure during SDK class initialization and the
-:cpp:struct:`mfxFrameSurface1` structure during the actual SDK class function. The following constraints apply:
+===================================
+Configuration Parameter Constraints
+===================================
 
-Constraints common for **DECODE**, **ENCODE** and **VPP**:
+The mfxFrameInfo structure is used by both the :cpp:struct:`mfxVideoParam`
+structure during SDK class initialization and the :cpp:struct:`mfxFrameSurface1`
+structure during the actual SDK class function. The parameter constraints
+described in the following tables apply.
 
-+--------------+---------------------------+---------------------------------------------------------------------------------------------+
-| Parameters   | During SDK initialization | During SDK operation                                                                        |
-+==============+===========================+=============================================================================================+
-| FourCC       | Any valid value           | The value must be the same as the initialization value.                                     |
-|              |                           |                                                                                             |
-|              |                           | The only exception is **VPP** in composition mode, where in some cases it is allowed to     |
-|              |                           |                                                                                             |
-|              |                           | mix RGB and NV12 surfaces. See :cpp:struct:`mfxExtVPPComposite` for more details.           |
-+--------------+---------------------------+---------------------------------------------------------------------------------------------+
-| ChromaFormat | Any valid value           | The value must be the same as the initialization value.                                     |
-+--------------+---------------------------+---------------------------------------------------------------------------------------------+
+------------------------------------------
+DECODE, ENCODE, and VPP Common Constraints
+------------------------------------------
 
-Constraints for **DECODE**:
++--------------+---------------------------+-----------------------------------------------------------+
+| Parameters   | During SDK Initialization | During SDK Operation                                      |
++==============+===========================+===========================================================+
+| FourCC       | Any valid value           | The value must be the same as the initialization value.   |
+|              |                           | The only exception is **VPP** in composition mode, where  |
+|              |                           | in some cases it is allowed to mix RGB and NV12 surfaces. |
+|              |                           | See :cpp:struct:`mfxExtVPPComposite` for more details.    |
++--------------+---------------------------+-----------------------------------------------------------+
+| ChromaFormat | Any valid value           | The value must be the same as the initialization value.   |
++--------------+---------------------------+-----------------------------------------------------------+
 
-+-------------------+-------------------------------------------------------------+------------------------------------------------------------+
-| Parameters        | During SDK initialization                                   | During SDK operation                                       |
-+===================+=============================================================+============================================================+
-| Width             | Aligned frame size                                          | The values must be the equal to or larger than the         |
-|                   |                                                             |                                                            |
-| Height            |                                                             | initialization values.                                     |
-+-------------------+-------------------------------------------------------------+------------------------------------------------------------+
-| CropX, CropY      | Ignored                                                     | **DECODE** output. The cropping values are per-frame based.|
-|                   |                                                             |                                                            |
-| CropW, CropH      |                                                             |                                                            |
-+-------------------+-------------------------------------------------------------+------------------------------------------------------------+
-| AspectRatioW      | Any valid values or unspecified (zero); if unspecified,     | **DECODE** output.                                         |
-|                   |                                                             |                                                            |
-| AspectRatioH      | values from the input bitstream will be used;               |                                                            |
-|                   |                                                             |                                                            |
-|                   | see note below the table.                                   |                                                            |
-+-------------------+-------------------------------------------------------------+------------------------------------------------------------+
-| FrameRateExtN     | If unspecified, values from the input bitstream will be     | **DECODE** output.                                         |
-|                   |                                                             |                                                            |
-| FrameRateExtD     | used; see note below the table.                             |                                                            |
-+-------------------+-------------------------------------------------------------+------------------------------------------------------------+
-| PicStruct         | Ignored                                                     | **DECODE** output.                                         |
-+-------------------+-------------------------------------------------------------+------------------------------------------------------------+
+------------------
+DECODE Constraints
+------------------
+
++---------------+-----------------------------------------+----------------------------------------+
+| Parameters    | During SDK initialization               | During SDK operation                   |
++===============+=========================================+========================================+
+| Width         | Aligned frame size                      | The values must be the equal to or     |
+|               |                                         | larger than the initialization values. |
+| Height        |                                         |                                        |
++---------------+-----------------------------------------+----------------------------------------+
+| CropX, CropY  | Ignored                                 | **DECODE** output. The cropping values |
+|               |                                         | are per-frame based.                   |
+| CropW, CropH  |                                         |                                        |
++---------------+-----------------------------------------+----------------------------------------+
+| AspectRatioW  | Any valid values or unspecified (zero); | **DECODE** output.                     |
+|               | if unspecified, values from the input   |                                        |
+| AspectRatioH  | bitstream will be used.                 |                                        |
+|               | See note below the table.               |                                        |
++---------------+-----------------------------------------+----------------------------------------+
+| FrameRateExtN | If unspecified, values from the input   | **DECODE** output.                     |
+|               | bitstream will be used.                 |                                        |
+| FrameRateExtD | See note below the table.               |                                        |
++---------------+-----------------------------------------+----------------------------------------+
+| PicStruct     | Ignored                                 | **DECODE** output.                     |
++---------------+-----------------------------------------+----------------------------------------+
 
 .. note:: Note about priority of initialization parameters.
 
-.. note:: If application explicitly sets FrameRateExtN/FrameRateExtD or AspectRatioW/AspectRatioH during initialization then decoder uses these
-          values during decoding regardless of values from bitstream and does not update them on new SPS. If application sets them to 0, then decoder
-          uses values from stream and update them on each SPS.
+.. note:: If the application explicitly sets FrameRateExtN/FrameRateExtD or
+          AspectRatioW/AspectRatioH during initialization, then the decoder will
+          use these values during decoding regardless of the values from bitstream
+          and does not update them on new SPS. If the application sets them to 0,
+          then the decoder uses values from the stream and updates them on each SPS.
 
+------------------
+ENCODE Constraints
+------------------
 
-
-Constraints for **ENCODE**:
+.. note:: TODO This table differs from the equivalent table in the spec. Which should be considered the correct version?
 
 +-------------------+----------------------------------------------+---------------------------------------------------------------------------+
 | Parameters        | During SDK initialization                    | During SDK operation                                                      |
@@ -72,52 +84,97 @@ Constraints for **ENCODE**:
 | FrameRateExtD     |                                              |                                                                           |
 +-------------------+----------------------------------------------+---------------------------------------------------------------------------+
 
+-----------------------------------
+Specifying Configuration Parameters
+-----------------------------------
 
-The following table summarizes how to specify the configuration parameters during initialization and during encoding, decoding and video processing:
+The :ref:`Configuration Parameters table <config-param-table>` summarizes how to specify the configuration
+parameters during initialization, encoding, decoding, and video processing.
 
-=========================== =============== =================== =============== =================== ============ ==================
-Structure (param)           **ENCODE** Init **ENCODE** Encoding **DECODE** Init **DECODE** Decoding **VPP** Init **VPP** Processing
-=========================== =============== =================== =============== =================== ============ ==================
-:cpp:struct:`mfxVideoParam`	   					
-   Protected                R               -                   R               -                   R            -
-   IOPattern                M               -                   M               -                   M            -
-   ExtParam                 O               -                   O               -                   O            -
-   NumExtParam              O               -                   O               -                   O            -
-:cpp:struct:`mfxInfoMFX`						
-   CodecId                  M               -                   M               -                   -            -
-   CodecProfile             O               -                   O/M*            -                   -            -
-   CodecLevel               O               -                   O               -                   -            -
-   NumThread                O               -                   O               -                   -            -
-   TargetUsage              O               -                   -               -                   -            -
-   GopPicSize               O               -                   -               -                   -            -
-   GopRefDist               O               -                   -               -                   -            -
-   GopOptFlag               O               -                   -               -                   -            -
-   IdrInterval              O               -                   -               -                   -            -
-   RateControlMethod        O               -                   -               -                   -            -
-   InitialDelayInKB         O               -                   -               -                   -            -
-   BufferSizeInKB           O               -                   -               -                   -            -
-   TargetKbps               M               -                   -               -                   -            -
-   MaxKbps                  O               -                   -               -                   -            -
-   NumSlice                 O               -                   -               -                   -            -
-   NumRefFrame              O               -                   -               -                   -            -
-   EncodedOrder             M               -                   -               -                   -            -
-:cpp:struct:`mfxFrameInfo`						
-   FourCC                   M               M                   M               M                   M            M
-   Width                    M               M                   M               M                   M            M
-   Height                   M               M                   M               M                   M            M
-   CropX                    M               Ign                 Ign             U                   Ign          M
-   CropY                    M               Ign                 Ign             U                   Ign          M
-   CropW                    M               Ign                 Ign             U                   Ign          M
-   CropH                    M               Ign                 Ign             U                   Ign          M
-   FrameRateExtN            M               Ign                 O               U                   M            U
-   FrameRateExtD            M               Ign                 O               U                   M            U
-   AspectRatioW             O               Ign                 O               U                   Ign          PT
-   AspectRatioH             O               Ign                 O               U                   Ign          PT
-   PicStruct                O               M                   Ign             U                   M            M/U
-   ChromaFormat             M               M                   M               M                   Ign          Ign
-=========================== =============== =================== =============== =================== ============ ==================
+.. _config-param-table:
 
-Table Legend:
+.. table:: Configuration Parameters
+
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   | **Structure (param)** | **ENCODE** | **ENCODE**   | **DECODE** | **DECODE**   | **VPP**  | **VPP**        |
+   |                       | **Init**   | **Encoding** | **Init**   | **Decoding** | **Init** | **Processing** |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   | :cpp:struct:`mfxVideoParam`                                                                               |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  Protected            | R          | -            | R          | -            | R        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  IOPattern            | M          | -            | M          | -            | M        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  ExtParam             | O          | -            | O          | -            | O        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  NumExtParam          | O          | -            | O          | -            | O        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   | :cpp:struct:`mfxInfoMFX`                                                                                  |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CodecId              | M          | -            | M          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CodecProfile         | O          | -            | O/M\*      | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CodecLevel           | O          | -            | O          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+ 
+   |  NumThread            | O          | -            | O          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  TargetUsage          | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  GopPicSize           | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  GopRefDist           | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  GopOptFlag           | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  IdrInterval          | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  RateControlMethod    | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  InitialDelayInKB     | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  BufferSizeInKB       | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  TargetKbps           | M          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  MaxKbps              | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  NumSlice             | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  NumRefFrame          | O          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  EncodedOrder         | M          | -            | -          | -            | -        | -              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   | :cpp:struct:`mfxFrameInfo`                                                                                |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  FourCC               | M          | M            | M          | M            | M        | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  Width                | M          | M            | M          | M            | M        | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  Height               | M          | M            | M          | M            | M        | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CropX                | M          | Ign          | Ign        | U            | Ign      | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CropY                | M          | Ign          | Ign        | U            | Ign      | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CropW                | M          | Ign          | Ign        | U            | Ign      | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  CropH                | M          | Ign          | Ign        | U            | Ign      | M              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  FrameRateExtN        | M          | Ign          | O          | U            | M        | U              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  FrameRateExtD        | M          | Ign          | O          | U            | M        | U              |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  AspectRatioW         | O          | Ign          | O          | U            | Ign      | PT             |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  AspectRatioH         | O          | Ign          | O          | U            | Ign      | PT             |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  PicStruct            | O          | M            | Ign        | U            | M        | M/U            |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+   |  ChromaFormat         | M          | M            | M          | M            | Ign      | Ign            |
+   +-----------------------+------------+--------------+------------+--------------+----------+----------------+
+
+Legend for the :ref:`Configuration Parameters table <config-param-table>`:
 
 ======= =================
 Remarks

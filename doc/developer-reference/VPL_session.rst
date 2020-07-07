@@ -1,107 +1,141 @@
-Before calling any SDK functions, the application must initialize the SDK library and create an SDK session.
-An SDK session maintains context for the use of any of **DECODE**, **ENCODE**, or **VPP** functions.
+===========
+SDK Session
+===========
 
-Media SDK dispatcher (legacy)
+Before calling any SDK functions, the application must initialize the SDK
+library and create an SDK session. An SDK session maintains context for the use
+of any of **DECODE**, **ENCODE**, or **VPP** functions.
 
+------------------------------------
+|msdk_full_name| Dispatcher (Legacy)
+------------------------------------
 
-The function :cpp:func:`MFXInit` starts (initializes) an SDK session. :cpp:func:`MFXClose` closes (de-initializes) the SDK session.
-To avoid memory leaks, always call :cpp:func:`MFXClose` after :cpp:func:`MFXInit`.
+The function :cpp:func:`MFXInit` starts (initializes) an SDK session.
+:cpp:func:`MFXClose` closes (de-initializes) the SDK session. To avoid memory
+leaks, always call :cpp:func:`MFXClose` after :cpp:func:`MFXInit`.
 
-The application can initialize a session as a software-based session (:cpp:enumerator:`MFX_IMPL_SOFTWARE`) or a hardware-based session
-(:cpp:enumerator:`MFX_IMPL_HARDWARE`). In the former case, the SDK functions execute on a CPU, and in the latter case, the SDK functions
-use platform acceleration capabilities. For platforms that expose multiple graphic devices, the application can initialize
-the SDK session on any alternative graphic device (:cpp:enumerator:`MFX_IMPL_HARDWARE1`,..., :cpp:enumerator:`MFX_IMPL_HARDWARE4`).
+The application can initialize a session as a software-based session
+(:cpp:enumerator:`MFX_IMPL_SOFTWARE`) or a hardware-based session
+(:cpp:enumerator:`MFX_IMPL_HARDWARE`). In the software scenario, the SDK
+functions execute on a CPU, and in the hardware scenario, the SDK functions
+use platform acceleration capabilities. For platforms that expose multiple
+graphic devices, the application can initialize the SDK session on any
+alternative graphic device (:cpp:enumerator:`MFX_IMPL_HARDWARE1`,..., :cpp:enumerator:`MFX_IMPL_HARDWARE4`).
 
-The application can also initialize a session to be automatic (:cpp:enumerator:`MFX_IMPL_AUTO` or :cpp:enumerator:`MFX_IMPL_AUTO_ANY`), instructing
-the dispatcher library to detect the platform capabilities and choose the best SDK library available. After initialization,
-the SDK returns the actual implementation through the :cpp:func:`MFXQueryIMPL` function.
+The application can also initialize a session to be automatic (:cpp:enumerator:`MFX_IMPL_AUTO`
+or :cpp:enumerator:`MFX_IMPL_AUTO_ANY`), instructing the dispatcher library to
+detect the platform capabilities and choose the best SDK library available. After
+initialization, the SDK returns the actual implementation through the
+:cpp:func:`MFXQueryIMPL` function.
 
-Internally, dispatcher works in that way:
+Internally, the dispatcher works as follows:
 
-1. It seaches for the shared library with the specific name:
+#. It searches for the shared library with the specific name:
 
-   ======= =============== ====================================
-   OS      Name            Description
-   ======= =============== ====================================
-   Linux   libmfxsw64.so.1 64-bit software-based implementation
-   Linux   libmfxsw32.so.1 32-bit software-based implementation
-   Linux   libmfxhw64.so.1 64-bit hardware-based implementation
-   Linux   libmfxhw64.so.1 32-bit hardware-based implementation
-   Windows libmfxsw32.dll  64-bit software-based implementation
-   Windows libmfxsw32.dll  32-bit software-based implementation
-   Windows libmfxhw64.dll  64-bit hardware-based implementation
-   Windows libmfxhw64.dll  32-bit hardware-based implementation
-   ======= =============== ====================================
+   ========= =============== ====================================
+   OS        Name            Description
+   ========= =============== ====================================
+   Linux\*   libmfxsw64.so.1 64-bit software-based implementation
+   Linux     libmfxsw32.so.1 32-bit software-based implementation
+   Linux     libmfxhw64.so.1 64-bit hardware-based implementation
+   Linux     libmfxhw64.so.1 32-bit hardware-based implementation
+   Windows\* libmfxsw32.dll  64-bit software-based implementation
+   Windows   libmfxsw32.dll  32-bit software-based implementation
+   Windows   libmfxhw64.dll  64-bit hardware-based implementation
+   Windows   libmfxhw64.dll  32-bit hardware-based implementation
+   ========= =============== ====================================
 
-2. Once library is loaded, dispatcher obtains addresses of an each SDK function. See table with the list of functions to export.
+#. Once the library is loaded, the dispatcher obtains addresses of each SDK
+   function. See table with the list of functions to export.
 
+-----------------
+oneVPL Dispatcher
+-----------------
 
+The oneVPL dispatcher extends the legacy dispatcher by providing additional
+ability to select the appropriate implementation based on the implementation
+capabilities. Implementation capabilities include information about supported
+decoders, encoders, and VPP filters. For each supported encoder, decoder, and
+filter, capabilities include information about supported memory types, color
+formats, and image (frame) size in pixels.
 
-oneVPL dispatcher
+The recommended approach to configure the dispatcher's capabilities
+search filters and to create a session based on suitable implementation is as
+follows:
 
+#. Create loader (dispatcher function :cpp:func:`MFXLoad`).
+#. Create loader's configuration (dispatcher function :cpp:func:`MFXCreateConfig`).
+#. Add configuration properties (dispatcher function :cpp:func:`MFXSetConfigFilterProperty`).
+#. Explore available implementations according (dispatcher function
+   :cpp:func:`MFXEnumImplementations`).
+#. Create suitable session (dispatcher function :cpp:func:`MFXCreateSession`).
 
-oneVPL dispatcher extends the legacy dispatcher by providing additional ability to select appropriate implementation based on the implementation
-capabilities. Implementation capabilities include information about supported decoders, encoders and VPP filters. For each supported encoder, decoder and filter,
-capabilities include information about supported memory types, color formats, image (frame) size in pixels and so on.
+The procedure to terminate an application is as follows:
 
-This is recomended way for the user to configure the dispatcher's capabilities search filters and create session based on suitable implementation:
-
-- Create loader (:cpp:func:`MFXLoad` dispatcher's function).
-- Create loader's config (:cpp:func:`MFXCreateConfig` dispatcher's function).
-- Add config properties (:cpp:func:`MFXSetConfigFilterProperty` dispatcher's function).
-- Explore avialable implementations according (:cpp:func:`MFXEnumImplementations` dispatcher's function).
-- Create suitable session (:cpp:func:`MFXCreateSession` dispatcher's function).
-
-This is application termination procedure:
-
-- Destroys session (:cpp:func:`MFXClose` function).
-- Destroys loader (:cpp:func:`MFXUnload` dispatcher's function).
+#. Destroy session (function :cpp:func:`MFXClose`).
+#. Destroy loader (dispatcher function :cpp:func:`MFXUnload`).
 
 .. note:: Multiple loader instances can be created.
-.. note:: Each loader may have multiple config objects assotiated with it.
-.. important:: One config object can handle only one filter property.
+
+.. note:: Each loader may have multiple configuration objects associated with it.
+
+.. important:: One configuration object can handle only one filter property.
+
 .. note:: Multiple sessions can be created by using one loader object.
 
-When dispatcfher searches for the implementation it uses following priority rules:
+When the dispatcher searches for the implementation, it uses the following
+priority rules:
 
-1. HW implementation has priority over SW implementation.
-2. Gen HW implementation hase priority over VSI HW implementation.
-3. Highest API version has higher priority over lower API version.
+#. Hardware implementation has priority over software implementation.
+#. General hardware implementation has priority over VSI hardware implementation.
+#. Highest API version has higher priority over lower API version.
 
-.. note:: Implementation has priority over the API version. In other words, dispatcher must return implementation with highest API priority (greater
-          or equal to the requested).
+.. note:: Implementation has priority over the API version. In other words, the
+          dispatcher must return the implementation with the highest API
+          priority (greater or equal to the implementation requested).
 
-Dispatcher searches implemetation in the following folders at runtime (in priority order):
+Dispatcher searches implementation in the following folders at runtime (in
+priority order):
 
-1. User-defined search folders.
-2. oneVPL package.
-3. Standalone MSDK package (or driver).
+#. User-defined search folders.
+#. oneVPL package.
+#. Standalone |msdk_full_name| package (or driver).
 
-User has ability to develop it's own implementation and guide oneVPL dispatcher to load his implementation by providing list of search folders.
-The way how it can be done depends on OS.
+A user has the ability to develop their own implementation and guide the oneVPL
+dispatcher to load their implementation by providing a list of search folders.
+The specific steps depend on which OS is used.
 
-- linux: User can provide colon separated list of folders in ONEVPL_SEARCH_PATH environmental variable.
-- Windows: User can provide semicolon separated list of folders in ONEVPL_SEARCH_PATH environmental variable. Alternatively, user can use Windows registry.
+* Linux: User can provide colon separated list of folders in
+  ONEVPL_SEARCH_PATH environmental variable.
+* Windows: User can provide semicolon separated list of folders in
+  ONEVPL_SEARCH_PATH environmental variable. Alternatively, the user can use the
+  Windows registry.
 
-Different SW implementations is supported by the dispatcher. User can use field :cpp:member:`mfxImplDescription::VendorID` or 
-:cpp:member:`mfxImplDescription::VendorImplID` or :cpp:member:`mfxImplDescription::ImplName` to search for the particular implementation.
+The dispatcher supports different software implementations. The user can use
+field :cpp:member:`mfxImplDescription::VendorID` or
+:cpp:member:`mfxImplDescription::VendorImplID` or :cpp:member:`mfxImplDescription::ImplName`
+to search for the particular implementation.
 
-Internally, dispatcher works in that way:
+Internally, the dispatcher works as follows:
 
-1. Dispatcher loads any shared library with in given search floders.
-2. For each loaded library, dispatcher tries to resolve adress of the :cpp:func:`MFXQueryImplCapabilities` function to collect the implamentation;s
+#. Dispatcher loads any shared library within the given search folders.
+#. For each loaded library, the dispatcher tries to resolve address of the
+   :cpp:func:`MFXQueryImplCapabilities` function to collect the implementation's
    capabilities.
-3. Once user requested to create the session based on this implementation, dispatcher obtains addresses of an each SDK function. See table with the
+#. Once the user has requested to create the session based on this implementation,
+   the dispatcher obtains addresses of each SDK function. See table with the
    list of functions to export.
 
-This table summarizes list of evviromental variables to control the dispatcher behaviour:
+This table summarizes the list of environmental variables to control the
+dispatcher behavior:
 
-================== ====================================================================
-Varible            Purpose
-================== ====================================================================
+================== =============================================================
+Variable           Purpose
+================== =============================================================
 ONEVPL_SEARCH_PATH List of user-defined search folders.
-================== ====================================================================
+================== =============================================================
 
 
-.. note:: Each implementation must support both dispatchers for backward compatibility with existing applications.
+.. note:: Each implementation must support both dispatchers for backward
+          compatibility with existing applications.
 

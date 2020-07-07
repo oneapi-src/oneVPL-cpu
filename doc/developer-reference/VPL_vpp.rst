@@ -1,4 +1,9 @@
-Video processing (**VPP**) takes raw frames as input and provides raw frames as output.
+================
+Video Processing
+================
+
+Video processing (**VPP**) takes raw frames as input and provides raw frames as
+output.
 
 
 

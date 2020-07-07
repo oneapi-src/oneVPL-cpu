@@ -1,63 +1,49 @@
-The **DECODE** class of functions takes a compressed bitstream as input and converts it to raw frames as output.
+==============
+Video Decoding
+==============
 
-**DECODE** processes only pure or elementary video streams. The library cannot process bitstreams
-that reside in a container format, such as MP4 or MPEG. The application must first de-multiplex the bitstreams.
-De-multiplexing extracts pure video streams out of the container format. The application can provide the input
-bitstream as one complete frame of data, less than one frame (a partial frame), or multiple frames.
-If only a partial frame is provided, **DECODE** internally constructs one frame of data before decoding it.
+The **DECODE** class of functions take a compressed bitstream as input and
+converts it to raw frames as output.
 
-The time stamp of a bitstream buffer must be accurate to the first byte of the frame data. That is, the first byte of a video coding
-layer NAL unit for H.264, or picture header for MPEG-2 and VC-1. **DECODE** passes the time stamp to the output surface for audio and
-video multiplexing or synchronization.
+**DECODE** processes only pure or elementary video streams. The library cannot
+process bitstreams that reside in a container format, such as MP4 or MPEG. The
+application must first demultiplex the bitstreams. Demultiplexing extracts pure
+video streams out of the container format. The application can provide the input
+bitstream as one complete frame of data, a partial frame (less than one complete
+frame), or multiple frames. If only a partial frame is provided, **DECODE**
+internally constructs one frame of data before decoding it.
 
-Decoding the first frame is a special case, since **DECODE** does not provide enough configuration parameters to correctly process
-the bitstream. **DECODE** searches for the sequence header (a sequence parameter set in H.264, or a sequence header in MPEG-2 and VC-1)
-that contains the video configuration parameters used to encode subsequent video frames. The decoder skips any bitstream prior
-to that sequence header. In the case of multiple sequence headers in the bitstream, **DECODE** adopts the new configuration parameters,
-ensuring proper decoding of subsequent frames.
+The time stamp of a bitstream buffer must be accurate to the first byte of the
+frame data. For H.264, the first byte of the frame data comes from the NAL unit
+in the video coding layer. For MPEG-2 or VC-1, the first byte of the frame data
+comes from the picture header.
 
-**DECODE** supports repositioning of the bitstream at any time during decoding. Because there is no way to obtain the correct
-sequence header associated with the specified bitstream position after a position change, the application must supply **DECODE**
-with a sequence header before the decoder can process the next frame at the new position. If the sequence header required to
-correctly decode the bitstream at the new position is not provided by the application, **DECODE** treats the new location as a new
-“first frame” and follows the procedure for decoding first frames.
+**DECODE** passes the time stamp to the output surface for audio and video
+multiplexing or synchronization.
 
+Decoding the first frame is a special case, since **DECODE** does not provide
+enough configuration parameters to correctly process the bitstream. **DECODE**
+searches for the sequence header (a sequence parameter set in H.264, or a
+sequence header in MPEG-2 and VC-1) that contains the video configuration
+parameters used to encode subsequent video frames. The decoder skips any
+bitstream prior to that sequence header. In the case of multiple sequence headers
+in the bitstream, **DECODE** adopts the new configuration parameters, ensuring
+proper decoding of subsequent frames.
 
-Example 1 shows the pseudo code of the decoding procedure. The following describes a few key points:
+**DECODE** supports repositioning of the bitstream at any time during decoding.
+Because there is no way to obtain the correct sequence header associated with
+the specified bitstream position after a position change, the application must
+supply **DECODE** with a sequence header before the decoder can process the next
+frame at the new position. If the sequence header required to correctly decode
+the bitstream at the new position is not provided by the application, **DECODE**
+treats the new location as a new “first frame” and follows the procedure for
+decoding first frames.
 
-- The application can use the :cpp:func:`MFXVideoDECODE_DecodeHeader` function to retrieve decoding initialization parameters
-  from the bitstream. This step is optional if such parameters are retrievable from other sources such as an
-  audio/video splitter.
-- The application uses the :cpp:func:`MFXVideoDECODE_QueryIOSurf` function to obtain the number of working frame surfaces required
-  to reorder output frames. This call is optional and required when application uses external allocation.
-- The application calls the :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function for a decoding operation, with the bitstream buffer (bits), and an unlocked working frame surface (work) as input parameters. 
+------------------
+Decoding Procedure
+------------------
 
-.. attention:: Starting from API version 2.0 application can provide NULL as working frame surface what leads to internal memory allocation. 
-
-If decoding output is not available, the function returns a status code requesting additional bitstream input or working frame surfaces as follows:
-
-  - :cpp:enumerator:`MFX_ERR_MORE_DATA`: The function needs additional bitstream input. The existing buffer contains less than a frame worth of bitstream data.
-  - :cpp:enumerator:`MFX_ERR_MORE_SURFACE`: The function needs one more frame surface to produce any output.
-  - :cpp:enumerator:`MFX_ERR_REALLOC_SURFACE`: Dynamic resolution change case - the function needs bigger working frame surface (work).
-
-- Upon successful decoding, the :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function returns :cpp:enumerator:`MFX_ERR_NONE`. However, the decoded frame data
-  (identified by the disp pointer) is not yet available because the :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function is asynchronous.
-  The application has to use the :cpp:func:`MFXVideoCORE_SyncOperation` or :cpp:struct:`mfxFrameSurfaceInterface` interface to synchronize the decoding operation before retrieving
-  the decoded frame data.
-- At the end of the bitstream, the application continuously calls the :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function with a NULL
-  bitstream pointer to drain any remaining frames cached within the SDK decoder, until the function returns :cpp:enumerator:`MFX_ERR_MORE_DATA`.
-
-Example 2 below demonstrates simplified decoding procedure.
-
-.. _simplified-decoding-procedure:
-
-Starting for API version 2.0 new decoding approach has been introduced. For simple use cases, when user just wants to decode some elementary stream and 
-don't want to set additional parameters, the simplified procedure of Decoder's initialization has been proposed. For such situations it is possible to skip 
-explicit stages of stream's header decodeng and Decoder's initialization and perform it implicitly during decoding of first frame. 
-This change also requires additional field in mfxBitstream object to indicate codec type. In that mode decoder allocates mfxFrameSurface1 internally, 
-so users should set input surface to zero.   
-
-Example 1: Decoding Pseudo Code
+The following pseudo code shows the decoding procedure:
 
 .. code-block:: c++
 
@@ -88,7 +74,44 @@ Example 1: Decoding Pseudo Code
    MFXVideoDECODE_Close();
    free_pool_of_frame_surfaces();
 
-Example 2: Simplified decoding procedure
+
+Note the following key points about the example:
+
+- The application can use the :cpp:func:`MFXVideoDECODE_DecodeHeader` function
+  to retrieve decoding initialization parameters from the bitstream. This step
+  is optional if the data is retrievable from other sources such as an
+  audio/video splitter.
+- The application uses the :cpp:func:`MFXVideoDECODE_QueryIOSurf` function to
+  obtain the number of working frame surfaces required to reorder output frames. This call is optional and required when application uses external allocation.
+- The application calls the :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function
+  for a decoding operation, with the bitstream buffer (bits) and an unlocked
+  working frame surface (work) as input parameters.
+
+.. attention:: Starting with API version 2.0, the application can provide NULL
+               as the working frame surface that leads to internal memory allocation.
+
+If decoding output is not available, the function returns a status code requesting additional bitstream input or working frame surfaces as follows:
+
+  - :cpp:enumerator:`MFX_ERR_MORE_DATA`: The function needs additional bitstream
+    input. The existing buffer contains less than a frame's worth of bitstream data.
+  - :cpp:enumerator:`MFX_ERR_MORE_SURFACE`: The function needs one more frame
+    surface to produce any output.
+  - :cpp:enumerator:`MFX_ERR_REALLOC_SURFACE`: Dynamic resolution change case -
+    the function needs bigger working frame surface (work).
+
+- Upon successful decoding, the :cpp:func:`MFXVideoDECODE_DecodeFrameAsync`
+  function returns :cpp:enumerator:`MFX_ERR_NONE`. However, the decoded frame
+  data (identified by the disp pointer) is not yet available because the
+  :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function is asynchronous. The
+  application must use the :cpp:func:`MFXVideoCORE_SyncOperation` or
+  :cpp:struct:`mfxFrameSurfaceInterface` interface to synchronize the decoding operation before retrieving the decoded frame data.
+- At the end of the bitstream, the application continuously calls the
+  :cpp:func:`MFXVideoDECODE_DecodeFrameAsync` function with a NULL bitstream
+  pointer to drain any remaining frames cached within the SDK decoder, until the
+  function returns :cpp:enumerator:`MFX_ERR_MORE_DATA`.
+
+
+The following example shows the simplified decoding procedure:
 
 .. code-block:: c++
 
@@ -108,3 +131,11 @@ Example 2: Simplified decoding procedure
       }
    }
 
+.. _simplified-decoding-procedure:
+
+API version 2.0 introduces a new decoding approach. For simple use cases, when
+the user wants to decode an elementary stream and doesn't want to set additional parameters, the simplified procedure of Decoder's initialization has been
+proposed. For such situations it is possible to skip explicit stages of stream's header decoding and the decoder's initialization and instead to perform it
+implicitly during decoding of the first frame. This change also requires
+additional field in the mfxBitstream object to indicate codec type. In that mode
+the decoder allocates mfxFrameSurface1 internally, so users should set input surface to zero.

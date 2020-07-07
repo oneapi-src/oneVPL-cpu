@@ -1,20 +1,26 @@
+====================================
+Limitations and Supported Parameters
+====================================
+
+-----------------
 Known Limitations
-^^^^^^^^^^^^^^^^^^
+-----------------
 
-    * Implementation is blocking
- 
-    * Decode input bitstream buffer size must be large enough to hold several frames.  Buffer sizes which are too small may cause issues. The minimum size needed is stream dependent but enough for 10 frames is a conservative estimate.i
- 
-    * Only a limited set of parameters are supported -- see supported parameters
+* Implementation is blocking.
+* Decode input bitstream buffer size must be large enough to hold several frames.
+  Buffer sizes which are too small may cause issues. The minimum size needed is
+  stream dependent but enough for 10 frames is a conservative estimate.
+* Only a limited set of parameters are supported -- see supported parameters.
 
-
+--------------------
 Supported Parameters
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 The mfxVideoParam parameters are supported in the reference implementation.
 Please note: no extended parameter buffers are supported in this release.
 
 Decode
+------
 
 Input:
 
@@ -34,8 +40,8 @@ Output:
 | IOPattern                 | MFX_IOPATTERN_OUT_SYSTEM_MEMORY          |
 +---------------------------+------------------------------------------+
 
-
 Encode
+------
 
 Input:
 
@@ -95,10 +101,11 @@ Output:
 +-------------------------------+------------------------------------------+
 | mfx.CodecLevel                | see below                                |
 +-------------------------------+------------------------------------------+
-| mfx.TargetUsage               | 1(best quality)  -7(best speed)          | 
+| mfx.TargetUsage               | 1(best quality)  -7(best speed)          |
 +-------------------------------+------------------------------------------+
 
 Profiles
+--------
 
 +-------------------------------+-------------------------------+
 | HEVC Profiles                 | AV1 Profiles                  |
@@ -110,6 +117,7 @@ Profiles
 
 
 Levels
+------
 
 +-------------------------------+----------------+
 | HEVC Levels                   |   AV1 Levels   |
@@ -139,7 +147,7 @@ Levels
 | MFX_LEVEL_HEVC_61             |                |
 +-------------------------------+----------------+
 | MFX_LEVEL_HEVC_62             |                |
-+-------------------------------+----------------+ 
++-------------------------------+----------------+
 | MFX_TIER_HEVC_MAIN  = 0       |                |
 +-------------------------------+----------------+
 | MFX_TIER_HEVC_HIGH  = 0x100   |                |

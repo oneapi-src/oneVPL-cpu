@@ -1,7 +1,9 @@
-
+=================================
+Configuring the Build Environment
+=================================
 
 This section describes the steps to configure the environment. It extends the
-high level build information in the readme.
+high level build information in the README.
 
 The basic sequence is
 
@@ -12,12 +14,13 @@ The basic sequence is
 3. Build the code using the build script
 
 After you have configured the environment you can continue with the basic build
-steps in the readme. Note that if dependencies are not modified bootstrapping
+steps in the README. Note that if dependencies are not modified bootstrapping
 only needs to be done once. The build script will look in the location specified
 by the `VPL_BUILD_DEPENDENCIES` environment variable.
 
-Configuring the Windows environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------
+Configuring the Windows Environment
+-----------------------------------
 
 Install common developer tools
 
@@ -64,9 +67,9 @@ Get packages required by build
         pacman --needed -Sy mingw-w64-x86_64-toolchain base-devel yasm nasm mingw-w64-x86_64-cmake git python-pip mingw-w64-x86_64-meson mingw-w64-x86_64-ninja
 
 
-
-Configuring the Ubuntu environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------
+Configuring the Ubuntu Environment
+----------------------------------
 
 From a shell as root:
 
@@ -77,8 +80,9 @@ From a shell as root:
 
 
 
+------
 Docker
-^^^^^^
+------
 
 The instructions below are based on mounting the oneVPL directory from the host machine to the docker container, and assume starting from the same directory that oneVPL was cloned into.  The oneVPL directory can be copied to the container instead to create a self-contained container/image.
 
@@ -108,8 +112,8 @@ To start the container:
 Inside the docker container, oneVPL can be found at /home/oneVPL
 
 
-Building oneVPL and running the samples
-=======================================
+Building oneVPL and Running the Samples
+---------------------------------------
 
 Docker sets up all prerequisites needed.  For running outside docker, be sure to bootstrap the necessary dependencies.
 
