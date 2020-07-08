@@ -1,31 +1,31 @@
 ===========
-SDK Session
+API Session
 ===========
 
-Before calling any SDK functions, the application must initialize the SDK
-library and create an SDK session. An SDK session maintains context for the use
+Before calling any API functions, the application must initialize the API
+library and create an API session. An API session maintains context for the use
 of any of **DECODE**, **ENCODE**, or **VPP** functions.
 
 ------------------------------------
 |msdk_full_name| Dispatcher (Legacy)
 ------------------------------------
 
-The function :cpp:func:`MFXInit` starts (initializes) an SDK session.
-:cpp:func:`MFXClose` closes (de-initializes) the SDK session. To avoid memory
+The function :cpp:func:`MFXInit` starts (initializes) an API session.
+:cpp:func:`MFXClose` closes (de-initializes) the API session. To avoid memory
 leaks, always call :cpp:func:`MFXClose` after :cpp:func:`MFXInit`.
 
 The application can initialize a session as a software-based session
 (:cpp:enumerator:`MFX_IMPL_SOFTWARE`) or a hardware-based session
-(:cpp:enumerator:`MFX_IMPL_HARDWARE`). In the software scenario, the SDK
-functions execute on a CPU, and in the hardware scenario, the SDK functions
+(:cpp:enumerator:`MFX_IMPL_HARDWARE`). In the software scenario, the API
+functions execute on a CPU, and in the hardware scenario, the API functions
 use platform acceleration capabilities. For platforms that expose multiple
-graphic devices, the application can initialize the SDK session on any
+graphic devices, the application can initialize the API session on any
 alternative graphic device (:cpp:enumerator:`MFX_IMPL_HARDWARE1`,..., :cpp:enumerator:`MFX_IMPL_HARDWARE4`).
 
 The application can also initialize a session to be automatic (:cpp:enumerator:`MFX_IMPL_AUTO`
 or :cpp:enumerator:`MFX_IMPL_AUTO_ANY`), instructing the dispatcher library to
-detect the platform capabilities and choose the best SDK library available. After
-initialization, the SDK returns the actual implementation through the
+detect the platform capabilities and choose the best API library available. After
+initialization, the API returns the actual implementation through the
 :cpp:func:`MFXQueryIMPL` function.
 
 Internally, the dispatcher works as follows:
@@ -38,14 +38,14 @@ Internally, the dispatcher works as follows:
    Linux\*   libmfxsw64.so.1 64-bit software-based implementation
    Linux     libmfxsw32.so.1 32-bit software-based implementation
    Linux     libmfxhw64.so.1 64-bit hardware-based implementation
-   Linux     libmfxhw64.so.1 32-bit hardware-based implementation
-   Windows\* libmfxsw32.dll  64-bit software-based implementation
+   Linux     libmfxhw32.so.1 32-bit hardware-based implementation
+   Windows\* libmfxsw64.dll  64-bit software-based implementation
    Windows   libmfxsw32.dll  32-bit software-based implementation
    Windows   libmfxhw64.dll  64-bit hardware-based implementation
-   Windows   libmfxhw64.dll  32-bit hardware-based implementation
+   Windows   libmfxhw32.dll  32-bit hardware-based implementation
    ========= =============== ====================================
 
-#. Once the library is loaded, the dispatcher obtains addresses of each SDK
+#. Once the library is loaded, the dispatcher obtains addresses of each API
    function. See table with the list of functions to export.
 
 -----------------
@@ -123,7 +123,7 @@ Internally, the dispatcher works as follows:
    :cpp:func:`MFXQueryImplCapabilities` function to collect the implementation's
    capabilities.
 #. Once the user has requested to create the session based on this implementation,
-   the dispatcher obtains addresses of each SDK function. See table with the
+   the dispatcher obtains addresses of each API function. See table with the
    list of functions to export.
 
 This table summarizes the list of environmental variables to control the
