@@ -10,11 +10,11 @@ if(WIN32)
     DIRECTORY cmd/
     DESTINATION ${CMAKE_INSTALL_ENVDIR}
     USE_SOURCE_PERMISSIONS
-    COMPONENT development)
+    COMPONENT dev)
 else()
   install(
     DIRECTORY bash/
     DESTINATION ${CMAKE_INSTALL_ENVDIR}
     USE_SOURCE_PERMISSIONS
-    COMPONENT development)
+    COMPONENT dev)
 endif()
