@@ -21,15 +21,15 @@ mfxLoader MFXLoad() {
         return nullptr;
     }
 
-    // search directories for candidate oneVPL implementations
-    //   based on search order in spec
+    // search directories for candidate implementations based on search order in
+    // spec
     mfxStatus sts = loaderCtx->BuildListOfCandidateLibs();
     if (MFX_ERR_NONE != sts) {
         return nullptr;
     }
 
-    // prune libraries which are not oneVPL implementations
-    // fill function ptr table for each library which is
+    // prune libraries which are not actually implementations, filling function
+    // ptr table for each library which is
     mfxU32 numLibs = loaderCtx->CheckValidLibraries();
     if (numLibs == 0) {
         return nullptr;

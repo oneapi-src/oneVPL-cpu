@@ -3,6 +3,7 @@
   #
   # SPDX-License-Identifier: MIT
   ############################################################################*/
+// sample demonstrating use of oneAPI Video Processing Library loader
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -11,8 +12,6 @@
 
 #include "vpl/mfxdispatcher.h"
 #include "vpl/mfxvideo.h"
-
-// sample demonstrating use of new oneVPL loader
 
 int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
     for (mfxU16 i = 0; i < nPoolSize; i++) {
@@ -161,7 +160,7 @@ int main(int argc, char *argv[]) {
     mfxSession session = nullptr;
 
     if (argc != 2) {
-        printf("usage: hello_decode_onevpl in.h265\n\n");
+        printf("usage: hello-decode-newloader in.h265\n\n");
         printf("decodes an h265/hevc file to out.raw\n");
         printf("to view:\n");
         printf(" ffplay -s 128x96 -pix_fmt yuv420p -f rawvideo out.raw\n");

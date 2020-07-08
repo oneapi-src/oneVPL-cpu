@@ -16,9 +16,8 @@ static const VPLFunctionDesc FunctionDesc2[NumVPLFunctions] = {
 };
 
 // implementation of loader context (mfxLoader)
-// each loader instance will build a list of
-//   valid oneVPL runtimes and allow application
-//   to create sessions with them
+// each loader instance will build a list of valid runtimes and allow
+// application to create sessions with them
 LoaderCtxVPL::LoaderCtxVPL()
         : m_libInfoList(),
           m_configCtxList(),
@@ -47,7 +46,7 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
     hTestFile = FindFirstFileW(testFileName.c_str(), &testFileData);
     if (hTestFile != INVALID_HANDLE_VALUE) {
         do {
-            wchar_t libNameFull[MAX_ONEVPL_SEARCH_PATH];
+            wchar_t libNameFull[MAX_VPL_SEARCH_PATH];
             wchar_t* libNameBase;
 
             LibInfo* libInfo = new LibInfo;
@@ -56,7 +55,7 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
             memset(libInfo, 0, sizeof(LibInfo));
 
             err = GetFullPathNameW(testFileData.cFileName,
-                                   MAX_ONEVPL_SEARCH_PATH,
+                                   MAX_VPL_SEARCH_PATH,
                                    libNameFull,
                                    &libNameBase);
             if (!err) {
@@ -86,7 +85,7 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 
             // save files with ".so" (including .so.1, etc.)
             if (strstr(currFile->d_name, ".so")) {
-                char filePathC[MAX_ONEVPL_SEARCH_PATH];
+                char filePathC[MAX_VPL_SEARCH_PATH];
 
                 LibInfo* libInfo = new LibInfo;
                 if (!libInfo)
@@ -95,7 +94,7 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 
                 // get full path to found library
                 snprintf(filePathC,
-                         MAX_ONEVPL_SEARCH_PATH,
+                         MAX_VPL_SEARCH_PATH,
                          "%s/%s",
                          searchDir.c_str(),
                          currFile->d_name);
@@ -120,9 +119,8 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
     return MFX_ERR_NONE;
 }
 
-// this is where we implement searching for
-//   potential oneVPL libraries according to the rules
-//   in the spec:
+// search for implementations of oneAPI Video Processing Library (oneVPL)
+//   according to the rules in the spec:
 //
 // "Dispatcher searches implementation in the following folders at runtime (in priority order):
 //    1) User-defined search folders.
@@ -137,8 +135,7 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
 
     STRING_TYPE emptyPath; // default construction = empty
 
-    // first priority: user-defined directories in
-    //   environment variable ONEVPL_SEARCH_PATH
+    // first priority: user-defined directories in environment variable
     // TO DO - parse env var and iterate over directories found
     sts = SearchDirForLibs(emptyPath, m_libInfoList, LIB_PRIORITY_USE_DEFINED);
 
@@ -147,7 +144,7 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
 
     sts = SearchDirForLibs(m_vplPackageDir,
                            m_libInfoList,
-                           LIB_PRIORITY_ONEVPL_PACKAGE);
+                           LIB_PRIORITY_VPL_PACKAGE);
 
     // third priority: standalone MSDK/driver installation
     sts = SearchDirForLibs(emptyPath, m_libInfoList, LIB_PRIORITY_MSDK_PACKAGE);
@@ -173,10 +170,9 @@ mfxU32 LoaderCtxVPL::CheckValidLibraries() {
         // load video functions: pointers to exposed functions
         if (libInfo->hModuleVPL) {
             for (i = 0; i < NumVPLFunctions; i += 1) {
-                oneVPLFunctionPtr pProc =
-                    (oneVPLFunctionPtr)MFX::mfx_dll_get_addr(
-                        libInfo->hModuleVPL,
-                        FunctionDesc2[i].pName);
+                VPLFunctionPtr pProc = (VPLFunctionPtr)MFX::mfx_dll_get_addr(
+                    libInfo->hModuleVPL,
+                    FunctionDesc2[i].pName);
                 if (pProc) {
                     libInfo->vplFuncTable[i] = pProc;
                 }
@@ -193,9 +189,9 @@ mfxU32 LoaderCtxVPL::CheckValidLibraries() {
 
         if (libInfo->hModuleVPL) {
             for (i = 0; i < NumVPLFunctions; i += 1) {
-                oneVPLFunctionPtr pProc =
-                    (oneVPLFunctionPtr)dlsym(libInfo->hModuleVPL,
-                                             FunctionDesc2[i].pName);
+                VPLFunctionPtr pProc =
+                    (VPLFunctionPtr)dlsym(libInfo->hModuleVPL,
+                                          FunctionDesc2[i].pName);
 
                 if (pProc) {
                     libInfo->vplFuncTable[i] = pProc;
@@ -279,7 +275,7 @@ mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx,
     if (libInfo == nullptr)
         return MFX_ERR_NOT_FOUND;
 
-    oneVPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXQueryImplDescription];
+    VPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXQueryImplDescription];
 
     // call MFXQueryImplDescription() for this implementation
     // return handle to description in requested format
@@ -329,8 +325,7 @@ mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
     if (libInfo == nullptr)
         return MFX_ERR_INVALID_HANDLE;
 
-    oneVPLFunctionPtr pFunc =
-        libInfo->vplFuncTable[IdxMFXReleaseImplDescription];
+    VPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXReleaseImplDescription];
 
     // call MFXReleaseImplDescription() for this implementation
     sts = (*(mfxStatus(MFX_CDECL*)(mfxHDL))pFunc)(libInfo->implDesc);

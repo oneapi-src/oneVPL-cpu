@@ -4,8 +4,8 @@
   # SPDX-License-Identifier: MIT
   ###########################################################################*/
 
-#ifndef API_ONEVPL_MFXVIDEO___H_
-#define API_ONEVPL_MFXVIDEO___H_
+#ifndef _MFXVIDEO___H_
+#define _MFXVIDEO___H_
 
 #include "vpl/mfxvideo.h"
 
@@ -230,4 +230,4 @@ protected:
     mfxSession m_session; // (mfxSession) handle to the owning session
 };
 
-#endif // API_ONEVPL_MFXVIDEO___H_
+#endif // _MFXVIDEO___H_

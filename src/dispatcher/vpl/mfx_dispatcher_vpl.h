@@ -37,12 +37,12 @@ typedef std::string STRING_TYPE;
 typedef char CHAR_TYPE;
 #endif
 
-#define MAX_ONEVPL_SEARCH_PATH 1024
+#define MAX_VPL_SEARCH_PATH 1024
 
 // internal function to load dll by full path, fail if unsuccessful
 mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, CHAR_TYPE* dllName);
 
-typedef void(MFX_CDECL* oneVPLFunctionPtr)(void);
+typedef void(MFX_CDECL* VPLFunctionPtr)(void);
 
 enum VPLFunctionIdx {
     IdxMFXQueryImplDescription = 0,
@@ -62,9 +62,9 @@ struct VPLFunctionDesc {
 
 // priority of runtime loading, based on oneAPI-spec
 enum LibPriority {
-    LIB_PRIORITY_USE_DEFINED    = 1,
-    LIB_PRIORITY_ONEVPL_PACKAGE = 2,
-    LIB_PRIORITY_MSDK_PACKAGE   = 3,
+    LIB_PRIORITY_USE_DEFINED  = 1,
+    LIB_PRIORITY_VPL_PACKAGE  = 2,
+    LIB_PRIORITY_MSDK_PACKAGE = 3,
 };
 
 enum CfgPropState {
@@ -114,10 +114,10 @@ struct LibInfo {
     STRING_TYPE libNameBase;
     mfxU32 libPriority;
 
-    // if valid oneVPL library, store file handle
+    // if valid library, store file handle
     //   and table of exported functions
     void* hModuleVPL;
-    oneVPLFunctionPtr vplFuncTable[NumVPLFunctions]; // NOLINT
+    VPLFunctionPtr vplFuncTable[NumVPLFunctions]; // NOLINT
     mfxHDL implDesc;
 
     // used for session initialization with this implementation

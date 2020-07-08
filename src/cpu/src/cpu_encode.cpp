@@ -125,7 +125,7 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
 
     // set rate control
     if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
-        //SVT rc 0=CBR
+        // SVT-HEVC rc 0=CBR
         ret = av_opt_set(m_avEncContext->priv_data,
                          "rc",
                          "0",
@@ -133,7 +133,7 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
-        //since SVT does not distinguish between QPI/P/B, use the QPP value
+        // since SVT-HEVC does not distinguish between QPI/P/B, use QPP value
         std::stringstream qpss;
         qpss << par->mfx.QPP;
         ret = av_opt_set(m_avEncContext->priv_data,
@@ -144,7 +144,7 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else {
-        //SVT HEVC rc 1=VBR
+        //SVT-HEVC rc 1=VBR
         ret = av_opt_set(m_avEncContext->priv_data,
                          "rc",
                          "1",
@@ -217,7 +217,9 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
     if (par->mfx.CodecLevel) {
         //   int tier; | **Tier** | -tier | [0, 1] | 0 | 0: Main, 1: High |
         //   int level; | **Level** | -level | [1, 2, 2.1,3, 3.1, 4, 4.1, 5, 5.1, 5.2, 6, 6.1, 6.2] | 0 | 0 to 6.2 [0 for auto determine Level] |
-        //   In Media SDK, tier is combined with level.  In SVT it is set separately.
+
+        //   In MSDK, tier is combined with level.  In SVT-HEVC it is set
+        //   separately.
         std::stringstream tierss;
         tierss << (par->mfx.CodecLevel & MFX_TIER_HEVC_HIGH) ? 1 : 0;
         ret = av_opt_set(m_avEncContext->priv_data,
@@ -289,7 +291,7 @@ mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
 
     // set AV1 rate control (0=CQP, 1=VBR, 2 = CVBR)
     if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
-        //SVT AV1 rc 0=CBR
+        //SVT-AV1 rc 0=CBR
         ret = av_opt_set(m_avEncContext->priv_data,
                          "rc",
                          "0",
@@ -297,7 +299,7 @@ mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
-        //since SVT does not distinguish between QPI/P/B, use the QPP value
+        // since SVT-AV1 does not distinguish between QPI/P/B, use the QPP value
         std::stringstream qpss;
         qpss << par->mfx.QPP;
         ret = av_opt_set(m_avEncContext->priv_data,
@@ -308,9 +310,10 @@ mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else if (par->mfx.RateControlMethod == MFX_RATECONTROL_CBR) {
-        //since CVBR is available using this as a slightly better
-        //map than just defaulting to VBR
-        //SVT AV1 rc 2=CVBR
+        // since CVBR is available using this as a slightly better map than just
+        // defaulting to VBR
+
+        // SVT-AV1 rc 2=CVBR
         ret = av_opt_set(m_avEncContext->priv_data,
                          "rc",
                          "2",
@@ -327,8 +330,8 @@ mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
         m_avEncContext->rc_max_rate    = par->mfx.MaxKbps * 1000;
     }
     else {
-        //default to VBR
-        //SVT HEVC rc 1=VBR
+        // default to VBR
+        // SVT-HEVC rc 1=VBR
         ret = av_opt_set(m_avEncContext->priv_data,
                          "rc",
                          "1",

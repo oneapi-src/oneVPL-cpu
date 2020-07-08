@@ -55,7 +55,8 @@ git clone https://github.com/OpenVisualCloud/SVT-AV1.git && cd SVT-AV1
 git config advice.detachedHead false
 :: tip of master at 06112020
 :: this includes the fix related to link failure by common symbols (#1295)
-:: ffmpeg build and svt app build will fail without this fix in windows and with static lib.
+:: ffmpeg build and SvtHevcEncApp build will fail without this fix in
+:: windows and with static lib.
 git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 
 :: checkout dav1d

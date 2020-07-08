@@ -14,7 +14,7 @@
 #include <mutex>
 #include "vpl/mfxvideo.h"
 
-// this was removed from the oneVPL API so
+// this was removed from the API so
 //   we define it here so the samples build
 typedef struct {
     mfxU32 reserved[4];

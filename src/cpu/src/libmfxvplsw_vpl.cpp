@@ -3,7 +3,7 @@
   #
   # SPDX-License-Identifier: MIT
   ############################################################################*/
-
+/// oneAPI Video Processing Library (oneVPL) dispatcher query implementation
 #include "vpl/mfxdispatcher.h"
 
 #include "./libmfxvplsw_caps.h"

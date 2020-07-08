@@ -4,7 +4,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "linux/mfxloader_onevpl.h"
+#include "linux/mfxloader_vpl.h"
 
 mfxLoader MFXLoad() {
     return nullptr;
