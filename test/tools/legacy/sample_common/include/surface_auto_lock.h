@@ -12,7 +12,13 @@
 /*
     Rationale: locks allocator if necessary to get RAW pointers, unlock it at the end
 */
-class SurfaceAutoLock : private no_copy {
+class SurfaceAutoLock {
+    //! Deny copy construction
+    SurfaceAutoLock(const SurfaceAutoLock &);
+
+    // Deny assignment
+    void operator=(const SurfaceAutoLock &);
+
 public:
     SurfaceAutoLock(mfxFrameAllocator &alloc, mfxFrameSurface1 &srf)
             : m_alloc(alloc),

@@ -33,14 +33,19 @@ mfxStatus CopyBitstream2(mfxBitstream* dest, mfxBitstream* src) {
         dest->DataOffset = 0;
     }
     else {
-        memmove(dest->Data, dest->Data + dest->DataOffset, dest->DataLength);
+        memmove(static_cast<unsigned char*>(dest->Data),
+                static_cast<unsigned char*>(&dest->Data[dest->DataOffset]),
+                dest->DataLength);
         dest->DataOffset = 0;
     }
 
     if (src->DataLength > dest->MaxLength - dest->DataLength - dest->DataOffset)
         return MFX_ERR_NOT_ENOUGH_BUFFER;
 
-    MSDK_MEMCPY_BITSTREAM(*dest, dest->DataOffset, src->Data, src->DataLength);
+    MSDK_MEMCPY_S(static_cast<unsigned char*>(&dest->Data[dest->DataOffset]),
+                  dest->MaxLength - dest->DataOffset,
+                  static_cast<unsigned char*>(src->Data),
+                  src->DataLength);
     dest->DataLength = src->DataLength;
 
     dest->DataFlag = src->DataFlag;
@@ -51,11 +56,12 @@ mfxStatus CopyBitstream2(mfxBitstream* dest, mfxBitstream* src) {
     return MFX_ERR_NONE;
 }
 
-CSmplYUVReader::CSmplYUVReader() {
-    m_bInited             = false;
-    m_ColorFormat         = MFX_FOURCC_YV12;
-    shouldShift10BitsHigh = false;
-}
+CSmplYUVReader::CSmplYUVReader()
+        : m_ColorFormat(MFX_FOURCC_YV12),
+          m_files(NULL),
+          m_nFilesCount(0),
+          shouldShift10BitsHigh(false),
+          m_bInited(false) {}
 
 mfxStatus CSmplYUVReader::Init(std::list<msdk_string> inputs,
                                mfxU32 ColorFormat,
@@ -88,13 +94,16 @@ mfxStatus CSmplYUVReader::Init(std::list<msdk_string> inputs,
     if (!inputs.size()) {
         return MFX_ERR_UNSUPPORTED;
     }
+    m_files = new FILE*[inputs.size()];
+    memset(m_files, 0, sizeof(FILE*) * inputs.size());
+    m_nFilesCount = 0;
 
     for (ls_iterator it = inputs.begin(); it != inputs.end(); it++) {
-        FILE* f = 0;
-        MSDK_FOPEN(f, (*it).c_str(), MSDK_STRING("rb"));
-        MSDK_CHECK_POINTER(f, MFX_ERR_NULL_PTR);
-
-        m_files.push_back(f);
+        mfxStatus sts = OpenFile(*it);
+        if (MFX_ERR_NONE != sts) {
+            Close();
+            return sts;
+        }
     }
 
     m_ColorFormat = ColorFormat;
@@ -104,20 +113,39 @@ mfxStatus CSmplYUVReader::Init(std::list<msdk_string> inputs,
     return MFX_ERR_NONE;
 }
 
+mfxStatus CSmplYUVReader::OpenFile(msdk_string& name) {
+    FILE* f = NULL;
+    MSDK_FOPEN(f, name.c_str(), MSDK_STRING("rb"));
+    if (f != NULL) {
+        m_files[m_nFilesCount] = f;
+        m_nFilesCount += 1;
+        return MFX_ERR_NONE;
+    }
+    MSDK_PRINT_RET_MSG(MFX_ERR_NULL_PTR, "File pointer is NULL");
+    return MFX_ERR_NULL_PTR;
+}
+
 CSmplYUVReader::~CSmplYUVReader() {
     Close();
 }
 
 void CSmplYUVReader::Close() {
-    for (mfxU32 i = 0; i < m_files.size(); i++) {
-        fclose(m_files[i]);
+    if (m_files) {
+        for (mfxU32 i = 0; i < m_nFilesCount; i++) {
+            if (m_files[i]) {
+                fclose(m_files[i]);
+                m_files[i] = NULL;
+            }
+        }
+        delete[] m_files;
+        m_files = NULL;
     }
-    m_files.clear();
-    m_bInited = false;
+    m_nFilesCount = 0;
+    m_bInited     = false;
 }
 
 void CSmplYUVReader::Reset() {
-    for (mfxU32 i = 0; i < m_files.size(); i++) {
+    for (mfxU32 i = 0; i < m_nFilesCount; i++) {
         fseek(m_files[i], 0, SEEK_SET);
     }
 }
@@ -135,7 +163,7 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
 
     mfxU32 vid = pInfo.FrameId.ViewId;
 
-    if (vid > m_files.size()) {
+    if (vid > m_nFilesCount) {
         return MFX_ERR_UNSUPPORTED;
     }
 
@@ -395,11 +423,11 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
     return MFX_ERR_NONE;
 }
 
-CSmplBitstreamWriter::CSmplBitstreamWriter() {
-    m_fSource             = NULL;
-    m_bInited             = false;
-    m_nProcessedFramesNum = 0;
-}
+CSmplBitstreamWriter::CSmplBitstreamWriter()
+        : m_nProcessedFramesNum(0),
+          m_fSource(NULL),
+          m_bInited(false),
+          m_sFile("") {}
 
 CSmplBitstreamWriter::~CSmplBitstreamWriter() {
     Close();
@@ -460,7 +488,8 @@ mfxStatus CSmplBitstreamWriter::WriteNextFrame(mfxBitstream* pMfxBitstream,
     // print encoding progress to console every certain number of frames (not to affect performance too much)
     if (isPrint &&
         (1 == m_nProcessedFramesNum || (0 == (m_nProcessedFramesNum % 100)))) {
-        msdk_printf(MSDK_STRING("Frame number: %u\r"), m_nProcessedFramesNum);
+        msdk_printf(MSDK_STRING("Frame number: %u\r"),
+                    static_cast<unsigned int>(m_nProcessedFramesNum));
     }
 
     return MFX_ERR_NONE;
@@ -581,7 +610,9 @@ mfxStatus CSmplBitstreamReader::ReadNextFrame(mfxBitstream* pBS) {
 
     mfxU32 nBytesRead = 0;
 
-    memmove(pBS->Data, pBS->Data + pBS->DataOffset, pBS->DataLength);
+    memmove(static_cast<unsigned char*>(pBS->Data),
+            static_cast<unsigned char*>(&pBS->Data[pBS->DataOffset]),
+            pBS->DataLength);
     pBS->DataOffset = 0;
     nBytesRead      = (mfxU32)fread(pBS->Data + pBS->DataLength,
                                1,
@@ -630,9 +661,7 @@ mfxStatus CJPEGFrameReader::ReadNextFrame(mfxBitstream* pBS) {
     return sts;
 }
 
-CIVFFrameReader::CIVFFrameReader() {
-    MSDK_ZERO_MEMORY(m_hdr);
-}
+CIVFFrameReader::CIVFFrameReader() : m_hdr({ 0 }) {}
 
 #define READ_BYTES(pBuf, size)                                       \
     {                                                                \
@@ -676,7 +705,9 @@ mfxStatus CIVFFrameReader::Init(const msdk_char* strFileName) {
 mfxStatus CIVFFrameReader::ReadNextFrame(mfxBitstream* pBS) {
     MSDK_CHECK_POINTER(pBS, MFX_ERR_NULL_PTR);
 
-    memmove(pBS->Data, pBS->Data + pBS->DataOffset, pBS->DataLength);
+    memmove(static_cast<unsigned char*>(pBS->Data),
+            static_cast<unsigned char*>(&pBS->Data[pBS->DataOffset]),
+            pBS->DataLength);
     pBS->DataOffset = 0;
     pBS->DataFlag   = MFX_BITSTREAM_COMPLETE_FRAME;
 
@@ -706,14 +737,14 @@ mfxStatus CIVFFrameReader::ReadNextFrame(mfxBitstream* pBS) {
     return MFX_ERR_NONE;
 }
 
-CSmplYUVWriter::CSmplYUVWriter() {
-    m_bInited         = false;
-    m_bIsMultiView    = false;
-    m_fDest           = NULL;
-    m_fDestMVC        = NULL;
-    m_numCreatedFiles = 0;
-    m_nViews          = 0;
-};
+CSmplYUVWriter::CSmplYUVWriter()
+        : m_bInited(false),
+          m_bIsMultiView(false),
+          m_fDest(NULL),
+          m_fDestMVC(NULL),
+          m_numCreatedFiles(0),
+          m_sFile(""),
+          m_nViews(0){};
 
 mfxStatus CSmplYUVWriter::Init(const msdk_char* strFileName,
                                const mfxU32 numViews) {
@@ -1392,11 +1423,11 @@ mfxStatus ExtendMfxBitstream(mfxBitstream* pBitstream, mfxU32 nSize) {
 
     mfxU8* pData = new mfxU8[nSize];
     MSDK_CHECK_POINTER(pData, MFX_ERR_MEMORY_ALLOC);
-
-    memmove(pData,
-            pBitstream->Data + pBitstream->DataOffset,
+    mfxU8* pSrcData = &pBitstream->Data[pBitstream->DataOffset];
+    memmove(static_cast<unsigned char*>(pData),
+            static_cast<unsigned char*>(pSrcData),
             pBitstream->DataLength);
-
+    pSrcData = NULL;
     WipeMfxBitstream(pBitstream);
 
     pBitstream->Data       = pData;
@@ -1444,22 +1475,18 @@ void PartiallyLinearFNC::AddPair(mfxF64 x, mfxF64 y) {
         m_nAllocated += 20;
         mfxF64* pnew;
         pnew = new mfxF64[m_nAllocated];
-        //memcpy_s(pnew, sizeof(mfxF64)*m_nAllocated, m_pX, sizeof(mfxF64) * m_nPoints);
-        MSDK_MEMCPY_BUF(pnew,
-                        0,
-                        sizeof(mfxF64) * m_nAllocated,
-                        m_pX,
-                        sizeof(mfxF64) * m_nPoints);
+        MSDK_MEMCPY_S(static_cast<double*>(pnew),
+                      sizeof(mfxF64) * m_nAllocated,
+                      static_cast<double*>(m_pX),
+                      sizeof(mfxF64) * m_nPoints);
         delete[] m_pX;
         m_pX = pnew;
 
         pnew = new mfxF64[m_nAllocated];
-        //memcpy_s(pnew, sizeof(mfxF64)*m_nAllocated, m_pY, sizeof(mfxF64) * m_nPoints);
-        MSDK_MEMCPY_BUF(pnew,
-                        0,
-                        sizeof(mfxF64) * m_nAllocated,
-                        m_pY,
-                        sizeof(mfxF64) * m_nPoints);
+        MSDK_MEMCPY_S(static_cast<double*>(pnew),
+                      sizeof(mfxF64) * m_nAllocated,
+                      static_cast<double*>(m_pY),
+                      sizeof(mfxF64) * m_nPoints);
         delete[] m_pY;
         m_pY = pnew;
     }

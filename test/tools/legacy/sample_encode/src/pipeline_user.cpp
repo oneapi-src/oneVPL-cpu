@@ -206,11 +206,8 @@ mfxStatus CUserPipeline::Run() {
 
     mfxStatus sts = MFX_ERR_NONE;
 
-    sTask *pCurrentTask   = NULL; // a pointer to the current task
-    mfxU16 nEncSurfIdx    = 0; // index of free surface for encoder input
-    mfxU16 nRotateSurfIdx = 0; // ~ for rotation plugin input
-
-    mfxSyncPoint RotateSyncPoint = NULL; // ~ with rotation plugin call
+    sTask *pCurrentTask = NULL; // a pointer to the current task
+    mfxU16 nEncSurfIdx  = 0; // index of free surface for encoder input
 
     sts = MFX_ERR_NONE;
 

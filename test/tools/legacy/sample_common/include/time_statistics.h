@@ -81,14 +81,14 @@ public:
     inline void PrintStatistics(const msdk_char* prefix) {
         msdk_printf(
             MSDK_STRING(
-                "%s Total:%.3lfms(%lld smpls),Avg %.3lfms,StdDev:%.3lfms,Min:%.3lfms,Max:%.3lfms\n"),
+                "%s Total:%.3fms(%lld smpls),Avg %.3fms,StdDev:%.3fms,Min:%.3fms,Max:%.3fms\n"),
             prefix,
-            totalTime,
-            numMeasurements,
-            GetAvgTime(false),
-            GetTimeStdDev(false),
-            GetMinTime(false),
-            GetMaxTime(false));
+            static_cast<double>(totalTime),
+            static_cast<long long int>(numMeasurements),
+            static_cast<double>(GetAvgTime(false)),
+            static_cast<double>(GetTimeStdDev(false)),
+            static_cast<double>(GetMinTime(false)),
+            static_cast<double>(GetMaxTime(false)));
     }
 
     inline mfxU64 GetNumMeasurements() {

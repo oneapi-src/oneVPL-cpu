@@ -10,10 +10,10 @@
 
 AutomaticMutex::AutomaticMutex(MSDKMutex& mutex)
         : m_rMutex(mutex),
-          m_bLocked(false) {
-    if (MFX_ERR_NONE != Lock())
-        throw std::bad_alloc();
-};
+          m_bLocked(false){
+              // if (MFX_ERR_NONE != Lock())
+              //     throw std::bad_alloc();
+          };
 AutomaticMutex::~AutomaticMutex(void) {
     Unlock();
 }

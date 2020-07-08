@@ -105,11 +105,12 @@ protected:
         mfxU32 m_refCount;
         mfxU16 m_type;
 
-        UniqueResponse() : m_width(0), m_height(0), m_refCount(0), m_type(0) {
-            memset(static_cast<mfxFrameAllocResponse *>(this),
-                   0,
-                   sizeof(mfxFrameAllocResponse));
-        }
+        UniqueResponse()
+                : mfxFrameAllocResponse({ 0 }),
+                  m_width(0),
+                  m_height(0),
+                  m_refCount(0),
+                  m_type(0) {}
 
         // compare responses by actual frame size, alignment (w and h) is up to application
         UniqueResponse(const mfxFrameAllocResponse &response,

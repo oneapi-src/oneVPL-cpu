@@ -46,28 +46,6 @@
     TypeName(const TypeName&);             \
     void operator=(const TypeName&)
 
-//! Base class for types that should not be assigned.
-class no_assign {
-    // Deny assignment
-    void operator=(const no_assign&);
-
-public:
-#if __GNUC__
-    //! Explicitly define default construction, because otherwise gcc issues gratuitous warning.
-    no_assign() {}
-#endif /* __GNUC__ */
-};
-
-//! Base class for types that should not be copied or assigned.
-class no_copy : no_assign {
-    //! Deny copy construction
-    no_copy(const no_copy&);
-
-public:
-    //! Allow default construction
-    no_copy() {}
-};
-
 struct DeletePtr {
     template <class T>
     T* operator()(T* p) const {
@@ -119,7 +97,9 @@ public:
     mfxU32 m_ColorFormat; // color format of input YUV data, YUV420 or NV12
 
 protected:
-    std::vector<FILE*> m_files;
+    mfxStatus OpenFile(msdk_string& name);
+    FILE** m_files;
+    size_t m_nFilesCount;
 
     bool shouldShift10BitsHigh;
     bool m_bInited;
@@ -273,13 +253,19 @@ protected:
 //timeinterval calculation helper
 
 template <int tag = 0>
-class CTimeInterval : private no_copy {
+class CTimeInterval {
     static double g_Freq;
     double& m_start;
     double m_own; //reference to this if external counter not required
     //since QPC functions are quite slow it makes sense to optionally enable them
     bool m_bEnable;
     msdk_tick m_StartTick;
+
+    //! Deny copy construction
+    CTimeInterval(const CTimeInterval&);
+
+    // Deny assignment
+    void operator=(const CTimeInterval&);
 
 public:
     CTimeInterval(double& dRef, bool bEnable = true)

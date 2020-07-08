@@ -47,105 +47,86 @@
     #error MFX_VERSION not defined
 #endif
 
-CDecodingPipeline::CDecodingPipeline() {
-    m_nFrames            = 0;
-    m_export_mode        = 0;
-    m_bVppFullColorRange = false;
-    m_bVppIsUsed         = false;
-    MSDK_ZERO_MEMORY(m_mfxBS);
-
-    m_pmfxDEC    = NULL;
-    m_pmfxVPP    = NULL;
-    m_impl       = 0;
-    m_bUseVPLLib = false;
-
-    MSDK_ZERO_MEMORY(m_mfxVideoParams);
-    MSDK_ZERO_MEMORY(m_mfxVppVideoParams);
-
-    m_pGeneralAllocator   = NULL;
-    m_pmfxAllocatorParams = NULL;
-    m_memType             = SYSTEM_MEMORY;
-    m_bExternalAlloc      = false;
-    m_bDecOutSysmem       = false;
-    m_bSoftRobustFlag     = false;
-
-    MSDK_ZERO_MEMORY(m_mfxResponse);
-    MSDK_ZERO_MEMORY(m_mfxVppResponse);
-
-    m_pCurrentFreeSurface       = NULL;
-    m_pCurrentFreeVppSurface    = NULL;
-    m_pCurrentFreeOutputSurface = NULL;
-    m_pCurrentOutputSurface     = NULL;
-
-    m_pDeliverOutputSemaphore = NULL;
-    m_pDeliveredEvent         = NULL;
-    m_error                   = MFX_ERR_NONE;
-    m_bStopDeliverLoop        = false;
-
-    m_eWorkMode        = MODE_PERFORMANCE;
-    m_bIsMVC           = false;
-    m_bIsExtBuffers    = false;
-    m_bIsVideoWall     = false;
-    m_bIsCompleteFrame = false;
-    m_bPrintLatency    = false;
-    m_fourcc           = 0;
-
-    m_nTimeout = 0;
-    m_nMaxFps  = 0;
-
-    m_diMode       = 0;
-    m_bRenderWin   = false;
-    m_vppOutWidth  = 0;
-    m_vppOutHeight = 0;
-
-    m_nRenderWinX = 0;
-    m_nRenderWinY = 0;
-    m_nRenderWinH = 0;
-    m_nRenderWinW = 0;
-
-    m_bResetFileWriter = false;
-    m_bResetFileReader = false;
-
-    m_startTick  = 0;
-    m_delayTicks = 0;
-
-    MSDK_ZERO_MEMORY(m_VppDoNotUse);
-    m_VppDoNotUse.Header.BufferId = MFX_EXTBUFF_VPP_DONOTUSE;
-    m_VppDoNotUse.Header.BufferSz = sizeof(m_VppDoNotUse);
-
-    MSDK_ZERO_MEMORY(m_VppDeinterlacing)
-    m_VppDeinterlacing.Header.BufferId = MFX_EXTBUFF_VPP_DEINTERLACING;
-    m_VppDeinterlacing.Header.BufferSz = sizeof(m_VppDeinterlacing);
-
-    MSDK_ZERO_MEMORY(m_VppVideoSignalInfo);
+CDecodingPipeline::CDecodingPipeline()
+        : m_nFrames(0),
+          m_export_mode(0),
+          m_bVppFullColorRange(0),
+          m_bVppIsUsed(0),
+          m_mfxBS({ 0 }),
+          m_pmfxDEC(0),
+          m_pmfxVPP(0),
+          m_impl(0),
+          m_bUseVPLLib(0),
+          m_mfxVideoParams({ 0 }),
+          m_mfxVppVideoParams({ 0 }),
+          m_pGeneralAllocator(0),
+          m_pmfxAllocatorParams(0),
+          m_memType(SYSTEM_MEMORY),
+          m_bExternalAlloc(0),
+          m_bDecOutSysmem(0),
+          m_bSoftRobustFlag(0),
+          m_mfxResponse({ 0 }),
+          m_mfxVppResponse({ 0 }),
+          m_pCurrentFreeSurface(0),
+          m_pCurrentFreeVppSurface(0),
+          m_pCurrentFreeOutputSurface(0),
+          m_pCurrentOutputSurface(0),
+          m_pDeliverOutputSemaphore(0),
+          m_pDeliveredEvent(0),
+          m_error(MFX_ERR_NONE),
+          m_bStopDeliverLoop(0),
+          m_eWorkMode(MODE_PERFORMANCE),
+          m_bIsMVC(0),
+          m_bIsExtBuffers(0),
+          m_bIsVideoWall(0),
+          m_bIsCompleteFrame(0),
+          m_bPrintLatency(0),
+          m_fourcc(0),
+          m_nTimeout(0),
+          m_nMaxFps(0),
+          m_diMode(0),
+          m_bRenderWin(0),
+          m_vppOutWidth(0),
+          m_vppOutHeight(0),
+          m_nRenderWinX(0),
+          m_nRenderWinY(0),
+          m_nRenderWinH(0),
+          m_nRenderWinW(0),
+          m_bResetFileWriter(0),
+          m_bResetFileReader(0),
+          m_startTick(0),
+          m_delayTicks(0),
+          m_VppDoNotUse({ 0 }),
+          m_VppDeinterlacing({ 0 }),
+          m_VppVideoSignalInfo({ 0 }),
+#if MFX_VERSION >= 1022
+          m_DecoderPostProcessing({ 0 }),
+#endif //MFX_VERSION >= 1022
+#if (MFX_VERSION >= 1025)
+          m_DecodeErrorReport({ 0 }),
+#endif
+#ifndef DISABLE_NON_VPL
+          m_hwdev(0),
+#endif
+          m_bOutI420(0),
+#ifdef LIBVA_SUPPORT
+          m_export_mode(vaapiAllocatorParams::DONOT_EXPORT);
+m_libvaBackend(0), m_bPerfMode(0),
+#endif
+    m_monitorType(0), totalBytesProcessed(0) {
+    m_VppDoNotUse.Header.BufferId        = MFX_EXTBUFF_VPP_DONOTUSE;
+    m_VppDoNotUse.Header.BufferSz        = sizeof(m_VppDoNotUse);
+    m_VppDeinterlacing.Header.BufferId   = MFX_EXTBUFF_VPP_DEINTERLACING;
+    m_VppDeinterlacing.Header.BufferSz   = sizeof(m_VppDeinterlacing);
     m_VppVideoSignalInfo.Header.BufferId = MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO;
     m_VppVideoSignalInfo.Header.BufferSz = sizeof(m_VppVideoSignalInfo);
-
 #if MFX_VERSION >= 1022
-    MSDK_ZERO_MEMORY(m_DecoderPostProcessing);
     m_DecoderPostProcessing.Header.BufferId = MFX_EXTBUFF_DEC_VIDEO_PROCESSING;
     m_DecoderPostProcessing.Header.BufferSz = sizeof(mfxExtDecVideoProcessing);
 #endif //MFX_VERSION >= 1022
-
 #if (MFX_VERSION >= 1025)
-    MSDK_ZERO_MEMORY(m_DecodeErrorReport);
     m_DecodeErrorReport.Header.BufferId = MFX_EXTBUFF_DECODE_ERROR_REPORT;
 #endif
-
-#ifndef DISABLE_NON_VPL
-    m_hwdev = NULL;
-#endif
-
-    m_bOutI420 = false;
-
-#ifdef LIBVA_SUPPORT
-    m_export_mode  = vaapiAllocatorParams::DONOT_EXPORT;
-    m_libvaBackend = 0;
-    m_bPerfMode    = false;
-#endif
-
-    m_monitorType       = 0;
-    totalBytesProcessed = 0;
     m_vLatency.reserve(
         1000); // reserve some space to reduce dynamic reallocation impact on pipeline execution
 }

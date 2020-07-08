@@ -1533,13 +1533,6 @@ void ModifyParamsUsingPresets(sInputParams& params) {
     }
 }
 
-CEncodingPipeline* CreatePipeline(const sInputParams& params) {
-#ifdef MOD_ENC
-    MOD_ENC_CREATE_PIPELINE;
-#endif
-    return new CEncodingPipeline;
-}
-
 #if defined(_WIN32) || defined(_WIN64)
 int _tmain(int argc, msdk_char* argv[])
 #else
@@ -1547,7 +1540,7 @@ int main(int argc, char* argv[])
 #endif
 {
     sInputParams Params = {}; // input parameters from command line
-    std::unique_ptr<CEncodingPipeline> pPipeline;
+    CEncodingPipeline pipeline;
 
     mfxStatus sts = MFX_ERR_NONE; // return value check
 
@@ -1560,49 +1553,46 @@ int main(int argc, char* argv[])
 
     MSDK_CHECK_PARSE_RESULT(sts, MFX_ERR_NONE, 1);
 
-    // Choosing which pipeline to use
-    pPipeline.reset(CreatePipeline(Params));
-
-    MSDK_CHECK_POINTER(pPipeline.get(), MFX_ERR_MEMORY_ALLOC);
-
     if (MVC_ENABLED & Params.MVC_flags) {
-        pPipeline->SetNumView(Params.numViews);
+        pipeline.SetNumView(Params.numViews);
     }
 
-    sts = pPipeline->Init(&Params);
-    MSDK_CHECK_STATUS(sts, "pPipeline->Init failed");
+    sts = pipeline.Init(&Params);
+    MSDK_CHECK_STATUS(sts, "pipeline.Init failed");
 
-    pPipeline->PrintInfo();
+    pipeline.PrintInfo();
 
     msdk_printf(MSDK_STRING("Processing started\n"));
 
-    if (pPipeline->CaptureStartV4L2Pipeline() != MFX_ERR_NONE) {
+#if defined(ENABLE_V4L2_SUPPORT)
+    if (pipeline.CaptureStartV4L2Pipeline() != MFX_ERR_NONE) {
         msdk_printf(MSDK_STRING("V4l2 failure terminating the program\n"));
         return 0;
     }
+#endif
 
     for (;;) {
-        sts = pPipeline->Run();
+        sts = pipeline.Run();
 
         if (MFX_ERR_DEVICE_LOST == sts || MFX_ERR_DEVICE_FAILED == sts) {
             msdk_printf(MSDK_STRING(
                 "\nERROR: Hardware device was lost or returned an unexpected error. Recovering...\n"));
-            sts = pPipeline->ResetDevice();
-            MSDK_CHECK_STATUS(sts, "pPipeline->ResetDevice failed");
+            sts = pipeline.ResetDevice();
+            MSDK_CHECK_STATUS(sts, "pipeline.ResetDevice failed");
 
-            sts = pPipeline->ResetMFXComponents(&Params);
-            MSDK_CHECK_STATUS(sts, "pPipeline->ResetMFXComponents failed");
+            sts = pipeline.ResetMFXComponents(&Params);
+            MSDK_CHECK_STATUS(sts, "pipeline.ResetMFXComponents failed");
             continue;
         }
         else {
-            MSDK_CHECK_STATUS(sts, "pPipeline->Run failed");
+            MSDK_CHECK_STATUS(sts, "pipeline.Run failed");
             break;
         }
     }
 
-    pPipeline->CaptureStopV4L2Pipeline();
+    pipeline.CaptureStopV4L2Pipeline();
 
-    pPipeline->Close();
+    pipeline.Close();
 
     msdk_printf(MSDK_STRING("\nProcessing finished\n"));
 

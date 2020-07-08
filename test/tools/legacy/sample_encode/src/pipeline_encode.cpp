@@ -153,7 +153,7 @@ mfxStatus CEncTaskPool::SynchronizeFirstTask() {
                 "m_pTasks[m_nTaskBufferStart].WriteBitstream failed");
 
             sts = m_pTasks[m_nTaskBufferStart].Reset();
-            MSDK_CHECK_STATUS(sts, "m_pTasks[m_nTaskBufferStart].Reset failed");
+            // MSDK_CHECK_STATUS(sts, "m_pTasks[m_nTaskBufferStart].Reset failed");
 
             // move task buffer start to the next executing task
             // the first transform frame to the right with non zero sync point
@@ -264,7 +264,7 @@ mfxStatus sTask::Init(mfxU32 nBufferSize, CSmplBitstreamWriter *pwriter) {
     pWriter = pwriter;
 
     mfxStatus sts = Reset();
-    MSDK_CHECK_STATUS(sts, "Reset failed");
+    // MSDK_CHECK_STATUS(sts, "Reset failed");
 
     sts = InitMfxBitstream(&mfxBS, nBufferSize);
     MSDK_CHECK_STATUS_SAFE(sts,
@@ -283,9 +283,6 @@ mfxStatus sTask::Close() {
 }
 
 mfxStatus sTask::WriteBitstream() {
-    if (mfxBS.DataLength)
-        mfxBS.DataLength = mfxBS.DataLength;
-
     if (pWriter)
         return pWriter->WriteNextFrame(&mfxBS);
     else
@@ -515,12 +512,15 @@ mfxStatus CEncodingPipeline::InitMfxEncParams(sInputParams *pInParams) {
         pl->NumBit  = pl->BufSize * 8;
         pl->Type    = type;
 
-        mfxU8 *p = pl->Data;
-        memcpy(p, &data[0], calc_size);
+        mfxU8 *p            = pl->Data;
+        size_t buffer_space = pl->BufSize;
+        MSDK_MEMCPY_S(p, buffer_space, &data[0], calc_size);
         p += calc_size;
-        memcpy(p, &uuid[0], uuid.size());
+        buffer_space -= calc_size;
+        MSDK_MEMCPY_S(p, buffer_space, &uuid[0], uuid.size());
         p += uuid.size();
-        memcpy(p, msg.c_str(), msg.length());
+        buffer_space -= uuid.size();
+        MSDK_MEMCPY_S(p, buffer_space, msg.c_str(), msg.length());
 
         m_UserDataUnregSEI.push_back(pl);
 
@@ -829,8 +829,8 @@ mfxStatus CEncodingPipeline::InitMfxVppParams(sInputParams *pInParams) {
 }
 
 mfxStatus CEncodingPipeline::CreateHWDevice() {
-    mfxStatus sts = MFX_ERR_NONE;
 #if D3D_SURFACES_SUPPORT
+    mfxStatus sts = MFX_ERR_NONE;
     #if MFX_D3D11_SUPPORT
     if (D3D11_MEMORY == m_memType)
         m_hwdev = new CD3D11Device();
@@ -845,7 +845,8 @@ mfxStatus CEncodingPipeline::CreateHWDevice() {
     MSDK_CHECK_STATUS(sts, "m_hwdev->Init failed");
 
 #elif LIBVA_SUPPORT
-    m_hwdev = CreateVAAPIDevice();
+    mfxStatus sts = MFX_ERR_NONE;
+    m_hwdev       = CreateVAAPIDevice();
     if (NULL == m_hwdev) {
         return MFX_ERR_MEMORY_ALLOC;
     }
@@ -1155,109 +1156,93 @@ void CEncodingPipeline::DeleteAllocator() {
     DeleteHWDevice();
 }
 
-CEncodingPipeline::CEncodingPipeline() {
-    m_pmfxENC             = NULL;
-    m_pmfxVPP             = NULL;
-    m_pMFXAllocator       = NULL;
-    m_pmfxAllocatorParams = NULL;
-    m_memType             = SYSTEM_MEMORY;
-    m_bExternalAlloc      = false;
-    m_bUseVPLLib          = false;
-    m_pEncSurfaces        = NULL;
-    m_pVppSurfaces        = NULL;
-    m_InputFourCC         = 0;
-
-    m_nMemBuffer = 0;
-    m_nTimeout   = 0;
-
-    m_nFramesRead      = 0;
-    m_bFileWriterReset = false;
-
-    m_bSoftRobustFlag = false;
-    m_bSingleTexture  = false;
-
-    m_MVCflags = MVC_DISABLED;
-    m_nNumView = 0;
-
-    m_FileWriters.first = m_FileWriters.second = NULL;
-
+CEncodingPipeline::CEncodingPipeline()
+        : m_pmfxENC(0),
+          m_pmfxVPP(0),
+          m_pMFXAllocator(0),
+          m_pmfxAllocatorParams(0),
+          m_memType(SYSTEM_MEMORY),
+          m_bExternalAlloc(0),
+          m_bUseVPLLib(0),
+          m_pEncSurfaces(0),
+          m_pVppSurfaces(0),
+          m_InputFourCC(0),
+          m_nMemBuffer(0),
+          m_nTimeout(0),
+          m_nFramesRead(0),
+          m_bFileWriterReset(0),
+          m_bSoftRobustFlag(0),
+          m_bSingleTexture(0),
+          m_MVCflags(MVC_DISABLED),
+          m_nNumView(0),
 #ifndef DISABLE_NON_VPL
-    MSDK_ZERO_MEMORY(m_MVCSeqDesc);
+          m_MVCSeqDesc({ 0 }),
+#endif
+          m_VppDoNotUse({ 0 }),
+          m_CodingOption({ 0 }),
+          m_CodingOption2({ 0 }),
+          m_CodingOption3({ 0 }),
+          m_AvcTemporalLayers({ 0 }),
+          m_CodingOptionSPSPPS({ 0 }),
+          m_ExtHEVCParam({ 0 }),
+          m_ExtHEVCTiles({ 0 }),
+          m_ExtVP9Param({ 0 }),
+          m_VideoSignalInfo({ 0 }),
+#if (MFX_VERSION >= 1024)
+    #ifndef DISABLE_NON_VPL
+          m_ExtBRC({ 0 }),
+    #endif
+#endif
+#ifndef DISABLE_NON_VPL
+          m_hwdev(0),
+#endif
+#if (MFX_VERSION >= 1027)
+          m_round_in(0),
+#endif
+          m_mfxEncParams({ 0 }),
+          m_mfxVppParams({ 0 }),
+          m_EncResponse({ 0 }),
+          m_VppResponse({ 0 }),
+          m_encCtrl({ 0 }),
+          isV4L2InputEnabled(0),
+          m_nFramesToProcess(0),
+          m_bCutOutput(0),
+          m_bTimeOutExceed(0),
+          m_bInsertIDR(0),
+          m_bIsFieldSplitting(0) {
+    m_FileWriters.first  = NULL;
+    m_FileWriters.second = NULL;
+#ifndef DISABLE_NON_VPL
     m_MVCSeqDesc.Header.BufferId = MFX_EXTBUFF_MVC_SEQ_DESC;
     m_MVCSeqDesc.Header.BufferSz = sizeof(m_MVCSeqDesc);
 #endif
-
-    MSDK_ZERO_MEMORY(m_VppDoNotUse);
-    m_VppDoNotUse.Header.BufferId = MFX_EXTBUFF_VPP_DONOTUSE;
-    m_VppDoNotUse.Header.BufferSz = sizeof(m_VppDoNotUse);
-
-    MSDK_ZERO_MEMORY(m_CodingOption);
-    m_CodingOption.Header.BufferId = MFX_EXTBUFF_CODING_OPTION;
-    m_CodingOption.Header.BufferSz = sizeof(m_CodingOption);
-
-    MSDK_ZERO_MEMORY(m_CodingOption2);
-    m_CodingOption2.Header.BufferId = MFX_EXTBUFF_CODING_OPTION2;
-    m_CodingOption2.Header.BufferSz = sizeof(m_CodingOption2);
-
-    MSDK_ZERO_MEMORY(m_CodingOption3);
-    m_CodingOption3.Header.BufferId = MFX_EXTBUFF_CODING_OPTION3;
-    m_CodingOption3.Header.BufferSz = sizeof(m_CodingOption3);
-
-    MSDK_ZERO_MEMORY(m_AvcTemporalLayers);
-    m_AvcTemporalLayers.Header.BufferId = MFX_EXTBUFF_AVC_TEMPORAL_LAYERS;
-    m_AvcTemporalLayers.Header.BufferSz = sizeof(m_AvcTemporalLayers);
-
-    MSDK_ZERO_MEMORY(m_CodingOptionSPSPPS);
+    m_VppDoNotUse.Header.BufferId        = MFX_EXTBUFF_VPP_DONOTUSE;
+    m_VppDoNotUse.Header.BufferSz        = sizeof(m_VppDoNotUse);
+    m_CodingOption.Header.BufferId       = MFX_EXTBUFF_CODING_OPTION;
+    m_CodingOption.Header.BufferSz       = sizeof(m_CodingOption);
+    m_CodingOption2.Header.BufferId      = MFX_EXTBUFF_CODING_OPTION2;
+    m_CodingOption2.Header.BufferSz      = sizeof(m_CodingOption2);
+    m_CodingOption3.Header.BufferId      = MFX_EXTBUFF_CODING_OPTION3;
+    m_CodingOption3.Header.BufferSz      = sizeof(m_CodingOption3);
+    m_AvcTemporalLayers.Header.BufferId  = MFX_EXTBUFF_AVC_TEMPORAL_LAYERS;
+    m_AvcTemporalLayers.Header.BufferSz  = sizeof(m_AvcTemporalLayers);
     m_CodingOptionSPSPPS.Header.BufferId = MFX_EXTBUFF_CODING_OPTION_SPSPPS;
     m_CodingOptionSPSPPS.Header.BufferSz = sizeof(m_CodingOptionSPSPPS);
-
-    MSDK_ZERO_MEMORY(m_ExtHEVCParam);
-    m_ExtHEVCParam.Header.BufferId = MFX_EXTBUFF_HEVC_PARAM;
-    m_ExtHEVCParam.Header.BufferSz = sizeof(m_ExtHEVCParam);
-
-    MSDK_ZERO_MEMORY(m_ExtHEVCTiles);
-    m_ExtHEVCTiles.Header.BufferId = MFX_EXTBUFF_HEVC_TILES;
-    m_ExtHEVCTiles.Header.BufferSz = sizeof(m_ExtHEVCTiles);
-
-    MSDK_ZERO_MEMORY(m_ExtVP9Param);
-    m_ExtVP9Param.Header.BufferId = MFX_EXTBUFF_VP9_PARAM;
-    m_ExtVP9Param.Header.BufferSz = sizeof(m_ExtVP9Param);
-
-    MSDK_ZERO_MEMORY(m_VideoSignalInfo);
-    m_VideoSignalInfo.Header.BufferId = MFX_EXTBUFF_VIDEO_SIGNAL_INFO;
-    m_VideoSignalInfo.Header.BufferSz = sizeof(m_VideoSignalInfo);
+    m_ExtHEVCParam.Header.BufferId       = MFX_EXTBUFF_HEVC_PARAM;
+    m_ExtHEVCParam.Header.BufferSz       = sizeof(m_ExtHEVCParam);
+    m_ExtHEVCTiles.Header.BufferId       = MFX_EXTBUFF_HEVC_TILES;
+    m_ExtHEVCTiles.Header.BufferSz       = sizeof(m_ExtHEVCTiles);
+    m_ExtVP9Param.Header.BufferId        = MFX_EXTBUFF_VP9_PARAM;
+    m_ExtVP9Param.Header.BufferSz        = sizeof(m_ExtVP9Param);
+    m_VideoSignalInfo.Header.BufferId    = MFX_EXTBUFF_VIDEO_SIGNAL_INFO;
+    m_VideoSignalInfo.Header.BufferSz    = sizeof(m_VideoSignalInfo);
 
 #if (MFX_VERSION >= 1024)
     #ifndef DISABLE_NON_VPL
-    MSDK_ZERO_MEMORY(m_ExtBRC);
     m_ExtBRC.Header.BufferId = MFX_EXTBUFF_BRC;
     m_ExtBRC.Header.BufferSz = sizeof(m_ExtBRC);
     #endif
 #endif
-#ifndef DISABLE_NON_VPL
-    m_hwdev = NULL;
-#endif
-
-#if (MFX_VERSION >= 1027)
-    m_round_in = NULL;
-#endif
-
-    MSDK_ZERO_MEMORY(m_mfxEncParams);
-    MSDK_ZERO_MEMORY(m_mfxVppParams);
-
-    MSDK_ZERO_MEMORY(m_EncResponse);
-    MSDK_ZERO_MEMORY(m_VppResponse);
-
-    MSDK_ZERO_MEMORY(m_encCtrl);
-
-    isV4L2InputEnabled = false;
-
-    m_nFramesToProcess = 0;
-    m_bCutOutput       = false;
-    m_bTimeOutExceed   = false;
-    m_bInsertIDR       = false;
-
-    m_bIsFieldSplitting = false;
 }
 
 CEncodingPipeline::~CEncodingPipeline() {
@@ -1917,6 +1902,8 @@ mfxStatus CEncodingPipeline::AllocExtBuffers(sInputParams *pInParams) {
                 if (fieldId == 0) {
                     pAvcRoundingOffset =
                         new mfxExtAVCRoundingOffset[numOfFields];
+                    tmpForInit->buffer_owner =
+                        reinterpret_cast<mfxExtBuffer *>(pAvcRoundingOffset);
                     MSDK_CHECK_POINTER(pAvcRoundingOffset,
                                        MFX_ERR_MEMORY_ALLOC);
                 }

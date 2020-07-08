@@ -321,7 +321,8 @@ mfxStatus SysMemFrameAllocator::AllocImpl(mfxFrameAllocRequest *request,
             return MFX_ERR_UNSUPPORTED;
     }
 
-    std::unique_ptr<mfxMemId[]> mids(new mfxMemId[request->NumFrameSuggested]);
+    mfxMemId *mids = new mfxMemId[request->NumFrameSuggested];
+    memset(mids, 0, sizeof(mfxMemId) * request->NumFrameSuggested);
 
     // allocate frames
     for (numAllocated = 0; numAllocated < request->NumFrameSuggested;
@@ -358,7 +359,7 @@ mfxStatus SysMemFrameAllocator::AllocImpl(mfxFrameAllocRequest *request,
     }
 
     response->NumFrameActual = (mfxU16)numAllocated;
-    response->mids           = mids.release();
+    response->mids           = mids;
 
     return MFX_ERR_NONE;
 }

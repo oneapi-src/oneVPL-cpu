@@ -206,30 +206,23 @@ struct sInputParams {
 struct bufSet {
     mfxU16 m_nFields;
     std::vector<mfxExtBuffer*> buffers;
+    mfxExtBuffer* buffer_owner;
 
-    bufSet(mfxU16 n_fields = 1) : m_nFields(n_fields) {}
+    bufSet(mfxU16 n_fields = 1) : m_nFields(n_fields), buffer_owner(NULL) {}
 
     ~bufSet() {
         Destroy();
     }
 
     void Destroy() {
-        for (mfxU16 i = 0; i < buffers.size(); /*i++*/) {
-            switch (buffers[i]->BufferId) {
 #if (MFX_VERSION >= 1027)
-                case MFX_EXTBUFF_AVC_ROUNDING_OFFSET: {
-                    mfxExtAVCRoundingOffset* roundingOffset =
-                        reinterpret_cast<mfxExtAVCRoundingOffset*>(buffers[i]);
-                    MSDK_SAFE_DELETE_ARRAY(roundingOffset);
-                    i += m_nFields;
-                } break;
-#endif
-                default:
-                    ++i;
-                    break;
-            }
+        if (buffers.size() > 0 &&
+            buffers[0]->BufferId == MFX_EXTBUFF_AVC_ROUNDING_OFFSET) {
+            mfxExtAVCRoundingOffset* roundingOffset =
+                reinterpret_cast<mfxExtAVCRoundingOffset*>(buffers[0]);
+            MSDK_SAFE_DELETE_ARRAY(roundingOffset);
         }
-
+#endif
         buffers.clear();
     }
 };

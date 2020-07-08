@@ -76,89 +76,86 @@ public:
     iterator end() const {
         return iterator(mNrecords, mRecords);
     }
-        void insert(iterator where, iterator beg_iter, iterator end_iter)
-        {
-            mfxU32 elementsToInsert = (end_iter - beg_iter);
-            if (!elementsToInsert) {
-                return;
-            }
-            if (where.mIndex > mNrecords)
-            {
-                throw MFXVectorRangeError();
-            }
+    void insert(iterator where, iterator beg_iter, iterator end_iter) {
+        mfxU32 elementsToInsert = (end_iter - beg_iter);
+        if (!elementsToInsert) {
+            return;
+        }
+        if (where.mIndex > mNrecords) {
+            throw MFXVectorRangeError();
+        }
 
-            T* newRecords = new T[mNrecords + elementsToInsert]();
-            mfxU32 i      = 0;
+        T* newRecords = new T[mNrecords + elementsToInsert]();
+        mfxU32 i      = 0;
 
-            // save left
-            for (; i < where.mIndex; i++)
-            {
-                newRecords[i] = mRecords[i];
-            }
-            // insert
-            for (; beg_iter != end_iter; beg_iter++, i++) {
-                newRecords[i] = *beg_iter;
-            }
+        // save left
+        for (; i < where.mIndex; i++) {
+            newRecords[i] = mRecords[i];
+        }
+        // insert
+        for (; beg_iter != end_iter; beg_iter++, i++) {
+            newRecords[i] = *beg_iter;
+        }
 
-            //save right
-            for (; i < mNrecords + elementsToInsert; i++) {
-                newRecords[i] = mRecords[i - elementsToInsert];
-            }
+        //save right
+        for (; i < mNrecords + elementsToInsert; i++) {
+            newRecords[i] = mRecords[i - elementsToInsert];
+        }
 
-            delete[] mRecords;
+        delete[] mRecords;
 
-            mRecords  = newRecords;
-            mNrecords = i;
+        mRecords  = newRecords;
+        mNrecords = i;
+    }
+    T& operator[](mfxU32 idx) {
+        return mRecords[idx];
+    }
+    void push_back(const T& obj) {
+        T* newRecords = new T[mNrecords + 1]();
+        mfxU32 i      = 0;
+        for (; i < mNrecords; i++) {
+            newRecords[i] = mRecords[i];
         }
-        T& operator[](mfxU32 idx) {
-            return mRecords[idx];
-        }
-        void push_back(const T& obj) {
-            T* newRecords = new T[mNrecords + 1]();
-            mfxU32 i      = 0;
-            for (; i < mNrecords; i++) {
-                newRecords[i] = mRecords[i];
-            }
-            newRecords[i] = obj;
-            delete[] mRecords;
+        newRecords[i] = obj;
+        delete[] mRecords;
 
-            mRecords  = newRecords;
-            mNrecords = i + 1;
+        mRecords  = newRecords;
+        mNrecords = i + 1;
+    }
+    void erase(iterator at) {
+        if (at.mIndex >= mNrecords) {
+            throw MFXVectorRangeError();
         }
-        void erase(iterator at) {
-            if (at.mIndex >= mNrecords) {
-                throw MFXVectorRangeError();
-            }
-            mNrecords--;
-            mfxU32 i = at.mIndex;
-            for (; i != mNrecords; i++) {
-                mRecords[i] = mRecords[i + 1];
-            }
-            //destroy last element
-            mRecords[i] = T();
+        mNrecords--;
+        mfxU32 i = at.mIndex;
+        for (; i != mNrecords; i++) {
+            mRecords[i] = mRecords[i + 1];
         }
-        void resize(mfxU32 nSize) {
-            T* newRecords = new T[nSize]();
-            for (mfxU32 i = 0; i < mNrecords; i++) {
-                newRecords[i] = mRecords[i];
-            }
-            delete[] mRecords;
-            mRecords  = newRecords;
-            mNrecords = nSize;
+        //destroy last element
+        mRecords[i] = T();
+    }
+    void resize(mfxU32 nSize) {
+        T* newRecords = new T[nSize]();
+        for (mfxU32 i = 0; i < mNrecords; i++) {
+            newRecords[i] = mRecords[i];
         }
-        mfxU32 size() const {
-            return mNrecords;
-        }
-        void clear() {
-            delete[] mRecords;
-            mRecords  = 0;
-            mNrecords = 0;
-        }
-        bool empty() {
-            return !mRecords;
-        }
-        T* data() const {
-            return mRecords;
-        }
+        delete[] mRecords;
+        mRecords  = newRecords;
+        mNrecords = nSize;
+    }
+    mfxU32 size() const {
+        return mNrecords;
+    }
+    void clear() {
+        delete[] mRecords;
+        mRecords  = 0;
+        mNrecords = 0;
+    }
+    bool empty() {
+        return !mRecords;
+    }
+    T* data() const {
+        return mRecords;
+    }
 };
 } // namespace MFX

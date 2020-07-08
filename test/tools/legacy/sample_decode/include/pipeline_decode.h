@@ -74,7 +74,7 @@ struct sInputParams {
 
     mfxU32 numViews; // number of views for Multi-View Codec
     mfxU32 nRotation; // rotation for Motion JPEG Codec
-    mfxU16 nAsyncDepth; // asyncronous queue
+    mfxU16 nAsyncDepth; // asynchronous queue
     mfxU16 nTimeout; // timeout in seconds
     mfxU16 gpuCopy; // GPU Copy mode (three-state option)
     bool bSoftRobustFlag;
@@ -107,8 +107,55 @@ struct sInputParams {
     msdk_char strSrcFile[MSDK_MAX_FILENAME_LEN];
     msdk_char strDstFile[MSDK_MAX_FILENAME_LEN];
 
-    sInputParams() {
-        MSDK_ZERO_MEMORY(*this);
+    sInputParams()
+            : videoType(0),
+              mode(MODE_PERFORMANCE),
+              memType(SYSTEM_MEMORY),
+              bUseHWLib(0),
+              bUseVPLLib(0),
+              bIsMVC(0),
+              bLowLat(0),
+              bCalLat(0),
+              bUseFullColorRange(0),
+              nMaxFPS(0),
+              nWallCell(0),
+              nWallW(0),
+              nWallH(0),
+              nWallMonitor(0),
+              bWallNoTitle(0),
+#if MFX_VERSION >= 1022
+              nDecoderPostProcessing(0),
+#endif //MFX_VERSION >= 1022
+              numViews(0),
+              nRotation(0),
+              nAsyncDepth(0),
+              nTimeout(0),
+              gpuCopy(0),
+              bSoftRobustFlag(0),
+              nThreadsNum(0),
+              SchedulingType(0),
+              Priority(0),
+              Width(0),
+              Height(0),
+              fourcc(0),
+              chromaType(0),
+              nFrames(0),
+              eDeinterlace(0),
+              outI420(0),
+
+              bPerfMode(0),
+              bRenderWin(0),
+              nRenderWinX(0),
+              nRenderWinY(0),
+#if (MFX_VERSION >= 1025)
+              bErrorReport(0),
+#endif
+              monitorType(0),
+#if defined(LIBVA_SUPPORT)
+              libvaBackend(0),
+#endif // defined(MFX_LIBVA_SUPPORT)
+              strSrcFile{ 0 },
+              strDstFile{ 0 } {
     }
 };
 
