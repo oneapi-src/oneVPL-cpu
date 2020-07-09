@@ -20,5 +20,13 @@ These are designed around the model described by
 
 - `package` - Create zip packages and place in `_build`.
 
+  -  `*-all.zip` contains the files in the complete product installation
+
+  -  `*-dev.zip` contains the files for the developer package
+
+  -  `*-runtime.zip` contains the files for the runtime package
+
+- `test` - Run smoke tests.
+
 - `cibuild` - Run CI steps. This is the script CI calls when it is triggered on
   a merge request.

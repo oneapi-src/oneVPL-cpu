@@ -4,24 +4,18 @@ The oneAPI Video Processing Library (oneVPL) provides a single video processing
 API for encode, decode, and video processing that works across a wide range of
 accelerators.
 
-It comes with bindings for C, C++, and Python.
+This repository contains the API, dispatcher, and a CPU reference implementation
+of the specification.
 
 ## Building
 
-### Requirements
+### Configure the build environment
 
-- A C/C++ Compiler
-  - GCC on Linux
-  - Microsoft Visual Studio, MinGW on Windows
-- [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
-- [yasm](https://yasm.tortall.net/)
-- [CMake](https://cmake.org/)
-- [Python3](https://www.python.org/)
-- [git](https://git-scm.com/)
-- [Doxygen](http://www.doxygen.nl/) (to build documentation)
-- [Ninja-build](https://ninja-build.org/), [Meson](https://mesonbuild.com/) (to build AV1 decoder - libav1d)
+See the [developer reference](doc/developer-reference/build.rst) for detailed
+instructions for configuring the build environment
 
-### Canonical build
+
+### Build dependencies and oneVPL
 
 Ubuntu bash shell:
 ```
@@ -29,28 +23,32 @@ script/bootstrap
 script/build
 ```
 
+You can find the build output in `_build`.
+
 Windows cmd prompt:
 ```
 script\bootstrap
 script\build
 ```
 
+You can find the build output in `_build\Release`.
 
-See the [developer reference](doc/developer-reference/build.md) for more details
-on configuring the build.
 
-### Building documentation
+### Run the examples
 
+Ubuntu bash shell:
 ```
-mkdir _build
-cd _build
-cmake ..
-cmake --build . --target doc
+export LD_LIBRARY_PATH=`pwd`/_build
+_build/hello-decode test/content/cars_128x96.h265
+_build/hello-endoce test/content/cars_128x96.i420 128 96
 ```
 
-### Build output
+Windows cmd prompt:
+```
+_build\Release\hello-decode test\content\cars_128x96.h265
+_build\Release\hello-encode test\content\cars_128x96.i420 128 96
+```
 
-You can find the resulting output in `_build` or `_build\Release`.
 
 ### Other builds
 

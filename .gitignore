@@ -10,3 +10,6 @@ _*/
 
 # ignore Editor files
 *.code-workspace
+
+# sample output files
+out.*
