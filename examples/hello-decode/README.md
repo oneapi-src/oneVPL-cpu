@@ -93,13 +93,12 @@ From the directory containing this README:
 mkdir build
 cd build
 cmake ..
-cd ..
 ```
 
 ### Run the Sample
 
 ```
-cmake --build build --target run
+cmake --build . --target run
 ```
 
 The run target runs the sample executable with the argument

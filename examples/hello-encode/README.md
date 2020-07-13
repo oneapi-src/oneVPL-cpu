@@ -102,7 +102,7 @@ cmake ..
 cmake --build . --target run
 ```
 
-The run target runs the sample executable with the argument
+The run target runs the sample executable with the arguments
 `<sample_dir>/content/cars_128x96.i420 128 96`.
 
 You can find the output file `out.h265` in the build directory.
