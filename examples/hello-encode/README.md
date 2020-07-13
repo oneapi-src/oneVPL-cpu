@@ -1,4 +1,4 @@
-# Hello decode
+# Hello encode
 
 This sample shows how to use the oneAPI Video Processing Library (oneVPL) to
 perform a simple video encode.
