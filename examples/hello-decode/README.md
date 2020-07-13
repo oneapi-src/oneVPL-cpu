@@ -53,14 +53,13 @@ your environment.
 Run `setvars.sh` every time you open a new terminal window:
 
 The `setvars.sh` script can be found in the root folder of your oneAPI
-installation, which is typically `/opt/intel/inteloneapi/` when installed as
-root or sudo, and `~/intel/inteloneapi/` when installed as a normal user.  If
-you customized the installation folder, the `setvars.sh` is in your custom
-location.
+installation, which is `/opt/intel/oneapi/` when installed as root, and
+`~/intel/oneapi/` when installed as a normal user.  If you customized the
+installation folder, the `setvars.sh` is in your custom location.
 
 To use the tools, whether from the command line or using Eclipse, initialize
 your environment. To do it in one step for all tools, use the included
-environment variable setup utility: `source <install_dir>/setvars.sh`)
+environment variable setup utility:
 
 ```
 source <install_dir>/setvars.sh
@@ -72,13 +71,14 @@ source <install_dir>/setvars.sh
 Run `setvars.bat` every time you open a new command prompt:
 
 The `setvars.bat` script can be found in the root folder of your oneAPI
-installation, which is typically `C:\Program Files (x86)\inteloneapi\` when
+installation, which is `C:\Program Files (x86)\Intel\oneAPI\` when 
 installed using default options. If you customized the installation folder, the
 `setvars.bat` is in your custom location.
 
-To use the tools, whether from the command line or using Visual Studio,
-initialize your environment. To do it in one step for all tools, use the
-included environment variable setup utility: `<install_dir>\setvars.bat`)
+To use the tools,from the command line initialize your environment. Note that if
+a compiler is not part of your oneAPI installation you should run in a Visual
+Studio 64-bit command prompt. To do it in one step for all tools, use the
+included environment variable setup utility:
 
 ```
 <install_dir>\setvars.bat
