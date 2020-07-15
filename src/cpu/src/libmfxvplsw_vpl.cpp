@@ -28,7 +28,7 @@ mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
     implDesc->Version.Minor = DEF_STRUCT_VERSION_MINOR;
 
     implDesc->Impl             = MFX_IMPL_SOFTWARE;
-    implDesc->accelerationMode = 0;
+    implDesc->AccelerationMode = 0;
 
     implDesc->ApiVersion.Major = MFX_VERSION_MAJOR;
     implDesc->ApiVersion.Minor = MFX_VERSION_MINOR;

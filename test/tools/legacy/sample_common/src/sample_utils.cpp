@@ -285,7 +285,6 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
         // read chroma planes
         switch (m_ColorFormat) // color format of data in the input file
         {
-            case MFX_FOURCC_I420:
             case MFX_FOURCC_YV12:
 #if (MFX_VERSION >= 1035)
             case MFX_FOURCC_IYUV:
@@ -342,7 +341,6 @@ mfxStatus CSmplYUVReader::LoadNextFrame(mfxFrameSurface1* pSurface) {
 
                         break;
                     case MFX_FOURCC_YV12:
-                    case MFX_FOURCC_I420:
 #if (MFX_VERSION >= 1035)
                     case MFX_FOURCC_IYUV:
 #endif
@@ -844,7 +842,6 @@ mfxStatus CSmplYUVWriter::WriteNextFrame(mfxFrameSurface1* pSurface) {
     switch (pInfo.FourCC) {
         case MFX_FOURCC_YV12:
         case MFX_FOURCC_NV12:
-        case MFX_FOURCC_I420:
 #if (MFX_VERSION >= 1035)
         case MFX_FOURCC_IYUV:
 #endif
@@ -992,7 +989,7 @@ mfxStatus CSmplYUVWriter::WriteNextFrame(mfxFrameSurface1* pSurface) {
 #if (MFX_VERSION >= 1035)
         case MFX_FOURCC_IYUV:
 #endif
-        case MFX_FOURCC_I420: {
+        {
             for (i = 0; i < (mfxU32)pInfo.CropH / 2; i++) {
                 MSDK_CHECK_NOT_EQUAL(fwrite(pData.U +
                                                 (pInfo.CropY * pData.Pitch / 2 +
@@ -1651,8 +1648,6 @@ const msdk_char* ColorFormatToStr(mfxU32 format) {
             return MSDK_STRING("NV12");
         case MFX_FOURCC_YV12:
             return MSDK_STRING("YV12");
-        case MFX_FOURCC_I420:
-            return MSDK_STRING("YUV420");
 #if (MFX_VERSION >= 1035)
         case MFX_FOURCC_IYUV:
             return MSDK_STRING("IYUV");

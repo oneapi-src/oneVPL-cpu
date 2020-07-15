@@ -233,10 +233,11 @@ typedef enum {
 } mfxResourceType;
 
 /*! Maximum allowed lenght of the implementation name. */
-#define MFX_IMPL_NAME             32
+#define MFX_IMPL_NAME_LEN         32
 /*! Maximum allowed lenght of the implementation name. */
 #define MFX_STRFIELD_LEN          128
 
+#define MFX_DECODERDESCRIPTION_VERSION MFX_STRUCT_VERSION(1, 0)
 
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 /*! This structure represents decoders description. */
@@ -248,11 +249,11 @@ typedef struct {
     struct decoder {
         mfxU32 CodecID;                                  /*!< decoder ID in fourCC format. */
         mfxU16 reserved[8];                              /*!< reserved for future use. */
-        mfxU16 MaxcodecLevel;                            /*!< Maximum supported codec's level. */
+        mfxU16 MaxcodecLevel;                            /*!< Maximum supported codec's level. See CodecProfile enumerator for possible values. */
         mfxU16 NumProfiles;                              /*!< Number of supported profiles. */
         /*! This structure represents codec's profile description. */
         struct decprofile {
-           mfxU32 Profile;                               /*!< Profile ID in fourCC format. */
+           mfxU32 Profile;                               /*!< Profile ID. See CodecProfile enumerator for possible values.*/
            mfxU16 reserved[7];                           /*!< reserved for future use. */
            mfxU16 NumMemTypes;                           /*!< Number of supported memory types. */
            /*! This structure represents underlying details of the memory type. */
@@ -269,6 +270,8 @@ typedef struct {
 } mfxDecoderDescription;
 MFX_PACK_END()
 
+#define MFX_ENCODERDESCRIPTION_VERSION MFX_STRUCT_VERSION(1, 0)
+
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 /*! This structure represents encoder description. */
 typedef struct {
@@ -278,13 +281,13 @@ typedef struct {
     /*! This structure represents encoder description. */
     struct encoder {
         mfxU32 CodecID;                                  /*!< Encoder ID in fourCC format. */
-        mfxU16 MaxcodecLevel;                            /*!< Maximum supported codec's level. */
+        mfxU16 MaxcodecLevel;                            /*!< Maximum supported codec's level. See CodecProfile enumerator for possible values. */
         mfxU16 BiDirectionalPrediction;                  /*!< Indicates B-frames support. */
         mfxU16 reserved[7];                              /*!< reserved for future use. */
         mfxU16 NumProfiles;                              /*!< Number of supported profiles. */
         /*! This structure represents codec's profile description. */
         struct encprofile {
-           mfxU32 Profile;                               /*!< Profile ID in fourCC format. */
+           mfxU32 Profile;                               /*!< Profile ID. See CodecProfile enumerator for possible values.*/
            mfxU16 reserved[7];                           /*!< reserved for future use. */
            mfxU16 NumMemTypes;                           /*!< Number of supported memory types. */
            /*! This structure represents underlying details of the memory type. */
@@ -300,6 +303,8 @@ typedef struct {
     } * Codecs;                                          /*!< Pointer to the array of encoders. */
 } mfxEncoderDescription;
 MFX_PACK_END()
+
+#define MFX_VPPDESCRIPTION_VERSION MFX_STRUCT_VERSION(1, 0)
 
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 /*! This structure represents VPP description. */
@@ -322,7 +327,8 @@ typedef struct {
           mfxU16 NumInFormats;                           /*!< Number of supported input color formats. */
           /*! This structure represents input color format description. */
           struct format {
-             mfxU16 reserved[7];                         /*!< reserved for future use. */
+             mfxU32 InFormat;                            /*!< Input color format (in fourCC). */
+             mfxU16 reserved[5];                         /*!< reserved for future use. */
              mfxU16 NumOutFormat;                        /*!< Number of supported output color formats. */
              mfxU32* OutFormats;                         /*!< Pointer to the array of supported output color formats (in fourCC). */
           } * Formats;                                   /*!< Pointer to the array of supported formats. */
@@ -331,16 +337,18 @@ typedef struct {
 } mfxVPPDescription;
 MFX_PACK_END()
 
+#define MFX_IMPLDESCRIPTION_VERSION MFX_STRUCT_VERSION(1, 0)
+
 MFX_PACK_BEGIN_STRUCT_W_PTR()
 /*! This structure represents implementation description */
 typedef struct {
     mfxStructVersion       Version;                      /*!< Version of the structure. */
     mfxIMPL                Impl;                         /*!< Impl type: SW/GEN/Bay/Custom. */
-    mfxU16                 accelerationMode;             /*!< Hardware acceleration stack to use. OS depended parameter. On linux - VA, on Windows - DX*. */
+    mfxU16                 AccelerationMode;             /*!< Hardware acceleration stack to use. OS depended parameter. On linux - VA, on Windows - DX*. */
     mfxVersion             ApiVersion;                   /*!< Supported API version. */
-    mfxU8                  ImplName[MFX_IMPL_NAME];      /*!< Null-terminated string with implementation name given by vendor. */
-    mfxU8                  License[MFX_STRFIELD_LEN];    /*!< Null-terminated string with licence name of the implementation. */
-    mfxU8                  Keywords[MFX_STRFIELD_LEN];   /*!< Null-terminated string with comma-separated list of keywords speciefic to this implementation that dispatcher can search for. */
+    mfxChar                ImplName[MFX_IMPL_NAME_LEN];  /*!< Null-terminated string with implementation name given by vendor. */
+    mfxChar                License[MFX_STRFIELD_LEN];    /*!< Null-terminated string with licence name of the implementation. */
+    mfxChar                Keywords[MFX_STRFIELD_LEN];   /*!< Null-terminated string with comma-separated list of keywords speciefic to this implementation that dispatcher can search for. */
     mfxU32                 VendorID;                     /*!< Standart vendor ID 0x8086 - Intel. */
     mfxU32                 VendorImplID;                 /*!< Vendor specific number with gived implementation ID. */
     mfxDecoderDescription  Dec;                          /*!< Decoders config. */

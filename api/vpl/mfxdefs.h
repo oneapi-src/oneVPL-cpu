@@ -132,9 +132,16 @@ typedef union {
     mfxU16  Version;   /*!< Structure version number */
 } mfxStructVersion;
 MFX_PACK_END()
+
+#define MFX_STRUCT_VERSION(MAJOR, MINOR) (256*(MAJOR) + (MINOR))
+
+
 #endif
 
 #if (MFX_VERSION >= 2000)
+
+#define MFX_VARIANT_VERSION MFX_STRUCT_VERSION(1, 0)
+
 /*! The mfxVariantType enumerator data types for mfxVarianf type. */
 typedef enum {
     MFX_VARIANT_TYPE_UNSET = 0, /*!< Undefined type. */
@@ -228,7 +235,8 @@ typedef enum
     MFX_ERR_MORE_BITSTREAM              = -18,  /*!< expect more bitstream buffers at output */
     MFX_ERR_GPU_HANG                    = -21,  /*!< device operation failure caused by GPU hang */
     MFX_ERR_REALLOC_SURFACE             = -22,  /*!< bigger output surface required */
-
+    MFX_ERR_RESOURCE_MAPPED             = -23,  /*!< write access is already acquired and user requested
+                                                   another write access, or read access with MFX_MEMORY_NO_WAIT flag */
     /* warnings >0 */
     MFX_WRN_IN_EXECUTION                = 1,    /*!< the previous asynchronous operation is in execution */
     MFX_WRN_DEVICE_BUSY                 = 2,    /*!< the HW acceleration device is busy */

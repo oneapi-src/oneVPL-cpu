@@ -7,7 +7,7 @@
 #ifndef __MFXVIDEO_H__
 #define __MFXVIDEO_H__
 #include "mfxsession.h"
-#include "mfxvstructures.h"
+#include "mfxstructures.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -424,7 +424,7 @@ mfxStatus MFX_CDECL MFXVideoENCODE_EncodeFrameAsync(mfxSession session, mfxEncod
    MFX_ERR_NONE  The function completed successfully. \n
    MFX_ERR_UNSUPPORTED  The function failed to identify a specific implementation for the required features. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters. 
-                                 The encoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The decoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 

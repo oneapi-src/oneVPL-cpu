@@ -144,17 +144,17 @@ MFX_PACK_END()
 
 /*! The ColorFourCC enumerator itemizes color formats. */
 enum {
-    MFX_FOURCC_NV12         = MFX_MAKEFOURCC('N','V','1','2'),   /*!< NV12 color planes. Native Format */
-    MFX_FOURCC_YV12         = MFX_MAKEFOURCC('Y','V','1','2'),   /*!< YV12 color planes */
+    MFX_FOURCC_NV12         = MFX_MAKEFOURCC('N','V','1','2'),   /*!< NV12 color planes. Native format for 4:2:0/8b Gen HW implementation. */
+    MFX_FOURCC_YV12         = MFX_MAKEFOURCC('Y','V','1','2'),   /*!< YV12 color planes. */
     MFX_FOURCC_NV16         = MFX_MAKEFOURCC('N','V','1','6'),   /*!< 4:2:2 color format with similar to NV12 layout. */
     MFX_FOURCC_YUY2         = MFX_MAKEFOURCC('Y','U','Y','2'),   /*!< YUY2 color planes. */
 #if (MFX_VERSION >= 1028)
-    MFX_FOURCC_RGB565       = MFX_MAKEFOURCC('R','G','B','2'),   /*!< 2 bytes per pixel, uint16 in little-endian format, where 0-4 bits are blue, bits 5-10 are green and bits 11-15 are red */
+    MFX_FOURCC_RGB565       = MFX_MAKEFOURCC('R','G','B','2'),   /*!< 2 bytes per pixel, uint16 in little-endian format, where 0-4 bits are blue, bits 5-10 are green and bits 11-15 are red. */
     /*! RGB 24 bit planar layout (3 separate channels, 8-bits per sample each). This format should be mapped to D3DFMT_R8G8B8 or VA_FOURCC_RGBP. */
     MFX_FOURCC_RGBP         = MFX_MAKEFOURCC('R','G','B','P'),
 #endif
     MFX_FOURCC_RGB3         = MFX_MAKEFOURCC('R','G','B','3'),   /* deprecated */
-    MFX_FOURCC_RGB4         = MFX_MAKEFOURCC('R','G','B','4'),   /*!< RGB4 (RGB32) color planes. ARGB is the order, A channel is 8 MSBs */
+    MFX_FOURCC_RGB4         = MFX_MAKEFOURCC('R','G','B','4'),   /*!< RGB4 (RGB32) color planes. ARGB is the order, A channel is 8 MSBs. */
     /*!
        Internal SDK color format. The application should use one of the functions below to create such surface, depending on Direct3D version.
        
@@ -175,7 +175,7 @@ enum {
 #if (MFX_VERSION >= 1031)
     MFX_FOURCC_P016         = MFX_MAKEFOURCC('P','0','1','6'), /*!< P016 color format. This is 16 bit per sample format with similar to NV12 layout. This format should be mapped to DXGI_FORMAT_P016. */
 #endif
-    MFX_FOURCC_P210         = MFX_MAKEFOURCC('P','2','1','0'), /*!< 0 bit per sample 4:2:2 color format with similar to NV12 layout */
+    MFX_FOURCC_P210         = MFX_MAKEFOURCC('P','2','1','0'), /*!< 0 bit per sample 4:2:2 color format with similar to NV12 layout. */
     MFX_FOURCC_BGR4         = MFX_MAKEFOURCC('B','G','R','4'), /*!< ABGR color format. It is similar to MFX_FOURCC_RGB4 but with interchanged R and B channels. ‘A’ is 8 MSBs, then 8 bits for ‘B’ channel, then ‘G’ and ‘R’ channels. */
     MFX_FOURCC_A2RGB10      = MFX_MAKEFOURCC('R','G','1','0'), /*!< 10 bits ARGB color format packed in 32 bits. ‘A’ channel is two MSBs, then ‘R’, then ‘G’ and then ‘B’ channels. This format should be mapped to DXGI_FORMAT_R10G10B10A2_UNORM or D3DFMT_A2R10G10B10. */
     MFX_FOURCC_ARGB16       = MFX_MAKEFOURCC('R','G','1','6'), /*!< 10 bits ARGB color format packed in 64 bits. ‘A’ channel is 16 MSBs, then ‘R’, then ‘G’ and then ‘B’ channels. This format should be mapped to DXGI_FORMAT_R16G16B16A16_UINT or D3DFMT_A16B16G16R16 formats. */
@@ -193,9 +193,12 @@ enum {
     MFX_FOURCC_Y416         = MFX_MAKEFOURCC('Y','4','1','6'), /*!< 16 bit per sample 4:4:4 packed color format. This format should be mapped to DXGI_FORMAT_Y416. */
 #endif
 #if (MFX_VERSION >= 1035)
-    MFX_FOURCC_NV21         = MFX_MAKEFOURCC('N', 'V', '2', '1'), /*! < same as NV12 but with weaved V and U values. */
-    MFX_FOURCC_IYUV         = MFX_MAKEFOURCC('I', 'Y', 'U', 'V'), /*! < same as  YV12 except that the U and V plane order is reversed. */
-    MFX_FOURCC_I010         = MFX_MAKEFOURCC('I', '0', '1', '0'), /*! < 10-bit YUV 4:2:0, each component has its own plane. */
+    MFX_FOURCC_NV21         = MFX_MAKEFOURCC('N', 'V', '2', '1'), /*!< same as NV12 but with weaved V and U values. */
+    MFX_FOURCC_IYUV         = MFX_MAKEFOURCC('I', 'Y', 'U', 'V'), /*!< same as  YV12 except that the U and V plane order is reversed. */
+    MFX_FOURCC_I010         = MFX_MAKEFOURCC('I', '0', '1', '0'), /*!< 10-bit YUV 4:2:0, each component has its own plane. */
+#endif
+#if (MFX_VERSION >= 2000)
+    MFX_FOURCC_I420         = MFX_FOURCC_IYUV,                 /*!< Alias for the IYUV color format. */ 
 #endif
 };
 
@@ -392,8 +395,11 @@ typedef enum
      */
     MFX_MAP_NOWAIT = 0x10 
 } mfxMemoryFlags;
+#endif
 
-//typedef struct _mfxFrameSurfaceInterface mfxFrameSurfaceInterface;
+#if (MFX_VERSION >= 2000)
+#define MFX_FRAMESURFACE1_VERSION MFX_STRUCT_VERSION(1, 1)
+#endif
 
 /* Frame Surface */
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
@@ -409,12 +415,18 @@ typedef struct {
 #endif 
         mfxU32  reserved[2];
     };
+#if (MFX_VERSION >= 2000)
     mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
-    mfxU16           reserved1[3];
+#endif
+    mfxU16          reserved1[3];
     mfxFrameInfo    Info; /*!< mfxFrameInfo structure specifies surface properties. */
     mfxFrameData    Data; /*!< mfxFrameData structure describes the actual frame buffer. */
 } mfxFrameSurface1;
 MFX_PACK_END()
+
+#if (MFX_VERSION >= 2000)
+
+#define MFX_FRAMESURFACEINTERFACE_VERSION MFX_STRUCT_VERSION(1, 0)
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /* The mfxFrameSurfaceInterface strucutre specifies frame surface interface. */
@@ -1426,7 +1438,7 @@ MFX_PACK_BEGIN_USUAL_STRUCT()
    The application can attach this extended buffer to the mfxVideoParam structure to configure initialization and to the mfxEncodeCtrl during runtime.
 */
 typedef struct {
-    mfxExtBuffer Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_CODING_OPTION2. */
+    mfxExtBuffer Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_CODING_OPTION3. */
 
     mfxU16      NumSliceI; /*!< The number of slices for I frames.
                                 @note Not all codecs and SDK implementations support these values. Use Query function to check if this feature is supported */
@@ -3674,6 +3686,7 @@ enum {
     MFX_SCALING_MODE_QUALITY    = 2  /*!< The best quality scaling mode */
 };
 
+#if (MFX_VERSION >= 1033)
 /*! The InterpolationMode enumerator specifies type of interpolation method used by VPP scaling filter. */
 enum {
     MFX_INTERPOLATION_DEFAULT                = 0, /*!< Default interpolation mode for scaling. SDK selects the most appropriate     
@@ -3682,6 +3695,7 @@ enum {
     MFX_INTERPOLATION_BILINEAR               = 2, /*!< Bilinear interpolation method */
     MFX_INTERPOLATION_ADVANCED               = 3  /*!< Advanced interpolation method is defined by each SDK and usually gives best                                                          quality */
 };
+#endif
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
@@ -3692,8 +3706,10 @@ typedef struct {
     mfxExtBuffer Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_VPP_SCALING. */
 
     mfxU16 ScalingMode;  /*!< Scaling mode. See ScalingMode for possible values. */
+#if (MFX_VERSION >= 1033)
     mfxU16 InterpolationMethod; /*!< Interpolation mode for scaling algorithm. See InterpolationMode for possible values. */
-    mfxU16 reserved[11];
+#endif
+    mfxU16 reserved[10];
 } mfxExtVPPScaling;
 MFX_PACK_END()
 
@@ -4209,6 +4225,8 @@ typedef struct {
 } mfxExtPartialBitstreamParam;
 MFX_PACK_END()
 #endif
+
+#define MFX_EXTENCTOOLSCONFIG_VERSION MFX_STRUCT_VERSION(1, 0)
 
 #if (MFX_VERSION >= 1034)
 MFX_PACK_BEGIN_USUAL_STRUCT()

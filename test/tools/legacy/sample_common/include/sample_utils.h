@@ -73,7 +73,6 @@ enum {
     MFX_FOURCC_RGBP24 = MFX_MAKEFOURCC('R', 'G', 'B', 'P'),
 #else
 #endif
-    MFX_FOURCC_I420 = MFX_MAKEFOURCC('I', '4', '2', '0')
 };
 
 enum ExtBRCType { EXTBRC_DEFAULT, EXTBRC_OFF, EXTBRC_ON, EXTBRC_IMPLICIT };

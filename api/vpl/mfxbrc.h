@@ -7,7 +7,7 @@
 #ifndef __MFXBRC_H__
 #define __MFXBRC_H__
 
-#include "mfxvstructures.h"
+#include "mfxstructures.h"
 
 #ifdef __cplusplus
 extern "C"

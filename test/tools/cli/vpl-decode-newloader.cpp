@@ -63,7 +63,7 @@ static void TestCfgPropsMain(mfxLoader loader) {
     name = (const mfxU8 *)"mfxImplDescription.Impl";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_IMPL_SOFTWARE);
 
-    name = (const mfxU8 *)"mfxImplDescription.accelerationMode";
+    name = (const mfxU8 *)"mfxImplDescription.AccelerationMode";
     TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 3);
 
     name = (const mfxU8 *)"mfxImplDescription.VendorID";
