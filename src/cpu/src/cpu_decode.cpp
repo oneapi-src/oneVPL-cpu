@@ -247,76 +247,9 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
     // frame successfully decoded
     // don't save output frame if surface_work is 0 (e.g. DecodeHeader)
     if (surface_work) {
-        AVFrame2mfxFrameSurface(surface_work);
+        AVFrame2mfxFrameSurface(surface_work, m_avDecFrameOut);
         *surface_out = surface_work;
     }
 
     return MFX_ERR_NONE;
-}
-
-void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface_work) {
-    mfxU32 w, h, y, pitch, offset;
-
-    surface_work->Info.Width  = m_avDecContext->width;
-    surface_work->Info.Height = m_avDecContext->height;
-
-    if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE) {
-        surface_work->Info.FourCC = MFX_FOURCC_I010;
-        surface_work->Data.Pitch  = (m_avDecContext->width * 2);
-
-        w     = surface_work->Info.Width * 2;
-        h     = surface_work->Info.Height;
-        pitch = surface_work->Data.Pitch;
-    }
-    else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P) {
-        surface_work->Info.FourCC = MFX_FOURCC_IYUV;
-        surface_work->Data.Pitch  = m_avDecContext->width;
-
-        w     = surface_work->Info.Width;
-        h     = surface_work->Info.Height;
-        pitch = surface_work->Data.Pitch;
-    }
-    else { // default
-        surface_work->Info.FourCC = MFX_FOURCC_IYUV;
-        surface_work->Data.Pitch  = m_avDecContext->width;
-
-        w     = surface_work->Info.Width;
-        h     = surface_work->Info.Height;
-        pitch = surface_work->Data.Pitch;
-    }
-
-    surface_work->Info.CropX = 0;
-    surface_work->Info.CropY = 0;
-    surface_work->Info.CropW = m_avDecContext->width;
-    surface_work->Info.CropH = m_avDecContext->height;
-
-    // copy Y plane
-    for (y = 0; y < h; y++) {
-        offset =
-            pitch * (y + surface_work->Info.CropY) + surface_work->Info.CropX;
-        memcpy_s(surface_work->Data.Y + offset,
-                 w,
-                 m_avDecFrameOut->data[0] + y * m_avDecFrameOut->linesize[0],
-                 w);
-    }
-
-    // copy U plane
-    for (y = 0; y < h / 2; y++) {
-        offset = pitch / 2 * (y + surface_work->Info.CropY) +
-                 surface_work->Info.CropX;
-        memcpy_s(surface_work->Data.U + offset,
-                 w / 2,
-                 m_avDecFrameOut->data[1] + y * m_avDecFrameOut->linesize[1],
-                 w / 2);
-    }
-
-    // copy V plane
-    for (y = 0; y < h / 2; y++) {
-        offset = pitch / 2 * (y + surface_work->Info.CropY) +
-                 surface_work->Info.CropX;
-        memcpy_s(surface_work->Data.V + offset,
-                 w / 2,
-                 m_avDecFrameOut->data[2] + y * m_avDecFrameOut->linesize[2],
-                 w / 2);
-    }
 }

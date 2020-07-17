@@ -41,12 +41,14 @@ Ubuntu bash shell:
 export LD_LIBRARY_PATH=`pwd`/_build
 _build/hello-decode test/content/cars_128x96.h265
 _build/hello-endoce test/content/cars_128x96.i420 128 96
+_build/hello-vpp test/content/cars_128x96.i420 128 96
 ```
 
 Windows cmd prompt:
 ```
 _build\Release\hello-decode test\content\cars_128x96.h265
 _build\Release\hello-encode test\content\cars_128x96.i420 128 96
+_build\Release\hello-vpp test\content\cars_128x96.i420 128 96
 ```
 
 

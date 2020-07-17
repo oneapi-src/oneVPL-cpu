@@ -21,12 +21,16 @@ set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
 set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
 set(AVCODEC_LIB ${VPL_DEP_DIR}/lib/libavcodec.a)
 set(AVUTIL_LIB ${VPL_DEP_DIR}/lib/libavutil.a)
+set(AVFILTER_LIB ${VPL_DEP_DIR}/lib/libavfilter.a)
+set(SWSCALE_LIB ${VPL_DEP_DIR}/lib/libswscale.a)
 
 if(NOT EXISTS ${SVTHEVCENC_LIB}
    OR NOT EXISTS ${SVTHEVCENC_LIB}
    OR NOT EXISTS ${DAV1D_LIB}
    OR NOT EXISTS ${AVCODEC_LIB}
-   OR NOT EXISTS ${AVUTIL_LIB})
+   OR NOT EXISTS ${AVUTIL_LIB}
+   OR NOT EXISTS ${AVFILTER_LIB}
+   OR NOT EXISTS ${SWSCALE_LIB})
   message(FATAL_ERROR "Could not find expected FFmpeg libraries")
 endif()
 
@@ -89,13 +93,21 @@ find_package(Threads REQUIRED)
 if(MSVC)
   target_link_libraries(
     ${TARGET}
-    INTERFACE ${VPL_DEP_DIR}/lib/libavcodec.a ${VPL_DEP_DIR}/lib/libavutil.a
-              ${SVTHEVCENC_LIB} ${SVTAV1ENC_LIB} ${DAV1D_LIB} Threads::Threads)
+    INTERFACE ${AVCODEC_LIB}
+              ${AVUTIL_LIB}
+              ${AVFILTER_LIB}
+              ${SWSCALE_LIB}
+              ${SVTHEVCENC_LIB}
+              ${SVTAV1ENC_LIB}
+              ${DAV1D_LIB}
+              Threads::Threads)
 else()
   target_link_libraries(
     ${TARGET}
-    INTERFACE ${VPL_DEP_DIR}/lib/libavcodec.a
-              ${VPL_DEP_DIR}/lib/libavutil.a
+    INTERFACE ${AVCODEC_LIB}
+              ${AVUTIL_LIB}
+              ${AVFILTER_LIB}
+              ${SWSCALE_LIB}
               ${SVTHEVCENC_LIB}
               ${SVTAV1ENC_LIB}
               ${DAV1D_LIB}
