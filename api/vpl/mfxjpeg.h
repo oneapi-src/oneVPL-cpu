@@ -8,6 +8,7 @@
 #define __MFX_JPEG_H__
 
 #include "mfxdefs.h"
+#include "mfxvideo.h"
 
 #ifdef __cplusplus
 extern "C"

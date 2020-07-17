@@ -12,6 +12,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
 #define ALIGN_UP(addr, size) \
@@ -62,6 +63,10 @@ int main(int argc, char* argv[]) {
     if (strncmp("h265", argv[1], 4) == 0) {
         codecID = MFX_CODEC_HEVC;
         puts("h265 encoding");
+    }
+    else if (strncmp("jpeg", argv[1], 4) == 0) {
+        codecID = MFX_CODEC_JPEG;
+        puts("jpeg encoding");
     }
     else if (strncmp("av1", argv[1], 3) == 0) {
         codecID = MFX_CODEC_AV1;
@@ -160,6 +165,7 @@ int main(int argc, char* argv[]) {
     mfxEncParams.mfx.CodecId                 = codecID;
     mfxEncParams.mfx.TargetUsage             = MFX_TARGETUSAGE_BALANCED;
     mfxEncParams.mfx.TargetKbps              = 4000;
+    mfxEncParams.mfx.Quality                 = 100;
     mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_VBR;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
@@ -583,8 +589,8 @@ char* ValidateFileName(char* in) {
 
 void Usage(void) {
     printf(
-        "Usage: hello_encode [encoder] [input filename] [out filename] [width] [height] [10]\n\n");
-    printf("\t[encoder]         : h265|av1\n");
+        "Usage: vpl-encode [encoder] [input filename] [out filename] [width] [height] [10]\n\n");
+    printf("\t[encoder]         : h265|av1|jpeg\n");
     printf("\t[input filename]  : raw video file (i420 only)\n");
     printf("\t[out filename]    : filename to store the output\n");
     printf("\t[width]           : width of input video\n");

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
 #define MAX_PATH 260
@@ -34,6 +35,14 @@ int main(int argc, char *argv[]) {
     if (strncmp("h265", argv[1], 4) == 0) {
         codecID = MFX_CODEC_HEVC;
         puts("h265 decoding");
+    }
+    else if (strncmp("h264", argv[1], 4) == 0) {
+        codecID = MFX_CODEC_AVC;
+        puts("h264 decoding");
+    }
+    else if (strncmp("jpeg", argv[1], 4) == 0) {
+        codecID = MFX_CODEC_JPEG;
+        puts("jpeg decoding");
     }
     else if (strncmp("av1", argv[1], 3) == 0) {
         codecID = MFX_CODEC_AV1;
@@ -439,8 +448,8 @@ char *ValidateFileName(char *in) {
 }
 
 void Usage(void) {
-    printf("Usage: hello_decode [decoder] [input filename] [out filename]\n\n");
-    printf("\t[decoder]         : h265|av1\n");
+    printf("Usage: vpl-decode [decoder] [input filename] [out filename]\n\n");
+    printf("\t[decoder]         : h265|av1|jpeg|h264\n");
     printf("\t[input filename]  : encoded stream\n");
     printf("\t[out filename]    : filename to store the output\n");
     printf("To view:\n");

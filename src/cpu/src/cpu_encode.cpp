@@ -19,6 +19,9 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
         case MFX_CODEC_HEVC:
             cid = AV_CODEC_ID_HEVC;
             break;
+        case MFX_CODEC_JPEG:
+            cid = AV_CODEC_ID_MJPEG;
+            break;
         case MFX_CODEC_AV1:
             cid = AV_CODEC_ID_AV1;
             break;
@@ -91,6 +94,11 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
             break;
         case MFX_CODEC_AV1:
             sts = InitAV1Params(par);
+            if (sts != MFX_ERR_NONE)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+            break;
+        case MFX_CODEC_JPEG:
+            sts = InitJPEGParams(par);
             if (sts != MFX_ERR_NONE)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
@@ -281,6 +289,29 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
                          AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuWorkstream::InitJPEGParams(mfxVideoParam *par) {
+    if (par->mfx.Quality) {
+        uint32_t jpegQuality;
+
+        // convert scale from 1 - 100 (VPL, worst to best) to
+        //   2 - 31 (ffmpeg, best to worst)
+        float q = (float)(par->mfx.Quality);
+        q       = 31 - ((31 - 2) * (q - 1) / (100 - 1));
+
+        jpegQuality = (int)(q + 0.5f);
+        if (jpegQuality < 2)
+            jpegQuality = 2;
+        if (jpegQuality > 31)
+            jpegQuality = 31;
+
+        // enable CQP for MJPEG
+        m_avEncContext->flags |= AV_CODEC_FLAG_QSCALE;
+        m_avEncContext->global_quality = jpegQuality * FF_QP2LAMBDA;
     }
 
     return MFX_ERR_NONE;

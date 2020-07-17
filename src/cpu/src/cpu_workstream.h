@@ -84,6 +84,7 @@ private:
 
     mfxStatus InitHEVCParams(mfxVideoParam *par);
     mfxStatus InitAV1Params(mfxVideoParam *par);
+    mfxStatus InitJPEGParams(mfxVideoParam *par);
 
     // libav objects - Decode
     const AVCodec *m_avDecCodec;
