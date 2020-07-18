@@ -173,7 +173,6 @@ bash -c './configure ^
 --enable-demuxer=image2  ^
 --enable-parser=image2 ^
 --enable-filter=testsrc ^
---enable-filter=testsrc2 ^
 --enable-filter=rgbtestsrc ^
 --enable-filter=yuvtestsrc ^
 --enable-demuxer=h264 ^
