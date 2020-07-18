@@ -114,9 +114,12 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --enable-protocol=file  \
             --enable-bsf=h264_mp4toannexb \
             --enable-bsf=hevc_mp4toannexb  \
+            --enable-bsf=mjpeg2jpeg  \
+            --enable-bsf=mjpega_dump_header  \
             --enable-decoder=rawvideo \
             --enable-encoder=rawvideo \
             --enable-demuxer=rawvideo  \
+            --enable-demuxer=mjpeg  \
             --enable-muxer=rawvideo  \
             --enable-muxer=null \
             --enable-decoder=wrapped_avframe \
@@ -126,6 +129,9 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --enable-muxer=mjpeg  \
             --enable-muxer=hevc \
             --enable-muxer=ivf \
+            --enable-muxer=image2   \
+            --enable-demuxer=image2  \
+            --enable-parser=image2 \
             --enable-filter=testsrc  \
             --enable-filter=testsrc2 \
             --enable-filter=rgbtestsrc  \
@@ -138,11 +144,16 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --enable-parser=hevc  \
             --enable-demuxer=ivf \
             --enable-parser=av1  \
+            --enable-parser=mjpeg  \
             --enable-decoder=mpeg2video \
             --enable-encoder=mpeg2video  \
             --enable-decoder=mjpeg \
             --enable-encoder=mjpeg  \
             --enable-filter=scale \
+            --enable-filter=crop   \
+            --enable-filter=overlay   \
+            --enable-filter=split   \
+            --enable-filter=drawbox   \
             --enable-filter=psnr \
             --enable-filter=ssim  \
             --enable-libsvthevc \
