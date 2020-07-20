@@ -7,4 +7,5 @@ Appendices
    :maxdepth: 1
 
    VPL_apnds_a
-   limitations_and_supported_params
+   limitations
+   supported_params
