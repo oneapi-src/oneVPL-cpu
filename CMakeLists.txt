@@ -56,3 +56,10 @@ install(
   COMPONENT runtime)
 
 include(cmake/PackageTarget.cmake)
+
+option(vpl_build_tests "Build the tests" ON)
+if(vpl_build_tests)
+  enable_testing()
+  include(GoogleTest)
+  add_subdirectory(test/unit)
+endif()

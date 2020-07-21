@@ -1,5 +1,16 @@
 @set /A result_all = 0
 
+:unit_tests
+@echo *** Running Unit Tests ***
+call vpl-utest.exe
+@if %errorlevel%==0 goto unit_tests_passed
+@echo *** Unit Tests FAILED ***
+@set /A result_all = 1
+@goto test_decode
+
+:unit_tests_passed
+@echo *** Unit Tests PASSED ***
+
 :test_decode
 @echo *** Running Decode Smoke Test***
 call sample_decode.exe h265 -i %~dp0\..\test\content\cars_128x96.h265 -o out_vpl_h265.i420 -vpl 
