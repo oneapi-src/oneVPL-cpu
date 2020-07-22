@@ -82,6 +82,7 @@ public:
 
     // decode
     mfxStatus InitDecode(mfxU32 FourCC);
+    mfxStatus DecodeQuery(mfxVideoParam* in, mfxVideoParam* out);
     mfxStatus DecodeHeader(mfxBitstream* bs, mfxVideoParam* par);
     mfxStatus DecodeFrame(mfxBitstream* bs,
                           mfxFrameSurface1* surface_work,
@@ -99,10 +100,11 @@ public:
 
     // encode
     mfxStatus InitEncode(mfxVideoParam* par);
+    mfxStatus EncodeQuery(mfxVideoParam* in, mfxVideoParam* out);
     mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxBitstream* bs);
     void FreeEncode(void);
 
-    mfxStatus Sync(mfxU32 wait);
+    mfxStatus Sync(mfxSyncPoint& syncp, mfxU32 wait);
 
     bool getDecInit() {
         return m_decInit;

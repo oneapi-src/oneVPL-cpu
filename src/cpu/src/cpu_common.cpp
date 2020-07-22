@@ -45,6 +45,7 @@ CpuWorkstream::CpuWorkstream()
 
 CpuWorkstream::~CpuWorkstream() {}
 
-mfxStatus CpuWorkstream::Sync(mfxU32 wait) {
+// Sync operation implementation
+mfxStatus CpuWorkstream::Sync(mfxSyncPoint &syncp, mfxU32 wait) {
     return MFX_ERR_NONE;
 }

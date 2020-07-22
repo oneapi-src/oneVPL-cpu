@@ -48,32 +48,8 @@ mfxStatus MFXVideoDECODE_Query(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    //CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-    if (in) {
-        // save a local copy of in, since user may set out == in
-        mfxVideoParam inCopy = *in;
-        in                   = &inCopy;
-
-        // start with out = copy of in (does not deep copy extBufs)
-        *out = *in;
-
-        // validate fields in the input param struct
-
-        if (in->mfx.FrameInfo.Width == 0 || in->mfx.FrameInfo.Height == 0)
-            sts = MFX_ERR_UNSUPPORTED;
-
-        if (in->mfx.CodecId != MFX_CODEC_AVC &&
-            in->mfx.CodecId != MFX_CODEC_HEVC &&
-            in->mfx.CodecId != MFX_CODEC_AV1 &&
-            in->mfx.CodecId != MFX_CODEC_JPEG &&
-            in->mfx.CodecId != MFX_CODEC_MPEG2)
-            sts = MFX_ERR_UNSUPPORTED;
-    }
-    else {
-        memset(out, 0, sizeof(mfxVideoParam));
-
-        // set output struct to zero for unsupported params, non-zero for supported params
-    }
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    sts               = ws->DecodeQuery(in, out);
 
     return sts;
 }
@@ -179,24 +155,6 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
     *syncp = (mfxSyncPoint)(0x12345678);
 
     return sts;
-}
-
-// NOTES -
-//
-// Differences vs. MSDK 1.0 spec
-// -
-mfxStatus MFXVideoCORE_SyncOperation(mfxSession session,
-                                     mfxSyncPoint syncp,
-                                     mfxU32 wait) {
-    if (0 == session) {
-        return MFX_ERR_INVALID_HANDLE;
-    }
-    if (0 == syncp) {
-        return MFX_ERR_NULL_PTR;
-    }
-
-    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-    return ws->Sync(wait);
 }
 
 mfxStatus MFXVideoDECODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {

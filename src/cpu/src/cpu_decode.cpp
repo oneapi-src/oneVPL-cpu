@@ -253,3 +253,36 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
 
     return MFX_ERR_NONE;
 }
+
+mfxStatus CpuWorkstream::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
+    mfxStatus sts = MFX_ERR_NONE;
+
+    //CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    if (in) {
+        // save a local copy of in, since user may set out == in
+        mfxVideoParam inCopy = *in;
+        in                   = &inCopy;
+
+        // start with out = copy of in (does not deep copy extBufs)
+        *out = *in;
+
+        // validate fields in the input param struct
+
+        if (in->mfx.FrameInfo.Width == 0 || in->mfx.FrameInfo.Height == 0)
+            sts = MFX_ERR_UNSUPPORTED;
+
+        if (in->mfx.CodecId != MFX_CODEC_AVC &&
+            in->mfx.CodecId != MFX_CODEC_HEVC &&
+            in->mfx.CodecId != MFX_CODEC_AV1 &&
+            in->mfx.CodecId != MFX_CODEC_JPEG &&
+            in->mfx.CodecId != MFX_CODEC_MPEG2)
+            sts = MFX_ERR_UNSUPPORTED;
+    }
+    else {
+        memset(out, 0, sizeof(mfxVideoParam));
+
+        // set output struct to zero for unsupported params, non-zero for supported params
+    }
+
+    return sts;
+}
