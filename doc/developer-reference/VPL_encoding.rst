@@ -37,7 +37,7 @@ external memory (legacy mode):
     //        30fps
     //        GOP size 60
     //        Main profile, level auto
-    // input: IYUV (I420), 1280 x 720, 200 frames
+    // input: I420, 1280 x 720, 200 frames
     
     #include <stdio.h>
     #include <string.h>
@@ -52,12 +52,12 @@ external memory (legacy mode):
 
         mfxU16 inputWidth  = 1280;
         mfxU16 inputHeight = 720;
-        mfxU32 fourCC      = MFX_FOURCC_IYUV;
+        mfxU32 fourCC      = MFX_FOURCC_I420;
         mfxU32 codecID     = MFX_CODEC_HEVC;
 
         // Initialize Media SDK session
         mfxInitParam initPar   = { 0 };
-        initPar.Version        = {{ 35, 1 }};
+        initPar.Version        = {{ 0, 2 }};
         initPar.Implementation = MFX_IMPL_SOFTWARE;
 
         mfxSession session;
@@ -92,7 +92,7 @@ external memory (legacy mode):
         mfxU8* surfaceBuffers = new mfxU8[surfaceSize * nEncSurfNum];
 
         // Allocate surface headers (mfxFrameSurface1) for encoder
-        // IYUV(I420)
+        // I420
         mfxFrameSurface1 *pEncSurfaces = new mfxFrameSurface1[nEncSurfNum];
         for (i = 0; i < nEncSurfNum; i++) {
             pEncSurfaces[i]            = {0};
@@ -174,7 +174,7 @@ external memory (legacy mode):
         return 0;
     }
 
-    // IYUV
+    // I420
     mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource) {
         mfxStatus sts = MFX_ERR_NONE;
         mfxU16 w, h, i, pitch;

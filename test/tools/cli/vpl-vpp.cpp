@@ -121,8 +121,8 @@ int main(int argc, char* argv[]) {
 
     // Initialize Media SDK session
     mfxInitParam initPar   = { 0 };
-    initPar.Version.Major  = 1;
-    initPar.Version.Minor  = 35;
+    initPar.Version.Major  = 2;
+    initPar.Version.Minor  = 0;
     initPar.Implementation = MFX_IMPL_SOFTWARE;
 
     mfxSession session;
@@ -437,7 +437,7 @@ mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* f) {
     h = pInfo->Height;
 
     switch (pInfo->FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             // read luminance plane (Y)
             pitch = pData->Pitch;
             ptr   = pData->Y;
@@ -524,7 +524,7 @@ void WriteRawFrame(mfxFrameSurface1* pSurface, FILE* f) {
 
     // write the output to disk
     switch (pInfo->FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             //Y
             pitch = pData->Pitch;
             for (i = 0; i < h; i++) {
@@ -580,7 +580,7 @@ void WriteRawFrame(mfxFrameSurface1* pSurface, FILE* f) {
 }
 
 mfxU32 GetSurfaceWidth(mfxU32 fourcc, mfxU16 img_width) {
-    if (fourcc == MFX_FOURCC_IYUV) {
+    if (fourcc == MFX_FOURCC_I420) {
         return img_width;
     }
     else if (fourcc == MFX_FOURCC_I010) {
@@ -597,7 +597,7 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     mfxU32 nbytes = 0;
 
     switch (FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             nbytes = width * height + (width >> 1) * (height >> 1) +
                      (width >> 1) * (height >> 1);
             break;
@@ -693,7 +693,7 @@ bool ValidateParams(Params* params) {
         params->srcFourCC = MFX_FOURCC_BGR4;
     }
     else if (!strncmp(params->infileFormat, "I420", strlen("I420"))) {
-        params->srcFourCC = MFX_FOURCC_IYUV;
+        params->srcFourCC = MFX_FOURCC_I420;
     }
     else if (!strncmp(params->infileFormat, "I010", strlen("I010"))) {
         params->srcFourCC = MFX_FOURCC_I010;
@@ -728,7 +728,7 @@ bool ValidateParams(Params* params) {
         params->dstFourCC = MFX_FOURCC_BGR4;
     }
     else if (!strncmp(params->outfileFormat, "I420", strlen("I420"))) {
-        params->dstFourCC = MFX_FOURCC_IYUV;
+        params->dstFourCC = MFX_FOURCC_I420;
     }
     else if (!strncmp(params->outfileFormat, "I010", strlen("I010"))) {
         params->dstFourCC = MFX_FOURCC_I010;

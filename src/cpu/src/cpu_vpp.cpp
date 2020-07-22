@@ -971,7 +971,7 @@ mfxStatus CpuWorkstream::Query(mfxVideoParam* in, mfxVideoParam* out) {
         }
 
         /* [IN VPP] data */
-        if (out->vpp.In.FourCC != MFX_FOURCC_IYUV &&
+        if (out->vpp.In.FourCC != MFX_FOURCC_I420 &&
             out->vpp.In.FourCC != MFX_FOURCC_NV12 &&
             out->vpp.In.FourCC != MFX_FOURCC_YUY2 &&
 #if defined(MFX_ENABLE_FOURCC_RGB565)
@@ -1043,7 +1043,7 @@ mfxStatus CpuWorkstream::Query(mfxVideoParam* in, mfxVideoParam* out) {
 		*/
 
         /* [OUT VPP] data */
-        if (out->vpp.Out.FourCC != MFX_FOURCC_IYUV &&
+        if (out->vpp.Out.FourCC != MFX_FOURCC_I420 &&
             out->vpp.Out.FourCC != MFX_FOURCC_NV12 &&
             out->vpp.Out.FourCC != MFX_FOURCC_YUY2 &&
             out->vpp.Out.FourCC != MFX_FOURCC_RGB4 &&
@@ -2388,7 +2388,7 @@ mfxStatus CpuWorkstream::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
         case MFX_FOURCC_P210:
         case MFX_FOURCC_NV16:
         case MFX_FOURCC_YUY2:
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
         case MFX_FOURCC_I010:
             break;
         case MFX_FOURCC_P010:
@@ -2660,7 +2660,7 @@ AVPixelFormat CpuWorkstream::MFXFourCC2AVPixelFormat(uint32_t fourcc) {
                            ? AV_PIX_FMT_NV12
                            : (fourcc == MFX_FOURCC_RGB4)
                                  ? AV_PIX_FMT_BGRA
-                                 : (fourcc == MFX_FOURCC_IYUV)
+                                 : (fourcc == MFX_FOURCC_I420)
                                        ? AV_PIX_FMT_YUV420P
                                        : (AVPixelFormat)-1;
 }
@@ -2685,7 +2685,7 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1* surface,
         pitch = surface->Data.Pitch;
     }
     else if (frame->format == AV_PIX_FMT_YUV420P) {
-        surface->Info.FourCC = MFX_FOURCC_IYUV;
+        surface->Info.FourCC = MFX_FOURCC_I420;
         surface->Data.Pitch  = frame->width;
 
         w     = surface->Info.Width;
@@ -2701,7 +2701,7 @@ void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1* surface,
         pitch = surface->Data.Pitch;
     }
     else { // default
-        surface->Info.FourCC = MFX_FOURCC_IYUV;
+        surface->Info.FourCC = MFX_FOURCC_I420;
         surface->Data.Pitch  = frame->width;
 
         w     = surface->Info.Width;

@@ -101,7 +101,7 @@ static void TestCfgPropsDec(mfxLoader loader) {
     name =
         (const mfxU8
              *)"mfxImplDescription.mfxDecoderDescription.decoder.decprofile.decmemdesc.ColorFormats";
-    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_I420);
 }
 
 static void TestCfgPropsEnc(mfxLoader loader) {
@@ -137,7 +137,7 @@ static void TestCfgPropsEnc(mfxLoader loader) {
     name =
         (const mfxU8
              *)"mfxImplDescription.mfxEncoderDescription.encoder.encprofile.encmemdesc.ColorFormats";
-    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_I420);
 }
 
 static void TestCfgPropsVPP(mfxLoader loader) {
@@ -163,7 +163,7 @@ static void TestCfgPropsVPP(mfxLoader loader) {
     name =
         (const mfxU8
              *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormats";
-    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_IYUV);
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_I420);
 }
 
 int main(int argc, char *argv[]) {

@@ -31,7 +31,7 @@ void Usage(void);
 
 int main(int argc, char *argv[]) {
     mfxU32 codecID = MFX_CODEC_HEVC;
-    mfxU32 fourCC  = MFX_FOURCC_IYUV;
+    mfxU32 fourCC  = MFX_FOURCC_I420;
 
     if (argc != 4) {
         Usage();
@@ -78,8 +78,8 @@ int main(int argc, char *argv[]) {
 
     // initialize  session
     mfxInitParam initPar   = { 0 };
-    initPar.Version.Major  = 1;
-    initPar.Version.Minor  = 35;
+    initPar.Version.Major  = 2;
+    initPar.Version.Minor  = 0;
     initPar.Implementation = MFX_IMPL_SOFTWARE;
 
     mfxSession session;
@@ -289,7 +289,7 @@ mfxStatus LoadRawFrame(mfxFrameSurface1 *pSurface, FILE *fSource) {
     h = pInfo->Height;
 
     switch (pInfo->FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             // read luminance plane (Y)
             pitch = pData->Pitch;
             ptr   = pData->Y;
@@ -334,7 +334,7 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     mfxU32 nbytes = 0;
 
     switch (FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             nbytes = width * height + (width >> 1) * (height >> 1) +
                      (width >> 1) * (height >> 1);
             break;

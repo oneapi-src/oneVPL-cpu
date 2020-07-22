@@ -352,7 +352,7 @@ mfxStatus ParseInputString(msdk_char* strInput[],
     pParams->bUseHWLib          = true;
     pParams->isV4L2InputEnabled = false;
     pParams->nNumFrames         = 0;
-    pParams->FileInputFourCC    = MFX_FOURCC_IYUV;
+    pParams->FileInputFourCC    = MFX_FOURCC_I420;
     pParams->EncodeFourCC       = MFX_FOURCC_NV12;
     pParams->nPRefType          = MFX_P_REF_DEFAULT;
 #if (MFX_VERSION >= 1027)
@@ -431,7 +431,7 @@ mfxStatus ParseInputString(msdk_char* strInput[],
         }
         else if (0 == msdk_strcmp(strInput[i], MSDK_STRING("-vpl"))) {
             pParams->bUseVPLLib   = true;
-            pParams->EncodeFourCC = MFX_FOURCC_IYUV; // native I420
+            pParams->EncodeFourCC = MFX_FOURCC_I420; // native I420
         }
         else if (0 == msdk_strcmp(strInput[i], MSDK_STRING("-yuy2"))) {
 #if defined(ENABLE_V4L2_SUPPORT)

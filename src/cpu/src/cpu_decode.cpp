@@ -139,9 +139,9 @@ mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {
     if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
         par->mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
     else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
     else
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_IYUV;
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
 
     if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
         return MFX_ERR_NOT_INITIALIZED;

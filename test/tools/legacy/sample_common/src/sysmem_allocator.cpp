@@ -98,9 +98,7 @@ mfxStatus SysMemFrameAllocator::LockFrame(mfxMemId mid, mfxFrameData *ptr) {
             ptr->U     = ptr->V + (Width2 >> 1) * (Height2 >> 1);
             ptr->Pitch = Width2;
             break;
-#if (MFX_VERSION >= 1035)
-        case MFX_FOURCC_IYUV:
-#endif
+        case MFX_FOURCC_I420:
             ptr->U     = ptr->Y + Width2 * Height2;
             ptr->V     = ptr->U + (Width2 >> 1) * (Height2 >> 1);
             ptr->Pitch = Width2;
@@ -249,9 +247,7 @@ mfxStatus SysMemFrameAllocator::AllocImpl(mfxFrameAllocRequest *request,
     switch (request->Info.FourCC) {
         case MFX_FOURCC_YV12:
         case MFX_FOURCC_NV12:
-#if (MFX_VERSION >= 1035)
-        case MFX_FOURCC_IYUV:
-#endif
+        case MFX_FOURCC_I420:
             nbytes = Width2 * Height2 + (Width2 >> 1) * (Height2 >> 1) +
                      (Width2 >> 1) * (Height2 >> 1);
             break;

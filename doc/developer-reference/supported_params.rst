@@ -28,7 +28,7 @@ Decode
 +---------------------------+------------------------------------------+
 | Parameter                 |  Accepted values                         | 
 +===========================+==========================================+
-| FrameInfo.FourCC          | MFX_FOURCC_IYUV==MFX_FOURCC_I420         |
+| FrameInfo.FourCC          | MFX_FOURCC_I420==MFX_FOURCC_IYUV         |
 |                           | MFX_FOURCC_I010                          |
 |                           | MFX_FOURCC_RGB4                          |
 +---------------------------+------------------------------------------+
@@ -52,7 +52,7 @@ Encode
 +===========================+==========================================+
 | IOPattern                 | MFX_IOPATTERN_IN_SYSTEM_MEMORY           | 
 +---------------------------+------------------------------------------+
-| FrameInfo.FourCC          | MFX_FOURCC_IYUV==MFX_FOURCC_I420         |
+| FrameInfo.FourCC          | MFX_FOURCC_I420==MFX_FOURCC_IYUV         |
 |                           | MFX_FOURCC_I010                          |
 +---------------------------+------------------------------------------+
 
@@ -231,7 +231,7 @@ All VPP features introduced in beta09.
 | FrameInfo.CropW               |                                          |
 | FrameInfo.CropH               |                                          |
 +-------------------------------+------------------------------------------+ 
-| FrameInfo.FourCC              | MFX_FOURCC_IYUV==MFX_FOURCC_I420         |
+| FrameInfo.FourCC              | MFX_FOURCC_I420==MFX_FOURCC_IYUV         |
 |                               | MFX_FOURCC_I010                          | 
 |                               | MFX_FOURCC_RGB4                          |
 +-------------------------------+------------------------------------------+

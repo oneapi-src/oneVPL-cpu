@@ -141,7 +141,7 @@ mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec) {
                                      DefaultRange,
                                      DefaultRange,
                                      1);
-    ColorFormats[0] = MFX_FOURCC_IYUV;
+    ColorFormats[0] = MFX_FOURCC_I420;
 
     // profile[1] - HEVC_MAIN10
     MemDesc      = AddDecoderProfile(Profiles, 1, MFX_PROFILE_HEVC_MAIN10, 1);
@@ -164,7 +164,7 @@ mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec) {
                                      DefaultRange,
                                      DefaultRange,
                                      1);
-    ColorFormats[0] = MFX_FOURCC_IYUV;
+    ColorFormats[0] = MFX_FOURCC_I420;
 
     return MFX_ERR_NONE;
 }
@@ -301,7 +301,7 @@ mfxStatus InitEncoderCaps(mfxEncoderDescription *Enc) {
                                      DefaultRange,
                                      DefaultRange,
                                      1);
-    ColorFormats[0] = MFX_FOURCC_IYUV;
+    ColorFormats[0] = MFX_FOURCC_I420;
 
     // profile[1] - HEVC_MAIN10
     MemDesc      = AddEncoderProfile(Profiles, 1, MFX_PROFILE_HEVC_MAIN10, 1);
@@ -325,7 +325,7 @@ mfxStatus InitEncoderCaps(mfxEncoderDescription *Enc) {
                                      DefaultRange,
                                      DefaultRange,
                                      1);
-    ColorFormats[0] = MFX_FOURCC_IYUV;
+    ColorFormats[0] = MFX_FOURCC_I420;
 
     return MFX_ERR_NONE;
 }

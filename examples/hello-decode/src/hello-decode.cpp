@@ -56,8 +56,8 @@ int main(int argc, char *argv[]) {
 
     // initialize  session
     mfxInitParam initPar   = { 0 };
-    initPar.Version.Major  = 1;
-    initPar.Version.Minor  = 35;
+    initPar.Version.Major  = 2;
+    initPar.Version.Minor  = 0;
     initPar.Implementation = MFX_IMPL_SOFTWARE;
 
     mfxSession session;
@@ -252,7 +252,7 @@ mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f) {
     return MFX_ERR_NONE;
 }
 
-// Write raw IYUV frame to file
+// Write raw I420 frame to file
 void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
     mfxU16 w, h, i, pitch;
     mfxFrameInfo *pInfo = &pSurface->Info;
@@ -263,7 +263,7 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
 
     // write the output to disk
     switch (pInfo->FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             // Y
             pitch = pData->Pitch;
             for (i = 0; i < h; i++) {
@@ -292,7 +292,7 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     mfxU32 nbytes = 0;
     switch (FourCC) {
-        case MFX_FOURCC_IYUV:
+        case MFX_FOURCC_I420:
             nbytes = width * height + (width >> 1) * (height >> 1) +
                      (width >> 1) * (height >> 1);
             break;
