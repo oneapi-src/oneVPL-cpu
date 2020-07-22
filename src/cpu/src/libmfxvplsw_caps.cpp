@@ -37,6 +37,33 @@ static const mfxRange32U DefaultRange = { DEF_RANGE_MIN,
                                           DEF_RANGE_MAX,
                                           DEF_RANGE_STEP };
 
+// Start - Device Description
+
+mfxStatus InitDeviceDescription(mfxDeviceDescription *Dev) {
+    // initially empty
+    memset(Dev, 0, sizeof(mfxDeviceDescription));
+
+    Dev->Version.Major = DefaultStructVersion.Major;
+    Dev->Version.Minor = DefaultStructVersion.Minor;
+
+    strncpy_s((char *)Dev->DeviceID,
+              sizeof(Dev->DeviceID),
+              "CPU",
+              sizeof(Dev->DeviceID) - 1);
+
+    // CPU should report 0
+    Dev->NumSubDevices = 0;
+
+    return MFX_ERR_NONE;
+}
+
+void FreeDeviceDescription(mfxDeviceDescription *Dev) {
+    // no dynamically allocated memory
+    return;
+}
+
+// End - Device Description
+
 // Start - Decoder Caps
 
 static DecCodec *AddDecoderDescription(mfxDecoderDescription *Dec,

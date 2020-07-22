@@ -61,7 +61,7 @@ static void TestCfgPropsMain(mfxLoader loader) {
     const mfxU8 *name;
 
     name = (const mfxU8 *)"mfxImplDescription.Impl";
-    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_IMPL_SOFTWARE);
+    TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_IMPL_TYPE_SOFTWARE);
 
     name = (const mfxU8 *)"mfxImplDescription.AccelerationMode";
     TEST_CFG(MFX_VARIANT_TYPE_U16, U16, 3);
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
 
     cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_IMPL_SOFTWARE;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
     MFXSetConfigFilterProperty(cfg,
                                (const mfxU8 *)"mfxImplDescription.Impl",
                                ImplValue);

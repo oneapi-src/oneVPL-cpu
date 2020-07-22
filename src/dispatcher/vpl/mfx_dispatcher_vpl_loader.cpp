@@ -4,11 +4,13 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
+#include <algorithm>
+
 #include "vpl/mfx_dispatcher_vpl.h"
 
 // new functions for API >= 2.0
 static const VPLFunctionDesc FunctionDesc2[NumVPLFunctions] = {
-    { "MFXQueryImplDescription", { { 0, 2 } } },
+    { "MFXQueryImplsDescription", { { 0, 2 } } },
     { "MFXReleaseImplDescription", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForVPP", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForEncode", { { 0, 2 } } },
@@ -20,7 +22,9 @@ static const VPLFunctionDesc FunctionDesc2[NumVPLFunctions] = {
 // application to create sessions with them
 LoaderCtxVPL::LoaderCtxVPL()
         : m_libInfoList(),
+          m_implInfoList(),
           m_configCtxList(),
+          m_implIdxNext(0),
           m_userSearchDirs(),
           m_vplPackageDir() {
     return;
@@ -243,7 +247,6 @@ mfxU32 LoaderCtxVPL::CheckValidLibraries() {
         }
 #endif
         if (i == NumVPLFunctions) {
-            libInfo->libIdx = libIdx++;
             it++;
         }
         else {
@@ -258,31 +261,12 @@ mfxU32 LoaderCtxVPL::CheckValidLibraries() {
     return (mfxU32)m_libInfoList.size();
 }
 
-// helper function to get library with given index
-LibInfo* LoaderCtxVPL::GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx) {
+// iterate over all implementation runtimes
+// unload DLL's and free memory
+mfxStatus LoaderCtxVPL::UnloadAllLibraries() {
     std::list<LibInfo*>::iterator it = m_libInfoList.begin();
     while (it != m_libInfoList.end()) {
         LibInfo* libInfo = (*it);
-
-        if (libInfo->libIdx == idx) {
-            return libInfo;
-        }
-        else {
-            it++;
-        }
-    }
-
-    return nullptr; // not found
-}
-
-mfxStatus LoaderCtxVPL::UnloadAllLibraries() {
-    LibInfo* libInfo;
-    mfxU32 i = 0;
-
-    // iterate over all implementation runtimes
-    // unload DLL's and free memory
-    while (1) {
-        libInfo = GetLibInfo(m_libInfoList, i++);
 
         if (libInfo) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -292,9 +276,74 @@ mfxStatus LoaderCtxVPL::UnloadAllLibraries() {
 #endif
             delete libInfo;
         }
-        else {
-            break;
+        it++;
+    }
+
+    std::list<ImplInfo*>::iterator it2 = m_implInfoList.begin();
+    while (it2 != m_implInfoList.end()) {
+        ImplInfo* implInfo = (*it2);
+
+        if (implInfo) {
+            delete implInfo;
         }
+        it2++;
+    }
+
+    return MFX_ERR_NONE;
+}
+
+// query capabilities of all valid libraries
+//   and add to list for future calls to EnumImplementations()
+//   as well as filtering by functionality
+// assume MFX_IMPLCAPS_IMPLDESCSTRUCTURE is the only format supported
+mfxStatus LoaderCtxVPL::QueryLibraryCaps() {
+    std::list<LibInfo*>::iterator it = m_libInfoList.begin();
+    while (it != m_libInfoList.end()) {
+        mfxU32 num_impls = 0;
+        LibInfo* libInfo = (*it);
+
+        VPLFunctionPtr pFunc =
+            libInfo->vplFuncTable[IdxMFXQueryImplsDescription];
+
+        // call MFXQueryImplsDescription() for this implementation
+        // return handle to description in requested format
+        mfxHDL* hImpl;
+        hImpl = (*(mfxHDL * (MFX_CDECL*)(mfxImplCapsDeliveryFormat, mfxU32*))
+                     pFunc)(MFX_IMPLCAPS_IMPLDESCSTRUCTURE, &num_impls);
+
+        if (!hImpl)
+            return MFX_ERR_UNSUPPORTED;
+
+        for (mfxU32 i = 0; i < num_impls; i++) {
+            ImplInfo* implInfo = new ImplInfo;
+            if (!implInfo)
+                return MFX_ERR_MEMORY_ALLOC;
+
+            // library which contains this implementation
+            implInfo->libInfo = libInfo;
+
+            // implementation descriptor returned from runtime
+            implInfo->implDesc = hImpl[i];
+
+            // fill out mfxInitParam struct for when we call MFXInitEx
+            //   in CreateSession()
+            mfxImplDescription* implDesc =
+                reinterpret_cast<mfxImplDescription*>(hImpl[i]);
+
+            memset(&(implInfo->initPar), 0, sizeof(mfxInitParam));
+            implInfo->initPar.Version        = implDesc->ApiVersion;
+            implInfo->initPar.Implementation = implDesc->Impl;
+
+            // save local index for this library
+            implInfo->libImplIdx = i;
+
+            // assign unique index to each implementation
+            implInfo->vplImplIdx = m_implIdxNext++;
+
+            // add implementation to overall list
+            m_implInfoList.push_back(implInfo);
+        }
+        it++;
     }
 
     return MFX_ERR_NONE;
@@ -307,31 +356,19 @@ mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx,
     if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
         return MFX_ERR_UNSUPPORTED;
 
-    // find library with given index
-    LibInfo* libInfo = GetLibInfo(m_libInfoList, idx);
-    if (libInfo == nullptr)
-        return MFX_ERR_NOT_FOUND;
+    std::list<ImplInfo*>::iterator it = m_implInfoList.begin();
+    while (it != m_implInfoList.end()) {
+        ImplInfo* implInfo = (*it);
 
-    VPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXQueryImplDescription];
+        if (implInfo->vplImplIdx == idx) {
+            *idesc = implInfo->implDesc;
+            return MFX_ERR_NONE;
+        }
+        it++;
+    }
 
-    // call MFXQueryImplDescription() for this implementation
-    // return handle to description in requested format
-    libInfo->implDesc =
-        (*(mfxHDL(MFX_CDECL*)(mfxImplCapsDeliveryFormat))pFunc)(format);
-    if (!libInfo->implDesc)
-        return MFX_ERR_UNSUPPORTED;
-
-    // fill out mfxInitParam struct for when we call MFXInitEx
-    //   in CreateSession()
-    mfxImplDescription* implDesc =
-        reinterpret_cast<mfxImplDescription*>(libInfo->implDesc);
-    memset(&(libInfo->initPar), 0, sizeof(mfxInitParam));
-    libInfo->initPar.Version        = implDesc->ApiVersion;
-    libInfo->initPar.Implementation = implDesc->Impl;
-
-    *idesc = libInfo->implDesc;
-
-    return MFX_ERR_NONE;
+    // invalid idx
+    return MFX_ERR_NOT_FOUND;
 }
 
 mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
@@ -340,59 +377,66 @@ mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
     if (idesc == nullptr)
         return MFX_ERR_NULL_PTR;
 
-    LibInfo* libInfo = nullptr;
+    ImplInfo* implInfo = nullptr;
 
     // all we get from the application is a handle to the descriptor,
     //   not the implementation associated with it, so we search
     //   through the full list until we find a match
-    std::list<LibInfo*>::iterator it = m_libInfoList.begin();
-    while (it != m_libInfoList.end()) {
-        libInfo = (*it);
+    std::list<ImplInfo*>::iterator it = m_implInfoList.begin();
+    while (it != m_implInfoList.end()) {
+        ImplInfo* implInfo = (*it);
 
-        if (libInfo->implDesc == idesc) {
-            break;
+        if (implInfo->implDesc == idesc) {
+            LibInfo* libInfo = implInfo->libInfo;
+
+            VPLFunctionPtr pFunc =
+                libInfo->vplFuncTable[IdxMFXReleaseImplDescription];
+
+            // call MFXReleaseImplDescription() for this implementation
+            sts = (*(mfxStatus(MFX_CDECL*)(mfxHDL))pFunc)(implInfo->implDesc);
+
+            implInfo->implDesc = nullptr; // no longer valid
+
+            return MFX_ERR_NONE;
         }
-        else {
-            libInfo = nullptr;
-            it++;
-        }
+        it++;
     }
 
     // did not find a matching handle - should not happen
-    if (libInfo == nullptr)
-        return MFX_ERR_INVALID_HANDLE;
-
-    VPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXReleaseImplDescription];
-
-    // call MFXReleaseImplDescription() for this implementation
-    sts = (*(mfxStatus(MFX_CDECL*)(mfxHDL))pFunc)(libInfo->implDesc);
-
-    libInfo->implDesc = nullptr; // no longer valid
-
-    return sts;
+    return MFX_ERR_INVALID_HANDLE;
 }
 
 mfxStatus LoaderCtxVPL::CreateSession(mfxU32 idx, mfxSession* session) {
     mfxStatus sts = MFX_ERR_NONE;
 
-    // find library with given index
-    LibInfo* libInfo = GetLibInfo(m_libInfoList, idx);
-    if (libInfo == nullptr)
-        return MFX_ERR_NOT_FOUND;
+    // find library with given implementation index
+    std::list<ImplInfo*>::iterator it = m_implInfoList.begin();
+    while (it != m_implInfoList.end()) {
+        ImplInfo* implInfo = (*it);
 
-    // compare caps from this library vs. config filters
-    mfxImplDescription* implDesc = (mfxImplDescription*)(libInfo->implDesc);
-    sts = ConfigCtxVPL::ValidateConfig(implDesc, m_configCtxList);
+        if (implInfo->vplImplIdx == idx) {
+            LibInfo* libInfo = implInfo->libInfo;
 
-    if (sts == MFX_ERR_NONE) {
-        // initialize this library via MFXInitEx, or else fail
-        //   (specify full path to library)
-        sts = MFXInitEx2(libInfo->initPar,
-                         session,
-                         (CHAR_TYPE*)libInfo->libNameFull.c_str());
+            // compare caps from this library vs. config filters
+            sts = ConfigCtxVPL::ValidateConfig(
+                (mfxImplDescription*)implInfo->implDesc,
+                m_configCtxList);
+
+            if (sts == MFX_ERR_NONE) {
+                // initialize this library via MFXInitEx, or else fail
+                //   (specify full path to library)
+                sts = MFXInitEx2(implInfo->initPar,
+                                 session,
+                                 (CHAR_TYPE*)libInfo->libNameFull.c_str());
+            }
+
+            return sts;
+        }
+        it++;
     }
 
-    return sts;
+    // invalid idx
+    return MFX_ERR_NOT_FOUND;
 }
 
 ConfigCtxVPL* LoaderCtxVPL::AddConfigFilter() {
