@@ -21,12 +21,47 @@ static const VPLFunctionDesc FunctionDesc2[NumVPLFunctions] = {
 LoaderCtxVPL::LoaderCtxVPL()
         : m_libInfoList(),
           m_configCtxList(),
+          m_userSearchDirs(),
           m_vplPackageDir() {
     return;
 }
 
 LoaderCtxVPL::~LoaderCtxVPL() {
     return;
+}
+
+// creates ordered list of user-specified directories to search
+mfxU32 LoaderCtxVPL::ParseUserSearchPaths(
+    std::list<STRING_TYPE>& userSearchDirs) {
+#if defined(_WIN32) || defined(_WIN64)
+    DWORD err;
+    CHAR_TYPE envVar[MAX_VPL_SEARCH_PATH] = { L"" };
+    err = GetEnvironmentVariableW(L"ONEVPL_SEARCH_PATH",
+                                  envVar,
+                                  MAX_VPL_SEARCH_PATH);
+    if (!err)
+        return 0; // environment variable not defined
+
+    // parse env variable into individual directories
+    std::wstringstream userPath((CHAR_TYPE*)envVar);
+    STRING_TYPE s;
+    while (std::getline(userPath, s, L';')) {
+        userSearchDirs.push_back(s);
+    }
+#else
+    CHAR_TYPE* envVar = getenv("ONEVPL_SEARCH_PATH");
+    if (!envVar)
+        return 0; // environment variable not defined
+
+    // parse env variable into individual directories
+    std::stringstream userPath((CHAR_TYPE*)envVar);
+    STRING_TYPE s;
+    while (std::getline(userPath, s, ':')) {
+        userSearchDirs.push_back(s);
+    }
+#endif
+
+    return (mfxU32)userSearchDirs.size();
 }
 
 mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
@@ -40,7 +75,7 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
     HANDLE hTestFile = nullptr;
     WIN32_FIND_DATAW testFileData;
     DWORD err;
-    STRING_TYPE testFileName = MAKE_STRING("*.dll");
+    STRING_TYPE testFileName = searchDir + MAKE_STRING("/*.dll");
 
     // iterate over all candidate files in directory
     hTestFile = FindFirstFileW(testFileName.c_str(), &testFileData);
@@ -127,15 +162,21 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 // "
 //
 // for now, we only look in the current working directory
-// TO DO - need to add categories 1 and 3
+// TO DO - need to add category 3, clarify package path for category 2
 mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     mfxStatus sts = MFX_ERR_NONE;
 
     STRING_TYPE emptyPath; // default construction = empty
 
     // first priority: user-defined directories in environment variable
-    // TO DO - parse env var and iterate over directories found
-    sts = SearchDirForLibs(emptyPath, m_libInfoList, LIB_PRIORITY_USE_DEFINED);
+    ParseUserSearchPaths(m_userSearchDirs);
+    std::list<STRING_TYPE>::iterator it = m_userSearchDirs.begin();
+    while (it != m_userSearchDirs.end()) {
+        STRING_TYPE nextDir = (*it);
+        sts =
+            SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_USE_DEFINED);
+        it++;
+    }
 
     // second priority: oneVPL package (current location for now)
     m_vplPackageDir = MAKE_STRING("./");

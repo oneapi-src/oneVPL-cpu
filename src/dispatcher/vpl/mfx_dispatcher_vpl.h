@@ -164,6 +164,7 @@ public:
 
 private:
     // helper functions
+    mfxU32 ParseUserSearchPaths(std::list<STRING_TYPE>& userSearchDirs);
     mfxStatus SearchDirForLibs(STRING_TYPE searchDir,
                                std::list<LibInfo*>& libInfoList,
                                mfxU32 priority);
@@ -172,6 +173,7 @@ private:
     std::list<LibInfo*> m_libInfoList;
     std::list<ConfigCtxVPL*> m_configCtxList;
 
+    std::list<STRING_TYPE> m_userSearchDirs;
     STRING_TYPE m_vplPackageDir;
 };
 

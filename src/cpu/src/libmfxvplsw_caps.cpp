@@ -46,9 +46,8 @@ static DecCodec *AddDecoderDescription(mfxDecoderDescription *Dec,
     if (NumCodecs == 0)
         return nullptr;
 
-    Dec->Version.Major = Version.Major;
-    Dec->Version.Minor = Version.Minor;
-    Dec->NumCodecs     = NumCodecs;
+    Dec->Version.Version = MFX_DECODERDESCRIPTION_VERSION;
+    Dec->NumCodecs       = NumCodecs;
 
     // allocate structures for supported codecs
     Dec->Codecs = AllocDescObject<DecCodec>(NumCodecs);
@@ -203,9 +202,8 @@ static EncCodec *AddEncoderDescription(mfxEncoderDescription *Enc,
     if (NumCodecs == 0)
         return nullptr;
 
-    Enc->Version.Major = Version.Major;
-    Enc->Version.Minor = Version.Minor;
-    Enc->NumCodecs     = NumCodecs;
+    Enc->Version.Version = MFX_ENCODERDESCRIPTION_VERSION;
+    Enc->NumCodecs       = NumCodecs;
 
     // allocate structures for supported codecs
     Enc->Codecs = AllocDescObject<EncCodec>(NumCodecs);
@@ -364,9 +362,8 @@ static VPPFilter *AddVPPDescription(mfxVPPDescription *VPP,
     if (NumFilters == 0)
         return nullptr;
 
-    VPP->Version.Major = Version.Major;
-    VPP->Version.Minor = Version.Minor;
-    VPP->NumFilters    = NumFilters;
+    VPP->Version.Version = MFX_VPPDESCRIPTION_VERSION;
+    VPP->NumFilters      = NumFilters;
 
     // allocate structures for supported codecs
     VPP->Filters = AllocDescObject<VPPFilter>(NumFilters);

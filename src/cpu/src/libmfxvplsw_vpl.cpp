@@ -5,12 +5,9 @@
   ############################################################################*/
 /// oneAPI Video Processing Library (oneVPL) dispatcher query implementation
 #include "vpl/mfxdispatcher.h"
+#include "vpl/mfximplcaps.h"
 
 #include "./libmfxvplsw_caps.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
@@ -24,8 +21,7 @@ mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
     // clear everything, only allocate new structures as needed
     memset(implDesc, 0, sizeof(mfxImplDescription));
 
-    implDesc->Version.Major = DEF_STRUCT_VERSION_MAJOR;
-    implDesc->Version.Minor = DEF_STRUCT_VERSION_MINOR;
+    implDesc->Version.Version = MFX_IMPLDESCRIPTION_VERSION;
 
     implDesc->Impl             = MFX_IMPL_SOFTWARE;
     implDesc->AccelerationMode = 0;
@@ -35,7 +31,7 @@ mfxHDL MFXQueryImplDescription(mfxImplCapsDeliveryFormat format) {
 
     strncpy_s((char *)implDesc->ImplName,
               sizeof(implDesc->ImplName),
-              "",
+              "oneAPI VPL CPU Reference Impl",
               sizeof(implDesc->ImplName) - 1);
     strncpy_s((char *)implDesc->License,
               sizeof(implDesc->License),
@@ -92,7 +88,3 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
     return MFX_ERR_UNSUPPORTED;
 }
-
-#ifdef __cplusplus
-}
-#endif

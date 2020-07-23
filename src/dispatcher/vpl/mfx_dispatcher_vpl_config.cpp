@@ -15,8 +15,8 @@ ConfigCtxVPL::ConfigCtxVPL()
           m_propValue(),
           m_propIdx(),
           m_propParsedString() {
-    m_propValue.Version = { 0, 1 };
-    m_propValue.Type    = MFX_VARIANT_TYPE_UNSET;
+    m_propValue.Version.Version = MFX_VARIANT_VERSION;
+    m_propValue.Type            = MFX_VARIANT_TYPE_UNSET;
 
     return;
 }
@@ -239,9 +239,7 @@ mfxStatus ConfigCtxVPL::SetFilterPropertyVPP(mfxVariant value) {
 mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8 *name, mfxVariant value) {
     m_propName = std::string((char *)name);
 
-    // definitions will be added to API
-    m_propValue.Version.Major = 1;
-    m_propValue.Version.Minor = 0;
+    m_propValue.Version.Version = MFX_VARIANT_VERSION;
 
     // initially set Type = unset (invalid)
     // if valid property string and value are passed in,
