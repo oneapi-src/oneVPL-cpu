@@ -60,17 +60,17 @@ int main(int argc, char* argv[]) {
     char* in_filename  = NULL;
     char* out_filename = NULL;
     mfxU32 codecID;
-    if (strncmp("h265", argv[1], 4) == 0) {
+    if (strncmp("H265", argv[1], 4) == 0) {
         codecID = MFX_CODEC_HEVC;
-        puts("h265 encoding");
+        puts("H265 encoding");
     }
-    else if (strncmp("jpeg", argv[1], 4) == 0) {
+    else if (strncmp("JPEG", argv[1], 4) == 0) {
         codecID = MFX_CODEC_JPEG;
-        puts("jpeg encoding");
+        puts("JPEG encoding");
     }
-    else if (strncmp("av1", argv[1], 3) == 0) {
+    else if (strncmp("AV1", argv[1], 3) == 0) {
         codecID = MFX_CODEC_AV1;
-        puts("av1 encoding");
+        puts("AV1 encoding");
     }
     else {
         printf("%s is not supported\n", argv[1]);
@@ -590,7 +590,7 @@ char* ValidateFileName(char* in) {
 void Usage(void) {
     printf(
         "Usage: vpl-encode [encoder] [input filename] [out filename] [width] [height] [10]\n\n");
-    printf("\t[encoder]         : h265|av1|jpeg\n");
+    printf("\t[encoder]         : H265|AV1|JPEG\n");
     printf("\t[input filename]  : raw video file (i420 only)\n");
     printf("\t[out filename]    : filename to store the output\n");
     printf("\t[width]           : width of input video\n");

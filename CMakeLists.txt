@@ -34,11 +34,11 @@ add_subdirectory(api)
 add_subdirectory(src)
 add_subdirectory(env)
 add_subdirectory(doc)
-add_subdirectory(test/tools/cli)
+add_subdirectory(tools/cli)
 add_subdirectory(examples/hello-decode)
 add_subdirectory(examples/hello-encode)
 add_subdirectory(examples/hello-vpp)
-add_subdirectory(test/tools/legacy)
+add_subdirectory(tools/legacy)
 
 install(
   FILES third-party-programs.txt LICENSE

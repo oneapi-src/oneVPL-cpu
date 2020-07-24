@@ -14,5 +14,8 @@ target_link_libraries(vpl-decode mfx)
 add_executable(vpl-vpp vpl-vpp.cpp)
 target_link_libraries(vpl-vpp mfx)
 
+install(TARGETS vpl-encode vpl-decode vpl-vpp
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime)
+
 add_executable(vpl-decode-newloader vpl-decode-newloader.cpp)
 target_link_libraries(vpl-decode-newloader mfx)
