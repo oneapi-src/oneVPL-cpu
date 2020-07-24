@@ -7,7 +7,246 @@
 #include <sstream>
 #include "./cpu_workstream.h"
 
+mfxStatus CpuWorkstream::ValidateEncodeParams(mfxVideoParam *par) {
+    if (par->mfx.FrameInfo.FourCC) {
+        if (par->mfx.FrameInfo.FourCC != MFX_FOURCC_I420 &&
+            par->mfx.FrameInfo.FourCC != MFX_FOURCC_I010)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else {
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+    }
+
+    // validate fields in the input param struct
+    if (par->mfx.CodecId != MFX_CODEC_HEVC &&
+        par->mfx.CodecId != MFX_CODEC_JPEG && par->mfx.CodecId != MFX_CODEC_AV1)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    // check codec id and the values
+    switch (par->mfx.CodecId) {
+        case MFX_CODEC_AVC: // leave this for later
+            // default: vbr, profile high, level 3.1
+            if (par->mfx.FrameInfo.Width < 64 ||
+                par->mfx.FrameInfo.Width > 4096)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.FrameInfo.Height < 64 ||
+                par->mfx.FrameInfo.Height > 2304)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.RateControlMethod) {
+                if (par->mfx.RateControlMethod != MFX_RATECONTROL_CQP &&
+                    par->mfx.RateControlMethod != MFX_RATECONTROL_CBR &&
+                    par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+            }
+
+            if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP)
+                if (par->mfx.QPI > 51 || par->mfx.QPP > 51 || par->mfx.QPB > 51)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.CodecProfile) {
+                if (par->mfx.CodecProfile != MFX_PROFILE_AVC_BASELINE &&
+                    par->mfx.CodecProfile != MFX_PROFILE_AVC_MAIN &&
+                    par->mfx.CodecProfile != MFX_PROFILE_AVC_HIGH)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
+            }
+
+            if (par->mfx.CodecLevel) {
+                if (par->mfx.CodecLevel != MFX_LEVEL_AVC_1 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_1b &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_11 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_12 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_13 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_2 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_21 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_22 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_3 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_31 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_32 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_4 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_41 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_42 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_5 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_51 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_AVC_52)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.CodecLevel = MFX_LEVEL_AVC_31;
+            }
+
+            break;
+        case MFX_CODEC_HEVC:
+            // default: vbr, profile main, level 3.1
+            if (par->mfx.FrameInfo.Width < 64 ||
+                par->mfx.FrameInfo.Width > 8192)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.FrameInfo.Height < 64 ||
+                par->mfx.FrameInfo.Height > 4320)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.RateControlMethod) {
+                if (par->mfx.RateControlMethod != MFX_RATECONTROL_CQP &&
+                    par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+            }
+
+            if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP)
+                if (par->mfx.QPI > 51 || par->mfx.QPP > 51 || par->mfx.QPB > 51)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.CodecProfile) {
+                if (par->mfx.CodecProfile != MFX_PROFILE_HEVC_MAIN &&
+                    par->mfx.CodecProfile != MFX_PROFILE_HEVC_MAIN10)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN;
+            }
+
+            if (par->mfx.CodecLevel) {
+                if (par->mfx.CodecLevel != MFX_LEVEL_HEVC_1 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_2 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_21 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_3 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_31 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_4 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_41 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_5 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_51 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_52 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_6 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_61 &&
+                    par->mfx.CodecLevel != MFX_LEVEL_HEVC_62)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.CodecLevel = MFX_LEVEL_HEVC_31;
+            }
+
+            break;
+        case MFX_CODEC_JPEG:
+            // default: baseline
+            if (par->mfx.FrameInfo.Width < 64 ||
+                par->mfx.FrameInfo.Width > 8192)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.FrameInfo.Height < 64 ||
+                par->mfx.FrameInfo.Height > 8192)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.Quality) {
+                if (par->mfx.Quality < 1 || par->mfx.Quality > 100)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.Quality = 80;
+            }
+
+            if (par->mfx.CodecProfile) {
+                if (par->mfx.CodecProfile != MFX_PROFILE_JPEG_BASELINE)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.CodecProfile = MFX_PROFILE_JPEG_BASELINE;
+            }
+
+            break;
+        case MFX_CODEC_AV1:
+            // default: VBR
+            if (par->mfx.FrameInfo.Width < 64 ||
+                par->mfx.FrameInfo.Width > 4096)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.FrameInfo.Height < 64 ||
+                par->mfx.FrameInfo.Height > 2304)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            if (par->mfx.RateControlMethod) {
+                if (par->mfx.RateControlMethod != MFX_RATECONTROL_CQP &&
+                    par->mfx.RateControlMethod != MFX_RATECONTROL_CBR &&
+                    par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            else {
+                par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+            }
+
+            if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP)
+                if (par->mfx.QPI > 63 || par->mfx.QPP > 63 || par->mfx.QPB > 63)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (par->mfx.TargetKbps == 0)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.FrameRateExtN == 0 ||
+        par->mfx.FrameInfo.FrameRateExtN > 65535)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.FrameRateExtD == 0 ||
+        par->mfx.FrameInfo.FrameRateExtD > 65535)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.AspectRatioW == 0)
+        par->mfx.FrameInfo.AspectRatioW = 1;
+
+    if (par->mfx.FrameInfo.AspectRatioH == 0)
+        par->mfx.FrameInfo.AspectRatioH = 1;
+
+    if (par->mfx.GopOptFlag != 0 && par->mfx.GopOptFlag != MFX_GOP_CLOSED)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.BitDepthChroma) {
+        if (par->mfx.FrameInfo.BitDepthChroma != 8 &&
+            par->mfx.FrameInfo.BitDepthChroma != 10)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else {
+        par->mfx.FrameInfo.BitDepthChroma = 8;
+    }
+
+    if (par->mfx.FrameInfo.BitDepthLuma) {
+        if (par->mfx.FrameInfo.BitDepthLuma != 8 &&
+            par->mfx.FrameInfo.BitDepthLuma != 10)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else {
+        par->mfx.FrameInfo.BitDepthLuma = 8;
+    }
+
+    if (par->mfx.TargetUsage) {
+        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 ||
+            par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else {
+        par->mfx.TargetKbps = MFX_TARGETUSAGE_BALANCED;
+    }
+
+    return MFX_ERR_NONE;
+}
+
 mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
+    mfxStatus sts = ValidateEncodeParams(par);
+    if (sts != MFX_ERR_NONE)
+        return sts;
+
     m_encCodecId = par->mfx.CodecId;
 
     AVCodecID cid = AV_CODEC_ID_NONE;
@@ -85,7 +324,6 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
             static_cast<int>(static_cast<float>(m_avEncContext->framerate.num) /
                              m_avEncContext->framerate.den);
 
-    mfxStatus sts;
     switch (m_encCodecId) {
         case MFX_CODEC_HEVC:
             sts = InitHEVCParams(par);
@@ -212,12 +450,11 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
 
     if (par->mfx.CodecProfile) {
         //       **Profile** | -profile | [1,2] | 2 | 1: Main, 2: Main 10 |
-        std::stringstream profss;
-        profss << (par->mfx.CodecProfile == MFX_PROFILE_HEVC_MAIN10) ? 2 : 1;
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "profile",
-                         profss.str().c_str(),
-                         AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set_int(
+            m_avEncContext->priv_data,
+            "profile",
+            (par->mfx.CodecProfile == MFX_PROFILE_HEVC_MAIN10) ? 2 : 1,
+            AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -513,16 +750,7 @@ mfxStatus CpuWorkstream::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
         *out = *in;
 
         // validate fields in the input param struct
-
-        if (in->mfx.FrameInfo.Width == 0 || in->mfx.FrameInfo.Height == 0)
-            sts = MFX_ERR_UNSUPPORTED;
-
-        if (in->mfx.CodecId != MFX_CODEC_AVC &&
-            in->mfx.CodecId != MFX_CODEC_HEVC &&
-            in->mfx.CodecId != MFX_CODEC_JPEG &&
-            in->mfx.CodecId != MFX_CODEC_AV1 &&
-            in->mfx.CodecId != MFX_CODEC_MPEG2)
-            sts = MFX_ERR_UNSUPPORTED;
+        sts = ValidateEncodeParams(in);
     }
     else {
         memset(out, 0, sizeof(mfxVideoParam));

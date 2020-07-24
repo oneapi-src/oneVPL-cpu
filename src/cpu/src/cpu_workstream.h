@@ -90,8 +90,8 @@ public:
     void FreeDecode(void);
 
     // VPP
-    mfxStatus Query(mfxVideoParam* in, mfxVideoParam* out);
-    mfxStatus QueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest* request);
+    mfxStatus VPPQuery(mfxVideoParam* in, mfxVideoParam* out);
+    mfxStatus VPPQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest* request);
     mfxStatus InitVPP(mfxVideoParam* par);
     mfxStatus ProcessFrame(mfxFrameSurface1* surface_in,
                            mfxFrameSurface1* surface_out,
@@ -101,6 +101,7 @@ public:
     // encode
     mfxStatus InitEncode(mfxVideoParam* par);
     mfxStatus EncodeQuery(mfxVideoParam* in, mfxVideoParam* out);
+    mfxStatus ValidateEncodeParams(mfxVideoParam* par);
     mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxBitstream* bs);
     void FreeEncode(void);
 

@@ -600,7 +600,7 @@ mfxStatus CpuWorkstream::ProcessFrame(mfxFrameSurface1* surface_in,
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::Query(mfxVideoParam* in, mfxVideoParam* out) {
+mfxStatus CpuWorkstream::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
     if (out == 0)
         return MFX_ERR_NULL_PTR;
 
@@ -1133,8 +1133,8 @@ mfxStatus CpuWorkstream::Query(mfxVideoParam* in, mfxVideoParam* out) {
     return mfxRes;
 }
 
-mfxStatus CpuWorkstream::QueryIOSurf(mfxVideoParam* par,
-                                     mfxFrameAllocRequest* request) {
+mfxStatus CpuWorkstream::VPPQueryIOSurf(mfxVideoParam* par,
+                                        mfxFrameAllocRequest* request) {
     mfxStatus sts;
     // VPP_IN
     request[VPP_IN].Info              = par->vpp.In;

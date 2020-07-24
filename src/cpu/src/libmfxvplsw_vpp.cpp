@@ -25,7 +25,7 @@ mfxStatus MFXVideoVPP_Query(mfxSession session,
 
     CpuWorkstream *ws = (CpuWorkstream *)session;
 
-    sts = ws->Query(in, out);
+    sts = ws->VPPQuery(in, out);
 
     return sts;
 }
@@ -46,7 +46,7 @@ mfxStatus MFXVideoVPP_QueryIOSurf(mfxSession session,
 
     CpuWorkstream *ws = (CpuWorkstream *)session;
 
-    sts = ws->QueryIOSurf(par, request);
+    sts = ws->VPPQueryIOSurf(par, request);
 
     return sts;
 }
