@@ -12,14 +12,41 @@ FOR /D %%i IN ("%~dp0\..") DO (
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
+:: capture ci errors that should not block the rest of the chain
+set ci_error=0
+
 call "test/tools/env/vars.bat"
-call "script/lint.bat" || exit /b 1
-if not defined VPL_BUILD_DEPENDENCIES (
-   call "script/bootstrap.bat" || exit /b 1
+call "script/lint.bat"
+if %ERRORLEVEL% NEQ 0 (
+   echo "--- Linting FAILED ---"
+   set ci_error=1
 )
-call "script/package.bat" || exit /b 1 
+
+if not defined VPL_BUILD_DEPENDENCIES (
+   call "script/bootstrap.bat"
+   if %ERRORLEVEL% NEQ 0 (
+      echo "--- Bootstrapping FAILED ---"
+      exit /b 1
+   )
+)
+call "script/package.bat"
+if %ERRORLEVEL% NEQ 0 (
+   echo "--- Packaging FAILED ---"
+   exit /b 1
+)
 
 :: run smoke tests
 pushd _build\Release
-call "%PROJ_DIR%/script/test.bat" || exit /b 1
+call "%PROJ_DIR%/script/test.bat"
+if %ERRORLEVEL% NEQ 0 (
+   echo "--- Smoke Testing FAILED ---"
+   set ci_error=1
+)
 popd
+
+if %ci_error% NEQ 0 (
+   echo "--- CI testing FAILED ---"
+   exit /b 1
+) else (
+   echo "---All Tests PASSED ---"
+)
