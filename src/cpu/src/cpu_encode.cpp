@@ -660,15 +660,18 @@ mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
 void CpuWorkstream::FreeEncode(void) {
     if (m_avEncFrameIn) {
         av_frame_free(&m_avEncFrameIn);
+        m_avEncFrameIn = nullptr;
     }
 
     if (m_avEncPacket) {
         av_packet_free(&m_avEncPacket);
+        m_avEncPacket = nullptr;
     }
 
     if (m_avEncContext) {
         avcodec_close(m_avEncContext);
         avcodec_free_context(&m_avEncContext);
+        m_avEncContext = nullptr;
     }
 }
 

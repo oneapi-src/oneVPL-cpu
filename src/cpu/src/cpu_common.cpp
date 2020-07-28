@@ -43,7 +43,11 @@ CpuWorkstream::CpuWorkstream()
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
 }
 
-CpuWorkstream::~CpuWorkstream() {}
+CpuWorkstream::~CpuWorkstream() {
+    FreeDecode();
+    FreeVPP();
+    FreeEncode();
+}
 
 // Sync operation implementation
 mfxStatus CpuWorkstream::Sync(mfxSyncPoint &syncp, mfxU32 wait) {

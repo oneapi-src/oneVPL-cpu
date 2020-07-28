@@ -92,24 +92,29 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
 void CpuWorkstream::FreeDecode() {
     if (m_avDecFrameOut) {
         av_frame_free(&m_avDecFrameOut);
+        m_avDecFrameOut = nullptr;
     }
 
     if (m_avDecParser) {
         av_parser_close(m_avDecParser);
+        m_avDecParser = nullptr;
     }
 
     if (m_avDecPacket) {
         av_packet_free(&m_avDecPacket);
+        m_avDecPacket = nullptr;
     }
 
     if (m_avDecContext) {
         avcodec_close(m_avDecContext);
         avcodec_free_context(&m_avDecContext);
+        m_avDecContext = nullptr;
     }
 
-    if (m_bsDecData)
+    if (m_bsDecData) {
         delete[] m_bsDecData;
-    m_bsDecData = nullptr;
+        m_bsDecData = nullptr;
+    }
 }
 
 mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {

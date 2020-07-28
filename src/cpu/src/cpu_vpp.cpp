@@ -547,9 +547,10 @@ mfxStatus CpuWorkstream::InitVPP(mfxVideoParam* par) {
 }
 
 void CpuWorkstream::FreeVPP(void) {
-    if (m_vpp_graph)
+    if (m_vpp_graph) {
         avfilter_graph_free(&m_vpp_graph);
-    return;
+        m_vpp_graph = nullptr;
+    }
 }
 
 mfxStatus CpuWorkstream::ProcessFrame(mfxFrameSurface1* surface_in,
