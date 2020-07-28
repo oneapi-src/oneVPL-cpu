@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <future>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -116,6 +117,18 @@ public:
     bool getEncInit() {
         return m_encInit;
     }
+    void SetHandle(mfxHandleType ht, mfxHDL hdl) {
+        m_handles[ht] = hdl;
+    }
+
+    mfxHDL* GetHandle(mfxHandleType ht) {
+        if (m_handles.find(ht) == m_handles.end()) {
+            return nullptr;
+        }
+        else {
+            return &m_handles[ht];
+        }
+    }
 
 private:
     CpuWorkstream(const CpuWorkstream&) { /* copy not allowed */
@@ -159,6 +172,7 @@ private:
 
     // other internal state
     mfxU32 m_encCodecId;
+    std::map<mfxHandleType, mfxHDL> m_handles;
 
     // VPP
     bool m_vpp_use_graph;
