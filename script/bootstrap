@@ -44,7 +44,7 @@ sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE  
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
-cmake --build . --target install
+make -j $(nproc) && make install
 
 cd ${build_dir}
 git clone https://github.com/OpenVisualCloud/SVT-AV1.git && cd SVT-AV1
@@ -56,7 +56,7 @@ git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
-cmake --build . --target install
+make -j $(nproc) && make install
 
 ## build libdav1d
 cd ${build_dir}

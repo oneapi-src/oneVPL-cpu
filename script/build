@@ -16,4 +16,4 @@ mkdir -p ${CMAKE_BINARY_DIR}
 cd ${CMAKE_BINARY_DIR}
 
 cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
+make -j $(nproc)
