@@ -676,6 +676,12 @@ bool ValidateParams(Params* params) {
         return false;
     }
 
+    // output file (required)
+    if (!params->outfileName) {
+        printf("ERROR - output file name (-i) is required\n");
+        return false;
+    }
+
     // input format (required)
     if (!params->infileFormat) {
         printf("ERROR - input format (-if) is required\n");
@@ -709,6 +715,12 @@ bool ValidateParams(Params* params) {
     // input resolution (required)
     if (!params->srcWidth | !params->srcHeight) {
         printf("ERROR - input resolution is required (-sw, -sh)\n");
+        return false;
+    }
+
+    // output resolution (required)
+    if (!params->dstWidth | !params->dstHeight) {
+        printf("ERROR - output resolution is required (-dw, -dh)\n");
         return false;
     }
 
@@ -909,4 +921,7 @@ void Usage(void) {
     printf("  -dcry  dstCropY      ... cropY  of dst video (def: 0)\n");
     printf("  -dcrw  dstCropW      ... cropW  of dst video (def: width)\n");
     printf("  -dcrh  dstCropH      ... cropH  of dst video (def: height)\n");
+    printf("To view:\n");
+    printf(
+        " ffplay -video_size [width]x[height] -pixel_format [pixel format] -f rawvideo [out filename]\n");
 }
