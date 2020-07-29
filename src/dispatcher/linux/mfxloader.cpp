@@ -23,21 +23,11 @@
 namespace MFX {
 
 #if defined(__i386__)
-    #ifdef ANDROID
-        #define LIBMFXSW "libmfxsw32.so"
-        #define LIBMFXHW "libmfxhw32.so"
-    #else
-        #define LIBMFXSW "libmfxsw32.so.1"
-        #define LIBMFXHW "libmfxhw32.so.1"
-    #endif
+    #define LIBMFXSW "libvplswref32.so.1"
+    #define LIBMFXHW "libmfxhw32.so.1"
 #elif defined(__x86_64__)
-    #ifdef ANDROID
-        #define LIBMFXSW "libmfxsw64.so"
-        #define LIBMFXHW "libmfxhw64.so"
-    #else
-        #define LIBMFXSW "libmfxsw64.so.1"
-        #define LIBMFXHW "libmfxhw64.so.1"
-    #endif
+    #define LIBMFXSW "libvplswref64.so.1"
+    #define LIBMFXHW "libmfxhw64.so.1"
 #else
     #error Unsupported architecture
 #endif
