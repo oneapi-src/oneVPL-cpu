@@ -39,6 +39,7 @@ CpuWorkstream::CpuWorkstream()
           m_av_vpp_in(nullptr),
           m_av_vpp_out(nullptr) {
     av_log_set_level(AV_LOG_QUIET);
+    m_handles.clear();
     memset(&m_vpp_base, 0, sizeof(m_vpp_base));
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
 }

@@ -45,7 +45,7 @@ mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, CHAR_TYPE* dllName);
 typedef void(MFX_CDECL* VPLFunctionPtr)(void);
 
 enum VPLFunctionIdx {
-    IdxMFXQueryImplDescription = 0,
+    IdxMFXQueryImplsDescription = 0,
     IdxMFXReleaseImplDescription,
     IdxMFXMemory_GetSurfaceForVPP,
     IdxMFXMemory_GetSurfaceForEncode,
@@ -118,13 +118,6 @@ struct LibInfo {
     //   and table of exported functions
     void* hModuleVPL;
     VPLFunctionPtr vplFuncTable[NumVPLFunctions]; // NOLINT
-    mfxHDL implDesc;
-
-    // used for session initialization with this implementation
-    mfxInitParam initPar;
-
-    // assign unique index after validating library
-    mfxU32 libIdx;
 
     // avoid warnings
     LibInfo()
@@ -132,10 +125,33 @@ struct LibInfo {
               libNameBase(),
               libPriority(0),
               hModuleVPL(nullptr),
-              vplFuncTable(),
-              implDesc(),
+              vplFuncTable() {}
+};
+
+struct ImplInfo {
+    // library containing this implementation
+    LibInfo* libInfo;
+
+    // description of implementation
+    mfxHDL implDesc;
+
+    // used for session initialization with this implementation
+    mfxInitParam initPar;
+
+    // local index for libraries with more than one implementation
+    mfxU32 libImplIdx;
+
+    // unique index assigned after querying implementation
+    // this is the value used in QueryImpl and CreateSession
+    mfxU32 vplImplIdx;
+
+    // avoid warnings
+    ImplInfo()
+            : libInfo(nullptr),
+              implDesc(nullptr),
               initPar(),
-              libIdx(0) {}
+              libImplIdx(0),
+              vplImplIdx(0) {}
 };
 
 // loader class implementation
@@ -147,6 +163,7 @@ public:
     // manage library implementations
     mfxStatus BuildListOfCandidateLibs();
     mfxU32 CheckValidLibraries();
+    mfxStatus QueryLibraryCaps();
     mfxStatus UnloadAllLibraries();
 
     // query capabilities of each implementation
@@ -168,13 +185,15 @@ private:
     mfxStatus SearchDirForLibs(STRING_TYPE searchDir,
                                std::list<LibInfo*>& libInfoList,
                                mfxU32 priority);
-    LibInfo* GetLibInfo(std::list<LibInfo*> libInfoList, mfxU32 idx);
 
     std::list<LibInfo*> m_libInfoList;
+    std::list<ImplInfo*> m_implInfoList;
     std::list<ConfigCtxVPL*> m_configCtxList;
 
     std::list<STRING_TYPE> m_userSearchDirs;
     STRING_TYPE m_vplPackageDir;
+
+    mfxU32 m_implIdxNext;
 };
 
 #endif // SRC_DISPATCHER_VPL_MFX_DISPATCHER_VPL_H_

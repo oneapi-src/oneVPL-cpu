@@ -9,9 +9,9 @@ file(STRINGS "version.txt" version_txt)
 project(vpl VERSION ${version_txt})
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(TARGET mfxsw64)
+  set(TARGET vplswref64)
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  set(TARGET mfxsw32)
+  set(TARGET vplswref32)
 endif()
 
 set(SOURCES

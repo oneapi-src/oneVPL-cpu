@@ -14,70 +14,103 @@
 #include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
-#define MAX_PATH 260
+#define MAX_LENGTH 260
+#define MAX_WIDTH  3840
+#define MAX_HEIGHT 2160
 
-mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f);
-void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
+#define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
+
+typedef struct _Params {
+    char* infileName;
+    char* outfileName;
+
+    char* infileFormat;
+    char* outfileFormat;
+
+    char* targetDeviceType;
+
+    char* gpuCopyMode;
+
+    mfxU32 srcFourCC;
+    mfxU32 dstFourCC;
+
+    mfxU32 maxFrames;
+    mfxU32 srcWidth;
+    mfxU32 srcHeight;
+    mfxU32 dstWidth;
+    mfxU32 dstHeight;
+    mfxU32 timeout;
+    mfxU32 frameRate;
+    mfxU32 enableCinterface;
+
+    mfxU32 srcbsbufSize;
+    mfxU32 dstbsbufSize;
+
+    // encoder specific
+    mfxU32 bitRate;
+    mfxU32 targetUsage;
+    mfxU32 brcMode;
+    mfxU32 gopSize;
+    mfxU32 keyFrameDist;
+
+    // jpeg encoder specific
+    mfxU32 quality;
+
+    mfxU32 targetDevice;
+
+    mfxU32 gpuCopy;
+
+    // cropping
+    mfxU32 srcCropX;
+    mfxU32 srcCropY;
+    mfxU32 srcCropW;
+    mfxU32 srcCropH;
+    mfxU32 dstCropX;
+    mfxU32 dstCropY;
+    mfxU32 dstCropW;
+    mfxU32 dstCropH;
+
+} Params;
+
+mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f);
+void WriteRawFrame(mfxFrameSurface1* pSurface, FILE* f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
-int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize);
-char *ValidateFileName(char *in);
+int GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool, mfxU16 nPoolSize);
+char** ValidateInput(int cnt, char* in[]);
+void str_upper(char* str, int l);
+char* ValidateFileName(char* in);
+bool ValidateSize(char* in, mfxU32* vsize, mfxU32 vmax);
+bool ValidateParams(Params* params);
+bool ParseArgsAndValidate(int argc, char* argv[], Params* params);
 void Usage(void);
 
-int main(int argc, char *argv[]) {
-    if (argc != 4) {
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
         Usage();
         return 1; // return 1 as error code
     }
 
-    char *in_filename  = NULL;
-    char *out_filename = NULL;
-    mfxU32 codecID;
-    if (strncmp("H265", argv[1], 4) == 0) {
-        codecID = MFX_CODEC_HEVC;
-        puts("H265 decoding");
-    }
-    else if (strncmp("H264", argv[1], 4) == 0) {
-        codecID = MFX_CODEC_AVC;
-        puts("H264 decoding");
-    }
-    else if (strncmp("JPEG", argv[1], 4) == 0) {
-        codecID = MFX_CODEC_JPEG;
-        puts("JPEG decoding");
-    }
-    else if (strncmp("AV1", argv[1], 3) == 0) {
-        codecID = MFX_CODEC_AV1;
-        puts("AV1 decoding");
-    }
-    else {
-        printf("%s is not supported\n", argv[1]);
+    char** cmd_args;
+    cmd_args = ValidateInput(argc, argv);
+
+    Params params = { 0 };
+    if (ParseArgsAndValidate(argc, cmd_args, &params) == false) {
         Usage();
-        return 1;
+        return 1; // return 1 as error code
     }
 
-    in_filename = ValidateFileName(argv[2]);
-    if (!in_filename) {
-        printf("Input filename is not valid\n");
-        Usage();
-        return 1;
-    }
+    printf("opening %s\n", params.infileName);
 
-    out_filename = ValidateFileName(argv[3]);
-    if (!out_filename) {
-        printf("Output filename is not valid\n");
-        Usage();
-        return 1;
-    }
-
-    printf("opening %s\n", in_filename);
-    FILE *fSource = fopen(in_filename, "rb");
+    FILE* fSource = fopen(params.infileName, "rb");
     if (!fSource) {
-        printf("could not open input file, %s\n", in_filename);
+        printf("could not open input file, %s\n", params.infileName);
         return 1;
     }
-    FILE *fSink = fopen(out_filename, "wb");
+
+    FILE* fSink = fopen(params.outfileName, "wb");
     if (!fSink) {
         fclose(fSource);
-        printf("could not open output file, %s\n", out_filename);
+        printf("could not create output file, %s\n", params.outfileName);
         return 1;
     }
 
@@ -100,17 +133,17 @@ int main(int argc, char *argv[]) {
 
     // prepare input bitstream
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 2000000;
+    mfxBS.MaxLength    = params.srcbsbufSize;
     std::vector<mfxU8> input_buffer;
     input_buffer.resize(mfxBS.MaxLength);
     mfxBS.Data = input_buffer.data();
 
-    ReadEncodedStream(mfxBS, codecID, fSource);
+    ReadEncodedStream(mfxBS, params.srcFourCC, fSource);
 
     // initialize decode parameters from stream header
     mfxVideoParam mfxDecParams;
     memset(&mfxDecParams, 0, sizeof(mfxDecParams));
-    mfxDecParams.mfx.CodecId = codecID;
+    mfxDecParams.mfx.CodecId = params.srcFourCC;
     mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     if (sts != MFX_ERR_NONE) {
@@ -127,7 +160,7 @@ int main(int argc, char *argv[]) {
     // Determine the required number of surfaces for decoder output
     mfxU16 nSurfNumDec = DecRequest.NumFrameSuggested;
 
-    mfxFrameSurface1 *decSurfaces = new mfxFrameSurface1[nSurfNumDec];
+    mfxFrameSurface1* decSurfaces = new mfxFrameSurface1[nSurfNumDec];
 
     // initialize surface pool for decode (I420 format)
     mfxU32 surfaceSize = GetSurfaceSize(mfxDecParams.mfx.FrameInfo.FourCC,
@@ -142,7 +175,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     size_t framePoolBufSize = static_cast<size_t>(surfaceSize) * nSurfNumDec;
-    mfxU8 *DECoutbuf        = new mfxU8[framePoolBufSize];
+    mfxU8* DECoutbuf        = new mfxU8[framePoolBufSize];
 
     mfxU16 surfW = (mfxDecParams.mfx.FrameInfo.FourCC == MFX_FOURCC_I010)
                        ? mfxDecParams.mfx.FrameInfo.Width * 2
@@ -175,7 +208,7 @@ int main(int argc, char *argv[]) {
     double decode_time               = 0;
     double sync_time                 = 0;
     mfxSyncPoint syncp               = { 0 };
-    mfxFrameSurface1 *pmfxOutSurface = nullptr;
+    mfxFrameSurface1* pmfxOutSurface = nullptr;
 
     puts("start decoding");
     for (;;) {
@@ -197,7 +230,7 @@ int main(int argc, char *argv[]) {
             // next step actions provided by application
             switch (sts) {
                 case MFX_ERR_MORE_DATA: // more data is needed to decode
-                    ReadEncodedStream(mfxBS, codecID, fSource);
+                    ReadEncodedStream(mfxBS, params.srcFourCC, fSource);
                     if (mfxBS.DataLength == 0)
                         stillgoing = false; // stop if end of file
                     break;
@@ -314,7 +347,7 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
     return nbytes;
 }
 
-int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
+int GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool, mfxU16 nPoolSize) {
     for (mfxU16 i = 0; i < nPoolSize; i++) {
         if (0 == SurfacesPool[i].Data.Locked)
             return i;
@@ -322,7 +355,7 @@ int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize) {
     return MFX_ERR_NOT_FOUND;
 }
 
-mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f) {
+mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f) {
     memmove(bs.Data, bs.Data + bs.DataOffset, bs.DataLength);
 
     if (codecid == MFX_CODEC_AV1) {
@@ -381,10 +414,10 @@ mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f) {
     return MFX_ERR_NONE;
 }
 
-void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
+void WriteRawFrame(mfxFrameSurface1* pSurface, FILE* f) {
     mfxU16 w, h, i, pitch;
-    mfxFrameInfo *pInfo = &pSurface->Info;
-    mfxFrameData *pData = &pSurface->Data;
+    mfxFrameInfo* pInfo = &pSurface->Info;
+    mfxFrameData* pData = &pSurface->Data;
 
     w = pInfo->Width;
     h = pInfo->Height;
@@ -438,20 +471,243 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
     return;
 }
 
-char *ValidateFileName(char *in) {
+char** ValidateInput(int cnt, char* in[]) {
     if (in) {
-        if (strlen(in) > MAX_PATH)
+        for (int i = 0; i < cnt; i++) {
+            if (strlen(in[i]) > MAX_LENGTH)
+                return NULL;
+        }
+    }
+
+    return in;
+}
+
+void str_upper(char* str, int l) {
+    for (int i = 0; i < l; i++) {
+        str[i] = static_cast<char>(toupper(str[i]));
+    }
+}
+
+char* ValidateFileName(char* in) {
+    if (in) {
+        if (strlen(in) > MAX_LENGTH)
             return NULL;
     }
 
     return in;
 }
 
+bool ValidateSize(char* in, mfxU32* vsize, mfxU32 vmax) {
+    if (in) {
+        *vsize = static_cast<mfxU32>(strtol(in, NULL, 10));
+        if (*vsize > vmax)
+            return false;
+        else
+            return true;
+    }
+
+    return false;
+}
+
+// perform basic parameter validation and setup
+bool ValidateParams(Params* params) {
+    // input file (required)
+    if (!params->infileName) {
+        printf("ERROR - input file name (-i) is required\n");
+        return false;
+    }
+
+    // output file (required)
+    if (!params->outfileName) {
+        printf("ERROR - output file name (-i) is required\n");
+        return false;
+    }
+
+    // input format (required)
+    if (!params->infileFormat) {
+        printf("ERROR - input format (-if) is required\n");
+        return false;
+    }
+
+    // input format (required)
+    if (!strncmp(params->infileFormat, "H264", strlen("H264"))) {
+        params->srcFourCC = MFX_CODEC_AVC;
+    }
+    else if (!strncmp(params->infileFormat, "H265", strlen("H265"))) {
+        params->srcFourCC = MFX_CODEC_HEVC;
+    }
+    else if (!strncmp(params->infileFormat, "AV1", strlen("AV1"))) {
+        params->srcFourCC = MFX_CODEC_AV1;
+    }
+    else if (!strncmp(params->infileFormat, "JPEG", strlen("JPEG"))) {
+        params->srcFourCC = MFX_CODEC_JPEG;
+    }
+    else {
+        printf("ERROR - unsupported input format %s\n", params->infileFormat);
+        return false;
+    }
+
+    // default bitstream buffer size (input)
+    if (params->srcbsbufSize == 0) {
+        params->srcbsbufSize = 2000000;
+    }
+
+    return true;
+}
+
+bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
+    int idx;
+    char* s;
+
+    // init all params to 0
+    memset(params, 0, sizeof(Params));
+
+    if (argc < 2)
+        return false;
+
+    for (idx = 1; idx < argc;) {
+        // all switches must start with '-'
+        if (argv[idx][0] != '-') {
+            printf("ERROR - invalid argument: %s\n", argv[idx]);
+            return false;
+        }
+
+        // switch string, starting after the '-'
+        s = &argv[idx][1];
+        idx++;
+
+        // search for match
+        if (IS_ARG_EQ(s, "i")) {
+            params->infileName = ValidateFileName(argv[idx++]);
+            if (!params->infileName) {
+                return false;
+            }
+        }
+        else if (IS_ARG_EQ(s, "o")) {
+            params->outfileName = ValidateFileName(argv[idx++]);
+            if (!params->outfileName) {
+                return false;
+            }
+        }
+        else if (IS_ARG_EQ(s, "n")) {
+            params->maxFrames = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "if")) {
+            params->infileFormat = argv[idx++];
+            str_upper(params->infileFormat,
+                      static_cast<int>(
+                          strlen(params->infileFormat))); // to upper case
+        }
+        else if (IS_ARG_EQ(s, "of")) {
+            params->outfileFormat = argv[idx++];
+            str_upper(params->outfileFormat,
+                      static_cast<int>(
+                          strlen(params->outfileFormat))); // to upper case
+        }
+        else if (IS_ARG_EQ(s, "sw")) {
+            if (!ValidateSize(argv[idx++], &params->srcWidth, MAX_WIDTH))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "sh")) {
+            if (!ValidateSize(argv[idx++], &params->srcHeight, MAX_HEIGHT))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "dw")) {
+            if (!ValidateSize(argv[idx++], &params->dstWidth, MAX_WIDTH))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "dh")) {
+            if (!ValidateSize(argv[idx++], &params->dstHeight, MAX_HEIGHT))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "td")) {
+            params->targetDeviceType = argv[idx++];
+        }
+        else if (IS_ARG_EQ(s, "sbs")) {
+            params->srcbsbufSize = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "dbs")) {
+            params->dstbsbufSize = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "to")) {
+            params->timeout = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "fr")) {
+            params->frameRate = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "br")) {
+            params->bitRate = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "tu")) {
+            params->targetUsage = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "qu")) {
+            params->quality = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "bm")) {
+            params->brcMode = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "gs")) {
+            params->gopSize = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "kd")) {
+            params->keyFrameDist = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "ci")) {
+            params->enableCinterface = 1;
+        }
+        else if (IS_ARG_EQ(s, "gcm")) {
+            params->gpuCopyMode = argv[idx++];
+        }
+        else if (IS_ARG_EQ(s, "scrx")) {
+            if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "scry")) {
+            if (!ValidateSize(argv[idx++], &params->srcCropY, MAX_HEIGHT))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "scrw")) {
+            if (!ValidateSize(argv[idx++], &params->srcCropW, MAX_WIDTH))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "scrh")) {
+            if (!ValidateSize(argv[idx++], &params->srcCropH, MAX_HEIGHT))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "dcrx")) {
+            if (!ValidateSize(argv[idx++], &params->dstCropX, MAX_WIDTH))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "dcry")) {
+            if (!ValidateSize(argv[idx++], &params->dstCropY, MAX_HEIGHT))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "dcrw")) {
+            if (!ValidateSize(argv[idx++], &params->dstCropW, MAX_WIDTH))
+                return false;
+        }
+        else if (IS_ARG_EQ(s, "dcrh")) {
+            if (!ValidateSize(argv[idx++], &params->dstCropH, MAX_HEIGHT))
+                return false;
+        }
+        else {
+            printf("ERROR - invalid argument: %s\n", argv[idx]);
+            return false;
+        }
+    }
+
+    // run basic parameter validation
+    return ValidateParams(params);
+}
+
 void Usage(void) {
-    printf("Usage: vpl-decode [decoder] [input filename] [out filename]\n\n");
-    printf("\t[decoder]         : H265|AV1|JPEG|H264\n");
-    printf("\t[input filename]  : encoded stream\n");
-    printf("\t[out filename]    : filename to store the output\n");
+    printf("\nOptions - Decode:\n");
+    printf("  -i     inputFile     ... input file name\n");
+    printf("  -o     outputFile    ... output file name\n");
+    printf("  -n     maxFrames     ... max frames to decode\n");
+    printf("  -if    inputFormat   ... [h264, h265, av1, jpeg]\n");
+    printf("  -sbs   bsbufSize     ... source bitstream buffer size (bytes)\n");
     printf("To view:\n");
     printf(
         " ffplay -video_size [width]x[height] -pixel_format [pixel format] -f rawvideo [out filename]\n");

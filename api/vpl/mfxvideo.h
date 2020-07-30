@@ -217,9 +217,9 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSu
     This function returns surface which can be used as input for Decoder.  Decoder should be initialized before this call. 
     Surface should be released with mfxFrameSurface1::FrameInterface.Release(...) after usage. Value of mfxFrameSurface1::Data.Locked for returned surface is 0.'
     Note: this function was added to simplify transition from legacy surface management to proposed internal allocation approach. 
-    Previuosly, user allocated surfaces for working pool and fed decoder with them in DecodeFrameAsync calls. With MFXMemory_GetSurfaceForDecode 
+    Previously, user allocated surfaces for working pool and fed decoder with them in DecodeFrameAsync calls. With MFXMemory_GetSurfaceForDecode 
     it is possible to change the existing pipeline just changing source of work surfaces. 
-    Newly developed applications should preffer direct usage of DecodeFrameAsync with internal allocation.'
+    Newly developed applications should prefer direct usage of DecodeFrameAsync with internal allocation.'
 
    @param[in]  session SDK session handle.
    @param[out] surface   Pointer is set to valid mfxFrameSurface1 object.
@@ -268,7 +268,7 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSu
    MFX_ERR_NONE  The function completed successfully. \n
    MFX_ERR_UNSUPPORTED  The function failed to identify a specific implementation for the required features. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The encoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The encoding may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 mfxStatus MFX_CDECL MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out);
@@ -289,7 +289,7 @@ mfxStatus MFX_CDECL MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, 
    MFX_ERR_INVALID_VIDEO_PARAM  The function detected invalid video parameters. These parameters may be out of the valid range, or the combination of them 
                                 resulted in incompatibility. Incompatibility not resolved. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The encoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The encoding may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 mfxStatus MFX_CDECL MFXVideoENCODE_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request);
@@ -307,7 +307,7 @@ mfxStatus MFX_CDECL MFXVideoENCODE_QueryIOSurf(mfxSession session, mfxVideoParam
    MFX_ERR_INVALID_VIDEO_PARAM  The function detected invalid video parameters. These parameters may be out of the valid range, or the combination of them
                                 resulted in incompatibility. Incompatibility not resolved. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters. 
-                                 The encoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The encoding may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved. \n
    MFX_ERR_UNDEFINED_BEHAVIOR  The function is called twice without a close;
 */
@@ -424,7 +424,7 @@ mfxStatus MFX_CDECL MFXVideoENCODE_EncodeFrameAsync(mfxSession session, mfxEncod
    MFX_ERR_NONE  The function completed successfully. \n
    MFX_ERR_UNSUPPORTED  The function failed to identify a specific implementation for the required features. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters. 
-                                 The decoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The decoding may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 
@@ -436,7 +436,7 @@ mfxStatus MFX_CDECL MFXVideoDECODE_Query(mfxSession session, mfxVideoParam *in, 
     The application can then pass the resulting structure to the MFXVideoDECODE_Init function for decoder initialization.
 
     An application can call this function at any time before or after decoder initialization. If the SDK finds a sequence header in the bitstream, the function 
-    moves the bitstream pointer to the first bit of the sequence header. Otherwise, the function moves the bitstream pointer close to the end of thebitstream buffer but leaves enough data in the buffer to avoid possible loss of start code.
+    moves the bitstream pointer to the first bit of the sequence header. Otherwise, the function moves the bitstream pointer close to the end of the bitstream buffer but leaves enough data in the buffer to avoid possible loss of start code.
 
     The CodecId field of the mfxVideoParam structure is a mandated field (to be filled by the application) to identify the coding standard.
 
@@ -473,7 +473,7 @@ mfxStatus MFX_CDECL MFXVideoDECODE_DecodeHeader(mfxSession session, mfxBitstream
    MFX_ERR_INVALID_VIDEO_PARAM  The function detected invalid video parameters. These parameters may be out of the valid range, or the combination of them
                                 resulted in incompatibility. Incompatibility not resolved. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The encoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The encoding may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 mfxStatus MFX_CDECL MFXVideoDECODE_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request);
@@ -491,7 +491,7 @@ mfxStatus MFX_CDECL MFXVideoDECODE_QueryIOSurf(mfxSession session, mfxVideoParam
    MFX_ERR_INVALID_VIDEO_PARAM  The function detected invalid video parameters. These parameters may be out of the valid range, or the combination of them
                                 resulted in incompatibility. Incompatibility not resolved. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The encoding may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The encoding may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved. \n
    MFX_ERR_UNDEFINED_BEHAVIOR  The function is called twice without a close;
 */
@@ -658,7 +658,7 @@ mfxStatus MFX_CDECL MFXVideoDECODE_DecodeFrameAsync(mfxSession session, mfxBitst
    MFX_ERR_NONE  The function completed successfully. \n
    MFX_ERR_UNSUPPORTED  The SDK implementation does not support the specified configuration. \n 
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The videoprocessing may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The video processing may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 mfxStatus MFX_CDECL MFXVideoVPP_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out);
@@ -680,7 +680,7 @@ mfxStatus MFX_CDECL MFXVideoVPP_Query(mfxSession session, mfxVideoParam *in, mfx
    MFX_ERR_INVALID_VIDEO_PARAM  The function detected invalid video parameters. These parameters may be out of the valid range, or the combination of them
                                 resulted in incompatibility. Incompatibility not resolved. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The videoprocessing may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The video processing may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved.
 */
 mfxStatus MFX_CDECL MFXVideoVPP_QueryIOSurf(mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest request[2]);
@@ -698,7 +698,7 @@ mfxStatus MFX_CDECL MFXVideoVPP_QueryIOSurf(mfxSession session, mfxVideoParam *p
    MFX_ERR_INVALID_VIDEO_PARAM  The function detected invalid video parameters. These parameters may be out of the valid range, or the combination of them
                                 resulted in incompatibility. Incompatibility not resolved. \n
    MFX_WRN_PARTIAL_ACCELERATION  The underlying hardware does not fully support the specified video parameters.
-                                 The video processing may be partially accelerated. Only SDK HW implementations may return this status code. \n
+                                 The video processing may be partially accelerated. Only SDK hardware implementations may return this status code. \n
    MFX_WRN_INCOMPATIBLE_VIDEO_PARAM  The function detected some video parameters were incompatible with others; incompatibility resolved. \n
    MFX_ERR_UNDEFINED_BEHAVIOR  The function is called twice without a close. \n
    MFX_WRN_FILTER_SKIPPED    The VPP skipped one or more filters requested by the application.

@@ -4,11 +4,8 @@
 # SPDX-License-Identifier: MIT
 # ==============================================================================
 
-FROM ubuntu:20.04 
-LABEL Description="This is the base image for the oneAPI Video Processing Library CPU Reference Implementation"
-LABEL Vendor="Intel Corporation"
-
-# Common build tools
+# VPL dependencies build
+FROM ubuntu:20.04 AS vpl_bootstrap
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Moscow
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,11 +22,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pip3 install meson ninja && \
     rm -rf /var/lib/apt/lsits/* 
 
+COPY ./script /oneVPL/script
+
+ENV VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/oneVPL/_build/
+
+RUN cd /oneVPL && \
+   ./script/bootstrap 
+
+
+# VPL build
+FROM vpl_bootstrap AS vpl_build
 COPY . /oneVPL
 
 ENV VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/oneVPL/_build/
 
 RUN cd /oneVPL && \
-   ./script/bootstrap  && \
-   ./script/build
+   mkdir -p _build && \ 
+   cd _build && \
+   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/intel/onevpl .. && \
+   make -j $(nproc) && make install
+
+
+# Runtime image build
+FROM ubuntu:20.04 
+LABEL Description="This is the base image for the oneAPI Video Processing Library CPU Reference Implementation"
+LABEL Vendor="Intel Corporation"
+ENV LD_LIBRARY_PATH=/opt/intel/onevpl/lib
+ENV PKG_CONFIG_PATH=/opt/intel/onevpl/lib/pkgconfig
+COPY --from=vpl_build /opt/intel/onevpl /opt/intel/onevpl 
