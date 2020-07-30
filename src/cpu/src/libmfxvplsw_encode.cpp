@@ -129,10 +129,10 @@ mfxStatus MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par) {
 }
 
 mfxStatus MFXVideoENCODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 
 mfxStatus MFXVideoENCODE_GetEncodeStat(mfxSession session,
                                        mfxEncodeStat *stat) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }

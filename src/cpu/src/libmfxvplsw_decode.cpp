@@ -195,13 +195,13 @@ mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
 // stubs
 mfxStatus MFXVideoDECODE_GetDecodeStat(mfxSession session,
                                        mfxDecodeStat *stat) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 mfxStatus MFXVideoDECODE_SetSkipMode(mfxSession session, mfxSkipMode mode) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 mfxStatus MFXVideoDECODE_GetPayload(mfxSession session,
                                     mfxU64 *ts,
                                     mfxPayload *payload) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }

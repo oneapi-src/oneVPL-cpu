@@ -127,15 +127,15 @@ mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
 // memory functions are associated with initialized session
 mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
                                      mfxFrameSurface1 **surface) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 
 mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 
 mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }

@@ -114,9 +114,9 @@ mfxStatus MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
 }
 
 mfxStatus MFXVideoVPP_Reset(mfxSession session, mfxVideoParam *par) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 
 mfxStatus MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat) {
-    return MFX_ERR_UNSUPPORTED;
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
