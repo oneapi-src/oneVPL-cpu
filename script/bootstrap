@@ -14,18 +14,18 @@ build_dir=${proj_dir}/_extbuild
 DEFAULT_VPL_BUILD_DEPENDENCIES=${proj_dir}/_deps
 
 if [ -z "$VPL_BUILD_DEPENDENCIES" ];then
-    # make sure VPL_BUILD_DEPENDENCIES will be available after script is run
-    if [ "${BASH_SOURCE[0]}" == "${0}" ];then
-        msg="VPL_BUILD_DEPENDENCIES is not set in the environment and the \
+  # make sure VPL_BUILD_DEPENDENCIES will be available after script is run
+  if [ "${BASH_SOURCE[0]}" == "${0}" ];then
+      msg="VPL_BUILD_DEPENDENCIES is not set in the environment and the \
 script is not being sourced. Export VPL_BUILD_DEPENDENCIES or call like this:"
-        printf "%s\n\nsource %s\n" "$msg" "$BASH_SOURCE" | fold -s
-        exit 1
-    fi
-    export VPL_BUILD_DEPENDENCIES="${DEFAULT_VPL_BUILD_DEPENDENCIES}"
+      printf "%s\n\nsource %s\n" "$msg" "$BASH_SOURCE" | fold -s
+      exit 1
+  fi
+  export VPL_BUILD_DEPENDENCIES="${DEFAULT_VPL_BUILD_DEPENDENCIES}"
 fi
 if [ "${BASH_SOURCE[0]}" == "${0}" ];then
-    #exit on error if we are not sourced
-    set -o errexit
+  #exit on error if we are not sourced
+  set -o errexit
 fi
 
 install_dir=${VPL_BUILD_DEPENDENCIES}
@@ -58,6 +58,15 @@ cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
 make -j $(nproc) && make install
 
+if [ "$1" == "gpl" ]; then
+  ## build x264
+  cd ${build_dir}
+  git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264
+  ./configure --prefix=${install_dir} --enable-static --enable-pic
+  PATH="${install_dir}/bin:$PATH" && PKG_CONFIG_PATH="${install_dir}/lib/pkgconfig"
+  make && make install
+fi
+
 ## build libdav1d
 cd ${build_dir}
 git clone https://code.videolan.org/videolan/dav1d.git && cd dav1d
@@ -79,13 +88,19 @@ patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1-with-svt-hevc.patch
 git am ${build_dir}/SVT-AV1/ffmpeg_plugin/${patch}
 
 export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}
-
 echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
+
+if [ "$1" == "gpl" ]; then
+  enable_x264options='--enable-gpl --enable-libx264 --enable-encoder=libx264'
+else
+  enable_x264options=''
+fi
+
 ./configure --disable-vaapi \
             --disable-cuda-llvm \
             --prefix=${install_dir} \
-            --disable-shared \
             --enable-static \
+            --disable-shared \
             --enable-pic  \
             --disable-network  \
             --disable-everything \
@@ -110,6 +125,7 @@ echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
             --disable-nvenc \
             --disable-v4l2-m2m \
             --disable-videotoolbox  \
+            ${enable_x264options}  \
             --enable-indev=lavfi \
             --enable-protocol=file  \
             --enable-bsf=h264_mp4toannexb \

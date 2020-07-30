@@ -19,10 +19,10 @@ if not defined VPL_BUILD_DEPENDENCIES (
   set VPL_BUILD_DEPENDENCIES=%DEFAULT_VPL_BUILD_DEPENDENCIES%
 )
 if defined MSYS_ROOT (
-     echo MSYS_ROOT found: %MSYS_ROOT%
+  echo MSYS_ROOT found: %MSYS_ROOT%
 ) else (
-     set MSYS_ROOT=%DEFAULT_MSYS_ROOT%
-     call echo MSYS_ROOT not found, assuming !MSYS_ROOT!
+  set MSYS_ROOT=%DEFAULT_MSYS_ROOT%
+  call echo MSYS_ROOT not found, assuming !MSYS_ROOT!
 )
 set GITPATH=%PATH%
 set MINGWPATH=%MSYS_ROOT%\mingw64\bin;%MSYS_ROOT%\usr\local\bin;^
@@ -59,6 +59,12 @@ git config advice.detachedHead false
 :: windows and with static lib.
 git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 
+if "%~1"=="gpl" (
+  :: checkout x264
+  cd %build_dir%
+  git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264
+)
+
 :: checkout dav1d
 cd %build_dir%
 git clone https://code.videolan.org/videolan/dav1d.git && cd dav1d
@@ -77,7 +83,7 @@ mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
 if ERRORLEVEL 1 exit /b 1
-cmake --build . --target install
+cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
 
 :: SVT-AV1 build and install
 :: -DSVT_LOG_QUIET=1 is for turning off logs
@@ -87,7 +93,14 @@ cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off ^
 -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
 if ERRORLEVEL 1 exit /b 1
-cmake --build . --target install
+cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
+
+if "%~1"=="gpl" (
+  :: x264 build and install
+  cd %build_dir%\x264
+  bash -c './configure --prefix=${install_dir} --enable-static --enable-pic'
+  make -j %NUMBER_OF_PROCESSORS% && make install
+)
 
 :: dav1d build and install
 cd %build_dir%\dav1d
@@ -112,6 +125,12 @@ if ERRORLEVEL 1 exit /b 1
 set patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1-with-svt-hevc.patch
 git am %build_dir%\SVT-AV1\ffmpeg_plugin\%patch%
 if ERRORLEVEL 1 exit /b 1
+
+if "%~1"=="gpl" (
+  set enable_x264options=--enable-gpl --enable-libx264 --enable-encoder=libx264
+) else (
+  set enable_x264options=
+)
 
 :: set path for build
 set PATH=%MINGWPATH%
@@ -150,6 +169,7 @@ bash -c './configure ^
 --disable-nvenc ^
 --disable-v4l2-m2m ^
 --disable-videotoolbox ^
+${enable_x264options}  ^
 --enable-indev=lavfi ^
 --enable-protocol=file ^
 --enable-bsf=h264_mp4toannexb ^
@@ -207,7 +227,7 @@ make -j %NUMBER_OF_PROCESSORS% && make install
 :: export build dependency environment
 (
 endlocal
-if not defined VPL_BUILD_DEPENDENCIES (
-   set VPL_BUILD_DEPENDENCIES=%DEFAULT_VPL_BUILD_DEPENDENCIES%
-)
+  if not defined VPL_BUILD_DEPENDENCIES (
+     set VPL_BUILD_DEPENDENCIES=%DEFAULT_VPL_BUILD_DEPENDENCIES%
+  )
 )

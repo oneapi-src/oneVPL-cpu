@@ -16,6 +16,8 @@ else()
   message(STATUS "Using VPL_BUILD_DEPENDENCIES located at ${VPL_DEP_DIR}")
 endif()
 
+option(BUILD_GPL_X264 "Build X264 with GPL License" OFF)
+
 set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
 set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
 set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
@@ -23,6 +25,13 @@ set(AVCODEC_LIB ${VPL_DEP_DIR}/lib/libavcodec.a)
 set(AVUTIL_LIB ${VPL_DEP_DIR}/lib/libavutil.a)
 set(AVFILTER_LIB ${VPL_DEP_DIR}/lib/libavfilter.a)
 set(SWSCALE_LIB ${VPL_DEP_DIR}/lib/libswscale.a)
+
+if(BUILD_GPL_X264)
+  set(X264_LIB ${VPL_DEP_DIR}/lib/libx264.a)
+  if(NOT EXISTS ${X264_LIB})
+    message(FATAL_ERROR "Could not find expected FFmpeg libraries")
+  endif()
+endif(BUILD_GPL_X264)
 
 if(NOT EXISTS ${SVTHEVCENC_LIB}
    OR NOT EXISTS ${SVTHEVCENC_LIB}
@@ -114,3 +123,11 @@ else()
               Threads::Threads
               dl)
 endif()
+
+if(BUILD_GPL_X264)
+  if(MSVC)
+    target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads)
+  else()
+    target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads dl)
+  endif()
+endif(BUILD_GPL_X264)

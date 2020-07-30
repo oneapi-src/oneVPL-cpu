@@ -51,6 +51,16 @@ _build\Release\hello-encode test\content\cars_128x96.i420 128 96
 _build\Release\hello-vpp test\content\cars_128x96.i420 128 96
 ```
 
+### Optionally enable h264 encode
+
+Add `gpl` to the above build lines to enable h264 encode capability. Note that
+the GPL license will apply to the build output in this case.
+
+```
+bootstrap gpl
+build gpl
+```
+
 
 ### Other builds
 

@@ -68,6 +68,10 @@ int main(int argc, char* argv[]) {
         codecID = MFX_CODEC_JPEG;
         puts("JPEG encoding");
     }
+    else if (strncmp("h264", argv[1], 4) == 0) {
+        codecID = MFX_CODEC_AVC;
+        puts("h264 encoding");
+    }
     else if (strncmp("AV1", argv[1], 3) == 0) {
         codecID = MFX_CODEC_AV1;
         puts("AV1 encoding");
@@ -590,7 +594,7 @@ char* ValidateFileName(char* in) {
 void Usage(void) {
     printf(
         "Usage: vpl-encode [encoder] [input filename] [out filename] [width] [height] [10]\n\n");
-    printf("\t[encoder]         : H265|AV1|JPEG\n");
+    printf("\t[encoder]         : H265|AV1|H264|JPEG\n");
     printf("\t[input filename]  : raw video file (i420 only)\n");
     printf("\t[out filename]    : filename to store the output\n");
     printf("\t[width]           : width of input video\n");

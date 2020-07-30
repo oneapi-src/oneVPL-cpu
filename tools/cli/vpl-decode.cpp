@@ -14,9 +14,11 @@
 #include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
-#define MAX_LENGTH 260
-#define MAX_WIDTH  3840
-#define MAX_HEIGHT 2160
+#define MAX_LENGTH             260
+#define MAX_WIDTH              3840
+#define MAX_HEIGHT             2160
+#define MAX_BS_BUFFER_SIZE     64 * 1024 * 1024
+#define DEFAULT_BS_BUFFER_SIZE 2 * 1024 * 21024
 
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
 
@@ -92,6 +94,10 @@ int main(int argc, char* argv[]) {
 
     char** cmd_args;
     cmd_args = ValidateInput(argc, argv);
+    if (cmd_args == NULL) {
+        Usage();
+        return 1; // return 1 as error code
+    }
 
     Params params = { 0 };
     if (ParseArgsAndValidate(argc, cmd_args, &params) == false) {
@@ -133,7 +139,15 @@ int main(int argc, char* argv[]) {
 
     // prepare input bitstream
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = params.srcbsbufSize;
+    if (params.srcbsbufSize > 0 && params.srcbsbufSize <= MAX_BS_BUFFER_SIZE)
+        mfxBS.MaxLength = params.srcbsbufSize;
+    else {
+        fclose(fSource);
+        fclose(fSink);
+        puts("Memory allocation error. Bitstream buffersize is not correct");
+        return 1;
+    }
+
     std::vector<mfxU8> input_buffer;
     input_buffer.resize(mfxBS.MaxLength);
     mfxBS.Data = input_buffer.data();
@@ -549,7 +563,7 @@ bool ValidateParams(Params* params) {
 
     // default bitstream buffer size (input)
     if (params->srcbsbufSize == 0) {
-        params->srcbsbufSize = 2000000;
+        params->srcbsbufSize = DEFAULT_BS_BUFFER_SIZE;
     }
 
     return true;

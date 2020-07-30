@@ -19,6 +19,7 @@ mfxStatus CpuWorkstream::ValidateEncodeParams(mfxVideoParam *par) {
 
     // validate fields in the input param struct
     if (par->mfx.CodecId != MFX_CODEC_HEVC &&
+        par->mfx.CodecId != MFX_CODEC_AVC &&
         par->mfx.CodecId != MFX_CODEC_JPEG && par->mfx.CodecId != MFX_CODEC_AV1)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -335,6 +336,11 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
             if (sts != MFX_ERR_NONE)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
+        case MFX_CODEC_AVC:
+            sts = InitAVCParams(par);
+            if (sts != MFX_ERR_NONE)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+            break;
         case MFX_CODEC_JPEG:
             sts = InitJPEGParams(par);
             if (sts != MFX_ERR_NONE)
@@ -528,6 +534,10 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuWorkstream::InitAVCParams(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
