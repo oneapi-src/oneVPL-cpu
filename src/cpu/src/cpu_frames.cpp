@@ -6,6 +6,28 @@
 
 #include "./cpu_workstream.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+
+#include <windows.h>
+
+mfxU32 AtomicInc32(volatile mfxU32* count) {
+    return InterlockedIncrement((LPLONG)count);
+}
+
+mfxU32 AtomicDec32(volatile mfxU32* count) {
+    return InterlockedDecrement((LPLONG)count);
+}
+#else
+// Linux
+mfxU32 AtomicInc32(volatile mfxU32* count) {
+    return (mfxU32)__sync_add_and_fetch(count, (mfxU32)1);
+}
+
+mfxU32 AtomicDec32(volatile mfxU32* count) {
+    return (mfxU32)__sync_add_and_fetch(count, (mfxU32)-1);
+}
+#endif
+
 mfxStatus FrameSurfaceInterface::AddRef(mfxFrameSurface1* surface) {
     if (surface == 0)
         return MFX_ERR_NULL_PTR;
@@ -19,8 +41,7 @@ mfxStatus FrameSurfaceInterface::AddRef(mfxFrameSurface1* surface) {
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;
 
-    // TO DO - needs to be atomic
-    context->m_refCount++;
+    context->m_refCount = AtomicInc32(&(context->m_refCount));
 
     return MFX_ERR_NONE;
 }
@@ -38,8 +59,7 @@ mfxStatus FrameSurfaceInterface::Release(mfxFrameSurface1* surface) {
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;
 
-    // TO DO - needs to be atomic
-    context->m_refCount--;
+    context->m_refCount = AtomicDec32(&(context->m_refCount));
 
     return MFX_ERR_NONE;
 }
@@ -58,7 +78,6 @@ mfxStatus FrameSurfaceInterface::GetRefCounter(mfxFrameSurface1* surface,
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;
 
-    // TO DO - needs to be atomic
     *counter = context->m_refCount;
 
     return MFX_ERR_NONE;
