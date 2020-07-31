@@ -194,14 +194,18 @@ mfxStatus CpuWorkstream::ValidateEncodeParams(mfxVideoParam *par) {
     }
 
     if (par->mfx.TargetKbps == 0)
+        par->mfx.TargetKbps = 4000;
+
+    if (par->mfx.FrameInfo.FrameRateExtN == 0)
+        par->mfx.FrameInfo.FrameRateExtN = 30;
+
+    if (par->mfx.FrameInfo.FrameRateExtN > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    if (par->mfx.FrameInfo.FrameRateExtN == 0 ||
-        par->mfx.FrameInfo.FrameRateExtN > 65535)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
+    if (par->mfx.FrameInfo.FrameRateExtD == 0)
+        par->mfx.FrameInfo.FrameRateExtD = 1;
 
-    if (par->mfx.FrameInfo.FrameRateExtD == 0 ||
-        par->mfx.FrameInfo.FrameRateExtD > 65535)
+    if (par->mfx.FrameInfo.FrameRateExtD > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (par->mfx.FrameInfo.AspectRatioW == 0)
