@@ -25,12 +25,25 @@ CpuWorkstream::CpuWorkstream()
           m_avVppFrameOut(nullptr),
           m_avEncFrameIn(nullptr),
 
-          m_encCodecId(MFX_CODEC_HEVC),
-
           m_decInit(false),
           m_vppInit(false),
           m_vppBypass(false),
           m_encInit(false),
+
+          m_decMemMgmtType(VPL_MEM_MGMT_EXTERNAL),
+          m_vppMemMgmtType(VPL_MEM_MGMT_EXTERNAL),
+          m_encMemMgmtType(VPL_MEM_MGMT_EXTERNAL),
+
+          m_decCodecId(MFX_CODEC_HEVC),
+          m_decOutFormat(MFX_FOURCC_I420),
+          m_decWidth(0),
+          m_decHeight(0),
+          m_decPlaneBytes(),
+          m_decPoolSize(),
+          m_decFrameInterface(),
+          m_decSurfaces(),
+
+          m_encCodecId(MFX_CODEC_HEVC),
 
           m_vpp_use_graph(false),
           m_vpp_graph(nullptr),

@@ -28,8 +28,9 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
     if (!m_bsDecData)
         return MFX_ERR_MEMORY_ALLOC;
 
+    m_decCodecId  = FourCC;
     AVCodecID cid = AV_CODEC_ID_NONE;
-    switch (FourCC) {
+    switch (m_decCodecId) {
         case MFX_CODEC_AVC:
             cid = AV_CODEC_ID_H264;
             break;
@@ -138,15 +139,20 @@ mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {
 
     // just fills in the minimum parameters required to alloc buffers and start decoding
     // in next step, the app will call DECODE_Query() to confirm that it can decode this stream
-    par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;
-    par->mfx.FrameInfo.Height = (uint16_t)m_avDecContext->height;
+    m_decWidth  = m_avDecContext->width;
+    m_decHeight = m_avDecContext->height;
 
     if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
+        m_decOutFormat = MFX_FOURCC_I010;
     else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+        m_decOutFormat = MFX_FOURCC_I420;
     else
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+        m_decOutFormat = MFX_FOURCC_I420;
+
+    // fill in mfxVideoParam
+    par->mfx.FrameInfo.Width  = (uint16_t)m_decWidth;
+    par->mfx.FrameInfo.Height = (uint16_t)m_decHeight;
+    par->mfx.FrameInfo.FourCC = m_decOutFormat;
 
     if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
         return MFX_ERR_NOT_INITIALIZED;
@@ -255,6 +261,21 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
         AVFrame2mfxFrameSurface(surface_work, m_avDecFrameOut);
         *surface_out = surface_work;
     }
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuWorkstream::DecodeQueryIOSurf(mfxVideoParam *par,
+                                           mfxFrameAllocRequest *request) {
+    // may be null for internal use
+    if (par)
+        request->Info = par->mfx.FrameInfo;
+    else
+        memset(&request->Info, 0, sizeof(mfxFrameInfo));
+
+    request->NumFrameMin       = 4; // TO DO - calculate correctly from libav
+    request->NumFrameSuggested = 4;
+    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_DECODE;
 
     return MFX_ERR_NONE;
 }

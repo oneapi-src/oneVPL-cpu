@@ -71,10 +71,9 @@ mfxStatus MFXVideoDECODE_QueryIOSurf(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    request->Info              = par->mfx.FrameInfo;
-    request->NumFrameMin       = 1;
-    request->NumFrameSuggested = 1;
-    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_DECODE;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+
+    sts = ws->DecodeQueryIOSurf(par, request);
 
     return sts;
 }
@@ -116,6 +115,12 @@ mfxStatus MFXVideoDECODE_Close(mfxSession session) {
     if (ws->getDecInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
+    eVPLMemMgmtType memMgmtType = ws->getDecMemMgmtType();
+
+    if (memMgmtType == VPL_MEM_MGMT_INTERNAL) {
+        ws->FreeDecodeSurfacePool();
+    }
+
     ws->FreeDecode();
 
     return MFX_ERR_NONE;
@@ -135,16 +140,59 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
     if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
-    if (0 == surface_work || 0 == surface_out || 0 == syncp) {
+    if (0 == surface_out || 0 == syncp) {
         return MFX_ERR_NULL_PTR;
     }
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->getDecInit() == false)
-        return MFX_ERR_NOT_INITIALIZED;
+    if (ws->getDecInit() == false) {
+        sts = MFX_ERR_NOT_INITIALIZED;
 
-    sts = ws->DecodeFrame(bs, surface_work, surface_out);
+        // 2.0 API permits lazy init - requires internal memory management
+        if (surface_work == 0) {
+            mfxU32 codecID = bs->CodecId;
+
+            mfxVideoParam par;
+            par.mfx.CodecId = codecID;
+            ws->DecodeHeader(bs, &par);
+
+            sts = ws->InitDecode(codecID);
+        }
+
+        if (sts)
+            return sts;
+    }
+
+    eVPLMemMgmtType memMgmtType = ws->getDecMemMgmtType();
+
+    // surface_work may be null only if internal memory management is used
+    // first frame - set up internal surface pool
+    if (0 == surface_work && memMgmtType == VPL_MEM_MGMT_EXTERNAL) {
+        sts = ws->InitDecodeSurfacePool();
+        if (sts)
+            return sts;
+
+        // now the type should be VPL_MEM_MGMT_INTERNAL
+        memMgmtType = ws->getDecMemMgmtType();
+    }
+
+    if (memMgmtType == VPL_MEM_MGMT_INTERNAL && surface_work == 0) {
+        // get a ref-counted surface for decoding into
+        // behavior is equivalent to the application calling this and then
+        //   passing the surface into DecodeFrameAsync()
+        sts = MFXMemory_GetSurfaceForDecode(session, &surface_work);
+
+        sts = ws->DecodeFrame(bs, surface_work, surface_out);
+
+        // application will not know to release surface (e.g. if we
+        //   need more data) so need to release it here
+        if (sts != MFX_ERR_NONE)
+            surface_work->FrameInterface->Release(surface_work);
+    }
+    else {
+        sts = ws->DecodeFrame(bs, surface_work, surface_out);
+    }
 
     // consumes whole frame every time
     if (bs) {

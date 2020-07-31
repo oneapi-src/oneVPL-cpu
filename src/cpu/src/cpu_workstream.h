@@ -38,6 +38,13 @@ extern "C" {
         return MFX_ERR_UNKNOWN;         \
     }
 
+#define MAX_NUM_PLANES 4
+
+typedef enum {
+    VPL_MEM_MGMT_EXTERNAL,
+    VPL_MEM_MGMT_INTERNAL,
+} eVPLMemMgmtType;
+
 typedef enum {
     VPL_VPP_CSC       = 1,
     VPL_VPP_SCALE     = 2,
@@ -84,6 +91,8 @@ public:
     // decode
     mfxStatus InitDecode(mfxU32 FourCC);
     mfxStatus DecodeQuery(mfxVideoParam* in, mfxVideoParam* out);
+    mfxStatus DecodeQueryIOSurf(mfxVideoParam* par,
+                                mfxFrameAllocRequest* request);
     mfxStatus DecodeHeader(mfxBitstream* bs, mfxVideoParam* par);
     mfxStatus DecodeFrame(mfxBitstream* bs,
                           mfxFrameSurface1* surface_work,
@@ -130,6 +139,21 @@ public:
         }
     }
 
+    // API 2.0 memory management functions
+    mfxStatus InitDecodeSurfacePool();
+    void FreeDecodeSurfacePool();
+    mfxStatus GetDecodeSurface(mfxFrameSurface1** surface);
+
+    eVPLMemMgmtType getDecMemMgmtType() {
+        return m_decMemMgmtType;
+    }
+    eVPLMemMgmtType getVppMemMgmtType() {
+        return m_vppMemMgmtType;
+    }
+    eVPLMemMgmtType getEncMemMgmtType() {
+        return m_encMemMgmtType;
+    }
+
 private:
     CpuWorkstream(const CpuWorkstream&) { /* copy not allowed */
     }
@@ -143,6 +167,16 @@ private:
     mfxStatus InitAV1Params(mfxVideoParam* par);
     mfxStatus InitJPEGParams(mfxVideoParam* par);
     mfxStatus InitAVCParams(mfxVideoParam* par);
+
+    void GetSurfaceSizes(mfxU32 FourCC,
+                         mfxU32 width,
+                         mfxU32 height,
+                         mfxU32 planeBytes[MAX_NUM_PLANES]);
+    mfxI32 GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool,
+                               mfxU32 nPoolSize);
+
+    mfxU8* AllocAlignedBuffer(mfxU32 nBytes, mfxU32 nAlign);
+    void FreeAlignedBuffer(mfxU8* alignedPtr);
 
     // libav objects - Decode
     const AVCodec* m_avDecCodec;
@@ -171,7 +205,21 @@ private:
     bool m_vppBypass;
     bool m_encInit;
 
+    eVPLMemMgmtType m_decMemMgmtType;
+    eVPLMemMgmtType m_vppMemMgmtType;
+    eVPLMemMgmtType m_encMemMgmtType;
+
     // other internal state
+    mfxU32 m_decCodecId;
+    mfxU32 m_decOutFormat;
+    mfxU32 m_decWidth;
+    mfxU32 m_decHeight;
+    mfxU32 m_decPlaneBytes[MAX_NUM_PLANES];
+    mfxU32 m_decPoolSize;
+
+    mfxFrameSurfaceInterface m_decFrameInterface;
+    mfxFrameSurface1* m_decSurfaces;
+
     mfxU32 m_encCodecId;
     std::map<mfxHandleType, mfxHDL> m_handles;
 
@@ -220,6 +268,40 @@ private:
     bool CheckFilterList(mfxU32* pList, mfxU32 count, bool bDoUseTable);
     mfxStatus CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count);
     AVPixelFormat MFXFourCC2AVPixelFormat(uint32_t fourcc);
+};
+
+// classes for 2.0 memory API
+class FrameSurfaceInterface {
+public:
+    // callbacks exposed to application
+    static mfxStatus AddRef(mfxFrameSurface1* surface);
+    static mfxStatus Release(mfxFrameSurface1* surface);
+    static mfxStatus GetRefCounter(mfxFrameSurface1* surface, mfxU32* counter);
+    static mfxStatus Map(mfxFrameSurface1* surface, mfxU32 flags);
+    static mfxStatus Unmap(mfxFrameSurface1* surface);
+    static mfxStatus GetNativeHandle(mfxFrameSurface1* surface,
+                                     mfxHDL* resource,
+                                     mfxResourceType* resource_type);
+    static mfxStatus GetDeviceHandle(mfxFrameSurface1* surface,
+                                     mfxHDL* device_handle,
+                                     mfxHandleType* device_type);
+    static mfxStatus Synchronize(mfxFrameSurface1* surface, mfxU32 wait);
+
+    // internal helper functions (init, free)
+    static mfxFrameSurfaceInterface* AllocFrameSurfaceInterface();
+    static void FreeFrameSurfaceInterface(
+        mfxFrameSurfaceInterface* frameInterface);
+};
+
+// use as handle for mfxFrameSurfaceInterface
+class FrameInterfaceContext : public FrameSurfaceInterface {
+public:
+    FrameInterfaceContext() {
+        m_refCount = 0;
+    };
+    ~FrameInterfaceContext(){};
+
+    mfxU32 m_refCount;
 };
 
 #endif // SRC_CPU_SRC_CPU_WORKSTREAM_H_

@@ -18,6 +18,8 @@ set(SOURCES
     src/cpu_common.cpp
     src/cpu_decode.cpp
     src/cpu_encode.cpp
+    src/cpu_frames.cpp
+    src/cpu_memory.cpp
     src/cpu_vpp.cpp
     src/libmfxvplsw.cpp
     src/libmfxvplsw_caps.cpp
