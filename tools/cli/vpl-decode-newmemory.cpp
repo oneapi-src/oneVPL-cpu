@@ -23,8 +23,6 @@ int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize);
 char *ValidateFileName(char *in);
 void Usage(void);
 
-#define USE_INTERNAL_MEMORY
-
 enum MemoryMode {
     MEM_MODE_UNKNOWN = -1,
 
@@ -515,7 +513,8 @@ char *ValidateFileName(char *in) {
 }
 
 void Usage(void) {
-    printf("Usage: vpl-decode [decoder] [input filename] [out filename]\n\n");
+    printf(
+        "Usage: vpl-decode-newmemory [decoder] [input filename] [out filename] [memory mode]\n\n");
     printf("\t[decoder]         : h265|av1|jpeg|h264\n");
     printf("\t[input filename]  : encoded stream\n");
     printf("\t[out filename]    : filename to store the output\n");
