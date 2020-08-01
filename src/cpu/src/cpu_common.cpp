@@ -38,12 +38,17 @@ CpuWorkstream::CpuWorkstream()
           m_decOutFormat(MFX_FOURCC_I420),
           m_decWidth(0),
           m_decHeight(0),
-          m_decPlaneBytes(),
           m_decPoolSize(),
           m_decFrameInterface(),
           m_decSurfaces(),
 
           m_encCodecId(MFX_CODEC_HEVC),
+          m_encInFormat(MFX_FOURCC_I420),
+          m_encWidth(0),
+          m_encHeight(0),
+          m_encPoolSize(),
+          m_encFrameInterface(),
+          m_encSurfaces(),
 
           m_vpp_use_graph(false),
           m_vpp_graph(nullptr),

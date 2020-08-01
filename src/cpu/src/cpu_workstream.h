@@ -111,6 +111,8 @@ public:
     // encode
     mfxStatus InitEncode(mfxVideoParam* par);
     mfxStatus EncodeQuery(mfxVideoParam* in, mfxVideoParam* out);
+    mfxStatus EncodeQueryIOSurf(mfxVideoParam* par,
+                                mfxFrameAllocRequest* request);
     mfxStatus ValidateEncodeParams(mfxVideoParam* par);
     mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxBitstream* bs);
     void FreeEncode(void);
@@ -144,6 +146,10 @@ public:
     void FreeDecodeSurfacePool();
     mfxStatus GetDecodeSurface(mfxFrameSurface1** surface);
 
+    mfxStatus InitEncodeSurfacePool();
+    void FreeEncodeSurfacePool();
+    mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
+
     eVPLMemMgmtType getDecMemMgmtType() {
         return m_decMemMgmtType;
     }
@@ -174,6 +180,13 @@ private:
                          mfxU32 planeBytes[MAX_NUM_PLANES]);
     mfxI32 GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool,
                                mfxU32 nPoolSize);
+
+    mfxFrameSurface1* InitSurfacePool(mfxU32 FourCC,
+                                      mfxU32 width,
+                                      mfxU32 height,
+                                      mfxU32 nPoolSize);
+    void FreeSurfacePool(mfxFrameSurface1* surf, mfxU32 nPoolSize);
+    mfxFrameSurface1* GetFreeSurface(mfxFrameSurface1* surf, mfxU32 nPoolSize);
 
     mfxU8* AllocAlignedBuffer(mfxU32 nBytes, mfxU32 nAlign);
     void FreeAlignedBuffer(mfxU8* alignedPtr);
@@ -214,13 +227,20 @@ private:
     mfxU32 m_decOutFormat;
     mfxU32 m_decWidth;
     mfxU32 m_decHeight;
-    mfxU32 m_decPlaneBytes[MAX_NUM_PLANES];
     mfxU32 m_decPoolSize;
 
     mfxFrameSurfaceInterface m_decFrameInterface;
     mfxFrameSurface1* m_decSurfaces;
 
     mfxU32 m_encCodecId;
+    mfxU32 m_encInFormat;
+    mfxU32 m_encWidth;
+    mfxU32 m_encHeight;
+    mfxU32 m_encPoolSize;
+
+    mfxFrameSurfaceInterface m_encFrameInterface;
+    mfxFrameSurface1* m_encSurfaces;
+
     std::map<mfxHandleType, mfxHDL> m_handles;
 
     // VPP

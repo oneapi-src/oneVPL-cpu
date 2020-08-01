@@ -37,10 +37,9 @@ mfxStatus MFXVideoENCODE_QueryIOSurf(mfxSession session,
         return MFX_ERR_NULL_PTR;
     }
 
-    request->Info              = par->mfx.FrameInfo;
-    request->NumFrameMin       = 1;
-    request->NumFrameSuggested = 1;
-    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+
+    sts = ws->EncodeQueryIOSurf(par, request);
 
     return sts;
 }
@@ -71,6 +70,12 @@ mfxStatus MFXVideoENCODE_Close(mfxSession session) {
 
     if (ws->getEncInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
+
+    eVPLMemMgmtType memMgmtType = ws->getEncMemMgmtType();
+
+    if (memMgmtType == VPL_MEM_MGMT_INTERNAL) {
+        ws->FreeEncodeSurfacePool();
+    }
 
     ws->FreeEncode();
 

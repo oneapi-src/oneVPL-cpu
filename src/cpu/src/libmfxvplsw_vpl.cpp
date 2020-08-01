@@ -157,11 +157,26 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
     if (ws->getEncInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
+    eVPLMemMgmtType memMgmtType = ws->getEncMemMgmtType();
+
+    // first frame - set up internal surface pool
+    if (memMgmtType == VPL_MEM_MGMT_EXTERNAL) {
+        sts = ws->InitEncodeSurfacePool();
+        if (sts)
+            return sts;
+
+        // now the type should be VPL_MEM_MGMT_INTERNAL
+        memMgmtType = ws->getEncMemMgmtType();
+    }
+
     // may only be used if internal memory management is used
-    if (ws->getEncMemMgmtType() == VPL_MEM_MGMT_EXTERNAL)
+    if (memMgmtType != VPL_MEM_MGMT_INTERNAL)
         return MFX_ERR_UNDEFINED_BEHAVIOR;
 
-    return MFX_ERR_NOT_IMPLEMENTED;
+    // get surface from internal decoder pool
+    sts = ws->GetEncodeSurface(surface);
+
+    return sts;
 }
 
 mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
@@ -189,7 +204,7 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
     }
 
     // may only be used if internal memory management is used
-    if (ws->getDecMemMgmtType() != VPL_MEM_MGMT_INTERNAL)
+    if (memMgmtType != VPL_MEM_MGMT_INTERNAL)
         return MFX_ERR_UNDEFINED_BEHAVIOR;
 
     // get surface from internal decoder pool

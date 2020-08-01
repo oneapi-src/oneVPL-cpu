@@ -8,7 +8,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
-#include <windows.h>
+    #include <windows.h>
 
 mfxU32 AtomicInc32(volatile mfxU32* count) {
     return InterlockedIncrement((LPLONG)count);

@@ -60,7 +60,7 @@ enum MemoryMode {
 };
 
 int main(int argc, char* argv[]) {
-    if (argc < 6) {
+    if (argc < 7) {
         Usage();
         return 1; // return 1 as error code
     }
@@ -186,14 +186,15 @@ int main(int argc, char* argv[]) {
     // Initialize encoder parameters
     mfxVideoParam mfxEncParams;
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
-    mfxEncParams.mfx.CodecId                 = codecID;
-    mfxEncParams.mfx.TargetUsage             = MFX_TARGETUSAGE_BALANCED;
+    mfxEncParams.mfx.CodecId     = codecID;
+    mfxEncParams.mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
     //mfxEncParams.mfx.TargetKbps              = 4000;
-    mfxEncParams.mfx.Quality                 = 100;
-    mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_CQP; // avoid run-to-run diffs with SVT+VBR
-    mfxEncParams.mfx.QPI                     =25;
-    mfxEncParams.mfx.QPP                     =25;
-    mfxEncParams.mfx.QPB                     =25;
+    mfxEncParams.mfx.Quality = 100;
+    mfxEncParams.mfx.RateControlMethod =
+        MFX_RATECONTROL_CQP; // avoid run-to-run diffs with SVT+VBR
+    mfxEncParams.mfx.QPI                     = 25;
+    mfxEncParams.mfx.QPP                     = 25;
+    mfxEncParams.mfx.QPB                     = 25;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.mfx.FrameInfo.FourCC        = fourCC;
@@ -232,47 +233,54 @@ int main(int argc, char* argv[]) {
         g_conf = NULL;
     }
 
-    // Query number required surfaces for encoder
-    mfxFrameAllocRequest EncRequest = { 0 };
-    sts = MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
+    std::vector<mfxFrameSurface1> pEncSurfaces;
+    std::vector<mfxU8> surfaceBuffersData;
+    mfxU16 nEncSurfNum = 0;
 
-    if (sts != MFX_ERR_NONE) {
-        fclose(fSource);
-        fclose(fSink);
-        puts("QueryIOSurf error");
-        return 1;
-    }
+    if (memoryMode == MEM_MODE_EXTERNAL) {
+        // Query number required surfaces for encoder
+        mfxFrameAllocRequest EncRequest = { 0 };
+        sts = MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
 
-    // Determine the required number of surfaces for encoder
-    mfxU16 nEncSurfNum = EncRequest.NumFrameSuggested;
+        if (sts != MFX_ERR_NONE) {
+            fclose(fSource);
+            fclose(fSink);
+            puts("QueryIOSurf error");
+            return 1;
+        }
 
-    // Allocate surfaces for encoder
-    // - Frame surface array keeps pointers all surface planes and general frame info
-    mfxU32 surfaceSize = GetSurfaceSize(fourCC, inputWidth, inputHeight);
-    if (surfaceSize == 0) {
-        fclose(fSource);
-        fclose(fSink);
-        puts("Surface size is wrong");
-        return 1;
-    }
+        // Determine the required number of surfaces for encoder
+        nEncSurfNum = EncRequest.NumFrameSuggested;
 
-    std::vector<mfxU8> surfaceBuffersData(surfaceSize * nEncSurfNum);
-    mfxU8* surfaceBuffers = surfaceBuffersData.data();
+        // Allocate surfaces for encoder
+        // - Frame surface array keeps pointers all surface planes and general frame info
+        mfxU32 surfaceSize = GetSurfaceSize(fourCC, inputWidth, inputHeight);
+        if (surfaceSize == 0) {
+            fclose(fSource);
+            fclose(fSink);
+            puts("Surface size is wrong");
+            return 1;
+        }
 
-    mfxU16 surfW = (fourCC == MFX_FOURCC_I010) ? inputWidth * 2 : inputWidth;
-    mfxU16 surfH = inputHeight;
+        surfaceBuffersData.resize(surfaceSize * nEncSurfNum);
+        mfxU8* surfaceBuffers = surfaceBuffersData.data();
 
-    // Allocate surface headers (mfxFrameSurface1) for encoder
-    std::vector<mfxFrameSurface1> pEncSurfaces(nEncSurfNum);
-    for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        memset(&pEncSurfaces[i], 0, sizeof(mfxFrameSurface1));
-        pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
+        mfxU16 surfW =
+            (fourCC == MFX_FOURCC_I010) ? inputWidth * 2 : inputWidth;
+        mfxU16 surfH = inputHeight;
 
-        pEncSurfaces[i].Data.U = pEncSurfaces[i].Data.Y + surfW * surfH;
-        pEncSurfaces[i].Data.V =
-            pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
-        pEncSurfaces[i].Data.Pitch = surfW;
+        // Allocate surface headers (mfxFrameSurface1) for encoder
+        pEncSurfaces.resize(nEncSurfNum);
+        for (mfxI32 i = 0; i < nEncSurfNum; i++) {
+            memset(&pEncSurfaces[i], 0, sizeof(mfxFrameSurface1));
+            pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
+            pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
+
+            pEncSurfaces[i].Data.U = pEncSurfaces[i].Data.Y + surfW * surfH;
+            pEncSurfaces[i].Data.V =
+                pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+            pEncSurfaces[i].Data.Pitch = surfW;
+        }
     }
 
     // Initialize the Media SDK encoder
@@ -285,10 +293,10 @@ int main(int argc, char* argv[]) {
     }
 
     // Prepare Media SDK bit stream buffer
-    mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 2000000;
-    std::vector<mfxU8> bstData(mfxBS.MaxLength);
-    mfxBS.Data = bstData.data();
+    mfxBitstream mfxBS   = { 0 };
+    mfxBS.MaxLength      = 2000000;
+    mfxU8* output_buffer = new mfxU8[mfxBS.MaxLength];
+    mfxBS.Data           = output_buffer;
 
     double encode_time = 0;
     double sync_time   = 0;
@@ -303,19 +311,46 @@ int main(int argc, char* argv[]) {
     // Stage 1: Main encoding loop
     bool isdraining = false;
     while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_DATA == sts) {
-        nEncSurfIdx =
-            GetFreeSurfaceIndex(pEncSurfaces); // Find free frame surface
-        if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
-            fclose(fSource);
-            fclose(fSink);
-            puts("no available surface");
-            return 1;
-        }
+        mfxFrameSurface1* pmfxWorkSurface = nullptr;
 
         if (!isdraining) {
-            sts = LoadRawFrame(&pEncSurfaces[nEncSurfIdx], fSource);
-            if (sts != MFX_ERR_NONE)
+            if (memoryMode == MEM_MODE_INTERNAL) {
+                sts = MFXMemory_GetSurfaceForEncode(session, &pmfxWorkSurface);
+                if (sts) {
+                    printf(
+                        "Unknown error in MFXMemory_GetSurfaceForEncode, sts = %d()\n",
+                        sts);
+                    return 1;
+                }
+
+                pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface,
+                                                     MFX_MAP_READ);
+            }
+            else if (memoryMode == MEM_MODE_EXTERNAL) {
+                // Find free frame surface
+                nEncSurfIdx = GetFreeSurfaceIndex(pEncSurfaces);
+
+                if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
+                    fclose(fSource);
+                    fclose(fSink);
+                    puts("no available surface");
+                    return 1;
+                }
+
+                pmfxWorkSurface = &pEncSurfaces[nEncSurfIdx];
+            }
+
+            sts = LoadRawFrame(pmfxWorkSurface, fSource);
+            if (sts == MFX_ERR_MORE_DATA) {
                 isdraining = true;
+            }
+            else if (sts) {
+                printf("Unknown error in LoadRawFrame()\n");
+                return 1;
+            }
+
+            if (memoryMode == MEM_MODE_INTERNAL)
+                pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
         }
 
         for (;;) {
@@ -324,7 +359,7 @@ int main(int argc, char* argv[]) {
             sts     = MFXVideoENCODE_EncodeFrameAsync(
                 session,
                 NULL,
-                (isdraining ? NULL : &pEncSurfaces[nEncSurfIdx]),
+                (isdraining ? NULL : pmfxWorkSurface),
                 &mfxBS,
                 &syncp);
             auto t1 = std::chrono::high_resolution_clock::now();
@@ -343,6 +378,11 @@ int main(int argc, char* argv[]) {
             else {
                 break;
             }
+        }
+
+        if (memoryMode == MEM_MODE_INTERNAL) {
+            if (pmfxWorkSurface)
+                pmfxWorkSurface->FrameInterface->Release(pmfxWorkSurface);
         }
 
         // all done
@@ -377,9 +417,12 @@ int main(int argc, char* argv[]) {
     //  - It is recommended to close Media SDK components first, before releasing allocated surfaces, since
     //    some surfaces may still be locked by internal Media SDK resources.
     MFXVideoENCODE_Close(session);
+    MFXClose(session);
 
     fclose(fSource);
     fclose(fSink);
+
+    delete[] output_buffer;
 
     printf("encoded %d frames\n", framenum);
     if (framenum) {

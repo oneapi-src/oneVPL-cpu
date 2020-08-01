@@ -58,7 +58,6 @@ mfxStatus MFXVideoDECODE_Query(mfxSession session,
 //
 // Differences vs. MSDK 1.0 spec
 // - only supports system memory, SW impl
-// - hard-coded to a single frame
 mfxStatus MFXVideoDECODE_QueryIOSurf(mfxSession session,
                                      mfxVideoParam *par,
                                      mfxFrameAllocRequest *request) {

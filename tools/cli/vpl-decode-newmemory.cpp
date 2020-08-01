@@ -349,6 +349,7 @@ int main(int argc, char *argv[]) {
     fclose(fSink);
     fclose(fSource);
     MFXVideoDECODE_Close(session);
+    MFXClose(session);
 
     if (memoryMode == MEM_MODE_EXTERNAL) {
         delete[] DECoutbuf;

@@ -318,6 +318,16 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
             m_avEncContext->pix_fmt = AV_PIX_FMT_YUV420P;
     }
 
+    if (m_avEncContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
+        m_encInFormat = MFX_FOURCC_I010;
+    else if (m_avEncContext->pix_fmt == AV_PIX_FMT_YUV420P)
+        m_encInFormat = MFX_FOURCC_I420;
+    else
+        m_encInFormat = MFX_FOURCC_I420;
+
+    m_encWidth  = m_avEncContext->width;
+    m_encHeight = m_avEncContext->height;
+
     // set defaults for anything not passed in
     if (!m_avEncContext->gop_size)
         m_avEncContext->gop_size =
@@ -747,6 +757,21 @@ mfxStatus CpuWorkstream::EncodeFrame(mfxFrameSurface1 *surface,
     }
 
     av_packet_unref(m_avEncPacket);
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuWorkstream::EncodeQueryIOSurf(mfxVideoParam *par,
+                                           mfxFrameAllocRequest *request) {
+    // may be null for internal use
+    if (par)
+        request->Info = par->mfx.FrameInfo;
+    else
+        memset(&request->Info, 0, sizeof(mfxFrameInfo));
+
+    request->NumFrameMin       = 3; // TO DO - calculate correctly from libav
+    request->NumFrameSuggested = 3;
+    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
 
     return MFX_ERR_NONE;
 }
