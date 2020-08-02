@@ -6,6 +6,7 @@
 
 #include "./cpu_workstream.h"
 
+// calculate space required for surface given CS/width/height
 void CpuWorkstream::GetSurfaceSizes(mfxU32 FourCC,
                                     mfxU32 width,
                                     mfxU32 height,
@@ -162,6 +163,7 @@ mfxFrameSurface1* CpuWorkstream::GetFreeSurface(mfxFrameSurface1* surf,
     return foundSurf;
 }
 
+// Decode surface pool management
 mfxStatus CpuWorkstream::InitDecodeSurfacePool() {
     m_decMemMgmtType = VPL_MEM_MGMT_INTERNAL;
 
@@ -206,6 +208,7 @@ mfxStatus CpuWorkstream::GetDecodeSurface(mfxFrameSurface1** surface) {
     return MFX_ERR_NONE;
 }
 
+// Encode surface pool management
 mfxStatus CpuWorkstream::InitEncodeSurfacePool() {
     m_encMemMgmtType = VPL_MEM_MGMT_INTERNAL;
 
@@ -245,6 +248,7 @@ mfxStatus CpuWorkstream::GetEncodeSurface(mfxFrameSurface1** surface) {
     return MFX_ERR_NONE;
 }
 
+// VPP surface pool management
 mfxStatus CpuWorkstream::InitVPPSurfacePool() {
     m_vppMemMgmtType = VPL_MEM_MGMT_INTERNAL;
 

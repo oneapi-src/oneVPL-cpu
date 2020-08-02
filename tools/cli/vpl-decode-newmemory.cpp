@@ -222,8 +222,6 @@ int main(int argc, char *argv[]) {
     mfxSyncPoint syncp                = { 0 };
     mfxFrameSurface1 *pmfxWorkSurface = nullptr;
     mfxFrameSurface1 *pmfxOutSurface  = nullptr;
-    mfxHDL device_handle;
-    mfxHandleType device_type;
 
     puts("start decoding");
     bool isdraining = false;
@@ -238,32 +236,26 @@ int main(int argc, char *argv[]) {
             // submit async decode request
             auto t0 = std::chrono::high_resolution_clock::now();
 
-            if (memoryMode == MEM_MODE_INTERNAL) {
+            if (memoryMode == MEM_MODE_EXTERNAL) {
+                pmfxWorkSurface = &decSurfaces[nIndex];
+            }
+            else if (memoryMode == MEM_MODE_INTERNAL) {
                 sts = MFXMemory_GetSurfaceForDecode(session, &pmfxWorkSurface);
-
-                sts = MFXVideoDECODE_DecodeFrameAsync(
-                    session,
-                    (isdraining ? nullptr : &mfxBS),
-                    pmfxWorkSurface,
-                    &pmfxOutSurface,
-                    &syncp);
+                if (sts) {
+                    printf("Error in GetSurfaceForDecode: sts=%d\n", sts);
+                    exit(1);
+                }
             }
             else if (memoryMode == MEM_MODE_AUTO) {
-                sts = MFXVideoDECODE_DecodeFrameAsync(
-                    session,
-                    (isdraining ? nullptr : &mfxBS),
-                    nullptr,
-                    &pmfxOutSurface,
-                    &syncp);
+                pmfxWorkSurface = nullptr;
             }
-            else if (memoryMode == MEM_MODE_EXTERNAL) {
-                sts = MFXVideoDECODE_DecodeFrameAsync(
-                    session,
-                    (isdraining ? nullptr : &mfxBS),
-                    &decSurfaces[nIndex],
-                    &pmfxOutSurface,
-                    &syncp);
-            }
+
+            sts =
+                MFXVideoDECODE_DecodeFrameAsync(session,
+                                                (isdraining ? nullptr : &mfxBS),
+                                                pmfxWorkSurface,
+                                                &pmfxOutSurface,
+                                                &syncp);
 
             auto t1 = std::chrono::high_resolution_clock::now();
             decode_time +=
@@ -315,23 +307,15 @@ int main(int argc, char *argv[]) {
             std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
                 .count();
 
+        if (memoryMode == MEM_MODE_INTERNAL || memoryMode == MEM_MODE_AUTO) {
+            pmfxOutSurface->FrameInterface->Map(pmfxOutSurface, MFX_MAP_READ);
+        }
+
         // write output if output file specified
         if (fSink)
             WriteRawFrame(pmfxOutSurface, fSink);
 
         if (memoryMode == MEM_MODE_INTERNAL || memoryMode == MEM_MODE_AUTO) {
-            // sample code from spec
-            pmfxOutSurface->FrameInterface->GetDeviceHandle(pmfxOutSurface,
-                                                            &device_handle,
-                                                            &device_type);
-            // system memory has no handle
-            if (device_handle != nullptr) {
-                printf(
-                    "Error - GetDeviceHandle returned non-null handle for system memory\n");
-                exit(1);
-            }
-
-            pmfxOutSurface->FrameInterface->Map(pmfxOutSurface, MFX_MAP_READ);
             pmfxOutSurface->FrameInterface->Unmap(pmfxOutSurface);
             pmfxOutSurface->FrameInterface->Release(pmfxOutSurface);
         }

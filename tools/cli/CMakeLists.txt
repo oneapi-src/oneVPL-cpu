@@ -28,4 +28,3 @@ target_link_libraries(vpl-encode-newmemory mfx)
 
 add_executable(vpl-vpp-newmemory vpl-vpp-newmemory.cpp)
 target_link_libraries(vpl-vpp-newmemory mfx)
-

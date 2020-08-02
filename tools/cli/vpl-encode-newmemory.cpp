@@ -348,9 +348,6 @@ int main(int argc, char* argv[]) {
                 printf("Unknown error in LoadRawFrame()\n");
                 return 1;
             }
-
-            if (memoryMode == MEM_MODE_INTERNAL)
-                pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
         }
 
         for (;;) {
@@ -381,8 +378,10 @@ int main(int argc, char* argv[]) {
         }
 
         if (memoryMode == MEM_MODE_INTERNAL) {
-            if (pmfxWorkSurface)
+            if (pmfxWorkSurface) {
+                pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
                 pmfxWorkSurface->FrameInterface->Release(pmfxWorkSurface);
+            }
         }
 
         // all done
