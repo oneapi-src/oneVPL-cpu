@@ -150,6 +150,10 @@ public:
     void FreeEncodeSurfacePool();
     mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
 
+    mfxStatus InitVPPSurfacePool();
+    void FreeVPPSurfacePool();
+    mfxStatus GetVPPSurface(mfxFrameSurface1** surface);
+
     eVPLMemMgmtType getDecMemMgmtType() {
         return m_decMemMgmtType;
     }
@@ -240,6 +244,14 @@ private:
 
     mfxFrameSurfaceInterface m_encFrameInterface;
     mfxFrameSurface1* m_encSurfaces;
+
+    mfxU32 m_vppInFormat;
+    mfxU32 m_vppWidth;
+    mfxU32 m_vppHeight;
+    mfxU32 m_vppPoolSize;
+
+    mfxFrameSurfaceInterface m_vppFrameInterface;
+    mfxFrameSurface1* m_vppSurfaces;
 
     std::map<mfxHandleType, mfxHDL> m_handles;
 

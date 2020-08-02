@@ -50,6 +50,13 @@ CpuWorkstream::CpuWorkstream()
           m_encFrameInterface(),
           m_encSurfaces(),
 
+          m_vppInFormat(MFX_FOURCC_I420),
+          m_vppWidth(0),
+          m_vppHeight(0),
+          m_vppPoolSize(),
+          m_vppFrameInterface(),
+          m_vppSurfaces(),
+
           m_vpp_use_graph(false),
           m_vpp_graph(nullptr),
           m_buffersrc_ctx(nullptr),

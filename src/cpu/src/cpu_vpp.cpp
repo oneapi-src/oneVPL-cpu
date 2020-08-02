@@ -543,6 +543,11 @@ mfxStatus CpuWorkstream::InitVPP(mfxVideoParam* par) {
     if (ret < 0)
         return MFX_ERR_NOT_INITIALIZED;
 
+    m_vppInFormat = par->vpp.In.FourCC;
+    m_vppWidth    = par->vpp.In.Width;
+    m_vppHeight   = par->vpp.In.Height;
+    m_vppInit     = true;
+
     return MFX_ERR_NONE;
 }
 
@@ -1137,19 +1142,31 @@ mfxStatus CpuWorkstream::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
 mfxStatus CpuWorkstream::VPPQueryIOSurf(mfxVideoParam* par,
                                         mfxFrameAllocRequest* request) {
     mfxStatus sts;
+
     // VPP_IN
-    request[VPP_IN].Info              = par->vpp.In;
     request[VPP_IN].NumFrameMin       = 1;
     request[VPP_IN].NumFrameSuggested = 1;
 
     //VPP_OUT
-    request[VPP_OUT].Info              = par->vpp.Out;
     request[VPP_OUT].NumFrameMin       = 1;
     request[VPP_OUT].NumFrameSuggested = 1;
 
-    sts = CheckIOPattern_AndSetIOMemTypes(par->IOPattern,
-                                          &request[VPP_IN].Type,
-                                          &request[VPP_OUT].Type);
+    // may be null for internal use
+    if (par) {
+        request[VPP_IN].Info  = par->vpp.In;
+        request[VPP_OUT].Info = par->vpp.Out;
+
+        sts = CheckIOPattern_AndSetIOMemTypes(par->IOPattern,
+                                              &request[VPP_IN].Type,
+                                              &request[VPP_OUT].Type);
+    }
+    else {
+        memset(&request[VPP_IN].Info, 0, sizeof(mfxFrameInfo));
+        memset(&request[VPP_OUT].Info, 0, sizeof(mfxFrameInfo));
+
+        sts = MFX_ERR_NONE;
+    }
+
     return sts;
 }
 

@@ -244,3 +244,42 @@ mfxStatus CpuWorkstream::GetEncodeSurface(mfxFrameSurface1** surface) {
 
     return MFX_ERR_NONE;
 }
+
+mfxStatus CpuWorkstream::InitVPPSurfacePool() {
+    m_vppMemMgmtType = VPL_MEM_MGMT_INTERNAL;
+
+    mfxFrameAllocRequest VPPRequest[2] = { 0 };
+    VPPQueryIOSurf(nullptr, VPPRequest);
+
+    m_vppPoolSize = VPPRequest[0].NumFrameSuggested;
+    if (!m_vppPoolSize)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    m_vppSurfaces =
+        InitSurfacePool(m_vppInFormat, m_vppWidth, m_vppHeight, m_vppPoolSize);
+
+    if (!m_vppSurfaces)
+        return MFX_ERR_MEMORY_ALLOC;
+
+    return MFX_ERR_NONE;
+}
+
+void CpuWorkstream::FreeVPPSurfacePool() {
+    FreeSurfacePool(m_vppSurfaces, m_vppPoolSize);
+
+    m_vppSurfaces = nullptr;
+}
+
+mfxStatus CpuWorkstream::GetVPPSurface(mfxFrameSurface1** surface) {
+    if (m_vppMemMgmtType != VPL_MEM_MGMT_INTERNAL)
+        return MFX_ERR_NOT_INITIALIZED;
+
+    mfxFrameSurface1* foundSurf = GetFreeSurface(m_vppSurfaces, m_vppPoolSize);
+
+    if (!foundSurf)
+        return MFX_ERR_MEMORY_ALLOC;
+
+    *surface = foundSurf;
+
+    return MFX_ERR_NONE;
+}

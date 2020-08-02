@@ -138,11 +138,26 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
     if (ws->getVppInit() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
+    eVPLMemMgmtType memMgmtType = ws->getVppMemMgmtType();
+
+    // first frame - set up internal surface pool
+    if (memMgmtType == VPL_MEM_MGMT_EXTERNAL) {
+        sts = ws->InitVPPSurfacePool();
+        if (sts)
+            return sts;
+
+        // now the type should be VPL_MEM_MGMT_INTERNAL
+        memMgmtType = ws->getVppMemMgmtType();
+    }
+
     // may only be used if internal memory management is used
-    if (ws->getVppMemMgmtType() == VPL_MEM_MGMT_EXTERNAL)
+    if (memMgmtType != VPL_MEM_MGMT_INTERNAL)
         return MFX_ERR_UNDEFINED_BEHAVIOR;
 
-    return MFX_ERR_NOT_IMPLEMENTED;
+    // get surface from internal decoder pool
+    sts = ws->GetVPPSurface(surface);
+
+    return sts;
 }
 
 mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
