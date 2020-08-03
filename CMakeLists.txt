@@ -39,6 +39,7 @@ add_subdirectory(examples/hello-decode)
 add_subdirectory(examples/hello-encode)
 add_subdirectory(examples/hello-vpp)
 add_subdirectory(tools/legacy)
+add_subdirectory(examples/hello-dpcpp)
 
 install(
   FILES third-party-programs.txt LICENSE
