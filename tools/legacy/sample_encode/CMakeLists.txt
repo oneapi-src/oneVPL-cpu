@@ -24,3 +24,6 @@ if(UNIX)
 endif()
 
 target_compile_definitions(${TARGET} PRIVATE -DDISABLE_NON_VPL)
+
+install(TARGETS ${TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+                                  COMPONENT runtime)
