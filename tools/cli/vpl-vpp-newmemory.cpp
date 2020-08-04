@@ -372,7 +372,7 @@ int main(int argc, char* argv[]) {
             sts = MFXVideoCORE_SyncOperation(
                 session,
                 syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+                60000); // Synchronize. Wait until a frame is ready
 
             if (params.memoryMode == MEM_MODE_INTERNAL) {
                 vppSurfaceIn->FrameInterface->Unmap(vppSurfaceIn);
@@ -433,7 +433,7 @@ int main(int argc, char* argv[]) {
             sts = MFXVideoCORE_SyncOperation(
                 session,
                 syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+                60000); // Synchronize. Wait until a frame is ready
             WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
             ++framenum;
             if (params.maxFrames) {

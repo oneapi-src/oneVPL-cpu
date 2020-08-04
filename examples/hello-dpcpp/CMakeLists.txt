@@ -3,13 +3,15 @@ project(hello-dpcpp)
 
 # This sample must be compiled and executed within oneAPI enviroment by using
 # dpcpp compiler
-if(DEFINED ENV{DPCPP_ROOT})
+if(DEFINED ENV{DPCT_BUNDLE_ROOT})
   message("Building hello-dpcpp with dpcpp compiler")
   if(WIN32)
     set(CMAKE_CXX_COMPILER "dpcpp-cl")
   else()
     set(CMAKE_CXX_COMPILER "dpcpp")
   endif()
+else()
+  message("DPCPP compiler not found, blur feature disabled in hello-dpcpp")
 endif()
 
 set(TARGET hello-dpcpp)
@@ -47,7 +49,7 @@ endif()
 
 target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/api)
 
-if(DEFINED ENV{DPCPP_ROOT})
+if(DEFINED ENV{DPCT_BUNDLE_ROOT})
   add_definitions(-DBUILD_DPCPP)
   target_link_libraries(${TARGET} mfx OpenCL sycl)
 else()

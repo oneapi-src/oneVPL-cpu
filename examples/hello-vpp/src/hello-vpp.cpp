@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
             sts = MFXVideoCORE_SyncOperation(
                 session,
                 syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+                60000); // Synchronize. Wait until a frame is ready
             ++framenum;
             WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
             mfxBS.DataLength = 0;
@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
 
     sts = MFX_ERR_NONE;
 
-    // Stage 2: Retrieve the buffered encoded frames
+    // Stage 2: Retrieve the buffered processed frames
     while (MFX_ERR_NONE <= sts) {
         nSurfIdxOut =
             GetFreeSurfaceIndex(pVPPSurfacesOut); // Find free frame surface
@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
             sts = MFXVideoCORE_SyncOperation(
                 session,
                 syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+                60000); // Synchronize. Wait until a frame is ready
             ++framenum;
             WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
             mfxBS.DataLength = 0;
