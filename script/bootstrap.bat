@@ -191,8 +191,8 @@ ${enable_x264options}  ^
 --enable-muxer=ivf ^
 --enable-muxer=image2   ^
 --enable-demuxer=image2  ^
---enable-parser=image2 ^
 --enable-filter=testsrc ^
+--enable-filter=testsrc2 ^
 --enable-filter=rgbtestsrc ^
 --enable-filter=yuvtestsrc ^
 --enable-demuxer=h264 ^

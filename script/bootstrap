@@ -87,6 +87,9 @@ git am ${build_dir}/SVT-HEVC/ffmpeg_plugin/${patch}
 patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1-with-svt-hevc.patch
 git am ${build_dir}/SVT-AV1/ffmpeg_plugin/${patch}
 
+sed -i 's/OBJS-$(CONFIG_TESTSRC2_FILTER)               += vsrc_testsrc.o/OBJS-$(CONFIG_TESTSRC2_FILTER)               += vsrc_testsrc.o ..\/libavutil\/xga_font_data.o/' \
+      ./libavfilter/Makefile
+
 export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}
 echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
 
@@ -147,8 +150,8 @@ fi
             --enable-muxer=ivf \
             --enable-muxer=image2   \
             --enable-demuxer=image2  \
-            --enable-parser=image2 \
             --enable-filter=testsrc  \
+            --enable-filter=testsrc2  \
             --enable-filter=rgbtestsrc  \
             --enable-filter=yuvtestsrc \
             --enable-demuxer=h264  \
