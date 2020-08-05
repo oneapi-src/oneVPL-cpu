@@ -21,43 +21,77 @@
 */
 
 //EncodeInit
-TEST(EncodeInit, ValidParamsInReturnsErrNone) {}
+TEST(EncodeInit, DISABLED_ValidParamsInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeInit, InvalidParamsInReturnsInvalidVideoParam) {}
+TEST(EncodeInit, DISABLED_InvalidParamsInReturnsInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
 //profile/level incompatible with resolution
-TEST(EncodeInit, IncompatibleParamsInReturnsIncompatibleVideoParam) {}
+TEST(EncodeInit, DISABLED_IncompatibleParamsInReturnsIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeInit, NullParamsInReturnsErrNull) {}
+TEST(EncodeInit, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeInit, NullSessionInReturnsInvalidHandle) {}
+TEST(EncodeInit, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeInit, DoubleInitReturnsUndefinedBehavior) {}
+TEST(EncodeInit, DISABLED_DoubleInitReturnsUndefinedBehavior) {
+    FAIL() << "Test not implemented";
+}
 
 //DecodeInit
-TEST(DecodeInit, ValidParamsInReturnsErrNone) {}
+TEST(DecodeInit, DISABLED_ValidParamsInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeInit, InvalidParamsInReturnsInvalidVideoParam) {}
+TEST(DecodeInit, DISABLED_InvalidParamsInReturnsInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
 //profile/level incompatible with resolution
-TEST(DecodeInit, IncompatibleParamsInReturnsIncompatibleVideoParam) {}
+TEST(DecodeInit, DISABLED_IncompatibleParamsInReturnsIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeInit, NullParamsInReturnsErrNull) {}
+TEST(DecodeInit, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeInit, NullSessionInReturnsInvalidHandle) {}
+TEST(DecodeInit, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeInit, DoubleInitReturnsUndefinedBehavior) {}
+TEST(DecodeInit, DISABLED_DoubleInitReturnsUndefinedBehavior) {
+    FAIL() << "Test not implemented";
+}
 
 //VPPInit
-TEST(VPPInit, ValidParamsInReturnsErrNone) {}
+TEST(VPPInit, DISABLED_ValidParamsInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPInit, InvalidParamsInReturnsInvalidVideoParam) {}
+TEST(VPPInit, DISABLED_InvalidParamsInReturnsInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPInit, NullParamsInReturnsErrNull) {}
+TEST(VPPInit, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPInit, NullSessionInReturnsInvalidHandle) {}
+TEST(VPPInit, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPInit, DoubleInitReturnsUndefinedBehavior) {}
+TEST(VPPInit, DISABLED_DoubleInitReturnsUndefinedBehavior) {
+    FAIL() << "Test not implemented";
+}
 
 /* Reset overview
 
@@ -82,43 +116,77 @@ mfxStatus MFX_CDECL MFXVideoVPP_Reset(mfxSession session, mfxVideoParam *par);
 */
 
 //EncodeReset
-TEST(EncodeReset, ValidParamsInReturnsErrNone) {}
+TEST(EncodeReset, DISABLED_ValidParamsInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeReset, InvalidParamsInReturnsInvalidVideoParam) {}
+TEST(EncodeReset, DISABLED_InvalidParamsInReturnsInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
 //profile/level incompatible with resolution
-TEST(EncodeReset, IncompatibleParamsInReturnsIncompatibleVideoParam) {}
+TEST(EncodeReset, DISABLED_IncompatibleParamsInReturnsIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeReset, NullParamsInReturnsErrNull) {}
+TEST(EncodeReset, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeReset, NullSessionInReturnsInvalidHandle) {}
+TEST(EncodeReset, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeReset, UninitializedEncodeReturnsErrNotInitialized) {}
+TEST(EncodeReset, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
 //DecodeReset
-TEST(DecodeReset, ValidParamsInReturnsErrNone) {}
+TEST(DecodeReset, DISABLED_ValidParamsInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeReset, InvalidParamsInReturnsInvalidVideoParam) {}
+TEST(DecodeReset, DISABLED_InvalidParamsInReturnsInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
 //profile/level incompatible with resolution
-TEST(DecodeReset, IncompatibleParamsInReturnsIncompatibleVideoParam) {}
+TEST(DecodeReset, DISABLED_IncompatibleParamsInReturnsIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeReset, NullParamsInReturnsErrNull) {}
+TEST(DecodeReset, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeReset, NullSessionInReturnsInvalidHandle) {}
+TEST(DecodeReset, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeReset, UninitializedDecodeReturnsErrNotInitialized) {}
+TEST(DecodeReset, DISABLED_UninitializedDecodeReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
 //VPPReset
-TEST(VPPReset, ValidParamsInReturnsErrNone) {}
+TEST(VPPReset, DISABLED_ValidParamsInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPReset, InvalidParamsInReturnsInvalidVideoParam) {}
+TEST(VPPReset, DISABLED_InvalidParamsInReturnsInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPReset, NullParamsInReturnsErrNull) {}
+TEST(VPPReset, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPReset, NullSessionInReturnsInvalidHandle) {}
+TEST(VPPReset, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPReset, UninitializedEncodeReturnsErrNotInitialized) {}
+TEST(VPPReset, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
 /* Close overview
 
@@ -130,20 +198,38 @@ mfxStatus MFX_CDECL MFXVideoDECODE_Close(mfxSession session);
 mfxStatus MFX_CDECL MFXVideoVPP_Close(mfxSession session);
 */
 
-TEST(EncodeClose, InitializedEncodeReturnsErrNone) {}
+TEST(EncodeClose, DISABLED_InitializedEncodeReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeClose, UninitializedEncodeReturnsErrNotInitialized) {}
+TEST(EncodeClose, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeClose, NullSessionInReturnsInvalidHandle) {}
+TEST(EncodeClose, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeClose, InitializedEncodeReturnsErrNone) {}
+TEST(DecodeClose, DISABLED_InitializedEncodeReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeClose, UninitializedEncodeReturnsErrNotInitialized) {}
+TEST(DecodeClose, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeClose, NullSessionInReturnsInvalidHandle) {}
+TEST(DecodeClose, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPClose, InitializedEncodeReturnsErrNone) {}
+TEST(VPPClose, DISABLED_InitializedEncodeReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPClose, UninitializedEncodeReturnsErrNotInitialized) {}
+TEST(VPPClose, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPClose, NullSessionInReturnsInvalidHandle) {}
+TEST(VPPClose, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}

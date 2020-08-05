@@ -30,15 +30,25 @@
 
 */
 
-TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {}
+TEST(EncodeFrameAsync, DISABLED_ValidInputsReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {}
+TEST(EncodeFrameAsync, DISABLED_InsufficientOutBufferReturnsNotEnoughBuffer) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeFrameAsync, NullSessionReturnsInvalidHandle) {}
+TEST(EncodeFrameAsync, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeFrameAsync, NullSurfaceReturnsErrNull) {}
+TEST(EncodeFrameAsync, DISABLED_NullSurfaceReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {}
+TEST(EncodeFrameAsync, DISABLED_NullBitstreamReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 /*!
    DecodeFrame overview
@@ -52,17 +62,29 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {}
 */
 //mfxStatus MFX_CDECL MFXVideoDECODE_DecodeFrameAsync(mfxSession session, mfxBitstream *bs, mfxFrameSurface1 *surface_work, mfxFrameSurface1 **surface_out, mfxSyncPoint *syncp);
 
-TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {}
+TEST(DecodeFrameAsync, DISABLED_ValidInputsReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {}
+TEST(DecodeFrameAsync, DISABLED_InsufficientInBitstreamReturnsMoreData) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeFrameAsync, InsufficientSurfacesReturnsMoreSurface) {}
+TEST(DecodeFrameAsync, DISABLED_InsufficientSurfacesReturnsMoreSurface) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeFrameAsync, NullSessionReturnsInvalidHandle) {}
+TEST(DecodeFrameAsync, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeFrameAsync, NullSurfaceWorkReturnsErrNull) {}
+TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {}
+TEST(DecodeFrameAsync, DISABLED_NullSurfaceOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 /*!
    RunFrameVPPAsync overview
@@ -80,10 +102,18 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {}
 */
 //mfxStatus MFX_CDECL MFXVideoVPP_RunFrameVPPAsync(mfxSession session, mfxFrameSurface1 *in, mfxFrameSurface1 *out, mfxExtVppAuxData *aux, mfxSyncPoint *syncp);
 
-TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {}
+TEST(RunFrameVPPAsync, DISABLED_ValidInputsReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(RunFrameVPPAsync, NullSessionReturnsInvalidHandle) {}
+TEST(RunFrameVPPAsync, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(RunFrameVPPAsync, NullSurfaceInReturnsErrNull) {}
+TEST(RunFrameVPPAsync, DISABLED_NullSurfaceInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(RunFrameVPPAsync, NullSurfaceOutReturnsErrNull) {}
+TEST(RunFrameVPPAsync, DISABLED_NullSurfaceOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}

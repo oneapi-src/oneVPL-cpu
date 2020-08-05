@@ -31,40 +31,76 @@
 */
 
 //EncodeQuery
-TEST(EncodeQuery, NullParamsInReturnsConfigurable) {}
+TEST(EncodeQuery, DISABLED_NullParamsInReturnsConfigurable) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQuery, PopulatedParamsInReturnsCorrected) {}
+TEST(EncodeQuery, DISABLED_PopulatedParamsInReturnsCorrected) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQuery, UnsupportedParamsReturnUnsupported) {}
+TEST(EncodeQuery, DISABLED_UnsupportedParamsReturnUnsupported) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQuery, IncompatibleParamsReturnIncompatibleVideoParam) {}
+TEST(EncodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQuery, NullSessionReturnsInvalidHandle) {}
+TEST(EncodeQuery, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQuery, NullParamsOutReturnsErrNull) {}
+TEST(EncodeQuery, DISABLED_NullParamsOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //DecodeQuery
-TEST(DecodeQuery, NullParamsInReturnsConfigurable) {}
+TEST(DecodeQuery, DISABLED_NullParamsInReturnsConfigurable) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQuery, PopulatedParamsInReturnsCorrected) {}
+TEST(DecodeQuery, DISABLED_PopulatedParamsInReturnsCorrected) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQuery, UnsupportedParamsReturnUnsupported) {}
+TEST(DecodeQuery, DISABLED_UnsupportedParamsReturnUnsupported) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQuery, IncompatibleParamsReturnIncompatibleVideoParam) {}
+TEST(DecodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQuery, NullSessionReturnsInvalidHandle) {}
+TEST(DecodeQuery, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQuery, NullParamsOutReturnsErrNull) {}
+TEST(DecodeQuery, DISABLED_NullParamsOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //VPPQuery
-TEST(VPPQuery, NullParamsInReturnsConfigurable) {}
+TEST(VPPQuery, DISABLED_NullParamsInReturnsConfigurable) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQuery, PopulatedParamsInReturnsCorrected) {}
+TEST(VPPQuery, DISABLED_PopulatedParamsInReturnsCorrected) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQuery, UnsupportedParamsReturnUnsupported) {}
+TEST(VPPQuery, DISABLED_UnsupportedParamsReturnUnsupported) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQuery, IncompatibleParamsReturnIncompatibleVideoParam) {}
+TEST(VPPQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQuery, NullSessionReturnsInvalidHandle) {}
+TEST(VPPQuery, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQuery, NullParamsOutReturnsErrNull) {}
+TEST(VPPQuery, DISABLED_NullParamsOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}

@@ -26,12 +26,22 @@
 mfxStatus MFX_CDECL MFXVideoDECODE_DecodeHeader(mfxSession session, mfxBitstream *bs, mfxVideoParam *par);
 */
 
-TEST(DecodeHeader, EightBitInReturnsCorrectMetadata) {}
+TEST(DecodeHeader, DISABLED_EightBitInReturnsCorrectMetadata) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeHeader, TenBitInReturnsCorrectMetadata) {}
+TEST(DecodeHeader, DISABLED_TenBitInReturnsCorrectMetadata) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeHeader, NullSessionReturnsInvalidHandle) {}
+TEST(DecodeHeader, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeHeader, NullBitstreamInReturnsErrNull) {}
+TEST(DecodeHeader, DISABLED_NullBitstreamInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeHeader, NullParamsInReturnsErrNull) {}
+TEST(DecodeHeader, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}

@@ -10,12 +10,22 @@
 // These optional functions for encode, decode, and VPP are not implemented
 // in the CPU reference implementation
 
-TEST(GetEncodeStat, AlwaysReturnsNotImplemented) {}
+TEST(GetEncodeStat, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetDecodeStat, AlwaysReturnsNotImplemented) {}
+TEST(GetDecodeStat, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetVPPStat, AlwaysReturnsNotImplemented) {}
+TEST(GetVPPStat, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeSetSkipMode, AlwaysReturnsNotImplemented) {}
+TEST(DecodeSetSkipMode, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeGetPayload, AlwaysReturnsNotImplemented) {}
+TEST(DecodeGetPayload, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}

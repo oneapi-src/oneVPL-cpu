@@ -16,28 +16,52 @@
 */
 
 //GetSurfaceForVPP
-TEST(GetSurfaceForVPP, InitializedVPPReturnsSurface) {}
+TEST(GetSurfaceForVPP, DISABLED_InitializedVPPReturnsSurface) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForVPP, NullSurfaceReturnsErrNull) {}
+TEST(GetSurfaceForVPP, DISABLED_NullSurfaceReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForVPP, NullSessionReturnsInvalidHandle) {}
+TEST(GetSurfaceForVPP, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForVPP, UninitializedVPPReturnsNotInitialized) {}
+TEST(GetSurfaceForVPP, DISABLED_UninitializedVPPReturnsNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
 //GetSurfaceForEncode
-TEST(GetSurfaceForEncode, InitializedEncodeReturnsSurface) {}
+TEST(GetSurfaceForEncode, DISABLED_InitializedEncodeReturnsSurface) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForEncode, NullSurfaceReturnsErrNull) {}
+TEST(GetSurfaceForEncode, DISABLED_NullSurfaceReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForEncode, NullSessionReturnsInvalidHandle) {}
+TEST(GetSurfaceForEncode, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForEncode, UninitializedEncodeReturnsNotInitialized) {}
+TEST(GetSurfaceForEncode, DISABLED_UninitializedEncodeReturnsNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 
 //GetSurfaceForDecode
-TEST(GetSurfaceForDecode, InitializedDecodeReturnsSurface) {}
+TEST(GetSurfaceForDecode, DISABLED_InitializedDecodeReturnsSurface) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForDecode, NullSurfaceReturnsErrNull) {}
+TEST(GetSurfaceForDecode, DISABLED_NullSurfaceReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForDecode, NullSessionReturnsInvalidHandle) {}
+TEST(GetSurfaceForDecode, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(GetSurfaceForDecode, UninitializedDecodeReturnsNotInitialized) {}
+TEST(GetSurfaceForDecode, DISABLED_UninitializedDecodeReturnsNotInitialized) {
+    FAIL() << "Test not implemented";
+}

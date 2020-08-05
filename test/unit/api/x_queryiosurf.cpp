@@ -25,32 +25,62 @@
 */
 
 //EncodeQueryIOSurf
-TEST(EncodeQueryIOSurf, PopulatedParamsInReturnsRequest) {}
+TEST(EncodeQueryIOSurf, DISABLED_PopulatedParamsInReturnsRequest) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQueryIOSurf, InvalidParamsReturnInvalidVideoParam) {}
+TEST(EncodeQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQueryIOSurf, IncompatibleParamsReturnIncompatibleVideoParam) {}
+TEST(EncodeQueryIOSurf,
+     DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQueryIOSurf, NullSessionReturnsInvalidHandle) {}
+TEST(EncodeQueryIOSurf, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeQueryIOSurf, NullParamsInReturnsErrNull) {}
+TEST(EncodeQueryIOSurf, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //DecodeQueryIOSurf
-TEST(DecodeQueryIOSurf, PopulatedParamsInReturnsRequest) {}
+TEST(DecodeQueryIOSurf, DISABLED_PopulatedParamsInReturnsRequest) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQueryIOSurf, InvalidParamsReturnInvalidVideoParam) {}
+TEST(DecodeQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQueryIOSurf, IncompatibleParamsReturnIncompatibleVideoParam) {}
+TEST(DecodeQueryIOSurf,
+     DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQueryIOSurf, NullSessionReturnsInvalidHandle) {}
+TEST(DecodeQueryIOSurf, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeQueryIOSurf, NullParamsInReturnsErrNull) {}
+TEST(DecodeQueryIOSurf, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //VPPQueryIOSurf
-TEST(VPPQueryIOSurf, PopulatedParamsInReturnsRequest) {}
+TEST(VPPQueryIOSurf, DISABLED_PopulatedParamsInReturnsRequest) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQueryIOSurf, InvalidParamsReturnInvalidVideoParam) {}
+TEST(VPPQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQueryIOSurf, NullSessionReturnsInvalidHandle) {}
+TEST(VPPQueryIOSurf, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPQueryIOSurf, NullParamsInReturnsErrNull) {}
+TEST(VPPQueryIOSurf, DISABLED_NullParamsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}

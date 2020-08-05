@@ -14,26 +14,50 @@ MFX_ERR_NONE The function completed successfully.
 
 */
 
-TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {}
+TEST(EncodeGetVideoParam, DISABLED_InitializedEncodeReturnsParams) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeGetVideoParam, UninitializedEncodeReturnsNullCodec) {}
+TEST(EncodeGetVideoParam, DISABLED_UninitializedEncodeReturnsNullCodec) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeGetVideoParam, NullSessionReturnsInvalidHandle) {}
+TEST(EncodeGetVideoParam, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EncodeGetVideoParam, NullParamsOutReturnsErrNull) {}
+TEST(EncodeGetVideoParam, DISABLED_NullParamsOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeGetVideoParam, InitializedDecodeReturnsParams) {}
+TEST(DecodeGetVideoParam, DISABLED_InitializedDecodeReturnsParams) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeGetVideoParam, UninitializedDecodeReturnsNullCodec) {}
+TEST(DecodeGetVideoParam, DISABLED_UninitializedDecodeReturnsNullCodec) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeGetVideoParam, NullSessionReturnsInvalidHandle) {}
+TEST(DecodeGetVideoParam, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DecodeGetVideoParam, NullParamsOutReturnsErrNull) {}
+TEST(DecodeGetVideoParam, DISABLED_NullParamsOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPGetVideoParam, InitializedVPPReturnsParams) {}
+TEST(VPPGetVideoParam, DISABLED_InitializedVPPReturnsParams) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPGetVideoParam, UninitializedVPPReturnsNullFourCC) {}
+TEST(VPPGetVideoParam, DISABLED_UninitializedVPPReturnsNullFourCC) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPGetVideoParam, NullSessionReturnsInvalidHandle) {}
+TEST(VPPGetVideoParam, DISABLED_NullSessionReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(VPPGetVideoParam, NullParamsOutReturnsErrNull) {}
+TEST(VPPGetVideoParam, DISABLED_NullParamsOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}

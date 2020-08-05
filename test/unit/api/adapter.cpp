@@ -9,8 +9,14 @@
 #include "vpl/mfxvideo.h"
 
 // adapter functions
-TEST(QueryAdapters, AlwaysReturnsNotImplemented) {}
+TEST(QueryAdapters, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(AdaptersDecode, AlwaysReturnsNotImplemented) {}
+TEST(AdaptersDecode, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(AdaptersNumber, AlwaysReturnsNotImplemented) {}
+TEST(AdaptersNumber, DISABLED_AlwaysReturnsNotImplemented) {
+    FAIL() << "Test not implemented";
+}

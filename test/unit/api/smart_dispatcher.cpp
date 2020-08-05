@@ -11,55 +11,101 @@
 
 // smart dispatcher operations
 //QueryImplsDescription
-TEST(QueryImplsDescription, DeliveryFormatInReturnsHdl) {}
+TEST(QueryImplsDescription, DISABLED_DeliveryFormatInReturnsHdl) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(QueryImplsDescription, NullDeliveryFormatInReturnsErrNull) {}
+TEST(QueryImplsDescription, DISABLED_NullDeliveryFormatInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(QueryImplsDescription, NullNumImplsInReturnsErrNull) {}
+TEST(QueryImplsDescription, DISABLED_NullNumImplsInReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //ReleaseImplDescription
-TEST(ReleaseImplDescription, InitializedHdlReturnsErrNone) {}
+TEST(ReleaseImplDescription, DISABLED_InitializedHdlReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(ReleaseImplDescription, UninitializedHdlReturnsErrNull) {}
+TEST(ReleaseImplDescription, DISABLED_UninitializedHdlReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //MFXLoad
-TEST(Load, CallReturnsLoader) {}
+TEST(Load, DISABLED_CallReturnsLoader) {
+    FAIL() << "Test not implemented";
+}
 
 //MFXCreateConfig
-TEST(CreateConfig, InitializedLoaderReturnsConfig) {}
+TEST(CreateConfig, DISABLED_InitializedLoaderReturnsConfig) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(CreateConfig, NullLoaderReturnsErrNull) {}
+TEST(CreateConfig, DISABLED_NullLoaderReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //MFXSetConfigFilterProperty
-TEST(SetConfigFilterProperty, PropertyNameInReturnsErrNone) {}
+TEST(SetConfigFilterProperty, DISABLED_PropertyNameInReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(SetConfigFilterProperty, NullConfigReturnsErrNull) {}
+TEST(SetConfigFilterProperty, DISABLED_NullConfigReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(SetConfigFilterProperty, NullNameReturnsErrNull) {}
+TEST(SetConfigFilterProperty, DISABLED_NullNameReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(SetConfigFilterProptery, UnknownParamReturnsNotFound) {}
+TEST(SetConfigFilterProptery, DISABLED_UnknownParamReturnsNotFound) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(SetConfigFilterProptery, ValueTypeMismatchReturnsErrUnsupported) {}
+TEST(SetConfigFilterProptery, DISABLED_ValueTypeMismatchReturnsErrUnsupported) {
+    FAIL() << "Test not implemented";
+}
 
 //MFXEnumImplementations
-TEST(EnumImplementations, ValidInputsReturnErrNone) {}
+TEST(EnumImplementations, DISABLED_ValidInputsReturnErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EnumImplementations, NullLoaderReturnsErrNull) {}
+TEST(EnumImplementations, DISABLED_NullLoaderReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EnumImplementations, NullSessionReturnsErrNull) {}
+TEST(EnumImplementations, DISABLED_NullSessionReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(EnumImplementations, IndexOutOfRangeReturnsNotFound) {}
+TEST(EnumImplementations, DISABLED_IndexOutOfRangeReturnsNotFound) {
+    FAIL() << "Test not implemented";
+}
 
 //MFXCreateSession
-TEST(CreateSession, ValidInputReturnsErrNone) {}
+TEST(CreateSession, DISABLED_ValidInputReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(CreateSession, NullLoaderReturnsErrNull) {}
+TEST(CreateSession, DISABLED_NullLoaderReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(CreateSession, NullSessionReturnsErrNull) {}
+TEST(CreateSession, DISABLED_NullSessionReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
 //MFXDispReleaseImplDescription
-TEST(DispReleaseImplDescription, ValidInputReturnsErrNone) {}
+TEST(DispReleaseImplDescription, DISABLED_ValidInputReturnsErrNone) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DispReleaseImplDescription, NullLoaderReturnsErrNull) {}
+TEST(DispReleaseImplDescription, DISABLED_NullLoaderReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
 
-TEST(DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) {}
+TEST(DispReleaseImplDescription, DISABLED_HandleMismatchReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
