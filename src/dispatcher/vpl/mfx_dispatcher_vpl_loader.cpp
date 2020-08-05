@@ -81,6 +81,10 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
     DWORD err;
     STRING_TYPE testFileName = searchDir + MAKE_STRING("/*.dll");
 
+    CHAR_TYPE currDir[MAX_VPL_SEARCH_PATH] = L"";
+    if (GetCurrentDirectoryW(MAX_VPL_SEARCH_PATH, currDir))
+        SetCurrentDirectoryW(searchDir.c_str());
+
     // iterate over all candidate files in directory
     hTestFile = FindFirstFileW(testFileName.c_str(), &testFileData);
     if (hTestFile != INVALID_HANDLE_VALUE) {
@@ -110,6 +114,11 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 
         FindClose(hTestFile);
     }
+
+    // restore current directory
+    if (currDir[0])
+        SetCurrentDirectoryW(currDir);
+
 #else
     DIR* pSearchDir;
     struct dirent* currFile;
@@ -197,9 +206,6 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
 
 // return number of valid libraries found
 mfxU32 LoaderCtxVPL::CheckValidLibraries() {
-    // unique index assigned to each valid library
-    mfxU32 libIdx = 0;
-
     // load all libraries
     std::list<LibInfo*>::iterator it = m_libInfoList.begin();
     while (it != m_libInfoList.end()) {
@@ -376,8 +382,6 @@ mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
 
     if (idesc == nullptr)
         return MFX_ERR_NULL_PTR;
-
-    ImplInfo* implInfo = nullptr;
 
     // all we get from the application is a handle to the descriptor,
     //   not the implementation associated with it, so we search
