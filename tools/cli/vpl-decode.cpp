@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
         fclose(fSource);
         fclose(fSink);
         puts("MFXInitEx error.  Could not initialize session");
-        return 1;
+        return sts;
     }
 
     puts("library initialized");
@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
         fclose(fSource);
         fclose(fSink);
         printf("Problem decoding header.  DecodeHeader sts=%d\n", sts);
-        return 1;
+        return sts;
     }
 
     // Query number required surfaces for decoder
@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
         fclose(fSource);
         fclose(fSink);
         puts("Could not initialize decode");
-        exit(1);
+        exit(sts);
     }
     // ------------------
     // main loop
@@ -255,8 +255,8 @@ int main(int argc, char* argv[]) {
                     stillgoing = false;
                     break;
                 default: // state is not one of the cases above
-                    printf("Error in DecodeFrameAsync: sts=%d\n", sts);
-                    exit(1);
+                    printf("Error in DecodeFrameAsync: and exit sts=%d\n", sts);
+                    exit(sts);
                     break;
             }
         }

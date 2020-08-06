@@ -255,6 +255,11 @@ mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
         return MFX_ERR_MORE_DATA;
     }
 
+    if ((m_decWidth && m_decWidth != m_avDecContext->width) ||
+        (m_decHeight && m_decHeight != m_avDecContext->height)) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
     // frame successfully decoded
     // don't save output frame if surface_work is 0 (e.g. DecodeHeader)
     if (surface_work) {
