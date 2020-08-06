@@ -50,6 +50,10 @@ TEST(EncodeFrameAsync, DISABLED_NullBitstreamReturnsErrNull) {
     FAIL() << "Test not implemented";
 }
 
+TEST(EncodeFrameAsync, DISABLED_EncodeUninitializedReturnsNotInitialized) {
+    FAIL() << "Test not implemented";
+}
+
 /*!
    DecodeFrame overview
    Decodes the input bitstream to a single output frame.
@@ -86,6 +90,9 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceOutReturnsErrNull) {
     FAIL() << "Test not implemented";
 }
 
+TEST(DecodeFrameAsync, DISABLED_DecodeUninitializedReturnsNotInitialized) {
+    FAIL() << "Test not implemented";
+}
 /*!
    RunFrameVPPAsync overview
    Processes a single input frame to a single output frame. 
@@ -115,5 +122,9 @@ TEST(RunFrameVPPAsync, DISABLED_NullSurfaceInReturnsErrNull) {
 }
 
 TEST(RunFrameVPPAsync, DISABLED_NullSurfaceOutReturnsErrNull) {
+    FAIL() << "Test not implemented";
+}
+
+TEST(RunFrameVPPAsync, DISABLED_VPPUninitializedReturnsNotInitialized) {
     FAIL() << "Test not implemented";
 }

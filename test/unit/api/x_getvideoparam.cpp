@@ -18,7 +18,7 @@ TEST(EncodeGetVideoParam, DISABLED_InitializedEncodeReturnsParams) {
     FAIL() << "Test not implemented";
 }
 
-TEST(EncodeGetVideoParam, DISABLED_UninitializedEncodeReturnsNullCodec) {
+TEST(EncodeGetVideoParam, DISABLED_EncodeUninitializedReturnsNotInitialized) {
     FAIL() << "Test not implemented";
 }
 
@@ -34,7 +34,7 @@ TEST(DecodeGetVideoParam, DISABLED_InitializedDecodeReturnsParams) {
     FAIL() << "Test not implemented";
 }
 
-TEST(DecodeGetVideoParam, DISABLED_UninitializedDecodeReturnsNullCodec) {
+TEST(DecodeGetVideoParam, DISABLED_DecodeUninitializedReturnsNotInitialized) {
     FAIL() << "Test not implemented";
 }
 
@@ -50,7 +50,7 @@ TEST(VPPGetVideoParam, DISABLED_InitializedVPPReturnsParams) {
     FAIL() << "Test not implemented";
 }
 
-TEST(VPPGetVideoParam, DISABLED_UninitializedVPPReturnsNullFourCC) {
+TEST(VPPGetVideoParam, DISABLED_VPPUninitializedReturnsNotInitialized) {
     FAIL() << "Test not implemented";
 }
 

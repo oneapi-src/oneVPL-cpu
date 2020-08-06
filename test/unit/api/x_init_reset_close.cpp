@@ -193,9 +193,6 @@ TEST(VPPReset, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
 Terminates current operation and de-allocates any internal memory/structures.
 MFX_ERR_NONE  The function completed successfully.
 
-mfxStatus MFX_CDECL MFXVideoENCODE_Close(mfxSession session);
-mfxStatus MFX_CDECL MFXVideoDECODE_Close(mfxSession session);
-mfxStatus MFX_CDECL MFXVideoVPP_Close(mfxSession session);
 */
 
 TEST(EncodeClose, DISABLED_InitializedEncodeReturnsErrNone) {
@@ -207,6 +204,10 @@ TEST(EncodeClose, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
 }
 
 TEST(EncodeClose, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
+
+TEST(EncodeClose, DISABLED_DoubleCloseReturnsErrNotInitialized) {
     FAIL() << "Test not implemented";
 }
 
@@ -222,6 +223,10 @@ TEST(DecodeClose, DISABLED_NullSessionInReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
+TEST(DecodeClose, DISABLED_DoubleCloseReturnsErrNotInitialized) {
+    FAIL() << "Test not implemented";
+}
+
 TEST(VPPClose, DISABLED_InitializedEncodeReturnsErrNone) {
     FAIL() << "Test not implemented";
 }
@@ -231,5 +236,9 @@ TEST(VPPClose, DISABLED_UninitializedEncodeReturnsErrNotInitialized) {
 }
 
 TEST(VPPClose, DISABLED_NullSessionInReturnsInvalidHandle) {
+    FAIL() << "Test not implemented";
+}
+
+TEST(VPPClose, DISABLED_DoubleCloseReturnsErrNotInitialized) {
     FAIL() << "Test not implemented";
 }
