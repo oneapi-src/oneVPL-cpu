@@ -13,7 +13,6 @@ cd ${proj_dir}
 ## capture ci errors that should not block the rest of the chain
 ci_error=0
 
-source test/tools/env/vars.sh
 script/lint
 if [ $? -ne 0 ];then
     echo "--- Linting FAILED ---"
@@ -34,13 +33,11 @@ if [ $? -ne 0 ];then
 fi
 
 # run smoke tests
-pushd _build
 ${proj_dir}/script/test
 if [ $? -ne 0 ];then
     echo "--- Smoke Tests FAILED ---"
     ci_error=1
 fi
-popd
 
 if [ $ci_error -ne 0 ]; then
     echo "--- CI testing FAILED ---"

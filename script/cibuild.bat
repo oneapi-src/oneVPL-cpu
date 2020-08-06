@@ -15,7 +15,6 @@ cd %PROJ_DIR%
 :: capture ci errors that should not block the rest of the chain
 set ci_error=0
 
-call "test/tools/env/vars.bat"
 call "script/lint.bat"
 if %ERRORLEVEL% NEQ 0 (
    echo "--- Linting FAILED ---"
@@ -36,13 +35,11 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 :: run smoke tests
-pushd _build\Release
 call "%PROJ_DIR%/script/test.bat"
 if %ERRORLEVEL% NEQ 0 (
    echo "--- Smoke Testing FAILED ---"
    set ci_error=1
 )
-popd
 
 if %ci_error% NEQ 0 (
    echo "--- CI testing FAILED ---"
