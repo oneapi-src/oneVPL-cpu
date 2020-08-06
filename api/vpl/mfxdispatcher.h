@@ -127,7 +127,7 @@ mfxConfig MFX_CDECL MFXCreateConfig(mfxLoader loader);
       MFX_ERR_NULL_PTR    If config is NULL. \n
       MFX_ERR_NULL_PTR    If name is NULL. \n
       MFX_ERR_NOT_FOUND   If name contains unknown parameter name.
-      MFX_ERR_UNSUPPORTED If value data type doesn't equal to the parameter with provided name.
+      MFX_ERR_UNSUPPORTED If value data type does not equal the parameter with provided name.
 */
 mfxStatus MFX_CDECL MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* name, mfxVariant value);
 
@@ -143,7 +143,7 @@ mfxStatus MFX_CDECL MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* na
       MFX_ERR_NULL_PTR    If loader is NULL. \n
       MFX_ERR_NULL_PTR    If idesc is NULL. \n
       MFX_ERR_NOT_FOUND   Provided index is out of possible range. \n
-      MFX_ERR_UNSUPPORTED If requested format isn't supported.
+      MFX_ERR_UNSUPPORTED If requested format is not supported.
 */
 mfxStatus MFX_CDECL MFXEnumImplementations(mfxLoader loader, mfxU32 i, mfxImplCapsDeliveryFormat format, mfxHDL* idesc);
 
@@ -189,7 +189,7 @@ mfxStatus MFX_CDECL MFXCreateSession(mfxLoader loader, mfxU32 i, mfxSession* ses
    @return
       MFX_ERR_NONE           The function completed successfully. \n
       MFX_ERR_NULL_PTR       If loader is NULL. \n
-      MFX_ERR_INVALID_HANDLE Provided hdl handle isn't associated with this loader.
+      MFX_ERR_INVALID_HANDLE Provided hdl handle is not associated with this loader.
 */
 mfxStatus MFX_CDECL MFXDispReleaseImplDescription(mfxLoader loader, mfxHDL hdl);
 

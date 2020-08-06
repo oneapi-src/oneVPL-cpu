@@ -16,7 +16,6 @@ extern "C"
 {
 #endif
 
-#if (MFX_VERSION >= 2000)
 /*!
    @brief
       This function delivers implementation capabilities in the requested format according to the format value.
@@ -42,7 +41,6 @@ mfxHDL* MFX_CDECL MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfx
       MFX_ERR_NONE The function completed successfully.
 */
 mfxStatus MFX_CDECL MFXReleaseImplDescription(mfxHDL hdl);
-#endif
 
 
 #ifdef __cplusplus

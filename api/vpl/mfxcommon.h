@@ -33,7 +33,7 @@ MFX_PACK_END()
 /*!
     This enumerator itemizes SDK implementation types.
     The implementation type is a bit OR’ed value of the base type and any decorative flags.
-    @note This enumerator is for legacy dispatcher compatibility. New dispatcher doesn't use it.
+    @note This enumerator is for legacy dispatcher compatibility only. The new dispatcher does not use it.
  */
 typedef mfxI32 mfxIMPL;
 /*!
@@ -101,9 +101,8 @@ typedef struct {
             mfxEncryptedData* EncryptedData; /*!< Reserved and must be zero. */
             mfxExtBuffer **ExtParam;         /*!< Array of extended buffers for additional bitstream configuration. See the ExtendedBufferID enumerator for a complete list of extended buffers. */
             mfxU16  NumExtParam;             /*!< The number of extended buffers attached to this structure. */
-#if (MFX_VERSION >= 2000)
             mfxU32  CodecId;                 /*!< Specifies the codec format identifier in the FourCC code; see the CodecFormatFourCC enumerator for details. This is optional parameter required for the simplified decode initialization.  */
-#endif
+
         };
          mfxU32  reserved[6];
      };
@@ -143,7 +142,7 @@ typedef struct {
     mfxIMPL     Implementation;  /*!< mfxIMPL enumerator that indicates the desired SDK implementation. */
     mfxVersion  Version;         /*!< Structure which specifies minimum library version or zero, if not specified. */
     mfxU16      ExternalThreads; /*!< Desired threading mode. Value 0 means internal threading, 1 – external. */
-    /*! @internal :unnamed(union) @endinternal. */
+    /*! @internal :unnamed(union) @endinternal */
     union {
         struct {
             mfxExtBuffer **ExtParam; /*!< Points to an array of pointers to the extra configuration structures; see the ExtendedBufferID enumerator for a list of extended configurations. */
@@ -185,20 +184,15 @@ enum {
     MFX_PLATFORM_SKYLAKE        = 7,  /*!< Intel(r) microarchitecture code name Skylake. */
     MFX_PLATFORM_APOLLOLAKE     = 8,  /*!< Code name Apollo Lake. */
     MFX_PLATFORM_KABYLAKE       = 9,  /*!< Code name Kaby Lake. */
-#if (MFX_VERSION >= 1025)
     MFX_PLATFORM_GEMINILAKE     = 10, /*!< Code name Gemini Lake. */
     MFX_PLATFORM_COFFEELAKE     = 11, /*!< Code name Coffee Lake. */
     MFX_PLATFORM_CANNONLAKE     = 20, /*!< Code name Cannon Lake. */
-#endif
-#if (MFX_VERSION >= 1027)
     MFX_PLATFORM_ICELAKE        = 30, /*!< Code name Ice Lake. */
-#endif
     MFX_PLATFORM_JASPERLAKE     = 32, /*!< Code name Jasper Lake. */
     MFX_PLATFORM_ELKHARTLAKE    = 33, /*!< Code name Elkhart Lake. */
     MFX_PLATFORM_TIGERLAKE      = 40, /*!< Code name Tiger Lake. */
 };
 
-#if (MFX_VERSION >= 1031)
 /*! The mfxMediaAdapterType enumerator itemizes types of graphics adapters. */
 typedef enum
 {
@@ -206,24 +200,17 @@ typedef enum
     MFX_MEDIA_INTEGRATED        = 0,      /*!< Integrated graphics adapter. */
     MFX_MEDIA_DISCRETE          = 1       /*!< Discrete graphics adapter. */
 } mfxMediaAdapterType;
-#endif
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*! The mfxPlatform structure contains information about hardware platform. */
 typedef struct {
     mfxU16 CodeName;         /*!< Microarchitecture code name. See the PlatformCodeName enumerator for a list of possible values. */
     mfxU16 DeviceId;         /*!< Unique identifier of graphics device. */
-#if (MFX_VERSION >= 1031)
     mfxU16 MediaAdapterType; /*!< Description of graphics adapter type. See the mfxMediaAdapterType enumerator for a list of possible values. */
     mfxU16 reserved[13];     /*!< Reserved for future use. */
-#else
-    mfxU16 reserved[14];     /*!< Reserved for future use. */
-#endif
 } mfxPlatform;
 MFX_PACK_END()
 
-
-#if (MFX_VERSION >= 2000)
 
 /* The mfxResourceType enumerator specifies types of different native data frames and buffers. */
 typedef enum {
@@ -404,7 +391,6 @@ MFX_PACK_END()
 typedef enum {
     MFX_IMPLCAPS_IMPLDESCSTRUCTURE       = 1  /*!< Deliver capabilities as mfxImplDescription structure. */
 } mfxImplCapsDeliveryFormat;
-#endif
 
 #ifdef __cplusplus
 }

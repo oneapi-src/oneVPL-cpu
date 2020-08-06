@@ -5,7 +5,6 @@
   ############################################################################*/
 
 #include "mfxdefs.h"
-#if (MFX_VERSION >= 1031)
 #ifndef __MFXADAPTER_H__
 #define __MFXADAPTER_H__
 
@@ -64,4 +63,4 @@ mfxStatus MFX_CDECL MFXQueryAdaptersNumber(mfxU32* num_adapters);
 #endif
 
 #endif // __MFXADAPTER_H__
-#endif
+

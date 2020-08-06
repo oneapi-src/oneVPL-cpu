@@ -170,7 +170,6 @@ mfxStatus MFX_CDECL MFXVideoCORE_QueryPlatform(mfxSession session, mfxPlatform* 
 */
 mfxStatus MFX_CDECL MFXVideoCORE_SyncOperation(mfxSession session, mfxSyncPoint syncp, mfxU32 wait);
 
-#if (MFX_VERSION >= 2000)
 /* MFXMemory */
 
 /*!
@@ -186,7 +185,7 @@ mfxStatus MFX_CDECL MFXVideoCORE_SyncOperation(mfxSession session, mfxSyncPoint 
    MFX_ERR_NONE The function completed successfully. \n
    MFX_ERR_NULL_PTR If surface is NULL. \n
    MFX_ERR_INVALID_HANDLE If session was not initialized. \n
-   MFX_ERR_NOT_INITIALIZED If VPP wasn't initialized (allocator needs to know surface size from somewhere). \n
+   MFX_ERR_NOT_INITIALIZED If VPP was not initialized (allocator needs to know surface size from somewhere). \n
    MFX_ERR_MEMORY_ALLOC In case of any other internal allocation error.
 
 */
@@ -206,7 +205,7 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForVPP(mfxSession session, mfxFrameSurfa
    MFX_ERR_NONE The function completed successfully.\n
    MFX_ERR_NULL_PTR If surface is NULL.\n
    MFX_ERR_INVALID_HANDLE If session was not initialized.\n
-   MFX_ERR_NOT_INITIALIZED If Encoder wasn't initialized (allocator needs to know surface size from somewhere).\n
+   MFX_ERR_NOT_INITIALIZED If Encoder was not initialized (allocator needs to know surface size from somewhere).\n
    MFX_ERR_MEMORY_ALLOC In case of any other internal allocation error.
 
 */
@@ -228,12 +227,11 @@ mfxStatus MFX_CDECL MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSu
    MFX_ERR_NONE The function completed successfully.\n
    MFX_ERR_NULL_PTR If surface is NULL.\n
    MFX_ERR_INVALID_HANDLE If session was not initialized.\n
-   MFX_ERR_NOT_INITIALIZED If Decoder wasn't initialized (allocator needs to know surface size from somewhere).\n
+   MFX_ERR_NOT_INITIALIZED If Decoder was not initialized (allocator needs to know surface size from somewhere).\n
    MFX_ERR_MEMORY_ALLOC In case of any other internal allocation error.
 
 */
 mfxStatus MFX_CDECL MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1** surface);
-#endif
 
 /* VideoENCODE */
 

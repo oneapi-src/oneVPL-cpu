@@ -149,11 +149,9 @@ enum {
     MFX_FOURCC_YV12         = MFX_MAKEFOURCC('Y','V','1','2'),   /*!< YV12 color planes. */
     MFX_FOURCC_NV16         = MFX_MAKEFOURCC('N','V','1','6'),   /*!< 4:2:2 color format with similar to NV12 layout. */
     MFX_FOURCC_YUY2         = MFX_MAKEFOURCC('Y','U','Y','2'),   /*!< YUY2 color planes. */
-#if (MFX_VERSION >= 1028)
     MFX_FOURCC_RGB565       = MFX_MAKEFOURCC('R','G','B','2'),   /*!< 2 bytes per pixel, uint16 in little-endian format, where 0-4 bits are blue, bits 5-10 are green and bits 11-15 are red. */
     /*! RGB 24 bit planar layout (3 separate channels, 8-bits per sample each). This format should be mapped to D3DFMT_R8G8B8 or VA_FOURCC_RGBP. */
     MFX_FOURCC_RGBP         = MFX_MAKEFOURCC('R','G','B','P'),
-#endif
     MFX_FOURCC_RGB3         = MFX_MAKEFOURCC('R','G','B','3'),   /* Deprecated */
     MFX_FOURCC_RGB4         = MFX_MAKEFOURCC('R','G','B','4'),   /*!< RGB4 (RGB32) color planes. BGRA is the order, ‘B’ is 8 MSBs, then 8 bits for ‘G’ channel, then ‘R’ and ‘A’ channels. */
     /*!
@@ -173,9 +171,7 @@ enum {
     */
     MFX_FOURCC_P8_TEXTURE   = MFX_MAKEFOURCC('P','8','M','B'),
     MFX_FOURCC_P010         = MFX_MAKEFOURCC('P','0','1','0'), /*!< P010 color format. This is 10 bit per sample format with similar to NV12 layout. This format should be mapped to DXGI_FORMAT_P010. */
-#if (MFX_VERSION >= 1031)
     MFX_FOURCC_P016         = MFX_MAKEFOURCC('P','0','1','6'), /*!< P016 color format. This is 16 bit per sample format with similar to NV12 layout. This format should be mapped to DXGI_FORMAT_P016. */
-#endif
     MFX_FOURCC_P210         = MFX_MAKEFOURCC('P','2','1','0'), /*!< 10 bit per sample 4:2:2 color format with similar to NV12 layout. */
     MFX_FOURCC_BGR4         = MFX_MAKEFOURCC('B','G','R','4'), /*!< RGBA color format. It is similar to MFX_FOURCC_RGB4 but with different order of channels. ‘R’ is 8 MSBs, then 8 bits for ‘G’ channel, then ‘B’ and ‘A’ channels. */
     MFX_FOURCC_A2RGB10      = MFX_MAKEFOURCC('R','G','1','0'), /*!< 10 bits ARGB color format packed in 32 bits. ‘A’ channel is two MSBs, then ‘R’, then ‘G’ and then ‘B’ channels. This format should be mapped to DXGI_FORMAT_R10G10B10A2_UNORM or D3DFMT_A2R10G10B10. */
@@ -185,23 +181,15 @@ enum {
     MFX_FOURCC_AYUV         = MFX_MAKEFOURCC('A','Y','U','V'), /*!< YUV 4:4:4, AYUV color format. This format should be mapped to DXGI_FORMAT_AYUV. */
     MFX_FOURCC_AYUV_RGB4    = MFX_MAKEFOURCC('A','V','U','Y'), /*!< RGB4 stored in AYUV surface. This format should be mapped to DXGI_FORMAT_AYUV. */
     MFX_FOURCC_UYVY         = MFX_MAKEFOURCC('U','Y','V','Y'), /*!< UYVY color planes. Same as YUY2 except the byte order is reversed. */
-#if (MFX_VERSION >= 1027)
     MFX_FOURCC_Y210         = MFX_MAKEFOURCC('Y','2','1','0'), /*!< 10 bit per sample 4:2:2 packed color format with similar to YUY2 layout. This format should be mapped to DXGI_FORMAT_Y210. */
     MFX_FOURCC_Y410         = MFX_MAKEFOURCC('Y','4','1','0'), /*!< 10 bit per sample 4:4:4 packed color format. This format should be mapped to DXGI_FORMAT_Y410. */
-#endif
-#if (MFX_VERSION >= 1031)
     MFX_FOURCC_Y216         = MFX_MAKEFOURCC('Y','2','1','6'), /*!< 16 bit per sample 4:2:2 packed color format with similar to YUY2 layout. This format should be mapped to DXGI_FORMAT_Y216. */
     MFX_FOURCC_Y416         = MFX_MAKEFOURCC('Y','4','1','6'), /*!< 16 bit per sample 4:4:4 packed color format. This format should be mapped to DXGI_FORMAT_Y416. */
-#endif
-#if (MFX_VERSION >= 1034)
     MFX_FOURCC_NV21         = MFX_MAKEFOURCC('N', 'V', '2', '1'), /*!< Same as NV12 but with weaved V and U values. */
     MFX_FOURCC_IYUV         = MFX_MAKEFOURCC('I', 'Y', 'U', 'V'), /*!< Same as  YV12 except that the U and V plane order is reversed. */
     MFX_FOURCC_I010         = MFX_MAKEFOURCC('I', '0', '1', '0'), /*!< 10-bit YUV 4:2:0, each component has its own plane. */
-#endif
-#if (MFX_VERSION >= 2000)
     MFX_FOURCC_I420         = MFX_FOURCC_IYUV,                 /*!< Alias for the IYUV color format. */
     MFX_FOURCC_BGRA         = MFX_FOURCC_RGB4,                 /*!< Alias for the RGB4 color format. */
-#endif
 };
 
 /* PicStruct */
@@ -261,7 +249,6 @@ enum {
                                                   Repetition SEI message. (ITU-T H.264 D.1.8 dec_ref_pic_marking_repetition) */
 };
 
-#if (MFX_VERSION >= 1027)
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*! The mfxY410 structure specifies "pixel" in Y410 color format */
 typedef struct
@@ -272,9 +259,7 @@ typedef struct
     mfxU32 A :  2; /*!< A component. */
 } mfxY410;
 MFX_PACK_END()
-#endif
 
-#if (MFX_VERSION >= 1025)
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*! The mfxA2RGB10 structure specifies "pixel" in A2RGB10 color format */
 typedef struct
@@ -285,7 +270,6 @@ typedef struct
     mfxU32 A :  2; /*!< A component. */
 } mfxA2RGB10;
 MFX_PACK_END()
-#endif
 
 /*! The mfxFrameData structure describes frame buffer pointers. */
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
@@ -340,18 +324,14 @@ typedef struct {
         mfxU8   *U;     /*!< U channel. */
         mfxU16  *U16;   /*!< U16 channel. */
         mfxU8   *G;     /*!< G channel. */
-#if (MFX_VERSION >= 1027)
         mfxY410 *Y410;  /*!< T410 channel for Y410 format (merged AVYU). */
-#endif
     };
     union {
         mfxU8   *Cr;    /*!< Cr channel. */
         mfxU8   *V;     /*!< V channel. */
         mfxU16  *V16;   /*!< V16 channel. */
         mfxU8   *B;     /*!< B channel. */
-#if (MFX_VERSION >= 1025)
-        mfxA2RGB10 *A2RGB10; /*!< A2RGB10 channelfor A2RGB10 format (merged ARGB). */
-#endif
+        mfxA2RGB10 *A2RGB10; /*!< A2RGB10 channel for A2RGB10 format (merged ARGB). */
     };
     mfxU8       *A;     /*!< A channel. */
     mfxMemId    MemId;  /*!< Memory ID of the data buffers; if any of the preceding data pointers is non-zero then the SDK ignores MemId. */
@@ -375,16 +355,11 @@ typedef enum {
     MFX_HANDLE_D3D11_DEVICE                     = 3, /*!< Pointer to the ID3D11Device interface. See Working with Microsoft* DirectX* Applications for more details on how to use this handle. */
     MFX_HANDLE_VA_DISPLAY                       = 4, /*!< Pointer to VADisplay interface. See Working with VA-API Applications for more details on how to use this handle. */
     MFX_HANDLE_RESERVED3                        = 5, /* Reserved  */
-#if (MFX_VERSION >= 1030)
     MFX_HANDLE_VA_CONFIG_ID                     = 6, /*!< Pointer to VAConfigID interface. It represents external VA config for Common Encryption usage model. */
     MFX_HANDLE_VA_CONTEXT_ID                    = 7, /*!< Pointer to VAContextID interface. It represents external VA context for Common Encryption usage model. */
-#endif
-#if (MFX_VERSION >= MFX_VERSION_NEXT)
     MFX_HANDLE_CM_DEVICE                        = 8  /* Pointer to CmDevice interface ( Intel® C for Metal Runtime ). */
-#endif
 } mfxHandleType;
 
-#if (MFX_VERSION >= 2000)
 /*! The mfxMemoryFlags enumerator specifies memory access mode. */
 typedef enum
 {
@@ -397,11 +372,8 @@ typedef enum
      */
     MFX_MAP_NOWAIT = 0x10
 } mfxMemoryFlags;
-#endif
 
-#if (MFX_VERSION >= 2000)
 #define MFX_FRAMESURFACE1_VERSION MFX_STRUCT_VERSION(1, 1)
-#endif
 
 /* Frame Surface */
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
@@ -412,34 +384,29 @@ MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 typedef struct {
     union
     {
-#if (MFX_VERSION >= 2000)
         struct mfxFrameSurfaceInterface*  FrameInterface;       /*!< mfxFrameSurfaceInterface specifies interface to work with surface. */
-#endif 
         mfxU32  reserved[2];
     };
-#if (MFX_VERSION >= 2000)
     mfxStructVersion Version; /* mfxStructVersion specifies version of mfxFrameSurface1 structure. */
-#endif
     mfxU16          reserved1[3];
     mfxFrameInfo    Info; /*!< mfxFrameInfo structure specifies surface properties. */
     mfxFrameData    Data; /*!< mfxFrameData structure describes the actual frame buffer. */
 } mfxFrameSurface1;
 MFX_PACK_END()
 
-#if (MFX_VERSION >= 2000)
 
 #define MFX_FRAMESURFACEINTERFACE_VERSION MFX_STRUCT_VERSION(1, 0)
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /* The mfxFrameSurfaceInterface structure specifies frame surface interface. */
 typedef struct mfxFrameSurfaceInterface {
-    mfxHDL              Context; /*!< This context of memory interface. User should not touch (change, set, null) this pointer. */
+    mfxHDL              Context; /*!< The context of the memory interface. User should not touch (change, set, null) this pointer. */
     mfxStructVersion    Version; /*!< The version of the structure. */
     mfxU16              reserved1[3];
     /*! @brief
     This function increments the internal reference counter of the surface, so user is going to keep the surface.
-    The surface cannot be destroyed until user wouldn't call (*Release).
-    It's expected that users would call (*AddRef)() each time when they create new links (copy structure, etc) to the surface for proper management.
+    The surface cannot be destroyed until user will not call (*Release).
+    It is expected that users would call (*AddRef)() each time when they create new links (copy structure, etc) to the surface for proper management.
 
     @param[in]  surface  valid surface.
 
@@ -453,7 +420,7 @@ typedef struct mfxFrameSurfaceInterface {
     mfxStatus           (MFX_CDECL *AddRef)(mfxFrameSurface1* surface);
     /*! @brief
     This function decrements the internal reference counter of the surface, users have to care about calling of (*Release) after (*AddRef) or
-    when it's required according to the allocation logic. For instance,  users have to call (*Release) to relase a surface obtained with GetSurfaceForXXX function.
+    when it's required according to the allocation logic. For instance,  users have to call (*Release) to release a surface obtained with GetSurfaceForXXX function.
 
     @param[in]  surface  valid surface.
 
@@ -487,12 +454,12 @@ typedef struct mfxFrameSurfaceInterface {
     but for write only when mfxFrameSurface1::Data.Locked equals to 0.
     Note: surface allows shared read access, but exclusive write access.Let consider the following cases:
     -Map with Write or Read|Write flags. Request during active another read or write access returns MFX_ERR_LOCK_MEMORY error immediately, without waiting.
-    MFX_MAP_NOWAIT doesn't impact behavior. Such request doesn't lead to any implicit synchronizations.
+    MFX_MAP_NOWAIT does not impact behavior. Such request does not lead to any implicit synchronizations.
     -Map with Read flag. Request during active write access will wait for resource to become free,
     or exits immediately with error if MFX_MAP_NOWAIT flag was set. This request may lead to the implicit synchronization (with same logic as Synchronize call)
     waiting for surface to become ready to use (all dependencies should be resolved and upstream components finished writing to this surface).
     It is guaranteed that read access will be acquired right after synchronization without allowing other thread to acquire this surface for writing.
-    If MFX_MAP_NOWAIT was set and surface isn't ready yet (has some unresolved data dependencies or active processing) read access request exits immediately with error.
+    If MFX_MAP_NOWAIT was set and surface is not ready yet (has some unresolved data dependencies or active processing) read access request exits immediately with error.
     Read-write access with MFX_MAP_READ_WRITE provides exclusive simultaneous reading and writing access.
 
     @param[in]   surface  valid surface.
@@ -504,7 +471,7 @@ typedef struct mfxFrameSurfaceInterface {
      MFX_ERR_NULL_PTR           if surface is NULL. \n
      MFX_ERR_INVALID_HANDLE     if mfxFrameSurfaceInterface->Context is invalid (for example NULL). \n
      MFX_ERR_UNSUPPORTED        if flags are invalid. \n
-     MFX_ERR_LOCK_MEMORY        if user wants to map the surface for write and surface->Data.Locked doesn't equal to 0. \n
+     MFX_ERR_LOCK_MEMORY        if user wants to map the surface for write and surface->Data.Locked does not equal to 0. \n
      MFX_ERR_UNKNOWN            in case of any internal error.
     */
     mfxStatus           (MFX_CDECL *Map)(mfxFrameSurface1* surface, mfxU32 flags);
@@ -592,7 +559,6 @@ typedef struct mfxFrameSurfaceInterface {
     mfxHDL              reserved2[4];
 } mfxFrameSurfaceInterface;
 MFX_PACK_END()
-#endif
 
 /*! The TimeStampCalc enumerator itemizes time-stamp calculation methods. */
 enum {
@@ -854,9 +820,7 @@ enum {
     MFX_PROFILE_AVC_MAIN                    =77,
     MFX_PROFILE_AVC_EXTENDED                =88,
     MFX_PROFILE_AVC_HIGH                    =100,
-#if (MFX_VERSION >= 1034)
     MFX_PROFILE_AVC_HIGH10                  =110,
-#endif
     MFX_PROFILE_AVC_HIGH_422                =122,
     MFX_PROFILE_AVC_CONSTRAINED_BASELINE    =MFX_PROFILE_AVC_BASELINE + MFX_PROFILE_AVC_CONSTRAINT_SET1,
     MFX_PROFILE_AVC_CONSTRAINED_HIGH        =MFX_PROFILE_AVC_HIGH     + MFX_PROFILE_AVC_CONSTRAINT_SET4
@@ -941,9 +905,7 @@ enum {
     MFX_PROFILE_HEVC_MAIN10           =2,
     MFX_PROFILE_HEVC_MAINSP           =3,
     MFX_PROFILE_HEVC_REXT             =4,
-#if (MFX_VERSION >= 1032)
     MFX_PROFILE_HEVC_SCC              =9,
-#endif
     /*! @} */
     
     /*! @{ */
@@ -1599,15 +1561,10 @@ typedef struct {
 #else
     mfxU16      reserved6;
 #endif
-#if (MFX_VERSION >= 1026)
     /*!
        For HEVC if this option turned ON, transform_skip_enabled_flag will be set to 1 in PPS, OFF specifies that transform_skip_enabled_flag will be set to 0.
     */
     mfxU16      TransformSkip;
-#else
-    mfxU16      reserved7;
-#endif
-#if (MFX_VERSION >= 1027)
     /*!
        Minus 1 specifies target encoding chroma format (see ChromaFormatIdc enumerator). May differ from source one.
        TargetChromaFormatPlus1 = 0 mean default target chroma format which is equal to source (mfxVideoParam::mfx::FrameInfo::ChromaFormat + 1),
@@ -1625,9 +1582,6 @@ typedef struct {
        source (mfxVideoParam::mfx::FrameInfo::BitDepthChroma).
     */
     mfxU16      TargetBitDepthChroma;
-#else
-    mfxU16      reserved4[3];
-#endif
     mfxU16      BRCPanicMode; /*!< Controls panic mode in AVC and MPEG2 encoders. */
 
     /*!
@@ -1659,7 +1613,6 @@ typedef struct {
 #else
     mfxU16      reserved5[3];
 #endif
-#if (MFX_VERSION >= 1025)
     mfxU16      EncodedUnitsInfo;          /*!< Turn this option ON to make encoded units info available in mfxExtEncodedUnitsInfo. */
     /*!
        If this option is turned ON, then HEVC encoder uses NAL unit type provided by application in mfxEncodeCtrl::MfxNalUnitType field. 
@@ -1667,19 +1620,12 @@ typedef struct {
        @note Not all codecs and SDK implementations support this value. Use Query function to check if this feature is supported.
     */
     mfxU16      EnableNalUnitType;
-#else
-    mfxU16      reserved8[2];
-#endif
-#if (MFX_VERSION >= 1026)
     /*!
        Turn OFF to prevent Adaptive marking of Long Term Reference Frames when using ExtBRC. When ON and using ExtBRC, encoders will mark,
        modify, or remove LTR frames based on encoding parameters and content properties. The application must set each input frame's
        mfxFrameData::FrameOrder for correct operation of LTR.
     */
     mfxU16      ExtBrcAdaptiveLTR;         /* tri-state option for ExtBRC */
-#else
-    mfxU16      reserved9;
-#endif
     mfxU16      reserved[163];
 } mfxExtCodingOption3;
 MFX_PACK_END()
@@ -1961,7 +1907,6 @@ enum {
        See the mfxExtVPPColorFill structure for details.
     */
     MFX_EXTBUFF_VPP_COLORFILL                   = MFX_MAKEFOURCC('V','C','L','F'),
-#if (MFX_VERSION >= 1025)
     /*!
        This extended buffer is used by SDK decoders to report error information before frames get decoded.
        See the mfxExtDecodeErrorReport structure for more details.
@@ -1991,8 +1936,6 @@ enum {
        See the mfxExtEncodedUnitsInfo structure for details.
     */
     MFX_EXTBUFF_ENCODED_UNITS_INFO              = MFX_MAKEFOURCC('E', 'N', 'U', 'I'),
-#endif
-#if (MFX_VERSION >= 1026)
     /*!
        This video processing algorithm identifier is used to enable MCTF via mfxExtVPPDoUse and together with mfxExtVppMctf
     */
@@ -2009,13 +1952,10 @@ enum {
        Extends mfxVideoParam structure with VP9-specific parameters. See the mfxExtVP9Param structure for details.
     */
     MFX_EXTBUFF_VP9_PARAM                       = MFX_MAKEFOURCC('9', 'P', 'A', 'R'),
-#endif
-#if (MFX_VERSION >= 1027)
     /*!
        See the mfxExtAVCRoundingOffset structure for details.
     */
     MFX_EXTBUFF_AVC_ROUNDING_OFFSET             = MFX_MAKEFOURCC('R','N','D','O'),
-#endif
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
     MFX_EXTBUFF_DPB                             = MFX_MAKEFOURCC('E','D','P','B'),
     MFX_EXTBUFF_TEMPORAL_LAYERS                 = MFX_MAKEFOURCC('T','M','P','L'),
@@ -2023,14 +1963,11 @@ enum {
     MFX_EXTBUFF_MPEG2_QUANT_MATRIX              = MFX_MAKEFOURCC('M','2','Q','M'),
     MFX_EXTBUFF_TASK_DEPENDENCY                 = MFX_MAKEFOURCC('S','Y','N','C'),
 #endif
-#if (MFX_VERSION >= 1031)
     /*!
        See the mfxExtPartialBitstreamParam structure for details.
     */
     MFX_EXTBUFF_PARTIAL_BITSTREAM_PARAM         = MFX_MAKEFOURCC('P','B','O','P'),
-#endif
 
-#if (MFX_VERSION >= 1034)
     /*!
        See the mfxExtEncoderIPCMArea structure for details.
     */
@@ -2039,7 +1976,6 @@ enum {
        See the mfxExtInsertHeaders structure for details.
     */
     MFX_EXTBUFF_INSERT_HEADERS  = MFX_MAKEFOURCC('S', 'P', 'R', 'E'),
-#endif
 };
 
 /* VPP Conf: Do not use certain algorithms  */
@@ -2218,7 +2154,6 @@ MFX_PACK_BEGIN_STRUCT_W_PTR()
 */
 typedef struct {
     mfxExtBuffer    Header; /*!< Extension buffer header. */
-#if (MFX_VERSION >= 1025)
     mfxU32  reserved[4];
     mfxU16  reserved1;
     /*!
@@ -2231,9 +2166,6 @@ typedef struct {
              invalid value, then SDK encoder silently ignores it.
     */
     mfxU16  MfxNalUnitType;
-#else
-    mfxU32  reserved[5];
-#endif
     mfxU16  SkipFrame; /*!< Indicates that current frame should be skipped or number of missed frames before the current frame. See the mfxExtCodingOption2::SkipFrame for details. */
 
     mfxU16  QP;        /*!< If nonzero, this value overwrites the global QP value for the current frame in the constant QP mode. */
@@ -2295,11 +2227,7 @@ enum {
                                                considered to be exported to DRM Prime FD, DRM FLink or DRM FrameBuffer Handle. Specifics of export
                                                types and export procedure depends on external frame allocator implementation */
     MFX_MEMTYPE_SHARED_RESOURCE = MFX_MEMTYPE_EXPORT_FRAME, /*!< For DX11 allocation use shared resource bind flag. */
-#if (MFX_VERSION >= 1025)
     MFX_MEMTYPE_VIDEO_MEMORY_ENCODER_TARGET = 0x1000 /*!< Frames are in video memory and belong to video encoder render targets. */
-#else
-    MFX_MEMTYPE_RESERVED2       = 0x1000
-#endif
 };
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -2361,7 +2289,6 @@ enum {
     MFX_FRAMETYPE_xIDR          =0x8000  /*!< The second field is encoded as an IDR. */
 };
 
-#if (MFX_VERSION >= 1025)
 /*!
    The MfxNalUnitType enumerator specifies NAL unit types supported by the SDK HEVC encoder.
 */
@@ -2377,7 +2304,6 @@ enum {
     MFX_HEVC_NALU_TYPE_IDR_N_LP   = (20+1), /*!< See Table 7-1 of the ITU-T H.265 specification for the definition of these type. */
     MFX_HEVC_NALU_TYPE_CRA_NUT    = (21+1)  /*!< See Table 7-1 of the ITU-T H.265 specification for the definition of these type. */
 };
-#endif
 
 /*! The mfxSkipMode enumerator describes the decoder skip-mode options. */
 typedef enum {
@@ -2576,11 +2502,10 @@ typedef struct {
 } mfxExtVPPImageStab;
 MFX_PACK_END()
 
-#if (MFX_VERSION >= 1025)
 
 /*! The InsertHDRPayload enumerator itemizes HDR payloads insertion rules. */
 enum {
-    MFX_PAYLOAD_OFF = 0, /*!< Don't insert payload. */
+    MFX_PAYLOAD_OFF = 0, /*!< Do not insert payload. */
     MFX_PAYLOAD_IDR = 1  /*!< Insert payload on IDR frames. */
 };
 
@@ -2627,7 +2552,6 @@ typedef struct {
     mfxU16 MaxPicAverageLightLevel; /*!< Maximum average per-frame luminance level of the content. The field belongs to the [1..65535] range. */
 } mfxExtContentLightLevelInfo;
 MFX_PACK_END()
-#endif
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
@@ -2919,14 +2843,14 @@ MFX_PACK_END()
 
 /*! The TransferMatrix enumerator itemizes color transfer matrices. */
 enum {
-    MFX_TRANSFERMATRIX_UNKNOWN = 0, /*!< Transfer matrix isn't specified */
+    MFX_TRANSFERMATRIX_UNKNOWN = 0, /*!< Transfer matrix is not specified */
     MFX_TRANSFERMATRIX_BT709   = 1, /*!< Transfer matrix from ITU-R BT.709 standard. */
     MFX_TRANSFERMATRIX_BT601   = 2  /*!< Transfer matrix from ITU-R BT.601 standard. */
 };
 
 /* The NominalRange enumerator itemizes pixel's value nominal range. */
 enum {
-    MFX_NOMINALRANGE_UNKNOWN   = 0, /*!< Range isn't defined. */
+    MFX_NOMINALRANGE_UNKNOWN   = 0, /*!< Range is not defined. */
     MFX_NOMINALRANGE_0_255     = 1, /*!< Range is [0,255]. */
     MFX_NOMINALRANGE_16_235    = 2  /*!< Range is [16,235]. */
 };
@@ -3170,7 +3094,6 @@ enum {
     MFX_MBQP_MODE_QP_ADAPTIVE = 2 /*!< QP array contains deltas for QP or absolute QP values. */
 };
 
-#if (MFX_VERSION >= 1034)
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*! 
    The mfxQPandMode structure specifies per-MB or per-CU mode and QP or deltaQP value depending on the mode type.
@@ -3195,7 +3118,6 @@ typedef struct{
     mfxU16 Mode; /*!< Defines QP update mode. Can be equal to MFX_MBQP_MODE_QP_VALUE or MFX_MBQP_MODE_QP_DELTA. */
 } mfxQPandMode;
 MFX_PACK_END()
-#endif
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /*!
@@ -3224,16 +3146,13 @@ typedef struct {
         mfxU8  *QP;
         mfxI8  *DeltaQP;    /*!< Pointer to a list of per-macroblock QP deltas in raster scan order.
                                  For block i: QP[i] = BrcQP[i] + DeltaQP[i]. Valid when Mode = MFX_MBQP_MODE_QP_DELTA. */
-#if (MFX_VERSION >= 1034)
         mfxQPandMode *QPmode; /*!< Block-granularity modes when MFX_MBQP_MODE_QP_ADAPTIVE is set. */
-#endif
 
         mfxU64 reserved2;
     };
 } mfxExtMBQP;
 MFX_PACK_END()
 
-#if (MFX_VERSION >= 1034)
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
    Runtime ctrl buffer for SPS/PPS insertion with current encoding frame
@@ -3262,7 +3181,6 @@ typedef struct {
     } Area[64];
 } mfxExtEncoderIPCMArea;
 MFX_PACK_END()
-#endif
 
 MFX_PACK_BEGIN_STRUCT_W_L_TYPE()
 /*!
@@ -3352,7 +3270,6 @@ enum {
     MFX_HEVC_CONSTR_REXT_LOWER_BIT_RATE     = (1 << 8)
 };
 
-#if (MFX_VERSION >= 1026)
 
 /*! The SampleAdaptiveOffset enumerator uses bit-ORed values to itemize corresponding HEVC encoding feature. */
 enum {
@@ -3364,7 +3281,6 @@ enum {
     MFX_SAO_ENABLE_CHROMA = 0x04  /*!< Enable SAO for chroma (slice_sao_chroma_flag = 1). */
 };
 
-#endif
 
 /* This struct has 4-byte alignment for binary compatibility with previously released versions of API */
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -3374,18 +3290,13 @@ typedef struct {
     mfxU16          PicWidthInLumaSamples;  /*!< Specifies the width of each coded picture in units of luma samples. */
     mfxU16          PicHeightInLumaSamples; /*!< Specifies the height of each coded picture in units of luma samples. */
     mfxU64          GeneralConstraintFlags; /*!< Additional flags to specify exact profile/constraints. See the GeneralConstraintFlags enumerator for values of this field. */
-#if (MFX_VERSION >= 1026)
     mfxU16          SampleAdaptiveOffset;   /*!< Controls SampleAdaptiveOffset encoding feature. See enum SampleAdaptiveOffset for supported values
                                                  (bit-ORed). Valid during encoder Init and Runtime. */
     mfxU16          LCUSize;                /*!< Specifies largest coding unit size (max luma coding block). Valid during encoder Init. */
     mfxU16          reserved[116];
-#else
-    mfxU16          reserved[118];
-#endif
 } mfxExtHEVCParam;
 MFX_PACK_END()
 
-#if (MFX_VERSION >= 1025)
 /*! The ErrorTypes enumerator uses bit-ORed values to itemize bitstream error types. */
 enum {
     MFX_ERROR_PPS           = (1 << 0), /*!< Invalid/corrupted PPS. */
@@ -3407,8 +3318,6 @@ typedef struct {
     mfxU16          reserved[10];
 } mfxExtDecodeErrorReport;
 MFX_PACK_END()
-
-#endif
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
@@ -3487,7 +3396,6 @@ typedef struct {
 } mfxExtPredWeightTable;
 MFX_PACK_END()
 
-#if (MFX_VERSION >= 1027)
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
    This structure is used by the SDK encoders to set rounding offset parameters for quantization. It is per-frame based encoding control,
@@ -3505,7 +3413,6 @@ typedef struct {
     mfxU16       reserved[24];
 } mfxExtAVCRoundingOffset;
 MFX_PACK_END()
-#endif
 
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
 MFX_PACK_BEGIN_USUAL_STRUCT()
@@ -3681,7 +3588,6 @@ enum {
     MFX_SCALING_MODE_QUALITY    = 2  /*!< The best quality scaling mode */
 };
 
-#if (MFX_VERSION >= 1033)
 /*! The InterpolationMode enumerator specifies type of interpolation method used by VPP scaling filter. */
 enum {
     MFX_INTERPOLATION_DEFAULT                = 0, /*!< Default interpolation mode for scaling. SDK selects the most appropriate     
@@ -3690,7 +3596,6 @@ enum {
     MFX_INTERPOLATION_BILINEAR               = 2, /*!< Bilinear interpolation method */
     MFX_INTERPOLATION_ADVANCED               = 3  /*!< Advanced interpolation method is defined by each SDK and usually gives best                                                          quality */
 };
-#endif
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
@@ -3701,9 +3606,7 @@ typedef struct {
     mfxExtBuffer Header; /*!< Extension buffer header. Header.BufferId must be equal to MFX_EXTBUFF_VPP_SCALING. */
 
     mfxU16 ScalingMode;  /*!< Scaling mode. See ScalingMode for possible values. */
-#if (MFX_VERSION >= 1033)
     mfxU16 InterpolationMethod; /*!< Interpolation mode for scaling algorithm. See InterpolationMode for possible values. */
-#endif
     mfxU16 reserved[10];
 } mfxExtVPPScaling;
 MFX_PACK_END()
@@ -3784,7 +3687,6 @@ typedef struct {
 } mfxExtVPPColorFill;
 MFX_PACK_END()
 
-#if (MFX_VERSION >= 1025)
 
 /*! The ChromaSiting enumerator defines chroma location. Use bit-OR’ed values to specify the desired location. */
 enum {
@@ -3826,9 +3728,7 @@ typedef struct {
 } mfxExtColorConversion;
 MFX_PACK_END()
 
-#endif
 
-#if (MFX_VERSION >= 1026)
 /*! The VP9ReferenceFrame enumerator itemizes reference frame type by mfxVP9SegmentParam::ReferenceFrame parameter.  */
 enum {
     MFX_VP9_REF_INTRA   = 0, /*!< Intra. */
@@ -4002,7 +3902,6 @@ typedef struct {
     mfxI16  QIndexDeltaLumaDC;   /*!< Specifies an offset for a particular quantization parameter. */
     mfxI16  QIndexDeltaChromaAC; /*!< Specifies an offset for a particular quantization parameter. */
     mfxI16  QIndexDeltaChromaDC; /*!< Specifies an offset for a particular quantization parameter. */
-#if (MFX_VERSION >= 1029)
     /*!
        Number of tile rows. Should be power of two. Maximum number of tile rows is 4 (per VP9 specification). In addition maximum supported number
        of tile rows may depend on underlying hardware platform. Use Query function to check if particular pair of values (NumTileRows, NumTileColumns)
@@ -4013,23 +3912,17 @@ typedef struct {
     /*!
        Number of tile columns. Should be power of two. Restricted with maximum and minimum tile width in luma pixels defined in VP9
        specification (4096 and 256 respectively). In addition maximum supported number of tile columns may depend on underlying hardware
-       platform. Use Query function to check if particular pair of values (NumTileRows, NumTileColumns) is supported. In VP9 tile columns don't have
+       platform. Use Query function to check if particular pair of values (NumTileRows, NumTileColumns) is supported. In VP9 tile columns do not have
        dependencies and can be encoded/decoded in parallel. So tile columns can be encoded by the SDK in both parallel and serial modes.
-       Parallel mode is automatically utilized by the SDK when NumTileColumns exceeds 1 and doesn't exceed number of tile coding engines on the
+       Parallel mode is automatically utilized by the SDK when NumTileColumns exceeds 1 and does not exceed number of tile coding engines on the
        platform. In other cases serial mode is used. Parallel mode is capable to encode more than 1 tile row (within limitations provided by VP9
        specification and particular platform). Serial mode supports only tile grids 1xN and Nx1.
     */
     mfxU16  NumTileColumns;
     mfxU16  reserved[110];
-#else
-    mfxU16  reserved[112];
-#endif
 } mfxExtVP9Param;
 MFX_PACK_END()
 
-#endif // #if (MFX_VERSION >= 1026)
-
-#if (MFX_VERSION >= 1025)
 
 MFX_PACK_BEGIN_USUAL_STRUCT()
 /*!
@@ -4087,9 +3980,7 @@ typedef struct {
 } mfxExtEncodedUnitsInfo;
 MFX_PACK_END()
 
-#endif
 
-#if (MFX_VERSION >= 1026)
 #if (MFX_VERSION >= MFX_VERSION_NEXT)
 /*! The MCTFTemporalMode enumerator itemizes temporal filtering modes. */
 enum {
@@ -4137,9 +4028,6 @@ typedef struct {
 } mfxExtVppMctf;
 MFX_PACK_END()
 
-#endif
-
-#if (MFX_VERSION >= 1031)
 /*! The mfxComponentType enumerator describes type of workload passed to MFXQueryAdapters. */
 typedef enum
 {
@@ -4190,12 +4078,10 @@ typedef struct
 } mfxAdaptersInfo;
 MFX_PACK_END()
 
-#endif
 
-#if (MFX_VERSION >= 1031)
 /*! The PartialBitstreamOutput enumerator indicates flags of partial bitstream output type. */
 enum {
-    MFX_PARTIAL_BITSTREAM_NONE    = 0, /*!< Don't use partial output */
+    MFX_PARTIAL_BITSTREAM_NONE    = 0, /*!< Do not use partial output */
     MFX_PARTIAL_BITSTREAM_SLICE   = 1, /*!< Partial bitstream output will be aligned to slice granularity */
     MFX_PARTIAL_BITSTREAM_BLOCK   = 2, /*!< Partial bitstream output will be aligned to user-defined block size granularity */
     MFX_PARTIAL_BITSTREAM_ANY     = 3  /*!< Partial bitstream output will be return any coded data available at the end of SyncOperation timeout */
@@ -4219,7 +4105,6 @@ typedef struct {
     mfxU16          reserved[8];
 } mfxExtPartialBitstreamParam;
 MFX_PACK_END()
-#endif
 
 #ifdef __cplusplus
 } // extern "C"

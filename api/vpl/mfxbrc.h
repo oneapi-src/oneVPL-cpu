@@ -24,14 +24,10 @@ MFX_PACK_BEGIN_STRUCT_W_PTR()
    The mfxBRCFrameParam structure describes frame parameters required for external BRC functions.
 */
 typedef struct {
-#if (MFX_VERSION >= 1026)
     mfxU32 reserved[23];
     mfxU16 SceneChange;     /*!< Frame belongs to a new scene if non zero. */
     mfxU16 LongTerm;        /*!< Frame is a Long Term Reference frame if non zero. */
     mfxU32 FrameCmplx;      /*!< Frame Complexity Frame spatial complexity if non zero. Zero if complexity is not available. */
-#else
-    mfxU32 reserved[25];
-#endif
     mfxU32 EncodedOrder;    /*!< The frame number in a sequence of reordered frames starting from encoder Init. */
     mfxU32 DisplayOrder;    /*!< The frame number in a sequence of frames in display order starting from last IDR. */
     mfxU32 CodedFrameSize;  /*!< Size of the frame in bytes after encoding. */
@@ -49,7 +45,6 @@ MFX_PACK_BEGIN_STRUCT_W_PTR()
 */
 typedef struct {
     mfxI32 QpY;                     /*!< Frame-level Luma QP. */
-#if (MFX_VERSION >= 1029)
     mfxU32 InitialCpbRemovalDelay;  /*!< See initial_cpb_removal_delay in codec standard. Ignored if no HRD control:
                                          mfxExtCodingOption::VuiNalHrdParameters = MFX_CODINGOPTION_OFF. Calculated by encoder if
                                          initial_cpb_removal_delay==0 && initial_cpb_removal_offset == 0 && HRD control is switched on. */
@@ -69,10 +64,6 @@ typedef struct {
                                          See maxFrameSize description. Possible values are [0,8]. */
     mfxU16 NumExtParam;             /*!< Reserved for future use. */
     mfxExtBuffer** ExtParam;        /*!< Reserved for future use. */
-#else
-    mfxU32 reserved1[13];
-    mfxHDL reserved2;
-#endif
 } mfxBRCFrameCtrl;
 MFX_PACK_END()
 
