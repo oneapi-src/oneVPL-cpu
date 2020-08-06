@@ -248,7 +248,9 @@ int main(int argc, char *argv[]) {
 // Read encoded stream from file
 mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f) {
     memmove(bs.Data, bs.Data + bs.DataOffset, bs.DataLength);
-    bs.DataLength = static_cast<mfxU32>(fread(bs.Data, 1, bs.MaxLength, f));
+    bs.DataOffset = 0;
+    bs.DataLength += static_cast<mfxU32>(
+        fread(bs.Data + bs.DataLength, 1, bs.MaxLength - bs.DataLength, f));
     return MFX_ERR_NONE;
 }
 

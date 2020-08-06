@@ -4,30 +4,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "./cpu_workstream.h"
-
-// minimal set of atmoic operations for refCount ++ and --
-#if defined(_WIN32) || defined(_WIN64)
-
-    #include <windows.h>
-
-mfxU32 AtomicInc32(volatile mfxU32* count) {
-    return InterlockedIncrement((LPLONG)count);
-}
-
-mfxU32 AtomicDec32(volatile mfxU32* count) {
-    return InterlockedDecrement((LPLONG)count);
-}
-#else
-// Linux
-mfxU32 AtomicInc32(volatile mfxU32* count) {
-    return (mfxU32)__sync_add_and_fetch(count, (mfxU32)1);
-}
-
-mfxU32 AtomicDec32(volatile mfxU32* count) {
-    return (mfxU32)__sync_add_and_fetch(count, (mfxU32)-1);
-}
-#endif
+#include "src/cpu_frames.h"
 
 // callbacks for the new mfxFrameSurface interface
 // static functions (stateless) - all required state is
@@ -35,38 +12,34 @@ mfxU32 AtomicDec32(volatile mfxU32* count) {
 
 // increase refCount on surface (+1)
 mfxStatus FrameSurfaceInterface::AddRef(mfxFrameSurface1* surface) {
-    if (surface == 0)
-        return MFX_ERR_NULL_PTR;
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;
 
-    context->m_refCount = AtomicInc32(&(context->m_refCount));
+    context->m_refCount = ++context->m_refCount;
 
     return MFX_ERR_NONE;
 }
 
 // decrease refCount on surface (-1)
 mfxStatus FrameSurfaceInterface::Release(mfxFrameSurface1* surface) {
-    if (surface == 0)
-        return MFX_ERR_NULL_PTR;
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;
 
-    context->m_refCount = AtomicDec32(&(context->m_refCount));
+    context->m_refCount = --context->m_refCount;
 
     return MFX_ERR_NONE;
 }
@@ -74,14 +47,12 @@ mfxStatus FrameSurfaceInterface::Release(mfxFrameSurface1* surface) {
 // return current refCount on surface
 mfxStatus FrameSurfaceInterface::GetRefCounter(mfxFrameSurface1* surface,
                                                mfxU32* counter) {
-    if (surface == 0 || counter == 0)
-        return MFX_ERR_NULL_PTR;
+    RET_IF_FALSE(surface && counter, MFX_ERR_NULL_PTR);
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;
@@ -94,17 +65,12 @@ mfxStatus FrameSurfaceInterface::GetRefCounter(mfxFrameSurface1* surface,
 // map surface to system memory according to "flags"
 // currently does nothing for system memory
 mfxStatus FrameSurfaceInterface::Map(mfxFrameSurface1* surface, mfxU32 flags) {
-    if (surface == 0)
-        return MFX_ERR_NULL_PTR;
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
-
-    FrameInterfaceContext* context =
-        (FrameInterfaceContext*)frameInterface->Context;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
     return MFX_ERR_NONE;
 }
@@ -112,17 +78,12 @@ mfxStatus FrameSurfaceInterface::Map(mfxFrameSurface1* surface, mfxU32 flags) {
 // unmap surface - no longer accessible to application
 // currently does nothing for system memory
 mfxStatus FrameSurfaceInterface::Unmap(mfxFrameSurface1* surface) {
-    if (surface == 0)
-        return MFX_ERR_NULL_PTR;
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
-
-    FrameInterfaceContext* context =
-        (FrameInterfaceContext*)frameInterface->Context;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
     return MFX_ERR_NONE;
 }
@@ -135,20 +96,7 @@ mfxStatus FrameSurfaceInterface::GetNativeHandle(
     if (surface == 0 || resource == 0 || resource_type == 0)
         return MFX_ERR_NULL_PTR;
 
-    mfxFrameSurfaceInterface* frameInterface =
-        (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
-
-    FrameInterfaceContext* context =
-        (FrameInterfaceContext*)frameInterface->Context;
-
-    // TO DO - what does resource mean in system memory?
-    *resource      = (mfxHDL*)(frameInterface->Context);
-    *resource_type = MFX_RESOURCE_SYSTEM_SURFACE;
-
-    return MFX_ERR_NONE;
+    return MFX_ERR_NOT_FOUND;
 }
 
 // return device handle and type
@@ -161,31 +109,22 @@ mfxStatus FrameSurfaceInterface::GetDeviceHandle(mfxFrameSurface1* surface,
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
-
-    FrameInterfaceContext* context =
-        (FrameInterfaceContext*)frameInterface->Context;
-
-    *device_handle = (mfxHDL)0;
-    *device_type   = (mfxHandleType)0;
-
-    return MFX_ERR_NONE;
+    return MFX_ERR_NOT_FOUND;
 }
 
 // synchronize on surface after calling DecodeFrameAsync or VPP
 // alternative to calling MFXCore_SyncOperation
 mfxStatus FrameSurfaceInterface::Synchronize(mfxFrameSurface1* surface,
                                              mfxU32 wait) {
-    if (surface == 0)
-        return MFX_ERR_NULL_PTR;
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     mfxFrameSurfaceInterface* frameInterface =
         (mfxFrameSurfaceInterface*)surface->FrameInterface;
-
-    if (!frameInterface || !frameInterface->Context)
-        return MFX_ERR_INVALID_HANDLE;
+    RET_IF_FALSE(frameInterface && frameInterface->Context,
+                 MFX_ERR_INVALID_HANDLE);
 
     FrameInterfaceContext* context =
         (FrameInterfaceContext*)frameInterface->Context;

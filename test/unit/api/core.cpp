@@ -9,14 +9,18 @@
 
 //SetFrameAllocator not implemented
 //Optional, not needed for CPU implementation
-TEST(SetFrameAllocator, AlwaysReturnsNotImplemented) {
+TEST(SetFrameAllocator, SetFrameAllocatorReturnsErrNone) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    sts = MFXVideoCORE_SetFrameAllocator(session, nullptr);
-    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+    mfxFrameAllocator allocator{};
+    allocator.pthis                              = reinterpret_cast<void*>(1);
+    *reinterpret_cast<void**>(&allocator.Lock)   = reinterpret_cast<void*>(2);
+    *reinterpret_cast<void**>(&allocator.Unlock) = reinterpret_cast<void*>(3);
+    sts = MFXVideoCORE_SetFrameAllocator(session, &allocator);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
     sts = MFXClose(session);

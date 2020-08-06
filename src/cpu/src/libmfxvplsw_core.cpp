@@ -10,7 +10,9 @@
 // SetFrameAllocator not implemented in CPU reference implementation
 mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session,
                                          mfxFrameAllocator *allocator) {
-    return MFX_ERR_NOT_IMPLEMENTED;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    return ws->SetFrameAllocator(allocator);
 }
 
 // SetHandle accepts a handle.  This holds a void* which is

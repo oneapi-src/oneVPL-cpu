@@ -4,9 +4,13 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
+#include "src/cpu_vpp.h"
 #include <algorithm>
+#include <string>
+#include <utility>
 #include <vector>
-#include "./cpu_workstream.h"
+#include "src/cpu_workstream.h"
+#include "src/frame_lock.h"
 
 #define MFX_CHECK(EXPR, ERR) \
     {                        \
@@ -212,8 +216,23 @@ const mfxU32 g_TABLE_EXT_PARAM[] = {
     MFX_EXTBUFF_VPP_MIRRORING
 };
 
+CpuVPP::CpuVPP(CpuWorkstream* session)
+        : m_session(session),
+          m_avVppFrameIn(nullptr),
+          m_avVppFrameOut(nullptr),
+          m_vpp_graph(nullptr),
+          m_buffersrc_ctx(nullptr),
+          m_buffersink_ctx(nullptr),
+          m_vppInFormat(MFX_FOURCC_I420),
+          m_vppWidth(0),
+          m_vppHeight(0),
+          m_vppSurfaces() {
+    memset(&m_vpp_base, 0, sizeof(m_vpp_base));
+    memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
+}
+
 // buffersrc --> execution filters from filter description --> buffersink
-bool CpuWorkstream::InitFilters(void) {
+bool CpuVPP::InitFilters(void) {
     int ret                          = 0;
     char buffersrc_fmt[512]          = { 0 };
     const AVFilter* buffersrc        = avfilter_get_by_name("buffer");
@@ -425,8 +444,7 @@ bool CpuWorkstream::InitFilters(void) {
     }
 }
 
-void CpuWorkstream::CloseFilterPads(AVFilterInOut* src_out,
-                                    AVFilterInOut* sink_in) {
+void CpuVPP::CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in) {
     if (src_out)
         avfilter_inout_free(&src_out);
     if (sink_in)
@@ -434,7 +452,7 @@ void CpuWorkstream::CloseFilterPads(AVFilterInOut* src_out,
     return;
 }
 
-mfxStatus CpuWorkstream::InitVPP(mfxVideoParam* par) {
+mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     int ret           = 0;
     mfxStatus sts     = MFX_ERR_INVALID_VIDEO_PARAM;
     mfxStatus sts_wrn = MFX_ERR_NONE;
@@ -546,38 +564,43 @@ mfxStatus CpuWorkstream::InitVPP(mfxVideoParam* par) {
     m_vppInFormat = par->vpp.In.FourCC;
     m_vppWidth    = par->vpp.In.Width;
     m_vppHeight   = par->vpp.In.Height;
-    m_vppInit     = true;
 
     return MFX_ERR_NONE;
 }
 
-void CpuWorkstream::FreeVPP(void) {
+CpuVPP::~CpuVPP() {
     if (m_vpp_graph) {
         avfilter_graph_free(&m_vpp_graph);
         m_vpp_graph = nullptr;
     }
 }
 
-mfxStatus CpuWorkstream::ProcessFrame(mfxFrameSurface1* surface_in,
-                                      mfxFrameSurface1* surface_out,
-                                      mfxExtVppAuxData* aux) {
+mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
+                               mfxFrameSurface1* surface_out,
+                               mfxExtVppAuxData* aux) {
     if (surface_in) {
+        FrameLock locker_in;
+        RET_ERROR(locker_in.Lock(surface_in,
+                                 MFX_MAP_READ,
+                                 m_session->GetFrameAllocator()));
+        mfxFrameData* data_in = locker_in.GetData();
+
         m_avVppFrameIn->width  = m_vpp_base.src_width;
         m_avVppFrameIn->height = m_vpp_base.src_height;
         m_avVppFrameIn->format = m_vpp_base.src_pixel_format;
 
         if (m_vpp_base.src_pixel_format == AV_PIX_FMT_BGRA) {
-            m_avVppFrameIn->data[0]     = surface_in->Data.B;
-            m_avVppFrameIn->linesize[0] = surface_in->Data.Pitch;
+            m_avVppFrameIn->data[0]     = data_in->B;
+            m_avVppFrameIn->linesize[0] = data_in->Pitch;
         }
         else { // for AV_PIX_FMT_YUV420P and AV_PIX_FMT_YUV420P10LE
-            m_avVppFrameIn->data[0] = surface_in->Data.Y;
-            m_avVppFrameIn->data[1] = surface_in->Data.U;
-            m_avVppFrameIn->data[2] = surface_in->Data.V;
+            m_avVppFrameIn->data[0] = data_in->Y;
+            m_avVppFrameIn->data[1] = data_in->U;
+            m_avVppFrameIn->data[2] = data_in->V;
 
-            m_avVppFrameIn->linesize[0] = surface_in->Data.Pitch;
-            m_avVppFrameIn->linesize[1] = surface_in->Data.Pitch / 2;
-            m_avVppFrameIn->linesize[2] = surface_in->Data.Pitch / 2;
+            m_avVppFrameIn->linesize[0] = data_in->Pitch;
+            m_avVppFrameIn->linesize[1] = data_in->Pitch / 2;
+            m_avVppFrameIn->linesize[2] = data_in->Pitch / 2;
         }
 
         int ret = 0;
@@ -600,13 +623,15 @@ mfxStatus CpuWorkstream::ProcessFrame(mfxFrameSurface1* surface_in,
             }
         }
 
-        AVFrame2mfxFrameSurface(surface_out, m_avVppFrameOut);
+        RET_ERROR(AVFrame2mfxFrameSurface(surface_out,
+                                          m_avVppFrameOut,
+                                          m_session->GetFrameAllocator()));
     }
 
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
+mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
     if (out == 0)
         return MFX_ERR_NULL_PTR;
 
@@ -1139,8 +1164,8 @@ mfxStatus CpuWorkstream::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
     return mfxRes;
 }
 
-mfxStatus CpuWorkstream::VPPQueryIOSurf(mfxVideoParam* par,
-                                        mfxFrameAllocRequest* request) {
+mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par,
+                                 mfxFrameAllocRequest* request) {
     mfxStatus sts;
 
     // VPP_IN
@@ -1170,9 +1195,9 @@ mfxStatus CpuWorkstream::VPPQueryIOSurf(mfxVideoParam* par,
     return sts;
 }
 
-mfxStatus CpuWorkstream::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
-                                                         mfxU16* pInMemType,
-                                                         mfxU16* pOutMemType) {
+mfxStatus CpuVPP::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
+                                                  mfxU16* pInMemType,
+                                                  mfxU16* pOutMemType) {
     if (IOPattern & MFX_IOPATTERN_IN_VIDEO_MEMORY ||
         IOPattern & MFX_IOPATTERN_OUT_VIDEO_MEMORY)
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -1193,12 +1218,12 @@ mfxStatus CpuWorkstream::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
 }
 
 // check is buffer or filter are configurable
-bool CpuWorkstream::IsConfigurable(mfxU32 filterId) {
+bool CpuVPP::IsConfigurable(mfxU32 filterId) {
     mfxU32 searchCount = sizeof(g_TABLE_CONFIG) / sizeof(*g_TABLE_CONFIG);
     return IsFilterFound(g_TABLE_CONFIG, searchCount, filterId) ? true : false;
 }
 
-size_t CpuWorkstream::GetConfigSize(mfxU32 filterId) {
+size_t CpuVPP::GetConfigSize(mfxU32 filterId) {
     switch (filterId) {
         case MFX_EXTBUFF_VPP_DENOISE: {
             return sizeof(mfxExtVPPDenoise);
@@ -1230,7 +1255,7 @@ size_t CpuWorkstream::GetConfigSize(mfxU32 filterId) {
     }
 }
 
-mfxStatus CpuWorkstream::ExtendedQuery(mfxU32 filterName, mfxExtBuffer* pHint) {
+mfxStatus CpuVPP::ExtendedQuery(mfxU32 filterName, mfxExtBuffer* pHint) {
     mfxStatus sts = MFX_ERR_NONE;
 
     if (MFX_EXTBUFF_VPP_DENOISE == filterName) {
@@ -1327,9 +1352,7 @@ mfxStatus CpuWorkstream::ExtendedQuery(mfxU32 filterName, mfxExtBuffer* pHint) {
     return sts;
 }
 
-mfxU32 CpuWorkstream::GetFilterIndex(mfxU32* pList,
-                                     mfxU32 len,
-                                     mfxU32 filterName) {
+mfxU32 CpuVPP::GetFilterIndex(mfxU32* pList, mfxU32 len, mfxU32 filterName) {
     mfxU32 filterIndex;
     for (filterIndex = 0; filterIndex < len; filterIndex++) {
         if (filterName == pList[filterIndex]) {
@@ -1340,7 +1363,7 @@ mfxU32 CpuWorkstream::GetFilterIndex(mfxU32* pList,
     return 0;
 }
 
-bool CpuWorkstream::CheckDoUseCompatibility(mfxU32 filterName) {
+bool CpuVPP::CheckDoUseCompatibility(mfxU32 filterName) {
     bool bResult = false;
 
     mfxU32 douseCount = sizeof(g_TABLE_DO_USE) / sizeof(*g_TABLE_DO_USE);
@@ -1351,9 +1374,7 @@ bool CpuWorkstream::CheckDoUseCompatibility(mfxU32 filterName) {
 
 } // bool CheckDoUseCompatibility( mfxU32 filterName )
 
-bool CpuWorkstream::IsFilterFound(const mfxU32* pList,
-                                  mfxU32 len,
-                                  mfxU32 filterName) {
+bool CpuVPP::IsFilterFound(const mfxU32* pList, mfxU32 len, mfxU32 filterName) {
     if (0 == len)
         return false;
 
@@ -1365,9 +1386,9 @@ bool CpuWorkstream::IsFilterFound(const mfxU32* pList,
     return false;
 }
 
-void CpuWorkstream::GetDoUseFilterList(mfxVideoParam* par,
-                                       mfxU32** ppList,
-                                       mfxU32* pLen) {
+void CpuVPP::GetDoUseFilterList(mfxVideoParam* par,
+                                mfxU32** ppList,
+                                mfxU32* pLen) {
     mfxU32 i                 = 0;
     mfxExtVPPDoUse* pVPPHint = NULL;
 
@@ -1388,9 +1409,9 @@ void CpuWorkstream::GetDoUseFilterList(mfxVideoParam* par,
     return;
 }
 
-void CpuWorkstream::GetConfigurableFilterList(mfxVideoParam* par,
-                                              mfxU32* pList,
-                                              mfxU32* pLen) {
+void CpuVPP::GetConfigurableFilterList(mfxVideoParam* par,
+                                       mfxU32* pList,
+                                       mfxU32* pLen) {
     mfxU32 fIdx = 0;
 
     /* robustness */
@@ -1410,8 +1431,8 @@ void CpuWorkstream::GetConfigurableFilterList(mfxVideoParam* par,
     return;
 }
 
-double CpuWorkstream::CalculateUMCFramerate(mfxU32 FrameRateExtN,
-                                            mfxU32 FrameRateExtD) {
+double CpuVPP::CalculateUMCFramerate(mfxU32 FrameRateExtN,
+                                     mfxU32 FrameRateExtD) {
     if (FrameRateExtN && FrameRateExtD)
         return (double)FrameRateExtN / FrameRateExtD;
     else
@@ -1420,8 +1441,7 @@ double CpuWorkstream::CalculateUMCFramerate(mfxU32 FrameRateExtN,
 
 // vpp best quality is |CSC| + |DN| + |DI| + |IS| + |RS| + |Detail| + |ProcAmp| + |FRC| + |SA| */
 // sw_vpp reorder |FRC| to meet best speed                                                        */
-void CpuWorkstream::ReorderPipelineListForQuality(
-    std::vector<mfxU32>& pipelineList) {
+void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
     //mfxU32 newList[MAX_NUM_VPP_FILTERS] = {0};
     std::vector<mfxU32> newList;
     newList.resize(pipelineList.size());
@@ -1643,9 +1663,8 @@ void CpuWorkstream::ReorderPipelineListForQuality(
     }
 }
 
-void CpuWorkstream::ReorderPipelineListForSpeed(
-    mfxVideoParam* videoParam,
-    std::vector<mfxU32>& pipelineList) {
+void CpuVPP::ReorderPipelineListForSpeed(mfxVideoParam* videoParam,
+                                         std::vector<mfxU32>& pipelineList) {
     // optimization in case of FRC
     if (IsFilterFound(&pipelineList[0],
                       (mfxU32)pipelineList.size(),
@@ -1680,7 +1699,7 @@ void CpuWorkstream::ReorderPipelineListForSpeed(
     }
 }
 
-void CpuWorkstream::ShowPipeline(std::vector<mfxU32> pipelineList) {
+void CpuVPP::ShowPipeline(std::vector<mfxU32> pipelineList) {
 #if !defined(_DEBUG) && !defined(_WIN32) && !defined(_WIN64) || \
     !defined(LINUX) && !defined(LINUX32) && !defined(LINUX64)
 
@@ -2062,9 +2081,9 @@ void CpuWorkstream::ShowPipeline(std::vector<mfxU32> pipelineList) {
     return;
 } // void ShowPipeline( std::vector<mfxU32> pipelineList )
 
-mfxStatus CpuWorkstream::GetPipelineList(mfxVideoParam* videoParam,
-                                         std::vector<mfxU32>& pipelineList,
-                                         bool bExtended) {
+mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
+                                  std::vector<mfxU32>& pipelineList,
+                                  bool bExtended) {
     mfxInfoVPP* par            = NULL;
     mfxFrameInfo* srcFrameInfo = NULL;
     mfxFrameInfo* dstFrameInfo = NULL;
@@ -2384,7 +2403,7 @@ mfxStatus CpuWorkstream::GetPipelineList(mfxVideoParam* videoParam,
                                       : MFX_ERR_INVALID_VIDEO_PARAM);
 }
 
-mfxStatus CpuWorkstream::CheckIOPattern(mfxVideoParam* par) {
+mfxStatus CpuVPP::CheckIOPattern(mfxVideoParam* par) {
     if (0 == par->IOPattern) // IOPattern is mandatory parameter
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -2396,7 +2415,7 @@ mfxStatus CpuWorkstream::CheckIOPattern(mfxVideoParam* par) {
 }
 
 // check each field of FrameInfo excluding PicStruct
-mfxStatus CpuWorkstream::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
+mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
     mfxStatus mfxSts = MFX_ERR_NONE;
 
     /* FourCC */
@@ -2461,9 +2480,7 @@ mfxStatus CpuWorkstream::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
     return mfxSts;
 }
 
-bool CpuWorkstream::GetExtParamList(mfxVideoParam* par,
-                                    mfxU32* pList,
-                                    mfxU32* pLen) {
+bool CpuVPP::GetExtParamList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen) {
     mfxU32 fIdx = 0;
 
     /* robustness */
@@ -2491,9 +2508,9 @@ bool CpuWorkstream::GetExtParamList(mfxVideoParam* par,
     return bResOK;
 }
 
-mfxStatus CpuWorkstream::GetFilterParam(mfxVideoParam* par,
-                                        mfxU32 filterName,
-                                        mfxExtBuffer** ppHint) {
+mfxStatus CpuVPP::GetFilterParam(mfxVideoParam* par,
+                                 mfxU32 filterName,
+                                 mfxExtBuffer** ppHint) {
     MFX_CHECK_NULL_PTR1(par);
     MFX_CHECK_NULL_PTR1(ppHint);
 
@@ -2513,9 +2530,9 @@ mfxStatus CpuWorkstream::GetFilterParam(mfxVideoParam* par,
     return MFX_ERR_NONE;
 }
 
-void CpuWorkstream::GetDoNotUseFilterList(mfxVideoParam* par,
-                                          mfxU32** ppList,
-                                          mfxU32* pLen) {
+void CpuVPP::GetDoNotUseFilterList(mfxVideoParam* par,
+                                   mfxU32** ppList,
+                                   mfxU32* pLen) {
     mfxU32 i                    = 0;
     mfxExtVPPDoNotUse* pVPPHint = NULL;
 
@@ -2536,9 +2553,7 @@ void CpuWorkstream::GetDoNotUseFilterList(mfxVideoParam* par,
     return;
 }
 
-bool CpuWorkstream::CheckFilterList(mfxU32* pList,
-                                    mfxU32 count,
-                                    bool bDoUseTable) {
+bool CpuVPP::CheckFilterList(mfxU32* pList, mfxU32 count, bool bDoUseTable) {
     bool bResOK = true;
     // strong check
     if ((NULL == pList && count > 0) || (NULL != pList && count == 0)) {
@@ -2571,8 +2586,7 @@ bool CpuWorkstream::CheckFilterList(mfxU32* pList,
     return bResOK;
 }
 
-mfxStatus CpuWorkstream::CheckExtParam(mfxExtBuffer** ppExtParam,
-                                       mfxU16 count) {
+mfxStatus CpuVPP::CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count) {
     if ((NULL == ppExtParam && count > 0)) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -2669,101 +2683,18 @@ mfxStatus CpuWorkstream::CheckExtParam(mfxExtBuffer** ppExtParam,
     }
 }
 
-AVPixelFormat CpuWorkstream::MFXFourCC2AVPixelFormat(uint32_t fourcc) {
-    return (fourcc == MFX_FOURCC_I010)
-               ? AV_PIX_FMT_YUV420P10LE
-               : (fourcc == MFX_FOURCC_P010)
-                     ? AV_PIX_FMT_P010LE
-                     : (fourcc == MFX_FOURCC_NV12)
-                           ? AV_PIX_FMT_NV12
-                           : (fourcc == MFX_FOURCC_RGB4)
-                                 ? AV_PIX_FMT_BGRA
-                                 : (fourcc == MFX_FOURCC_I420)
-                                       ? AV_PIX_FMT_YUV420P
-                                       : (AVPixelFormat)-1;
-}
+mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
+    if (!m_vppSurfaces) {
+        mfxFrameAllocRequest VPPRequest[2] = { 0 };
+        VPPQueryIOSurf(nullptr, VPPRequest);
 
-void CpuWorkstream::AVFrame2mfxFrameSurface(mfxFrameSurface1* surface,
-                                            AVFrame* frame) {
-    mfxU32 w, h, y, pitch, offset;
-
-    surface->Info.Width  = frame->width;
-    surface->Info.Height = frame->height;
-    surface->Info.CropX  = 0;
-    surface->Info.CropY  = 0;
-    surface->Info.CropW  = frame->width;
-    surface->Info.CropH  = frame->height;
-
-    if (frame->format == AV_PIX_FMT_YUV420P10LE) {
-        surface->Info.FourCC = MFX_FOURCC_I010;
-        surface->Data.Pitch  = (frame->width * 2);
-
-        w     = surface->Info.Width * 2;
-        h     = surface->Info.Height;
-        pitch = surface->Data.Pitch;
-    }
-    else if (frame->format == AV_PIX_FMT_YUV420P) {
-        surface->Info.FourCC = MFX_FOURCC_I420;
-        surface->Data.Pitch  = frame->width;
-
-        w     = surface->Info.Width;
-        h     = surface->Info.Height;
-        pitch = surface->Data.Pitch;
-    }
-    else if (frame->format == AV_PIX_FMT_BGRA) {
-        surface->Info.FourCC = MFX_FOURCC_RGB4;
-        surface->Data.Pitch  = (frame->width * 4);
-
-        w     = surface->Info.Width * 4;
-        h     = surface->Info.Height;
-        pitch = surface->Data.Pitch;
-    }
-    else { // default
-        surface->Info.FourCC = MFX_FOURCC_I420;
-        surface->Data.Pitch  = frame->width;
-
-        w     = surface->Info.Width;
-        h     = surface->Info.Height;
-        pitch = surface->Data.Pitch;
+        auto pool = std::make_unique<CpuFramePool>();
+        RET_ERROR(pool->Init(m_vppInFormat,
+                             m_vppWidth,
+                             m_vppHeight,
+                             VPPRequest[0].NumFrameSuggested));
+        m_vppSurfaces = std::move(pool);
     }
 
-    if (frame->format == AV_PIX_FMT_BGRA) {
-        for (y = 0; y < h; y++) {
-            offset = pitch * (y + surface->Info.CropY) + surface->Info.CropX;
-            memcpy_s(surface->Data.B + offset,
-                     w,
-                     frame->data[0] + y * frame->linesize[0],
-                     w);
-        }
-    }
-    else {
-        // copy Y plane
-        for (y = 0; y < h; y++) {
-            offset = pitch * (y + surface->Info.CropY) + surface->Info.CropX;
-            memcpy_s(surface->Data.Y + offset,
-                     w,
-                     frame->data[0] + y * frame->linesize[0],
-                     w);
-        }
-
-        // copy U plane
-        for (y = 0; y < h / 2; y++) {
-            offset =
-                pitch / 2 * (y + surface->Info.CropY) + surface->Info.CropX;
-            memcpy_s(surface->Data.U + offset,
-                     w / 2,
-                     frame->data[1] + y * frame->linesize[1],
-                     w / 2);
-        }
-
-        // copy V plane
-        for (y = 0; y < h / 2; y++) {
-            offset =
-                pitch / 2 * (y + surface->Info.CropY) + surface->Info.CropX;
-            memcpy_s(surface->Data.V + offset,
-                     w / 2,
-                     frame->data[2] + y * frame->linesize[2],
-                     w / 2);
-        }
-    }
+    return m_vppSurfaces->GetFreeSurface(surface);
 }

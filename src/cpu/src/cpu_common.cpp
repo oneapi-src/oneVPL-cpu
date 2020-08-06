@@ -4,78 +4,124 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "./cpu_workstream.h"
+#include "src/cpu_common.h"
+#include "src/frame_lock.h"
 
-CpuWorkstream::CpuWorkstream()
-        : m_avDecCodec(nullptr),
-          m_avDecContext(nullptr),
-          m_avDecParser(nullptr),
-          m_avDecPacket(nullptr),
-
-          m_bsDecData(nullptr),
-          m_bsDecValidBytes(),
-          m_bsDecMaxBytes(),
-
-          m_avEncCodec(nullptr),
-          m_avEncContext(nullptr),
-          m_avEncPacket(nullptr),
-
-          m_avDecFrameOut(nullptr),
-          m_avVppFrameIn(nullptr),
-          m_avVppFrameOut(nullptr),
-          m_avEncFrameIn(nullptr),
-
-          m_decInit(false),
-          m_vppInit(false),
-          m_vppBypass(false),
-          m_encInit(false),
-
-          m_decMemMgmtType(VPL_MEM_MGMT_EXTERNAL),
-          m_vppMemMgmtType(VPL_MEM_MGMT_EXTERNAL),
-          m_encMemMgmtType(VPL_MEM_MGMT_EXTERNAL),
-
-          m_decCodecId(MFX_CODEC_HEVC),
-          m_decOutFormat(MFX_FOURCC_I420),
-          m_decWidth(0),
-          m_decHeight(0),
-          m_decPoolSize(),
-          m_decFrameInterface(),
-          m_decSurfaces(),
-
-          m_encCodecId(MFX_CODEC_HEVC),
-          m_encInFormat(MFX_FOURCC_I420),
-          m_encWidth(0),
-          m_encHeight(0),
-          m_encPoolSize(),
-          m_encFrameInterface(),
-          m_encSurfaces(),
-
-          m_vppInFormat(MFX_FOURCC_I420),
-          m_vppWidth(0),
-          m_vppHeight(0),
-          m_vppPoolSize(),
-          m_vppFrameInterface(),
-          m_vppSurfaces(),
-
-          m_vpp_use_graph(false),
-          m_vpp_graph(nullptr),
-          m_buffersrc_ctx(nullptr),
-          m_buffersink_ctx(nullptr),
-          m_av_vpp_in(nullptr),
-          m_av_vpp_out(nullptr) {
-    av_log_set_level(AV_LOG_QUIET);
-    m_handles.clear();
-    memset(&m_vpp_base, 0, sizeof(m_vpp_base));
-    memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
+AVPixelFormat MFXFourCC2AVPixelFormat(uint32_t fourcc) {
+    return (fourcc == MFX_FOURCC_I010)
+               ? AV_PIX_FMT_YUV420P10LE
+               : (fourcc == MFX_FOURCC_P010)
+                     ? AV_PIX_FMT_P010LE
+                     : (fourcc == MFX_FOURCC_NV12)
+                           ? AV_PIX_FMT_NV12
+                           : (fourcc == MFX_FOURCC_RGB4)
+                                 ? AV_PIX_FMT_BGRA
+                                 : (fourcc == MFX_FOURCC_I420)
+                                       ? AV_PIX_FMT_YUV420P
+                                       : (AVPixelFormat)-1;
 }
 
-CpuWorkstream::~CpuWorkstream() {
-    FreeDecode();
-    FreeVPP();
-    FreeEncode();
+AVCodecID MFXCodecId_to_AVCodecID(mfxU32 CodecId) {
+    switch (CodecId) {
+        case MFX_CODEC_AVC:
+            return AV_CODEC_ID_H264;
+        case MFX_CODEC_HEVC:
+            return AV_CODEC_ID_HEVC;
+        case MFX_CODEC_JPEG:
+            return AV_CODEC_ID_MJPEG;
+        case MFX_CODEC_AV1:
+            return AV_CODEC_ID_AV1;
+    }
+    return AV_CODEC_ID_NONE;
 }
 
-// Sync operation implementation
-mfxStatus CpuWorkstream::Sync(mfxSyncPoint &syncp, mfxU32 wait) {
+mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
+                                  AVFrame *frame,
+                                  mfxFrameAllocator *allocator) {
+    FrameLock locker;
+    RET_ERROR(locker.Lock(surface, MFX_MAP_WRITE, allocator));
+    mfxFrameData *data = locker.GetData();
+    mfxFrameInfo *info = &surface->Info;
+
+    mfxU32 w, h, y, pitch, offset;
+
+    info->Width  = frame->width;
+    info->Height = frame->height;
+    info->CropX  = 0;
+    info->CropY  = 0;
+    info->CropW  = frame->width;
+    info->CropH  = frame->height;
+
+    if (frame->format == AV_PIX_FMT_YUV420P10LE) {
+        info->FourCC = MFX_FOURCC_I010;
+        data->Pitch  = (frame->width * 2);
+
+        w     = info->Width * 2;
+        h     = info->Height;
+        pitch = data->Pitch;
+    }
+    else if (frame->format == AV_PIX_FMT_YUV420P) {
+        info->FourCC = MFX_FOURCC_I420;
+        data->Pitch  = frame->width;
+
+        w     = info->Width;
+        h     = info->Height;
+        pitch = data->Pitch;
+    }
+    else if (frame->format == AV_PIX_FMT_BGRA) {
+        info->FourCC = MFX_FOURCC_RGB4;
+        data->Pitch  = (frame->width * 4);
+
+        w     = info->Width * 4;
+        h     = info->Height;
+        pitch = data->Pitch;
+    }
+    else { // default
+        info->FourCC = MFX_FOURCC_I420;
+        data->Pitch  = frame->width;
+
+        w     = info->Width;
+        h     = info->Height;
+        pitch = data->Pitch;
+    }
+
+    if (frame->format == AV_PIX_FMT_BGRA) {
+        for (y = 0; y < h; y++) {
+            offset = pitch * (y + info->CropY) + info->CropX;
+            memcpy_s(data->B + offset,
+                     w,
+                     frame->data[0] + y * frame->linesize[0],
+                     w);
+        }
+    }
+    else {
+        // copy Y plane
+        for (y = 0; y < h; y++) {
+            offset = pitch * (y + info->CropY) + info->CropX;
+            memcpy_s(data->Y + offset,
+                     w,
+                     frame->data[0] + y * frame->linesize[0],
+                     w);
+        }
+
+        // copy U plane
+        for (y = 0; y < h / 2; y++) {
+            offset = pitch / 2 * (y + info->CropY) + info->CropX;
+            memcpy_s(data->U + offset,
+                     w / 2,
+                     frame->data[1] + y * frame->linesize[1],
+                     w / 2);
+        }
+
+        // copy V plane
+        for (y = 0; y < h / 2; y++) {
+            offset = pitch / 2 * (y + info->CropY) + info->CropX;
+            memcpy_s(data->V + offset,
+                     w / 2,
+                     frame->data[2] + y * frame->linesize[2],
+                     w / 2);
+        }
+    }
+
     return MFX_ERR_NONE;
 }

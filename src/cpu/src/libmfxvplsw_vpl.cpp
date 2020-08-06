@@ -14,6 +14,7 @@
 //   caps query and config stage using oneVPL extensions
 mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format,
                                  mfxU32 *num_impls) {
+    VPL_TRACE_FUNC;
     // only structure format is currently supported
     if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
         return nullptr;
@@ -86,6 +87,7 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format,
 
 // walk through implDesc and delete dynamically-allocated structs
 mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
+    VPL_TRACE_FUNC;
     ImplDescriptionArray *implDescArray = (ImplDescriptionArray *)hdl;
     if (!implDescArray) {
         return MFX_ERR_NULL_PTR;
@@ -128,102 +130,36 @@ mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
 // memory functions are associated with initialized session
 mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
                                      mfxFrameSurface1 **surface) {
-    mfxStatus sts = MFX_ERR_NONE;
-
-    if (0 == session || 0 == surface)
-        return MFX_ERR_NULL_PTR;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session && surface, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    CpuVPP *vpp       = ws->GetVPP();
+    RET_IF_FALSE(vpp, MFX_ERR_NOT_INITIALIZED);
 
-    if (ws->getVppInit() == false)
-        return MFX_ERR_NOT_INITIALIZED;
-
-    eVPLMemMgmtType memMgmtType = ws->getVppMemMgmtType();
-
-    // first frame - set up internal surface pool
-    if (memMgmtType == VPL_MEM_MGMT_EXTERNAL) {
-        sts = ws->InitVPPSurfacePool();
-        if (sts)
-            return sts;
-
-        // now the type should be VPL_MEM_MGMT_INTERNAL
-        memMgmtType = ws->getVppMemMgmtType();
-    }
-
-    // may only be used if internal memory management is used
-    if (memMgmtType != VPL_MEM_MGMT_INTERNAL)
-        return MFX_ERR_UNDEFINED_BEHAVIOR;
-
-    // get surface from internal decoder pool
-    sts = ws->GetVPPSurface(surface);
-
-    return sts;
+    return vpp->GetVPPSurface(surface);
 }
 
 mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
-    mfxStatus sts = MFX_ERR_NONE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session && surface, MFX_ERR_NULL_PTR);
 
-    if (0 == session || 0 == surface)
-        return MFX_ERR_NULL_PTR;
+    CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
+    CpuEncode *encoder = ws->GetEncoder();
+    RET_IF_FALSE(encoder, MFX_ERR_NOT_INITIALIZED);
 
-    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-
-    if (ws->getEncInit() == false)
-        return MFX_ERR_NOT_INITIALIZED;
-
-    eVPLMemMgmtType memMgmtType = ws->getEncMemMgmtType();
-
-    // first frame - set up internal surface pool
-    if (memMgmtType == VPL_MEM_MGMT_EXTERNAL) {
-        sts = ws->InitEncodeSurfacePool();
-        if (sts)
-            return sts;
-
-        // now the type should be VPL_MEM_MGMT_INTERNAL
-        memMgmtType = ws->getEncMemMgmtType();
-    }
-
-    // may only be used if internal memory management is used
-    if (memMgmtType != VPL_MEM_MGMT_INTERNAL)
-        return MFX_ERR_UNDEFINED_BEHAVIOR;
-
-    // get surface from internal decoder pool
-    sts = ws->GetEncodeSurface(surface);
-
-    return sts;
+    return encoder->GetEncodeSurface(surface);
 }
 
 mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
-    mfxStatus sts = MFX_ERR_NONE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session && surface, MFX_ERR_NULL_PTR);
 
-    if (0 == session || 0 == surface)
-        return MFX_ERR_NULL_PTR;
+    CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
+    CpuDecode *decoder = ws->GetDecoder();
+    RET_IF_FALSE(decoder, MFX_ERR_NOT_INITIALIZED);
 
-    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-
-    if (ws->getDecInit() == false)
-        return MFX_ERR_NOT_INITIALIZED;
-
-    eVPLMemMgmtType memMgmtType = ws->getDecMemMgmtType();
-
-    // first frame - set up internal surface pool
-    if (memMgmtType == VPL_MEM_MGMT_EXTERNAL) {
-        sts = ws->InitDecodeSurfacePool();
-        if (sts)
-            return sts;
-
-        // now the type should be VPL_MEM_MGMT_INTERNAL
-        memMgmtType = ws->getDecMemMgmtType();
-    }
-
-    // may only be used if internal memory management is used
-    if (memMgmtType != VPL_MEM_MGMT_INTERNAL)
-        return MFX_ERR_UNDEFINED_BEHAVIOR;
-
-    // get surface from internal decoder pool
-    sts = ws->GetDecodeSurface(surface);
-
-    return sts;
+    return decoder->GetDecodeSurface(surface);
 }

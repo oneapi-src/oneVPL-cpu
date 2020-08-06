@@ -4,9 +4,10 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include "./cpu_workstream.h"
-
-#define DEFAULT_MAX_DEC_BITSTREAM_SIZE (1024 * 1024 * 64)
+#include "src/cpu_decode.h"
+#include <memory>
+#include <utility>
+#include "src/cpu_workstream.h"
 
 // callback:
 // int (*get_buffer2)(struct AVCodecContext *s, AVFrame *frame, int flags);
@@ -18,19 +19,19 @@ static int get_buffer2_msdk(struct AVCodecContext *s,
     return avcodec_default_get_buffer2(s, frame, flags);
 }
 
-mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
-    // alloc bitstream buffer
-    m_bsDecValidBytes = 0;
-    m_bsDecMaxBytes =
-        DEFAULT_MAX_DEC_BITSTREAM_SIZE + AV_INPUT_BUFFER_PADDING_SIZE;
-    m_bsDecData = new uint8_t[m_bsDecMaxBytes];
+CpuDecode::CpuDecode(CpuWorkstream *session)
+        : m_session(session),
+          m_avDecCodec(nullptr),
+          m_avDecContext(nullptr),
+          m_avDecParser(nullptr),
+          m_avDecPacket(nullptr),
+          m_avDecFrameOut(nullptr),
+          m_param(),
+          m_decSurfaces() {}
 
-    if (!m_bsDecData)
-        return MFX_ERR_MEMORY_ALLOC;
-
-    m_decCodecId  = FourCC;
+mfxStatus CpuDecode::InitDecode(mfxVideoParam *par) {
     AVCodecID cid = AV_CODEC_ID_NONE;
-    switch (m_decCodecId) {
+    switch (par->mfx.CodecId) {
         case MFX_CODEC_AVC:
             cid = AV_CODEC_ID_H264;
             break;
@@ -85,12 +86,12 @@ mfxStatus CpuWorkstream::InitDecode(mfxU32 FourCC) {
         return MFX_ERR_MEMORY_ALLOC;
     }
 
-    m_decInit = true;
+    m_param = *par;
 
     return MFX_ERR_NONE;
 }
 
-void CpuWorkstream::FreeDecode() {
+CpuDecode::~CpuDecode() {
     if (m_avDecFrameOut) {
         av_frame_free(&m_avDecFrameOut);
         m_avDecFrameOut = nullptr;
@@ -111,167 +112,84 @@ void CpuWorkstream::FreeDecode() {
         avcodec_free_context(&m_avDecContext);
         m_avDecContext = nullptr;
     }
-
-    if (m_bsDecData) {
-        delete[] m_bsDecData;
-        m_bsDecData = nullptr;
-    }
-}
-
-mfxStatus CpuWorkstream::DecodeHeader(mfxBitstream *bs, mfxVideoParam *par) {
-    mfxFrameSurface1 *surface_out;
-    mfxStatus sts;
-
-    if (m_decInit == false) {
-        sts = InitDecode(par->mfx.CodecId);
-        if (sts < 0) {
-            // error - can't continue
-            return sts;
-        }
-        m_decInit = true;
-    }
-
-    sts = DecodeFrame(bs, nullptr, &surface_out);
-    if (sts < 0) {
-        // may return MFX_ERR_MORE_DATA
-        return sts;
-    }
-
-    // just fills in the minimum parameters required to alloc buffers and start decoding
-    // in next step, the app will call DECODE_Query() to confirm that it can decode this stream
-    m_decWidth  = m_avDecContext->width;
-    m_decHeight = m_avDecContext->height;
-
-    if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
-        m_decOutFormat = MFX_FOURCC_I010;
-    else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
-        m_decOutFormat = MFX_FOURCC_I420;
-    else
-        m_decOutFormat = MFX_FOURCC_I420;
-
-    // fill in mfxVideoParam
-    par->mfx.FrameInfo.Width  = (uint16_t)m_decWidth;
-    par->mfx.FrameInfo.Height = (uint16_t)m_decHeight;
-    par->mfx.FrameInfo.FourCC = m_decOutFormat;
-
-    if (m_avDecContext->width == 0 || m_avDecContext->height == 0) {
-        return MFX_ERR_NOT_INITIALIZED;
-    }
-
-    //reset the decoder
-    FreeDecode();
-
-    m_decInit = false;
-
-    return MFX_ERR_NONE;
 }
 
 // bs == 0 is a signal to drain
-mfxStatus CpuWorkstream::DecodeFrame(mfxBitstream *bs,
-                                     mfxFrameSurface1 *surface_work,
-                                     mfxFrameSurface1 **surface_out) {
-    if (!m_decInit) {
-        ERR_EXIT(VPL_WORKSTREAM_DECODE);
-    }
-
-    // copy new data into bitstream buffer
-    if (bs && bs->DataLength > 0) {
-        memcpy_s(m_bsDecData + m_bsDecValidBytes,
-                 bs->DataLength,
-                 bs->Data + bs->DataOffset,
-                 bs->DataLength);
-        m_bsDecValidBytes += (uint32_t)bs->DataLength;
-    }
-
-    // parse a packet
-    // if packet is ready, m_avDecPacket->data and m_avDecPacket->size will be non-zero
-    // otherwise, m_avDecPacket->size is 0 and parser needs more data to produce a packet
-    // returns number of bytes consumed
-    //
-    // m_avDecPacket->data may point to the input buffer m_bsDecData after calling this,
-    //   so do not overwrite m_bsDecData until calling avcodec_send_packet()
-    int bytesParsed = av_parser_parse2(m_avDecParser,
-                                       m_avDecContext,
-                                       &m_avDecPacket->data,
-                                       &m_avDecPacket->size,
-                                       m_bsDecData,
-                                       m_bsDecValidBytes,
-                                       AV_NOPTS_VALUE,
-                                       AV_NOPTS_VALUE,
-                                       0);
-
-    if (m_avDecPacket->size == 0) {
-        if (bs == 0 && bytesParsed == 0) {
-            // start draining
-            m_avDecPacket->data = NULL;
-            m_avDecPacket->size = 0;
+mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
+                                 mfxFrameSurface1 *surface_work,
+                                 mfxFrameSurface1 **surface_out) {
+    for (;;) {
+        // parse
+        auto data_ptr    = bs ? (bs->Data + bs->DataOffset) : nullptr;
+        int data_size    = bs ? bs->DataLength : 0;
+        int bytes_parsed = av_parser_parse2(m_avDecParser,
+                                            m_avDecContext,
+                                            &m_avDecPacket->data,
+                                            &m_avDecPacket->size,
+                                            data_ptr,
+                                            data_size,
+                                            AV_NOPTS_VALUE,
+                                            AV_NOPTS_VALUE,
+                                            0);
+        if (bs && bytes_parsed) {
+            bs->DataOffset += bytes_parsed;
+            bs->DataLength -= bytes_parsed;
         }
-        else if (m_bsDecValidBytes - bytesParsed == 0) {
-            // bitstream is empty - need more data from app
-            m_bsDecValidBytes = 0;
 
+        // send packet
+        if (m_avDecPacket->size) {
+            auto av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
+            if (av_ret < 0) {
+                return MFX_ERR_ABORTED;
+            }
+        }
+        // send EOF packet
+        if (!bs) {
+            avcodec_send_packet(m_avDecContext, nullptr);
+        }
+
+        // receive frame
+        auto av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
+        if (av_ret == 0) {
+            if (surface_work && surface_out) {
+                RET_ERROR(
+                    AVFrame2mfxFrameSurface(surface_work,
+                                            m_avDecFrameOut,
+                                            m_session->GetFrameAllocator()));
+                *surface_out = surface_work;
+            }
+            if (m_param.mfx.FrameInfo.Width != m_avDecContext->width ||
+                m_param.mfx.FrameInfo.Height != m_avDecContext->height) {
+                m_param.mfx.FrameInfo.Width  = m_avDecContext->width;
+                m_param.mfx.FrameInfo.Height = m_avDecContext->height;
+
+                if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
+                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
+                else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
+                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+                else
+                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+            }
+            //av_frame_free(&m_avDecFrameOut);
+            return MFX_ERR_NONE;
+        }
+        if (av_ret == AVERROR(EAGAIN)) {
+            if (bs && bs->DataLength) {
+                continue; // we have more input data
+            }
+            else {
+                return MFX_ERR_MORE_DATA;
+            }
+        }
+        if (av_ret == AVERROR_EOF) {
             return MFX_ERR_MORE_DATA;
         }
+        return MFX_ERR_ABORTED;
     }
-
-    int av_ret = 0;
-    while (1) {
-        // parse a packet
-        // if packet is ready, m_avDecPacket->data and m_avDecPacket->size will be non-zero
-        // otherwise, m_avDecPacket->size is 0 and parser needs more data to produce a packet
-        // returns number of bytes consumed
-        //
-        // m_avDecPacket->data may point to the input buffer m_bsDecData after calling this,
-        //   so do not overwrite m_bsDecData until calling avcodec_send_packet()
-
-        av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
-
-        memmove(m_bsDecData,
-                m_bsDecData + bytesParsed,
-                m_bsDecValidBytes - bytesParsed);
-        m_bsDecValidBytes -= bytesParsed;
-
-        // try to get a decoded frame
-        av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
-
-        if (av_ret != AVERROR(EAGAIN)) {
-            // don't need more data
-            break;
-        }
-
-        bytesParsed = av_parser_parse2(m_avDecParser,
-                                       m_avDecContext,
-                                       &m_avDecPacket->data,
-                                       &m_avDecPacket->size,
-                                       m_bsDecData,
-                                       m_bsDecValidBytes,
-                                       AV_NOPTS_VALUE,
-                                       AV_NOPTS_VALUE,
-                                       0);
-    }
-
-    if (av_ret == AVERROR_EOF) {
-        // no more data left to drain, processing is done
-        return MFX_ERR_MORE_DATA;
-    }
-
-    if ((m_decWidth && m_decWidth != m_avDecContext->width) ||
-        (m_decHeight && m_decHeight != m_avDecContext->height)) {
-        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
-    }
-
-    // frame successfully decoded
-    // don't save output frame if surface_work is 0 (e.g. DecodeHeader)
-    if (surface_work) {
-        AVFrame2mfxFrameSurface(surface_work, m_avDecFrameOut);
-        *surface_out = surface_work;
-    }
-
-    return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::DecodeQueryIOSurf(mfxVideoParam *par,
-                                           mfxFrameAllocRequest *request) {
+mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
+                                       mfxFrameAllocRequest *request) {
     // may be null for internal use
     if (par)
         request->Info = par->mfx.FrameInfo;
@@ -285,10 +203,9 @@ mfxStatus CpuWorkstream::DecodeQueryIOSurf(mfxVideoParam *par,
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
+mfxStatus CpuDecode::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
     mfxStatus sts = MFX_ERR_NONE;
 
-    //CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     if (in) {
         // save a local copy of in, since user may set out == in
         mfxVideoParam inCopy = *in;
@@ -316,4 +233,29 @@ mfxStatus CpuWorkstream::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
     }
 
     return sts;
+}
+
+// return free surface and set refCount to 1
+mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
+    if (!m_decSurfaces) {
+        mfxFrameAllocRequest DecRequest = { 0 };
+        RET_ERROR(DecodeQueryIOSurf(&m_param, &DecRequest));
+
+        auto pool = std::make_unique<CpuFramePool>();
+        RET_ERROR(pool->Init(m_param.mfx.FrameInfo.FourCC,
+                             m_param.mfx.FrameInfo.Width,
+                             m_param.mfx.FrameInfo.Height,
+                             DecRequest.NumFrameSuggested));
+        m_decSurfaces = std::move(pool);
+    }
+
+    return m_decSurfaces->GetFreeSurface(surface);
+}
+
+mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
+    //RET_IF_FALSE(m_param.mfx.FrameInfo.Width, MFX_ERR_NOT_INITIALIZED);
+    //RET_IF_FALSE(m_param.mfx.FrameInfo.Height, MFX_ERR_NOT_INITIALIZED);
+    //*par = m_param;
+    par->mfx = m_param.mfx;
+    return MFX_ERR_NONE;
 }

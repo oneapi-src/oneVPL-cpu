@@ -4,10 +4,22 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
+#include "src/cpu_encode.h"
+#include <memory>
 #include <sstream>
-#include "./cpu_workstream.h"
+#include "src/cpu_workstream.h"
+#include "src/frame_lock.h"
 
-mfxStatus CpuWorkstream::ValidateEncodeParams(mfxVideoParam *par) {
+CpuEncode::CpuEncode(CpuWorkstream *session)
+        : m_session(session),
+          m_avEncCodec(nullptr),
+          m_avEncContext(nullptr),
+          m_avEncPacket(nullptr),
+          m_avEncFrameIn(nullptr),
+          m_param({}),
+          m_encSurfaces() {}
+
+mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
     if (par->mfx.FrameInfo.FourCC) {
         if (par->mfx.FrameInfo.FourCC != MFX_FOURCC_I420 &&
             par->mfx.FrameInfo.FourCC != MFX_FOURCC_I010)
@@ -247,43 +259,25 @@ mfxStatus CpuWorkstream::ValidateEncodeParams(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
-    mfxStatus sts = ValidateEncodeParams(par);
-    if (sts != MFX_ERR_NONE)
-        return sts;
+mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
+    m_param = *par;
+    par     = &m_param;
 
-    m_encCodecId = par->mfx.CodecId;
+    RET_ERROR(ValidateEncodeParams(par));
 
-    AVCodecID cid = AV_CODEC_ID_NONE;
-
-    switch (m_encCodecId) {
-        case MFX_CODEC_AVC:
-            cid = AV_CODEC_ID_H264;
-            break;
-        case MFX_CODEC_HEVC:
-            cid = AV_CODEC_ID_HEVC;
-            break;
-        case MFX_CODEC_JPEG:
-            cid = AV_CODEC_ID_MJPEG;
-            break;
-        case MFX_CODEC_AV1:
-            cid = AV_CODEC_ID_AV1;
-            break;
-        default:
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
+    AVCodecID cid = MFXCodecId_to_AVCodecID(m_param.mfx.CodecId);
+    RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
 
     m_avEncCodec = avcodec_find_encoder(cid);
-    if (!m_avEncCodec)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
+    RET_IF_FALSE(m_avEncCodec, MFX_ERR_INVALID_VIDEO_PARAM);
+    VPL_DEBUG_MESSAGE("AVCodec encoder name=" +
+                      std::string(m_avEncCodec->name));
 
     m_avEncContext = avcodec_alloc_context3(m_avEncCodec);
-    if (!m_avEncContext)
-        return MFX_ERR_MEMORY_ALLOC;
+    RET_IF_FALSE(m_avEncContext, MFX_ERR_MEMORY_ALLOC);
 
     m_avEncPacket = av_packet_alloc();
-    if (!m_avEncPacket)
-        return MFX_ERR_MEMORY_ALLOC;
+    RET_IF_FALSE(m_avEncPacket, MFX_ERR_MEMORY_ALLOC);
 
     //------------------------------
     // Set general libav parameters
@@ -316,21 +310,18 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
     }
     else {
         // default: 8-bit 420
-        if (m_encCodecId == MFX_CODEC_JPEG)
+        if (par->mfx.CodecId == MFX_CODEC_JPEG)
             m_avEncContext->pix_fmt = AV_PIX_FMT_YUVJ420P;
         else
             m_avEncContext->pix_fmt = AV_PIX_FMT_YUV420P;
     }
 
     if (m_avEncContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
-        m_encInFormat = MFX_FOURCC_I010;
+        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
     else if (m_avEncContext->pix_fmt == AV_PIX_FMT_YUV420P)
-        m_encInFormat = MFX_FOURCC_I420;
+        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
     else
-        m_encInFormat = MFX_FOURCC_I420;
-
-    m_encWidth  = m_avEncContext->width;
-    m_encHeight = m_avEncContext->height;
+        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
 
     // set defaults for anything not passed in
     if (!m_avEncContext->gop_size)
@@ -339,30 +330,23 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
             static_cast<int>(static_cast<float>(m_avEncContext->framerate.num) /
                              m_avEncContext->framerate.den);
 
-    switch (m_encCodecId) {
+    switch (m_param.mfx.CodecId) {
         case MFX_CODEC_HEVC:
-            sts = InitHEVCParams(par);
-            if (sts != MFX_ERR_NONE)
-                return MFX_ERR_INVALID_VIDEO_PARAM;
+            if (m_avEncCodec->name != std::string("libx265")) {
+                RET_ERROR(InitHEVCParams(par)); // SVT specific params
+            }
             break;
         case MFX_CODEC_AV1:
-            sts = InitAV1Params(par);
-            if (sts != MFX_ERR_NONE)
-                return MFX_ERR_INVALID_VIDEO_PARAM;
+            RET_ERROR(InitAV1Params(par));
             break;
         case MFX_CODEC_AVC:
-            sts = InitAVCParams(par);
-            if (sts != MFX_ERR_NONE)
-                return MFX_ERR_INVALID_VIDEO_PARAM;
+            RET_ERROR(InitAVCParams(par));
             break;
         case MFX_CODEC_JPEG:
-            sts = InitJPEGParams(par);
-            if (sts != MFX_ERR_NONE)
-                return MFX_ERR_INVALID_VIDEO_PARAM;
+            RET_ERROR(InitJPEGParams(par));
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
-            break;
     }
 
 #ifdef ENABLE_LIBAV_AUTO_THREADS
@@ -382,11 +366,16 @@ mfxStatus CpuWorkstream::InitEncode(mfxVideoParam *par) {
     m_avEncFrameIn->width  = m_avEncContext->width;
     m_avEncFrameIn->height = m_avEncContext->height;
 
-    m_encInit = true;
+    if (!m_param.mfx.BufferSizeInKB) {
+        m_param.mfx.BufferSizeInKB =
+            m_param.mfx
+                .TargetKbps; // TODO(estimate better based on RateControlMethod)
+    }
+
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
+mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
     int ret;
 
     // set rate control
@@ -551,11 +540,11 @@ mfxStatus CpuWorkstream::InitHEVCParams(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::InitAVCParams(mfxVideoParam *par) {
-    return MFX_ERR_NONE;
+mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
+    return MFX_ERR_NOT_IMPLEMENTED;
 }
 
-mfxStatus CpuWorkstream::InitJPEGParams(mfxVideoParam *par) {
+mfxStatus CpuEncode::InitJPEGParams(mfxVideoParam *par) {
     if (par->mfx.Quality) {
         uint32_t jpegQuality;
 
@@ -578,7 +567,7 @@ mfxStatus CpuWorkstream::InitJPEGParams(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
+mfxStatus CpuEncode::InitAV1Params(mfxVideoParam *par) {
     int ret;
 
     // set AV1 rate control (0=CQP, 1=VBR, 2 = CVBR)
@@ -681,7 +670,20 @@ mfxStatus CpuWorkstream::InitAV1Params(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
-void CpuWorkstream::FreeEncode(void) {
+CpuEncode::~CpuEncode() {
+    // drain encoder - workaround for SVT encoder hang on avcodec_close
+    mfxBitstream bs{};
+    mfxStatus sts;
+    do {
+        sts = EncodeFrame(nullptr, &bs);
+    } while (sts == MFX_ERR_NOT_ENOUGH_BUFFER || sts == MFX_ERR_NONE);
+
+    if (m_avEncContext) {
+        avcodec_close(m_avEncContext);
+        avcodec_free_context(&m_avEncContext);
+        m_avEncContext = nullptr;
+    }
+
     if (m_avEncFrameIn) {
         av_frame_free(&m_avEncFrameIn);
         m_avEncFrameIn = nullptr;
@@ -691,29 +693,28 @@ void CpuWorkstream::FreeEncode(void) {
         av_packet_free(&m_avEncPacket);
         m_avEncPacket = nullptr;
     }
-
-    if (m_avEncContext) {
-        avcodec_close(m_avEncContext);
-        avcodec_free_context(&m_avEncContext);
-        m_avEncContext = nullptr;
-    }
 }
 
-mfxStatus CpuWorkstream::EncodeFrame(mfxFrameSurface1 *surface,
-                                     mfxBitstream *bs) {
-    int err = 0;
+mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
+    RET_IF_FALSE(m_avEncContext, MFX_ERR_NOT_INITIALIZED);
+    int err;
 
     // encode one frame
     if (surface) {
-        m_avEncFrameIn->data[0] = surface->Data.Y;
-        m_avEncFrameIn->data[1] = surface->Data.U;
-        m_avEncFrameIn->data[2] = surface->Data.V;
+        FrameLock locker;
+        RET_ERROR(
+            locker.Lock(surface, MFX_MAP_READ, m_session->GetFrameAllocator()));
+        mfxFrameData *data = locker.GetData();
 
-        m_avEncFrameIn->linesize[0] = surface->Data.Pitch;
-        m_avEncFrameIn->linesize[1] = surface->Data.Pitch / 2;
-        m_avEncFrameIn->linesize[2] = surface->Data.Pitch / 2;
+        m_avEncFrameIn->data[0] = data->Y;
+        m_avEncFrameIn->data[1] = data->U;
+        m_avEncFrameIn->data[2] = data->V;
 
-        if (m_encCodecId == MFX_CODEC_JPEG) {
+        m_avEncFrameIn->linesize[0] = data->Pitch;
+        m_avEncFrameIn->linesize[1] = data->Pitch / 2;
+        m_avEncFrameIn->linesize[2] = data->Pitch / 2;
+
+        if (m_param.mfx.CodecId == MFX_CODEC_JPEG) {
             // must be set for every frame
             m_avEncFrameIn->quality = m_avEncContext->global_quality;
         }
@@ -765,8 +766,8 @@ mfxStatus CpuWorkstream::EncodeFrame(mfxFrameSurface1 *surface,
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::EncodeQueryIOSurf(mfxVideoParam *par,
-                                           mfxFrameAllocRequest *request) {
+mfxStatus CpuEncode::EncodeQueryIOSurf(mfxVideoParam *par,
+                                       mfxFrameAllocRequest *request) {
     // may be null for internal use
     if (par)
         request->Info = par->mfx.FrameInfo;
@@ -780,7 +781,7 @@ mfxStatus CpuWorkstream::EncodeQueryIOSurf(mfxVideoParam *par,
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuWorkstream::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
+mfxStatus CpuEncode::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
     mfxStatus sts = MFX_ERR_NONE;
 
     if (in) {
@@ -801,4 +802,28 @@ mfxStatus CpuWorkstream::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
     }
 
     return sts;
+}
+
+mfxStatus CpuEncode::GetEncodeSurface(mfxFrameSurface1 **surface) {
+    if (!m_encSurfaces) {
+        mfxFrameAllocRequest EncRequest = { 0 };
+        RET_ERROR(EncodeQueryIOSurf(nullptr, &EncRequest));
+
+        auto pool = std::make_unique<CpuFramePool>();
+        RET_ERROR(pool->Init(m_param.mfx.FrameInfo.FourCC,
+                             m_param.mfx.FrameInfo.Width,
+                             m_param.mfx.FrameInfo.Height,
+                             EncRequest.NumFrameSuggested));
+        m_encSurfaces = std::move(pool);
+    }
+
+    return m_encSurfaces->GetFreeSurface(surface);
+}
+
+mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
+    //RET_IF_FALSE(m_param.mfx.FrameInfo.Width, MFX_ERR_NOT_INITIALIZED);
+    //RET_IF_FALSE(m_param.mfx.FrameInfo.Height, MFX_ERR_NOT_INITIALIZED);
+    *par = m_param;
+    //par->mfx = m_param.mfx;
+    return MFX_ERR_NONE;
 }

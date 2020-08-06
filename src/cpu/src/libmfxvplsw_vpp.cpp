@@ -11,84 +11,60 @@
 mfxStatus MFXVideoVPP_Query(mfxSession session,
                             mfxVideoParam *in,
                             mfxVideoParam *out) {
-    if (session == 0)
-        return MFX_ERR_INVALID_HANDLE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(out, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(out->Protected == 0, MFX_ERR_UNSUPPORTED);
+    RET_IF_FALSE(in == nullptr || in->Protected == 0, MFX_ERR_UNSUPPORTED);
 
-    if (out == 0)
-        return MFX_ERR_NULL_PTR;
-
-    // do not support protected mode yet
-    if ((in != 0 && in->Protected != 0) || out->Protected != 0)
-        return MFX_ERR_UNSUPPORTED;
-
-    mfxStatus sts = MFX_ERR_NONE;
-
-    CpuWorkstream *ws = (CpuWorkstream *)session;
-
-    sts = ws->VPPQuery(in, out);
-
-    return sts;
+    return CpuVPP::VPPQuery(in, out);
 }
 
 mfxStatus MFXVideoVPP_QueryIOSurf(mfxSession session,
                                   mfxVideoParam *par,
                                   mfxFrameAllocRequest request[2]) {
-    if (session == 0)
-        return MFX_ERR_INVALID_HANDLE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
 
-    if (par == 0)
-        return MFX_ERR_NULL_PTR;
-
-    if (request == 0)
-        return MFX_ERR_NULL_PTR;
-
-    mfxStatus sts = MFX_ERR_NONE;
-
-    CpuWorkstream *ws = (CpuWorkstream *)session;
-
-    sts = ws->VPPQueryIOSurf(par, request);
-
-    return sts;
+    return CpuVPP::VPPQueryIOSurf(par, request);
 }
 
 mfxStatus MFXVideoVPP_Init(mfxSession session, mfxVideoParam *par) {
-    if (session == 0)
-        return MFX_ERR_INVALID_HANDLE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (par == 0)
-        return MFX_ERR_NULL_PTR;
+    std::unique_ptr<CpuVPP> vpp(new CpuVPP(ws));
+    RET_IF_FALSE(vpp, MFX_ERR_MEMORY_ALLOC);
+    RET_ERROR(vpp->InitVPP(par));
 
-    mfxStatus sts = MFX_ERR_NONE;
+    ws->SetVPP(vpp.release());
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
-
-    sts = ws->InitVPP(par);
-
-    return sts;
+    return MFX_ERR_NONE;
 }
 
 mfxStatus MFXVideoVPP_Close(mfxSession session) {
-    if (0 == session)
-        return MFX_ERR_INVALID_HANDLE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
 
-    CpuWorkstream *ws = (CpuWorkstream *)session;
-
-    ws->FreeVPP();
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    ws->SetVPP(nullptr);
 
     return MFX_ERR_NONE;
 }
 
 mfxStatus MFXVideoVPP_GetVideoParam(mfxSession session, mfxVideoParam *par) {
-    mfxStatus sts = MFX_ERR_NONE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
 
-    if (0 == session) {
-        return MFX_ERR_INVALID_HANDLE;
-    }
-    if (0 == par) {
-        return MFX_ERR_NULL_PTR;
-    }
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    CpuVPP *vpp       = ws->GetVPP();
+    RET_IF_FALSE(vpp, MFX_ERR_NOT_INITIALIZED);
 
-    return sts;
+    return vpp->GetVideoParam(par);
 }
 
 mfxStatus MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
@@ -96,27 +72,25 @@ mfxStatus MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
                                        mfxFrameSurface1 *out,
                                        mfxExtVppAuxData *aux,
                                        mfxSyncPoint *syncp) {
-    mfxStatus sts = MFX_ERR_NONE;
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(in && out && syncp, MFX_ERR_NULL_PTR);
 
-    if (session == 0)
-        return MFX_ERR_INVALID_HANDLE;
-
-    if (in == 0 || out == 0 || syncp == 0)
-        return MFX_ERR_NULL_PTR;
-
-    CpuWorkstream *ws = (CpuWorkstream *)session;
-
-    sts = ws->ProcessFrame(in, out, aux);
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    CpuVPP *vpp       = ws->GetVPP();
+    RET_IF_FALSE(vpp, MFX_ERR_NOT_INITIALIZED);
 
     *syncp = (mfxSyncPoint)(0x12345678);
 
-    return sts;
+    return vpp->ProcessFrame(in, out, aux);
 }
 
 mfxStatus MFXVideoVPP_Reset(mfxSession session, mfxVideoParam *par) {
+    VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }
 
 mfxStatus MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat) {
+    VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }

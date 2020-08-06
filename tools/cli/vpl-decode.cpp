@@ -371,6 +371,7 @@ int GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool, mfxU16 nPoolSize) {
 
 mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f) {
     memmove(bs.Data, bs.Data + bs.DataOffset, bs.DataLength);
+    bs.DataOffset = 0;
 
     if (codecid == MFX_CODEC_AV1) {
         // spec for IVF headers
@@ -423,7 +424,8 @@ mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f) {
         }
     }
     else {
-        bs.DataLength = static_cast<mfxU32>(fread(bs.Data, 1, bs.MaxLength, f));
+        bs.DataLength += static_cast<mfxU32>(
+            fread(bs.Data + bs.DataLength, 1, bs.MaxLength - bs.DataLength, f));
     }
     return MFX_ERR_NONE;
 }
