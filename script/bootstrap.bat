@@ -210,6 +210,8 @@ ${enable_x264options}  ^
 --enable-filter=drawbox   ^
 --enable-filter=psnr ^
 --enable-filter=ssim ^
+--enable-filter=select ^
+--enable-filter=concat ^
 --enable-libsvthevc ^
 --enable-encoder=libsvt_hevc ^
 --enable-libsvtav1 ^

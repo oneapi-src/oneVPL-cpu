@@ -27,7 +27,10 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_avDecPacket(nullptr),
           m_avDecFrameOut(nullptr),
           m_param(),
-          m_decSurfaces() {}
+          m_decSurfaces(),
+          m_bExtMemToBeReallocated(false),
+          m_prevAVFrameWidth(0),
+          m_prevAVFrameHeight(0) {}
 
 mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
     //only system memory allowed
@@ -194,6 +197,19 @@ CpuDecode::~CpuDecode() {
 mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                                  mfxFrameSurface1 *surface_work,
                                  mfxFrameSurface1 **surface_out) {
+    if (bs == nullptr && m_bExtMemToBeReallocated == true) {
+        if (surface_work && surface_out) {
+            RET_ERROR(AVFrame2mfxFrameSurface(surface_work,
+                                              m_avDecFrameOut,
+                                              m_session->GetFrameAllocator()));
+
+            *surface_out             = surface_work;
+            m_bExtMemToBeReallocated = false;
+
+            return MFX_ERR_NONE;
+        }
+    }
+
     // Try get AVFrame from surface_work
     AVFrame *avframe    = nullptr;
     CpuFrame *cpu_frame = CpuFrame::TryCast(surface_work);
@@ -237,6 +253,33 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
         // receive frame
         auto av_ret = avcodec_receive_frame(m_avDecContext, avframe);
         if (av_ret == 0) {
+            if (m_param.mfx.FrameInfo.Width != m_avDecContext->width ||
+                m_param.mfx.FrameInfo.Height != m_avDecContext->height) {
+                m_param.mfx.FrameInfo.Width  = m_avDecContext->width;
+                m_param.mfx.FrameInfo.Height = m_avDecContext->height;
+
+                if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
+                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
+                else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
+                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+                else
+                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+            }
+
+            if (!m_decSurfaces) { // external memory mode
+                if (surface_out) { // regular decode process, not part of decodeheader() process
+                    // if resolution is changed
+                    if (m_prevAVFrameWidth != avframe->width ||
+                        m_prevAVFrameHeight != avframe->height) {
+                        m_prevAVFrameWidth       = avframe->width;
+                        m_prevAVFrameHeight      = avframe->height;
+                        m_avDecFrameOut          = avframe;
+                        m_bExtMemToBeReallocated = true;
+
+                        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+                    }
+                }
+            }
             if (surface_out) {
                 if (avframe == m_avDecFrameOut) { // copy image data
                     RET_ERROR(AVFrame2mfxFrameSurface(
@@ -251,17 +294,12 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 }
                 *surface_out = surface_work;
             }
-            if (m_param.mfx.FrameInfo.Width != m_avDecContext->width ||
-                m_param.mfx.FrameInfo.Height != m_avDecContext->height) {
-                m_param.mfx.FrameInfo.Width  = m_avDecContext->width;
-                m_param.mfx.FrameInfo.Height = m_avDecContext->height;
-
-                if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
-                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
-                else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
-                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
-                else
-                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+            else {
+                // just once for 1st frame
+                if (m_prevAVFrameWidth == 0 || m_prevAVFrameHeight == 0) {
+                    m_prevAVFrameWidth  = avframe->width;
+                    m_prevAVFrameHeight = avframe->height;
+                }
             }
             return MFX_ERR_NONE;
         }

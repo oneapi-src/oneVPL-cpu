@@ -23,11 +23,11 @@
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
 
 enum MemoryMode {
-    MEM_MODE_UNKNOWN = -1,
-
+    MEM_MODE_UNKNOWN  = -1,
     MEM_MODE_EXTERNAL = 0,
     MEM_MODE_INTERNAL,
     MEM_MODE_AUTO,
+    MEM_MODE_COUNT
 };
 
 const char* MemoryModeString[] = { "MEM_MODE_EXTERNAL",
@@ -40,12 +40,11 @@ typedef struct _Params {
 
     char* infileFormat;
     char* outfileFormat;
+    char* outResolution;
 
     char* targetDeviceType;
 
     char* gpuCopyMode;
-
-    MemoryMode memoryMode;
 
     mfxU32 srcFourCC;
     mfxU32 dstFourCC;
@@ -86,8 +85,16 @@ typedef struct _Params {
     mfxU32 dstCropW;
     mfxU32 dstCropH;
 
+    MemoryMode memoryMode;
+
+    mfxU32 outWidth;
+    mfxU32 outHeight;
 } Params;
 
+mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
+                                        mfxFrameSurface1* surfpool,
+                                        mfxFrameInfo* frame_info,
+                                        mfxU16 surfnum);
 mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f);
 void WriteRawFrame(mfxFrameSurface1* pSurface, FILE* f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
@@ -169,10 +176,12 @@ int main(int argc, char* argv[]) {
 
     ReadEncodedStream(mfxBS, params.srcFourCC, fSource);
 
-    mfxVideoParam mfxDecParams = { 0 };
+    // initialize decode parameters from stream header
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
 
+    // do lazy-init for AUTO mode
     if (params.memoryMode == MEM_MODE_AUTO) {
-        // do lazy-init for AUTO mode - only need codec type
         mfxBS.CodecId = params.srcFourCC;
     }
     else {
@@ -185,7 +194,7 @@ int main(int argc, char* argv[]) {
             fclose(fSource);
             fclose(fSink);
             printf("Problem decoding header.  DecodeHeader sts=%d\n", sts);
-            return sts;
+            return 1;
         }
 
         // input parameters finished, now initialize decode
@@ -194,11 +203,10 @@ int main(int argc, char* argv[]) {
             fclose(fSource);
             fclose(fSink);
             puts("Could not initialize decode");
-            exit(sts);
+            return 1;
         }
     }
 
-    // Query number required surfaces for decoder
     mfxFrameAllocRequest DecRequest = { 0 };
     mfxU16 nSurfNumDec              = 0;
     mfxFrameSurface1* decSurfaces   = nullptr;
@@ -206,43 +214,23 @@ int main(int argc, char* argv[]) {
     mfxU8* DECoutbuf                = nullptr;
 
     if (params.memoryMode == MEM_MODE_EXTERNAL) {
+        // Query number required surfaces for decoder
+        DecRequest = { 0 };
         MFXVideoDECODE_QueryIOSurf(session, &mfxDecParams, &DecRequest);
 
         // Determine the required number of surfaces for decoder output
         nSurfNumDec = DecRequest.NumFrameSuggested;
 
         decSurfaces = new mfxFrameSurface1[nSurfNumDec];
-
-        // initialize surface pool for decode (I420 format)
-        mfxU32 surfaceSize = GetSurfaceSize(mfxDecParams.mfx.FrameInfo.FourCC,
-                                            mfxDecParams.mfx.FrameInfo.Width,
-                                            mfxDecParams.mfx.FrameInfo.Height);
-        if (surfaceSize == 0) {
-            if (decSurfaces)
-                delete[] decSurfaces;
+        sts         = AllocateExternalMemorySurface(DECoutbuf,
+                                            decSurfaces,
+                                            &mfxDecParams.mfx.FrameInfo,
+                                            nSurfNumDec);
+        if (sts != MFX_ERR_NONE) {
             fclose(fSource);
             fclose(fSink);
-            puts("Surface size is wrong");
-            return 1;
-        }
-        size_t framePoolBufSize =
-            static_cast<size_t>(surfaceSize) * nSurfNumDec;
-        DECoutbuf = new mfxU8[framePoolBufSize];
-
-        mfxU16 surfW = (mfxDecParams.mfx.FrameInfo.FourCC == MFX_FOURCC_I010)
-                           ? mfxDecParams.mfx.FrameInfo.Width * 2
-                           : mfxDecParams.mfx.FrameInfo.Width;
-        mfxU16 surfH = mfxDecParams.mfx.FrameInfo.Height;
-
-        for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-            decSurfaces[i]        = { 0 };
-            decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-            size_t buf_offset     = static_cast<size_t>(i) * surfaceSize;
-            decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-            decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-            decSurfaces[i].Data.V =
-                decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
-            decSurfaces[i].Data.Pitch = surfW;
+            puts("External memory allocation error.");
+            return sts;
         }
     }
 
@@ -267,7 +255,8 @@ int main(int argc, char* argv[]) {
 
         while (stillgoing) {
             // submit async decode request
-            auto t0 = std::chrono::high_resolution_clock::now();
+            pmfxWorkSurface = nullptr;
+            auto t0         = std::chrono::high_resolution_clock::now();
             if (params.memoryMode == MEM_MODE_EXTERNAL) {
                 pmfxWorkSurface = &decSurfaces[nIndex];
             }
@@ -322,12 +311,47 @@ int main(int argc, char* argv[]) {
                         exit(1);
                     }
                     break;
+                case MFX_ERR_INCOMPATIBLE_VIDEO_PARAM:
+                    if (params.memoryMode == MEM_MODE_EXTERNAL) {
+                        MFXVideoDECODE_GetVideoParam(session, &mfxDecParams);
+                        sts = AllocateExternalMemorySurface(
+                            DECoutbuf,
+                            decSurfaces,
+                            &mfxDecParams.mfx.FrameInfo,
+                            nSurfNumDec);
+                        if (sts != MFX_ERR_NONE) {
+                            fclose(fSource);
+                            fclose(fSink);
+                            puts(
+                                "External memory allocation error after resolution change.");
+                            return sts;
+                        }
+
+                        nIndex = GetFreeSurfaceIndex(decSurfaces, nSurfNumDec);
+                        pmfxWorkSurface = &decSurfaces[nIndex];
+
+                        sts = MFXVideoDECODE_DecodeFrameAsync(session,
+                                                              nullptr,
+                                                              pmfxWorkSurface,
+                                                              &pmfxOutSurface,
+                                                              &syncp);
+
+                        stillgoing = false;
+                        sts        = MFX_ERR_NONE;
+                        break;
+                    }
+                    else {
+                        printf("Error in DecodeFrameAsync: sts=%d\n", sts);
+                        exit(1);
+                        break;
+                    }
+                    break;
                 case MFX_ERR_NONE: // no more steps needed, exit loop
                     stillgoing = false;
                     break;
                 default: // state is not one of the cases above
-                    printf("Error in DecodeFrameAsync: and exit sts=%d\n", sts);
-                    exit(sts);
+                    printf("Error in DecodeFrameAsync: sts=%d\n", sts);
+                    exit(1);
                     break;
             }
         }
@@ -349,8 +373,19 @@ int main(int argc, char* argv[]) {
         }
 
         // write output if output file specified
-        if (fSink)
-            WriteRawFrame(pmfxOutSurface, fSink);
+        if (fSink) {
+            // this is only for mult-res stream test case
+            if (params.outWidth != 0 && params.outHeight != 0) {
+                if (pmfxOutSurface->Info.Width == params.outWidth &&
+                    pmfxOutSurface->Info.Height == params.outHeight) {
+                    WriteRawFrame(pmfxOutSurface, fSink);
+                    printf(" stored\n");
+                }
+            }
+            else {
+                WriteRawFrame(pmfxOutSurface, fSink);
+            }
+        }
 
         if (params.memoryMode == MEM_MODE_INTERNAL ||
             params.memoryMode == MEM_MODE_AUTO) {
@@ -359,6 +394,7 @@ int main(int argc, char* argv[]) {
         }
 
         framenum++;
+        printf("#.%d", framenum);
     }
 
     printf("read %d frames\n", framenum);
@@ -370,14 +406,57 @@ int main(int argc, char* argv[]) {
 
     fclose(fSink);
     fclose(fSource);
-    MFXVideoDECODE_Close(session);
-    MFXClose(session);
+
     if (params.memoryMode == MEM_MODE_EXTERNAL) {
-        delete[] DECoutbuf;
-        delete[] decSurfaces;
+        if (decSurfaces) {
+            delete[] decSurfaces;
+        }
     }
 
+    MFXVideoDECODE_Close(session);
+    MFXClose(session);
     return 0;
+}
+
+mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
+                                        mfxFrameSurface1* surfpool,
+                                        mfxFrameInfo* frame_info,
+                                        mfxU16 surfnum) {
+    if (dec_buff) {
+        delete[] dec_buff;
+        dec_buff = NULL;
+    }
+
+    // initialize surface pool for decode (I420 format)
+    mfxU32 surfaceSize = GetSurfaceSize(frame_info->FourCC,
+                                        frame_info->Width,
+                                        frame_info->Height);
+    if (!surfaceSize)
+        return MFX_ERR_MEMORY_ALLOC;
+
+    size_t framePoolBufSize = static_cast<size_t>(surfaceSize) * surfnum;
+    dec_buff                = new mfxU8[framePoolBufSize];
+    if (!dec_buff)
+        return MFX_ERR_MEMORY_ALLOC;
+    else
+        memset(dec_buff, 0, framePoolBufSize);
+
+    mfxU16 surfW = (frame_info->FourCC == MFX_FOURCC_I010)
+                       ? frame_info->Width * 2
+                       : frame_info->Width;
+    mfxU16 surfH = frame_info->Height;
+
+    for (mfxU32 i = 0; i < surfnum; i++) {
+        surfpool[i] = { 0 };
+        memcpy(&surfpool[i].Info, frame_info, sizeof(mfxFrameInfo));
+        size_t buf_offset  = static_cast<size_t>(i) * surfaceSize;
+        surfpool[i].Data.Y = dec_buff + buf_offset;
+        surfpool[i].Data.U = dec_buff + buf_offset + (surfW * surfH);
+        surfpool[i].Data.V = surfpool[i].Data.U + ((surfW / 2) * (surfH / 2));
+        surfpool[i].Data.Pitch = surfW;
+    }
+
+    return MFX_ERR_NONE;
 }
 
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
@@ -585,16 +664,16 @@ bool ValidateParams(Params* params) {
     }
 
     // input format (required)
-    if (!strncmp(params->infileFormat, "H264", strlen("H264"))) {
+    if (strncmp(params->infileFormat, "H264", strlen("H264")) == 0) {
         params->srcFourCC = MFX_CODEC_AVC;
     }
-    else if (!strncmp(params->infileFormat, "H265", strlen("H265"))) {
+    else if (strncmp(params->infileFormat, "H265", strlen("H265")) == 0) {
         params->srcFourCC = MFX_CODEC_HEVC;
     }
-    else if (!strncmp(params->infileFormat, "AV1", strlen("AV1"))) {
+    else if (strncmp(params->infileFormat, "AV1", strlen("AV1")) == 0) {
         params->srcFourCC = MFX_CODEC_AV1;
     }
-    else if (!strncmp(params->infileFormat, "JPEG", strlen("JPEG"))) {
+    else if (strncmp(params->infileFormat, "JPEG", strlen("JPEG")) == 0) {
         params->srcFourCC = MFX_CODEC_JPEG;
     }
     else {
@@ -605,6 +684,45 @@ bool ValidateParams(Params* params) {
     // default bitstream buffer size (input)
     if (params->srcbsbufSize == 0) {
         params->srcbsbufSize = DEFAULT_BS_BUFFER_SIZE;
+    }
+
+    // memory mode
+    if (params->memoryMode >= MEM_MODE_COUNT) {
+        params->memoryMode = static_cast<enum MemoryMode>(MEM_MODE_AUTO);
+    }
+
+    if (params->memoryMode == MEM_MODE_EXTERNAL) {
+        puts("[external memory mode]");
+    }
+    else if (params->memoryMode == MEM_MODE_INTERNAL) {
+        puts("[internal memory mode]");
+    }
+    else {
+        puts("[auto memory mode]");
+    }
+
+    // if this param is set, it will be used for decode res-change testing.
+    // and will select this resolution from decoded frame to save.
+    if (params->outResolution) {
+        char* position_ptr = NULL;
+        position_ptr       = strchr(params->outResolution, 'X');
+        if (position_ptr) {
+            if (!ValidateSize(params->outResolution,
+                              &params->outWidth,
+                              MAX_WIDTH))
+                return false;
+            position_ptr++;
+            if (!ValidateSize(position_ptr, &params->outHeight, MAX_HEIGHT))
+                return false;
+
+            printf("only %dx%d res of decoded frames will be saved\n",
+                   params->outWidth,
+                   params->outHeight);
+        }
+        else {
+            puts("wrong separator for output resolution(-o_res)\n");
+            return false;
+        }
     }
 
     return true;
@@ -758,6 +876,16 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
             if (!ValidateSize(argv[idx++], &params->dstCropH, MAX_HEIGHT))
                 return false;
         }
+        else if (IS_ARG_EQ(s, "mm")) {
+            params->memoryMode =
+                static_cast<enum MemoryMode>(atoi(argv[idx++]));
+        }
+        else if (IS_ARG_EQ(s, "o_res")) {
+            params->outResolution = argv[idx++];
+            str_upper(params->outResolution,
+                      static_cast<int>(
+                          strlen(params->outResolution))); // to upper case
+        }
         else {
             printf("ERROR - invalid argument: %s\n", argv[idx]);
             return false;
@@ -774,14 +902,17 @@ void Usage(void) {
     printf("  -o     outputFile    ... output file name\n");
     printf("  -n     maxFrames     ... max frames to decode\n");
     printf("  -if    inputFormat   ... [h264, h265, av1, jpeg]\n");
-    printf("  -sbs   bsbufSize     ... source bitstream buffer size (bytes)\n");
-
-    printf("\nMemory model (default = -ext)\n");
-    printf("  -ext  = external memory (1.0 style)\n");
-    printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");
+    printf("  -mm    memoryMode    ... [0=external, 1=internal, 2=auto]\n");
     printf(
-        "  -auto = internal memory with NULL working surface + simplified decode path\n");
-
+        "                       ... external = external memory (1.0 style)\n");
+    printf(
+        "                       ... internal = internal memory with MFXMemory_GetSurfaceForDecode\n");
+    printf(
+        "                       ... auto     = internal memory with NULL working surface + simplified decode path\n");
+    printf("  -sbs   bsbufSize     ... source bitstream buffer size (bytes)\n");
+    printf("More for resolution change test\n");
+    printf(
+        "  -o_res outputRes     ... exclude all frames except those of specified resolution (ex: 128x96)\n");
     printf("\nTo view:\n");
     printf(
         " ffplay -video_size [width]x[height] -pixel_format [pixel format] -f rawvideo [out filename]\n");
