@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10.2)
 project(hello-dpcpp)
 
-# This sample must be compiled and executed within oneAPI enviroment by using
-# dpcpp compiler
+# This sample must be compiled and executed within the oneAPI product enviroment
+# with the dpcpp compiler to use dpcpp features
 if(DEFINED ENV{DPCT_BUNDLE_ROOT})
   message("Building hello-dpcpp with dpcpp compiler")
   if(WIN32)
@@ -20,8 +20,7 @@ set(VPL_NAME mfx)
 set(CMAKE_MSVCIDE_RUN_PATH $ENV{PATH})
 set(RUNARGS ${CMAKE_CURRENT_SOURCE_DIR}/content/cars_128x96.i420 128 96)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+set(CMAKE_CXX_STANDARD 17)
 
 # Set default build type to RelWithDebInfo if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -51,7 +50,31 @@ target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/api)
 
 if(DEFINED ENV{DPCT_BUNDLE_ROOT})
   add_definitions(-DBUILD_DPCPP)
-  target_link_libraries(${TARGET} mfx OpenCL sycl)
+  target_link_libraries(${TARGET} OpenCL sycl)
+endif()
+
+if(TARGET mfx)
+  target_link_libraries(${TARGET} mfx)
 else()
-  target_link_libraries(${TARGET} ${VPL_LIB} mfx)
+  if(WIN32)
+    set(VPL_NAME libmfx.lib)
+  endif()
+  message(STATUS "Check for required environment variables")
+  if(NOT DEFINED ENV{VPL_LIB})
+    message(FATAL_ERROR "Expected environment variable not defined: VPL_LIB")
+  endif()
+  if(NOT DEFINED ENV{VPL_INCLUDE})
+    message(
+      FATAL_ERROR "Expected environment variable not defined: VPL_INCLUDE")
+  endif()
+
+  message(STATUS "Check for presence of library")
+  find_library(VPL_LIB ${VPL_NAME} HINTS $ENV{VPL_LIB})
+  if(NOT VPL_LIB)
+    message(FATAL_ERROR "vpl library not found. Looked in $ENV{VPL_LIB}")
+  else()
+    message(STATUS "Using vpl library: ${VPL_LIB}")
+  endif()
+  target_include_directories(${TARGET} PRIVATE $ENV{VPL_INCLUDE})
+  target_link_libraries(${TARGET} ${VPL_LIB})
 endif()
