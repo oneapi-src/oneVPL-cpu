@@ -20,16 +20,17 @@ mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session,
                                       mfxVideoParam *par) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(bs, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(bs->DataLength > 0, MFX_ERR_MORE_DATA);
+
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     std::unique_ptr<CpuDecode> decoder(new CpuDecode(ws));
     RET_IF_FALSE(decoder, MFX_ERR_MEMORY_ALLOC);
-    RET_ERROR(decoder->InitDecode(par));
+    RET_ERROR(decoder->InitDecode(par, bs));
 
-    mfxBitstream bs2 = *bs; // create copy to not modify caller's mfxBitstream
-    RET_ERROR(decoder->DecodeFrame(&bs2, nullptr, nullptr));
-
-    return decoder->GetVideoParam(par);
+    return MFX_ERR_NONE;
 }
 
 // NOTES - only support the minimum parameters for basic decode
@@ -76,7 +77,7 @@ mfxStatus MFXVideoDECODE_Init(mfxSession session, mfxVideoParam *par) {
 
     std::unique_ptr<CpuDecode> decoder(new CpuDecode(ws));
     RET_IF_FALSE(decoder, MFX_ERR_MEMORY_ALLOC);
-    RET_ERROR(decoder->InitDecode(par));
+    RET_ERROR(decoder->InitDecode(par, nullptr));
 
     ws->SetDecoder(decoder.release());
 

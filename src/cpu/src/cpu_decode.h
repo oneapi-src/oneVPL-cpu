@@ -22,7 +22,7 @@ public:
     static mfxStatus DecodeQueryIOSurf(mfxVideoParam* par,
                                        mfxFrameAllocRequest* request);
 
-    mfxStatus InitDecode(mfxVideoParam* par);
+    mfxStatus InitDecode(mfxVideoParam* par, mfxBitstream* bs);
     mfxStatus DecodeFrame(mfxBitstream* bs,
                           mfxFrameSurface1* surface_work,
                           mfxFrameSurface1** surface_out);
@@ -30,6 +30,7 @@ public:
     mfxStatus GetDecodeSurface(mfxFrameSurface1** surface);
 
 private:
+    mfxStatus ValidateDecodeParams(mfxVideoParam* par);
     const AVCodec* m_avDecCodec;
     AVCodecContext* m_avDecContext;
     AVCodecParserContext* m_avDecParser;
@@ -40,6 +41,9 @@ private:
     std::unique_ptr<CpuFramePool> m_decSurfaces;
 
     CpuWorkstream* m_session;
+
+    const mfxU32 MAX_WIDTH  = 3840;
+    const mfxU32 MAX_HEIGHT = 2160;
 
     /* copy not allowed */
     CpuDecode(const CpuDecode&);

@@ -7,8 +7,7 @@
 #include <gtest/gtest.h>
 #include "vpl/mfxvideo.h"
 
-//SetFrameAllocator not implemented
-//Optional, not needed for CPU implementation
+//SetFrameAllocator
 TEST(SetFrameAllocator, SetFrameAllocatorReturnsErrNone) {
     mfxVersion ver = {};
     mfxSession session;
@@ -42,6 +41,7 @@ TEST(SetHandle, HandleInReturnsErrNone) {
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
+
 //  null session
 TEST(SetHandle, NullSessionReturnsInvalidHandle) {
     mfxStatus sts = MFXVideoCORE_SetHandle(0, MFX_HANDLE_VA_DISPLAY, nullptr);
@@ -87,6 +87,7 @@ TEST(SetHandle, HandleExistsReturnHandle) {
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
+
 // null session
 TEST(GetHandle, NullSessionReturnsInvalidHandle) {
     mfxStatus sts = MFXVideoCORE_GetHandle(0, MFX_HANDLE_VA_DISPLAY, nullptr);

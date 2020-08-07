@@ -29,7 +29,61 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_param(),
           m_decSurfaces() {}
 
-mfxStatus CpuDecode::InitDecode(mfxVideoParam *par) {
+mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
+    //only system memory allowed
+    if (par->IOPattern != MFX_IOPATTERN_OUT_SYSTEM_MEMORY)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    //only I420 and I010 colorspaces allowed
+    switch (par->mfx.FrameInfo.FourCC) {
+        case MFX_FOURCC_I420:
+        case MFX_FOURCC_I010:
+            //allowed FourCCs
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    //Must have width and height
+    if (par->mfx.FrameInfo.Width == 0 || par->mfx.FrameInfo.Height == 0) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    //width and height must be <= max
+    if (par->mfx.FrameInfo.Width > MAX_WIDTH ||
+        par->mfx.FrameInfo.Height > MAX_HEIGHT ||
+        par->mfx.FrameInfo.CropW > MAX_WIDTH ||
+        par->mfx.FrameInfo.CropH > MAX_HEIGHT) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    //BitDepthLuma can only be 8 or 10
+    switch (par->mfx.FrameInfo.BitDepthLuma) {
+        case 8:
+        case 10:
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    //BitDepthChroma can only be 8 or 10
+    switch (par->mfx.FrameInfo.BitDepthChroma) {
+        case 8:
+        case 10:
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
+}
+
+//InitDecode can operate in two modes:
+// With no bitstream: assumes header decoded elsewhere, validates params given
+// With bitstream
+//  1. Attempts to decode a frame
+//  2. Gets parameters
+mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
     AVCodecID cid = AV_CODEC_ID_NONE;
     switch (par->mfx.CodecId) {
         case MFX_CODEC_AVC:
@@ -41,14 +95,17 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par) {
         case MFX_CODEC_JPEG:
             cid = AV_CODEC_ID_MJPEG;
             break;
-        case MFX_CODEC_MPEG2:
-            cid = AV_CODEC_ID_MPEG2VIDEO;
-            break;
         case MFX_CODEC_AV1:
             cid = AV_CODEC_ID_AV1;
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (!bs) {
+        mfxStatus sts = ValidateDecodeParams(par);
+        if (sts != MFX_ERR_NONE)
+            return sts;
     }
 
     m_avDecCodec = avcodec_find_decoder(cid);
@@ -87,6 +144,17 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par) {
     }
 
     m_param = *par;
+
+    if (bs) {
+        // create copy to not modify caller's mfxBitstream
+        // todo: this only works if input is large enough to
+        // decode a frame
+        mfxBitstream bs2 = *bs;
+        DecodeFrame(&bs2, nullptr, nullptr);
+        GetVideoParam(par);
+
+        //RET_ERROR(ValidateDecodeParams(par));
+    }
 
     return MFX_ERR_NONE;
 }
@@ -257,5 +325,106 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     //RET_IF_FALSE(m_param.mfx.FrameInfo.Height, MFX_ERR_NOT_INITIALIZED);
     //*par = m_param;
     par->mfx = m_param.mfx;
+
+    //Get parameters from the decode context
+    //This allows checking if parameters have
+    //been effectively set
+
+    switch (m_avDecCodec->id) {
+        case AV_CODEC_ID_H264:
+            par->mfx.CodecId = MFX_CODEC_AVC;
+            break;
+        case AV_CODEC_ID_HEVC:
+            par->mfx.CodecId = MFX_CODEC_HEVC;
+            break;
+        case AV_CODEC_ID_MJPEG:
+            par->mfx.CodecId = MFX_CODEC_JPEG;
+            break;
+        case AV_CODEC_ID_AV1:
+            par->mfx.CodecId = MFX_CODEC_AV1;
+            break;
+        default:
+            par->mfx.CodecId = 0;
+    }
+
+    // resolution
+    par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;
+    par->mfx.FrameInfo.Height = (uint16_t)m_avDecContext->height;
+    par->mfx.FrameInfo.CropW  = (uint16_t)m_avDecContext->width;
+    par->mfx.FrameInfo.CropH  = (uint16_t)m_avDecContext->height;
+
+    // FourCC and chroma format
+    switch (m_avDecContext->pix_fmt) {
+        case AV_PIX_FMT_YUV420P10LE:
+            par->mfx.FrameInfo.FourCC         = MFX_FOURCC_I010;
+            par->mfx.FrameInfo.BitDepthLuma   = 10;
+            par->mfx.FrameInfo.BitDepthChroma = 10;
+            par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+            break;
+        case AV_PIX_FMT_YUV420P:
+        case AV_PIX_FMT_YUVJ420P:
+            par->mfx.FrameInfo.FourCC         = MFX_FOURCC_IYUV;
+            par->mfx.FrameInfo.BitDepthLuma   = 8;
+            par->mfx.FrameInfo.BitDepthChroma = 8;
+            par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+            break;
+        default:
+            //zero value after decodeheader indicates that
+            //a supported decode fourcc could not be found
+            par->mfx.FrameInfo.FourCC = 0;
+    }
+
+    // Frame rate
+    par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avDecContext->framerate.num;
+    par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avDecContext->framerate.den;
+
+    // Aspect ratio
+    par->mfx.FrameInfo.AspectRatioW =
+        (uint16_t)m_avDecContext->sample_aspect_ratio.num;
+    par->mfx.FrameInfo.AspectRatioH =
+        (uint16_t)m_avDecContext->sample_aspect_ratio.den;
+
+    // Profile/Level
+    int profile = m_avDecContext->profile;
+    int level   = m_avDecContext->level;
+
+    switch (par->mfx.CodecId) {
+        case MFX_CODEC_AV1:
+            //if (profile==FF_PROFILE_AV1_MAIN)
+            //if (profile==FF_PROFILE_AV1_HIGH)
+            break;
+
+        case MFX_CODEC_HEVC:
+            if (profile == FF_PROFILE_HEVC_MAIN)
+                par->mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN;
+            else if (profile == FF_PROFILE_HEVC_MAIN_10)
+                par->mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN10;
+
+            //TODO(jeff) check if true for all levels
+            par->mfx.CodecLevel = level;
+            break;
+
+        case MFX_CODEC_AVC:
+            if (profile == FF_PROFILE_H264_BASELINE)
+                par->mfx.CodecProfile = MFX_PROFILE_AVC_BASELINE;
+            if (profile == FF_PROFILE_H264_MAIN)
+                par->mfx.CodecProfile = MFX_PROFILE_AVC_MAIN;
+            if (profile == FF_PROFILE_H264_HIGH)
+                par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
+
+            //TODO(jeff) check if true for all levels
+            par->mfx.CodecLevel = level;
+
+            break;
+        case MFX_CODEC_JPEG:
+            if (profile == FF_PROFILE_MJPEG_HUFFMAN_BASELINE_DCT)
+                par->mfx.CodecProfile = MFX_PROFILE_JPEG_BASELINE;
+            break;
+        default:
+            par->mfx.CodecProfile = 0;
+            par->mfx.CodecLevel   = 0;
+            return MFX_ERR_NONE;
+    }
+
     return MFX_ERR_NONE;
 }

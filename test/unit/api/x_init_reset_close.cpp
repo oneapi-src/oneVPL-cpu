@@ -207,8 +207,41 @@ TEST(EncodeClose, DISABLED_NullSessionInReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
-TEST(EncodeClose, DISABLED_DoubleCloseReturnsErrNotInitialized) {
-    FAIL() << "Test not implemented";
+TEST(EncodeClose, DoubleCloseReturnsNotInitialized) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams = { 0 };
+
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.TargetUsage             = MFX_TARGETUSAGE_BALANCED;
+    mfxEncParams.mfx.TargetKbps              = 4000;
+    mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_VBR;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    mfxEncParams.mfx.FrameInfo.CropX         = 0;
+    mfxEncParams.mfx.FrameInfo.CropY         = 0;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    sts = MFXVideoENCODE_Init(session, &mfxEncParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXVideoENCODE_Close(session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXVideoENCODE_Close(session);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(DecodeClose, DISABLED_InitializedEncodeReturnsErrNone) {

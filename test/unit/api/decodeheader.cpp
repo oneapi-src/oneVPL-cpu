@@ -21,9 +21,6 @@
    MFX_ERR_UNSUPPORTED  CodecId field of the mfxVideoParam structure indicates some unsupported codec. \n
    MFX_ERR_INVALID_HANDLE  session is not initialized \n
    MFX_ERR_NULL_PTR  bs or par pointer is NULL.
-
-
-mfxStatus MFX_CDECL MFXVideoDECODE_DecodeHeader(mfxSession session, mfxBitstream *bs, mfxVideoParam *par);
 */
 
 TEST(DecodeHeader, DISABLED_EightBitInReturnsCorrectMetadata) {
@@ -34,14 +31,35 @@ TEST(DecodeHeader, DISABLED_TenBitInReturnsCorrectMetadata) {
     FAIL() << "Test not implemented";
 }
 
-TEST(DecodeHeader, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(DecodeHeader, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoDECODE_DecodeHeader(0, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(DecodeHeader, DISABLED_NullBitstreamInReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(DecodeHeader, NullBitstreamInReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    sts = MFXVideoDECODE_DecodeHeader(session, nullptr, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeHeader, DISABLED_NullParamsInReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(DecodeHeader, NullParamsInReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxBitstream mfxBS = { 0 };
+    sts                = MFXVideoDECODE_DecodeHeader(session, &mfxBS, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }

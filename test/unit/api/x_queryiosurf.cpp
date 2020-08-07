@@ -38,12 +38,23 @@ TEST(EncodeQueryIOSurf,
     FAIL() << "Test not implemented";
 }
 
-TEST(EncodeQueryIOSurf, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(EncodeQueryIOSurf, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoENCODE_QueryIOSurf(0, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(EncodeQueryIOSurf, DISABLED_NullParamsInReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(EncodeQueryIOSurf, NullParamsInReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest R;
+    sts = MFXVideoENCODE_QueryIOSurf(session, nullptr, &R);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 //DecodeQueryIOSurf
@@ -60,12 +71,23 @@ TEST(DecodeQueryIOSurf,
     FAIL() << "Test not implemented";
 }
 
-TEST(DecodeQueryIOSurf, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQueryIOSurf, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoDECODE_QueryIOSurf(0, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(DecodeQueryIOSurf, DISABLED_NullParamsInReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQueryIOSurf, NullParamsInReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest R;
+    sts = MFXVideoDECODE_QueryIOSurf(session, nullptr, &R);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 //VPPQueryIOSurf
@@ -77,10 +99,21 @@ TEST(VPPQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     FAIL() << "Test not implemented";
 }
 
-TEST(VPPQueryIOSurf, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(VPPQueryIOSurf, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoVPP_QueryIOSurf(0, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(VPPQueryIOSurf, DISABLED_NullParamsInReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(VPPQueryIOSurf, NullParamsInReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest R;
+    sts = MFXVideoVPP_QueryIOSurf(session, nullptr, &R);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }

@@ -38,8 +38,10 @@ TEST(EncodeFrameAsync, DISABLED_InsufficientOutBufferReturnsNotEnoughBuffer) {
     FAIL() << "Test not implemented";
 }
 
-TEST(EncodeFrameAsync, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(EncodeFrameAsync, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts =
+        MFXVideoENCODE_EncodeFrameAsync(0, nullptr, nullptr, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
 TEST(EncodeFrameAsync, DISABLED_NullSurfaceReturnsErrNull) {
@@ -78,8 +80,10 @@ TEST(DecodeFrameAsync, DISABLED_InsufficientSurfacesReturnsMoreSurface) {
     FAIL() << "Test not implemented";
 }
 
-TEST(DecodeFrameAsync, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(DecodeFrameAsync, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts =
+        MFXVideoDECODE_DecodeFrameAsync(0, nullptr, nullptr, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
 TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
@@ -113,8 +117,10 @@ TEST(RunFrameVPPAsync, DISABLED_ValidInputsReturnsErrNone) {
     FAIL() << "Test not implemented";
 }
 
-TEST(RunFrameVPPAsync, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(RunFrameVPPAsync, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts =
+        MFXVideoVPP_RunFrameVPPAsync(0, nullptr, nullptr, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
 TEST(RunFrameVPPAsync, DISABLED_NullSurfaceInReturnsErrNull) {
