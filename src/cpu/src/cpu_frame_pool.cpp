@@ -107,7 +107,10 @@ mfxStatus CpuFramePool::Init(mfxU32 FourCC,
         surf[i].Data.U = U;
         surf[i].Data.V = V;
 
-        surf[i].Data.Pitch = width;
+        if (FourCC == MFX_FOURCC_I010)
+            surf[i].Data.Pitch = 2 * width;
+        else
+            surf[i].Data.Pitch = width;
     }
 
     return MFX_ERR_NONE;

@@ -253,7 +253,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else {
-        par->mfx.TargetKbps = MFX_TARGETUSAGE_BALANCED;
+        par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
     }
 
     return MFX_ERR_NONE;

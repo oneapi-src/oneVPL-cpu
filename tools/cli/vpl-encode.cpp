@@ -26,6 +26,15 @@
 
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
 
+enum MemoryMode {
+    MEM_MODE_UNKNOWN = -1,
+
+    MEM_MODE_EXTERNAL = 0,
+    MEM_MODE_INTERNAL,
+};
+
+const char* MemoryModeString[] = { "MEM_MODE_EXTERNAL", "MEM_MODE_INTERNAL" };
+
 typedef struct _Params {
     char* infileName;
     char* outfileName;
@@ -36,6 +45,8 @@ typedef struct _Params {
     char* targetDeviceType;
 
     char* gpuCopyMode;
+
+    MemoryMode memoryMode;
 
     mfxU32 srcFourCC;
     mfxU32 dstFourCC;
@@ -154,6 +165,7 @@ int main(int argc, char* argv[]) {
     }
 
     puts("library initialized");
+    printf("Memory mode = %s\n", MemoryModeString[params.memoryMode]);
 
     // Initialize encoder parameters
     mfxVideoParam mfxEncParams;
@@ -207,49 +219,56 @@ int main(int argc, char* argv[]) {
         g_conf = NULL;
     }
 
-    // Query number required surfaces for encoder
-    mfxFrameAllocRequest EncRequest = { 0 };
-    sts = MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
+    std::vector<mfxFrameSurface1> pEncSurfaces;
+    std::vector<mfxU8> surfaceBuffersData;
+    mfxU16 nEncSurfNum = 0;
 
-    if (sts != MFX_ERR_NONE) {
-        fclose(fSource);
-        fclose(fSink);
-        puts("QueryIOSurf error");
-        return 1;
-    }
+    if (params.memoryMode == MEM_MODE_EXTERNAL) {
+        // Query number required surfaces for encoder
+        mfxFrameAllocRequest EncRequest = { 0 };
+        sts = MFXVideoENCODE_QueryIOSurf(session, &mfxEncParams, &EncRequest);
 
-    // Determine the required number of surfaces for encoder
-    mfxU16 nEncSurfNum = EncRequest.NumFrameSuggested;
+        if (sts != MFX_ERR_NONE) {
+            fclose(fSource);
+            fclose(fSink);
+            puts("QueryIOSurf error");
+            return 1;
+        }
 
-    // Allocate surfaces for encoder
-    // - Frame surface array keeps pointers all surface planes and general frame info
-    mfxU32 surfaceSize =
-        GetSurfaceSize(params.srcFourCC, params.srcHeight, params.srcWidth);
-    if (surfaceSize == 0) {
-        fclose(fSource);
-        fclose(fSink);
-        puts("Surface size is wrong");
-        return 1;
-    }
+        // Determine the required number of surfaces for encoder
+        nEncSurfNum = EncRequest.NumFrameSuggested;
 
-    std::vector<mfxU8> surfaceBuffersData(surfaceSize * nEncSurfNum);
-    mfxU8* surfaceBuffers = surfaceBuffersData.data();
+        // Allocate surfaces for encoder
+        // - Frame surface array keeps pointers all surface planes and general frame info
+        mfxU32 surfaceSize =
+            GetSurfaceSize(params.srcFourCC, params.srcHeight, params.srcWidth);
+        if (surfaceSize == 0) {
+            fclose(fSource);
+            fclose(fSink);
+            puts("Surface size is wrong");
+            return 1;
+        }
 
-    mfxU16 surfW = (params.srcFourCC == MFX_FOURCC_I010) ? params.srcWidth * 2
-                                                         : params.srcWidth;
-    mfxU16 surfH = params.srcHeight;
+        surfaceBuffersData.resize(surfaceSize * nEncSurfNum);
+        mfxU8* surfaceBuffers = surfaceBuffersData.data();
 
-    // Allocate surface headers (mfxFrameSurface1) for encoder
-    std::vector<mfxFrameSurface1> pEncSurfaces(nEncSurfNum);
-    for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        memset(&pEncSurfaces[i], 0, sizeof(mfxFrameSurface1));
-        pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
+        mfxU16 surfW = (params.srcFourCC == MFX_FOURCC_I010)
+                           ? params.srcWidth * 2
+                           : params.srcWidth;
+        mfxU16 surfH = params.srcHeight;
 
-        pEncSurfaces[i].Data.U = pEncSurfaces[i].Data.Y + surfW * surfH;
-        pEncSurfaces[i].Data.V =
-            pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
-        pEncSurfaces[i].Data.Pitch = surfW;
+        // Allocate surface headers (mfxFrameSurface1) for encoder
+        pEncSurfaces.resize(nEncSurfNum);
+        for (mfxI32 i = 0; i < nEncSurfNum; i++) {
+            memset(&pEncSurfaces[i], 0, sizeof(mfxFrameSurface1));
+            pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
+            pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
+
+            pEncSurfaces[i].Data.U = pEncSurfaces[i].Data.Y + surfW * surfH;
+            pEncSurfaces[i].Data.V =
+                pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+            pEncSurfaces[i].Data.Pitch = surfW;
+        }
     }
 
     // Initialize the Media SDK encoder
@@ -262,10 +281,10 @@ int main(int argc, char* argv[]) {
     }
 
     // Prepare Media SDK bit stream buffer
-    mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 2000000;
-    std::vector<mfxU8> bstData(mfxBS.MaxLength);
-    mfxBS.Data = bstData.data();
+    mfxBitstream mfxBS   = { 0 };
+    mfxBS.MaxLength      = 2000000;
+    mfxU8* output_buffer = new mfxU8[mfxBS.MaxLength];
+    mfxBS.Data           = output_buffer;
 
     double encode_time = 0;
     double sync_time   = 0;
@@ -278,28 +297,56 @@ int main(int argc, char* argv[]) {
     puts("start encoding");
 
     // Stage 1: Main encoding loop
+    bool isdraining = false;
     while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_DATA == sts) {
-        nEncSurfIdx =
-            GetFreeSurfaceIndex(pEncSurfaces); // Find free frame surface
-        if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
-            fclose(fSource);
-            fclose(fSink);
-            puts("no available surface");
-            return 1;
-        }
+        mfxFrameSurface1* pmfxWorkSurface = nullptr;
 
-        sts = LoadRawFrame(&pEncSurfaces[nEncSurfIdx], fSource);
-        if (sts != MFX_ERR_NONE)
-            break;
+        if (!isdraining) {
+            if (params.memoryMode == MEM_MODE_EXTERNAL) {
+                nEncSurfIdx = GetFreeSurfaceIndex(
+                    pEncSurfaces); // Find free frame surface
+
+                if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
+                    fclose(fSource);
+                    fclose(fSink);
+                    puts("no available surface");
+                    return 1;
+                }
+
+                pmfxWorkSurface = &pEncSurfaces[nEncSurfIdx];
+            }
+            else if (params.memoryMode == MEM_MODE_INTERNAL) {
+                sts = MFXMemory_GetSurfaceForEncode(session, &pmfxWorkSurface);
+                if (sts) {
+                    printf(
+                        "Unknown error in MFXMemory_GetSurfaceForEncode, sts = %d\n",
+                        sts);
+                    return 1;
+                }
+
+                pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface,
+                                                     MFX_MAP_READ);
+            }
+
+            sts = LoadRawFrame(pmfxWorkSurface, fSource);
+            if (sts == MFX_ERR_MORE_DATA) {
+                isdraining = true;
+            }
+            else if (sts) {
+                printf("Unknown error in LoadRawFrame()\n");
+                return 1;
+            }
+        }
 
         for (;;) {
             // Encode a frame asychronously (returns immediately)
             auto t0 = std::chrono::high_resolution_clock::now();
-            sts     = MFXVideoENCODE_EncodeFrameAsync(session,
-                                                  NULL,
-                                                  &pEncSurfaces[nEncSurfIdx],
-                                                  &mfxBS,
-                                                  &syncp);
+            sts     = MFXVideoENCODE_EncodeFrameAsync(
+                session,
+                NULL,
+                (isdraining ? NULL : pmfxWorkSurface),
+                &mfxBS,
+                &syncp);
             auto t1 = std::chrono::high_resolution_clock::now();
             encode_time +=
                 std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
@@ -318,52 +365,16 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (MFX_ERR_NONE == sts) {
-            auto t0 = std::chrono::high_resolution_clock::now();
-            sts     = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
-            auto t1 = std::chrono::high_resolution_clock::now();
-            sync_time +=
-                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
-                    .count();
-            ++framenum;
-            WriteEncodedStream(framenum,
-                               g_conf,
-                               mfxBS.Data + mfxBS.DataOffset,
-                               mfxBS.DataLength,
-                               params.dstFourCC,
-                               fSink);
-            mfxBS.DataLength = 0;
-        }
-    }
-
-    sts = MFX_ERR_NONE;
-
-    // Stage 2: Retrieve the buffered encoded frames
-    while (MFX_ERR_NONE <= sts) {
-        for (;;) {
-            // Encode a frame asychronously (returns immediately)
-            auto t0 = std::chrono::high_resolution_clock::now();
-            sts     = MFXVideoENCODE_EncodeFrameAsync(session,
-                                                  NULL,
-                                                  NULL,
-                                                  &mfxBS,
-                                                  &syncp);
-            auto t1 = std::chrono::high_resolution_clock::now();
-            encode_time +=
-                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
-                    .count();
-
-            if (MFX_ERR_NONE < sts && syncp) {
-                sts = MFX_ERR_NONE; // Ignore warnings if output is available
-                break;
-            }
-            else {
-                break;
+        if (params.memoryMode == MEM_MODE_INTERNAL) {
+            if (pmfxWorkSurface) {
+                pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
+                pmfxWorkSurface->FrameInterface->Release(pmfxWorkSurface);
             }
         }
+
+        // all done
+        if (MFX_ERR_MORE_DATA == sts && isdraining == true)
+            break;
 
         if (MFX_ERR_NONE == sts) {
             auto t0 = std::chrono::high_resolution_clock::now();
@@ -382,7 +393,6 @@ int main(int argc, char* argv[]) {
                                mfxBS.DataLength,
                                params.dstFourCC,
                                fSink);
-
             mfxBS.DataLength = 0;
         }
     }
@@ -394,9 +404,12 @@ int main(int argc, char* argv[]) {
     //  - It is recommended to close Media SDK components first, before releasing allocated surfaces, since
     //    some surfaces may still be locked by internal Media SDK resources.
     MFXVideoENCODE_Close(session);
+    MFXClose(session);
 
     fclose(fSource);
     fclose(fSink);
+
+    delete[] output_buffer;
 
     printf("encoded %d frames\n", framenum);
     if (framenum) {
@@ -696,6 +709,9 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
     // init all params to 0
     memset(params, 0, sizeof(Params));
 
+    // set any non-zero defaults
+    params->memoryMode = MEM_MODE_EXTERNAL;
+
     if (argc < 2)
         return false;
 
@@ -799,6 +815,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         else if (IS_ARG_EQ(s, "gcm")) {
             params->gpuCopyMode = argv[idx++];
         }
+        else if (IS_ARG_EQ(s, "ext")) {
+            params->memoryMode = MEM_MODE_EXTERNAL;
+        }
+        else if (IS_ARG_EQ(s, "int")) {
+            params->memoryMode = MEM_MODE_INTERNAL;
+        }
         else if (IS_ARG_EQ(s, "scrx")) {
             if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))
                 return false;
@@ -859,6 +881,11 @@ void Usage(void) {
     printf(
         "  -qp     qp            ... quantization parameter for CQP bitrate control mode\n");
     printf("  -gs     gopSize       ... GOP size\n");
+
+    printf("\nMemory model (default = -ext)\n");
+    printf("  -ext  = external memory (1.0 style)\n");
+    printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");
+
     printf("In case of AV1, output will be contained with IVF headers.\n");
     printf("To view:\n");
     printf(" ffplay [out filename]\n");

@@ -779,7 +779,8 @@ void Usage(void) {
     printf("\nMemory model (default = -ext)\n");
     printf("  -ext  = external memory (1.0 style)\n");
     printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");
-    printf("  -auto = internal memory with NULL working surface\n");
+    printf(
+        "  -auto = internal memory with NULL working surface + simplified decode path\n");
 
     printf("\nTo view:\n");
     printf(
