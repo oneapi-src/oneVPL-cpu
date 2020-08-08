@@ -530,7 +530,159 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
 }
 
 mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
-    return MFX_ERR_NOT_IMPLEMENTED;
+    int ret;
+    if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
+        std::stringstream qpss;
+        qpss << par->mfx.QPI;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "qp",
+                         qpss.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else {
+        // default to VBR
+        std::stringstream crfss;
+        crfss << X264_DEFAULT_QUALITY_VALUE;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "crf",
+                         crfss.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (par->mfx.TargetUsage) {
+        std::string encMode;
+        switch (par->mfx.TargetUsage) {
+            case 1:
+                encMode = "veryslow";
+                break;
+            case 2:
+                encMode = "slower";
+                break;
+            case 3:
+                encMode = "slow";
+                break;
+            case 5:
+                encMode = "veryfast";
+                break;
+            case 6:
+                encMode = "superfast";
+                ;
+                break;
+            case 7:
+                encMode = "ultrafast";
+                break;
+            case 4:
+            default:
+                encMode = "medium";
+                break;
+        }
+        std::stringstream tuss;
+        tuss << encMode;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "preset",
+                         tuss.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (par->mfx.CodecProfile) {
+        std::string profValue;
+        switch (par->mfx.CodecProfile) {
+            case MFX_PROFILE_AVC_BASELINE:
+                profValue = "baseline";
+                break;
+            case MFX_PROFILE_AVC_MAIN:
+                profValue = "main";
+                break;
+            case MFX_PROFILE_AVC_HIGH:
+            default:
+                profValue = "high";
+                break;
+        }
+        std::stringstream profss;
+        profss << profValue;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "profile",
+                         profss.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (par->mfx.CodecLevel) {
+        std::string levelstr;
+        uint8_t level = par->mfx.CodecLevel & 0xFF;
+        switch (level) {
+            case MFX_LEVEL_AVC_1:
+                levelstr = "1";
+                break;
+            case MFX_LEVEL_AVC_1b:
+                levelstr = "9";
+                break;
+            case MFX_LEVEL_AVC_11:
+                levelstr = "1.1";
+                break;
+            case MFX_LEVEL_AVC_12:
+                levelstr = "1.2";
+                break;
+            case MFX_LEVEL_AVC_13:
+                levelstr = "1.3";
+                break;
+            case MFX_LEVEL_AVC_2:
+                levelstr = "2";
+                break;
+            case MFX_LEVEL_AVC_21:
+                levelstr = "2.1";
+                break;
+            case MFX_LEVEL_AVC_22:
+                levelstr = "2.2";
+                break;
+            case MFX_LEVEL_AVC_3:
+                levelstr = "3";
+                break;
+            case MFX_LEVEL_AVC_31:
+                levelstr = "3.1";
+            case MFX_LEVEL_AVC_32:
+                levelstr = "3.2";
+                break;
+            case MFX_LEVEL_AVC_4:
+                levelstr = "4";
+                break;
+            case MFX_LEVEL_AVC_41:
+                levelstr = "4.1";
+                break;
+            case MFX_LEVEL_AVC_42:
+                levelstr = "4.2";
+                break;
+            case MFX_LEVEL_AVC_5:
+                levelstr = "5";
+                break;
+            case MFX_LEVEL_AVC_51:
+                levelstr = "5.1";
+                break;
+            case MFX_LEVEL_AVC_52:
+                levelstr = "5.2";
+                break;
+            default:
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+                break;
+        }
+        std::stringstream lvls;
+        lvls << levelstr;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "level",
+                         lvls.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
 }
 
 mfxStatus CpuEncode::InitJPEGParams(mfxVideoParam *par) {
