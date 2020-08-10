@@ -19,6 +19,3 @@ install(TARGETS vpl-encode vpl-decode vpl-vpp
 
 add_executable(vpl-decode-newloader vpl-decode-newloader.cpp)
 target_link_libraries(vpl-decode-newloader mfx)
-
-add_executable(vpl-vpp-newmemory vpl-vpp-newmemory.cpp)
-target_link_libraries(vpl-vpp-newmemory mfx)

@@ -884,7 +884,7 @@ void Usage(void) {
 
     printf("\nMemory model (default = -ext)\n");
     printf("  -ext  = external memory (1.0 style)\n");
-    printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");
+    printf("  -int  = internal memory with MFXMemory_GetSurfaceForEncode\n");
 
     printf("In case of AV1, output will be contained with IVF headers.\n");
     printf("To view:\n");

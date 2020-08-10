@@ -121,6 +121,8 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
         mfxVideoParam param{};
         param.mfx.CodecId = bs->CodecId;
         RET_ERROR(MFXVideoDECODE_DecodeHeader(session, bs, &param));
+
+        param.IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
         RET_ERROR(MFXVideoDECODE_Init(session, &param));
         decoder = ws->GetDecoder();
     }

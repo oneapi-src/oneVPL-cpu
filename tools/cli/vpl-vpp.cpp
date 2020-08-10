@@ -24,6 +24,15 @@
 
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
 
+enum MemoryMode {
+    MEM_MODE_UNKNOWN = -1,
+
+    MEM_MODE_EXTERNAL = 0,
+    MEM_MODE_INTERNAL,
+};
+
+const char* MemoryModeString[] = { "MEM_MODE_EXTERNAL", "MEM_MODE_INTERNAL" };
+
 typedef struct _Params {
     char* infileName;
     char* outfileName;
@@ -34,6 +43,8 @@ typedef struct _Params {
     char* targetDeviceType;
 
     char* gpuCopyMode;
+
+    MemoryMode memoryMode;
 
     mfxU32 srcFourCC;
     mfxU32 dstFourCC;
@@ -138,6 +149,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    puts("library initialized");
+    printf("Memory mode = %s\n", MemoryModeString[params.memoryMode]);
+
     // Initialize VPP parameters
     // - For simplistic memory management, system memory surfaces are used to store the raw frames
     //   (Note that when using HW acceleration video surfaces are prefered, for better performance)
@@ -213,30 +227,36 @@ int main(int argc, char* argv[]) {
         GetSurfaceWidth(mfxVPPParams.vpp.In.FourCC, mfxVPPParams.vpp.In.Width);
     mfxU16 surf_h = mfxVPPParams.vpp.In.Height;
 
-    std::vector<mfxU8> surfDataIn(surfaceSize * nVPPSurfNumIn);
-    mfxU8* surfaceBuffersIn = surfDataIn.data();
+    std::vector<mfxU8> surfDataIn;
+    mfxU8* surfaceBuffersIn;
+    std::vector<mfxFrameSurface1> pVPPSurfacesIn;
 
-    std::vector<mfxFrameSurface1> pVPPSurfacesIn(nVPPSurfNumIn);
-    for (mfxI32 i = 0; i < nVPPSurfNumIn; i++) {
-        memset(&pVPPSurfacesIn[i], 0, sizeof(mfxFrameSurface1));
-        pVPPSurfacesIn[i].Info = mfxVPPParams.vpp.In;
-        if (mfxVPPParams.vpp.In.FourCC == MFX_FOURCC_RGB4) {
-            pVPPSurfacesIn[i].Data.B     = &surfaceBuffersIn[surfaceSize * i];
-            pVPPSurfacesIn[i].Data.G     = pVPPSurfacesIn[i].Data.B + 1;
-            pVPPSurfacesIn[i].Data.R     = pVPPSurfacesIn[i].Data.B + 2;
-            pVPPSurfacesIn[i].Data.A     = pVPPSurfacesIn[i].Data.B + 3;
-            pVPPSurfacesIn[i].Data.Pitch = surf_w;
-        }
-        else {
-            pVPPSurfacesIn[i].Data.Y = &surfaceBuffersIn[surfaceSize * i];
-            pVPPSurfacesIn[i].Data.U =
-                pVPPSurfacesIn[i].Data.Y + (mfxU16)surf_w * surf_h;
-            pVPPSurfacesIn[i].Data.V = pVPPSurfacesIn[i].Data.U +
-                                       (((mfxU16)surf_w / 2) * (surf_h / 2));
-            pVPPSurfacesIn[i].Data.Pitch = surf_w;
+    if (params.memoryMode == MEM_MODE_EXTERNAL) {
+        surfDataIn.resize(surfaceSize * nVPPSurfNumIn);
+        surfaceBuffersIn = surfDataIn.data();
+
+        pVPPSurfacesIn.resize(nVPPSurfNumIn);
+        for (mfxI32 i = 0; i < nVPPSurfNumIn; i++) {
+            memset(&pVPPSurfacesIn[i], 0, sizeof(mfxFrameSurface1));
+            pVPPSurfacesIn[i].Info = mfxVPPParams.vpp.In;
+            if (mfxVPPParams.vpp.In.FourCC == MFX_FOURCC_RGB4) {
+                pVPPSurfacesIn[i].Data.B = &surfaceBuffersIn[surfaceSize * i];
+                pVPPSurfacesIn[i].Data.G = pVPPSurfacesIn[i].Data.B + 1;
+                pVPPSurfacesIn[i].Data.R = pVPPSurfacesIn[i].Data.B + 2;
+                pVPPSurfacesIn[i].Data.A = pVPPSurfacesIn[i].Data.B + 3;
+                pVPPSurfacesIn[i].Data.Pitch = surf_w;
+            }
+            else {
+                pVPPSurfacesIn[i].Data.Y = &surfaceBuffersIn[surfaceSize * i];
+                pVPPSurfacesIn[i].Data.U =
+                    pVPPSurfacesIn[i].Data.Y + (mfxU16)surf_w * surf_h;
+                pVPPSurfacesIn[i].Data.V =
+                    pVPPSurfacesIn[i].Data.U +
+                    (((mfxU16)surf_w / 2) * (surf_h / 2));
+                pVPPSurfacesIn[i].Data.Pitch = surf_w;
+            }
         }
     }
-
     // Allocate surfaces for VPP: Out
     // - Frame surface array keeps pointers all surface planes and general frame info
     surfaceSize = GetSurfaceSize(mfxVPPParams.vpp.Out.FourCC,
@@ -286,12 +306,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Prepare Media SDK bit stream buffer
-    mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 2000000;
-    std::vector<mfxU8> bstData(mfxBS.MaxLength);
-    mfxBS.Data = bstData.data();
-
     // Start processing the frames
     int nSurfIdxIn = 0, nSurfIdxOut = 0;
     mfxSyncPoint syncp;
@@ -301,16 +315,34 @@ int main(int argc, char* argv[]) {
 
     // Stage 1: Main processing loop
     while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_DATA == sts) {
-        nSurfIdxIn =
-            GetFreeSurfaceIndex(pVPPSurfacesIn); // Find free frame surface
-        if (nSurfIdxIn == MFX_ERR_NOT_FOUND) {
-            fclose(fSource);
-            fclose(fSink);
-            puts("no available surface");
-            return 1;
+        mfxFrameSurface1* vppSurfaceIn = nullptr;
+
+        if (params.memoryMode == MEM_MODE_EXTERNAL) {
+            nSurfIdxIn =
+                GetFreeSurfaceIndex(pVPPSurfacesIn); // Find free frame surface
+
+            if (nSurfIdxIn == MFX_ERR_NOT_FOUND) {
+                fclose(fSource);
+                fclose(fSink);
+                puts("no available surface");
+                return 1;
+            }
+
+            vppSurfaceIn = &pVPPSurfacesIn[nSurfIdxIn];
+        }
+        else if (params.memoryMode == MEM_MODE_INTERNAL) {
+            sts = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
+            if (sts) {
+                printf(
+                    "Unknown error in MFXMemory_GetSurfaceForVPP, sts = %d()\n",
+                    sts);
+                return 1;
+            }
+
+            vppSurfaceIn->FrameInterface->Map(vppSurfaceIn, MFX_MAP_READ);
         }
 
-        sts = LoadRawFrame(&pVPPSurfacesIn[nSurfIdxIn], fSource);
+        sts = LoadRawFrame(vppSurfaceIn, fSource);
         if (sts != MFX_ERR_NONE)
             break;
 
@@ -326,7 +358,7 @@ int main(int argc, char* argv[]) {
         for (;;) {
             // Process a frame asychronously (returns immediately)
             sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                               &pVPPSurfacesIn[nSurfIdxIn],
+                                               vppSurfaceIn,
                                                &pVPPSurfacesOut[nSurfIdxOut],
                                                NULL,
                                                &syncp);
@@ -350,6 +382,12 @@ int main(int argc, char* argv[]) {
                 syncp,
                 60000); // Synchronize. Wait until a frame is ready
             WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
+
+            if (params.memoryMode == MEM_MODE_INTERNAL) {
+                vppSurfaceIn->FrameInterface->Unmap(vppSurfaceIn);
+                vppSurfaceIn->FrameInterface->Release(vppSurfaceIn);
+            }
+
             ++framenum;
             if (params.maxFrames) {
                 if (framenum >= params.maxFrames) {
@@ -366,7 +404,6 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
             }
-            mfxBS.DataLength = 0;
         }
     }
 
@@ -412,8 +449,6 @@ int main(int argc, char* argv[]) {
                     break;
                 }
             }
-
-            mfxBS.DataLength = 0;
         }
     }
 
@@ -423,6 +458,7 @@ int main(int argc, char* argv[]) {
     // first, before releasing allocated surfaces, since some surfaces may still
     // be locked by internal Media SDK resources.
     MFXVideoVPP_Close(session);
+    MFXClose(session);
 
     fclose(fSource);
     fclose(fSink);
@@ -767,6 +803,9 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
     // init all params to 0
     memset(params, 0, sizeof(Params));
 
+    // set any non-zero defaults
+    params->memoryMode = MEM_MODE_EXTERNAL;
+
     if (argc < 2)
         return false;
 
@@ -864,6 +903,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         else if (IS_ARG_EQ(s, "gcm")) {
             params->gpuCopyMode = argv[idx++];
         }
+        else if (IS_ARG_EQ(s, "ext")) {
+            params->memoryMode = MEM_MODE_EXTERNAL;
+        }
+        else if (IS_ARG_EQ(s, "int")) {
+            params->memoryMode = MEM_MODE_INTERNAL;
+        }
         else if (IS_ARG_EQ(s, "scrx")) {
             if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))
                 return false;
@@ -925,6 +970,11 @@ void Usage(void) {
     printf("  -dcry  dstCropY      ... cropY  of dst video (def: 0)\n");
     printf("  -dcrw  dstCropW      ... cropW  of dst video (def: width)\n");
     printf("  -dcrh  dstCropH      ... cropH  of dst video (def: height)\n");
+
+    printf("\nMemory model (default = -ext)\n");
+    printf("  -ext  = external memory (1.0 style)\n");
+    printf("  -int  = internal memory with MFXMemory_GetSurfaceForVPP\n");
+
     printf("To view:\n");
     printf(
         " ffplay -video_size [width]x[height] -pixel_format [pixel format] -f rawvideo [out filename]\n");
