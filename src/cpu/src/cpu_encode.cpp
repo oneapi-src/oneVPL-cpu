@@ -15,7 +15,6 @@ CpuEncode::CpuEncode(CpuWorkstream *session)
           m_avEncCodec(nullptr),
           m_avEncContext(nullptr),
           m_avEncPacket(nullptr),
-          m_avEncFrameIn(nullptr),
           m_param({}),
           m_encSurfaces() {}
 
@@ -355,21 +354,11 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 
     int err = 0;
     err     = avcodec_open2(m_avEncContext, m_avEncCodec, NULL);
-    if (err)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-
-    m_avEncFrameIn = av_frame_alloc();
-    if (!m_avEncFrameIn)
-        return MFX_ERR_MEMORY_ALLOC;
-
-    m_avEncFrameIn->format = m_avEncContext->pix_fmt;
-    m_avEncFrameIn->width  = m_avEncContext->width;
-    m_avEncFrameIn->height = m_avEncContext->height;
+    RET_IF_FALSE(err == 0, MFX_ERR_INVALID_VIDEO_PARAM);
 
     if (!m_param.mfx.BufferSizeInKB) {
-        m_param.mfx.BufferSizeInKB =
-            m_param.mfx
-                .TargetKbps; // TODO(estimate better based on RateControlMethod)
+        // TODO(estimate better based on RateControlMethod)
+        m_param.mfx.BufferSizeInKB = m_param.mfx.TargetKbps;
     }
 
     return MFX_ERR_NONE;
@@ -684,15 +673,44 @@ CpuEncode::~CpuEncode() {
         m_avEncContext = nullptr;
     }
 
-    if (m_avEncFrameIn) {
-        av_frame_free(&m_avEncFrameIn);
-        m_avEncFrameIn = nullptr;
-    }
-
     if (m_avEncPacket) {
         av_packet_free(&m_avEncPacket);
         m_avEncPacket = nullptr;
     }
+}
+
+static void DeleteFrameLock(void *opaque, uint8_t *data) {
+    FrameLock *locker = static_cast<FrameLock *>(opaque);
+    delete locker;
+}
+
+AVFrame *CpuEncode::CreateAVFrame(mfxFrameSurface1 *surface) {
+    auto locker = std::make_unique<FrameLock>();
+    RET_IF_FALSE(locker, nullptr);
+    mfxFrameAllocator *allocator = m_session->GetFrameAllocator();
+    RET_IF_FALSE(locker->Lock(surface, MFX_MAP_READ, allocator) == MFX_ERR_NONE,
+                 nullptr);
+    mfxFrameData *data = locker->GetData();
+
+    AVFrame *av_frame = av_frame_alloc();
+    RET_IF_FALSE(av_frame, nullptr);
+    av_frame->format  = m_avEncContext->pix_fmt;
+    av_frame->width   = m_avEncContext->width;
+    av_frame->height  = m_avEncContext->height;
+    av_frame->data[0] = data->Y;
+    av_frame->data[1] = data->U;
+    av_frame->data[2] = data->V;
+    // TODO(linesize for different color formats)
+    av_frame->linesize[0] = data->Pitch;
+    av_frame->linesize[1] = data->Pitch / 2;
+    av_frame->linesize[2] = data->Pitch / 2;
+    // set deleter callback
+    uint8_t *opaque = reinterpret_cast<uint8_t *>(locker.get());
+    av_frame->buf[0] =
+        av_buffer_create(opaque, sizeof(FrameLock), DeleteFrameLock, opaque, 0);
+    RET_IF_FALSE(av_frame->buf[0], nullptr);
+    locker.release();
+    return av_frame;
 }
 
 mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
@@ -701,33 +719,36 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
 
     // encode one frame
     if (surface) {
-        FrameLock locker;
-        RET_ERROR(
-            locker.Lock(surface, MFX_MAP_READ, m_session->GetFrameAllocator()));
-        mfxFrameData *data = locker.GetData();
-
-        m_avEncFrameIn->data[0] = data->Y;
-        m_avEncFrameIn->data[1] = data->U;
-        m_avEncFrameIn->data[2] = data->V;
-
-        m_avEncFrameIn->linesize[0] = data->Pitch;
-        m_avEncFrameIn->linesize[1] = data->Pitch / 2;
-        m_avEncFrameIn->linesize[2] = data->Pitch / 2;
+        AVFrame *av_frame = nullptr;
+        // Try get AVFrame
+        CpuFrame *cpu_frame = CpuFrame::TryCast(surface);
+        if (cpu_frame) {
+            av_frame = cpu_frame->GetAVFrame();
+        }
+        // Or create new one without data copy
+        bool bCreated = false;
+        if (!av_frame) {
+            av_frame = CreateAVFrame(surface);
+            RET_IF_FALSE(av_frame, MFX_ERR_MEMORY_ALLOC);
+            bCreated = true;
+        }
 
         if (m_param.mfx.CodecId == MFX_CODEC_JPEG) {
             // must be set for every frame
-            m_avEncFrameIn->quality = m_avEncContext->global_quality;
+            av_frame->quality = m_avEncContext->global_quality;
         }
 
-        err = avcodec_send_frame(m_avEncContext, m_avEncFrameIn);
-        if (err < 0)
-            return MFX_ERR_UNKNOWN;
+        err = avcodec_send_frame(m_avEncContext, av_frame);
+        RET_IF_FALSE(err == 0, MFX_ERR_UNKNOWN);
+
+        if (bCreated) {
+            av_frame_unref(av_frame);
+        }
     }
     else {
         // send NULL packet to drain frames
         err = avcodec_send_frame(m_avEncContext, NULL);
-        if (err < 0 && err != AVERROR_EOF)
-            return MFX_ERR_UNKNOWN;
+        RET_IF_FALSE(err == 0 || err == AVERROR_EOF, MFX_ERR_UNKNOWN);
     }
 
     // get encoded packet, if available
@@ -736,16 +757,16 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
     err = avcodec_receive_packet(m_avEncContext, m_avEncPacket);
     if (err == AVERROR(EAGAIN)) {
         // need more data - nothing to do
-        return MFX_ERR_MORE_DATA;
+        RET_ERROR(MFX_ERR_MORE_DATA);
     }
     else if (err == AVERROR_EOF) {
-        return MFX_ERR_MORE_DATA;
+        RET_ERROR(MFX_ERR_MORE_DATA);
     }
-    else if (err < 0) {
+    else if (err != 0) {
         // other error
-        return MFX_ERR_UNDEFINED_BEHAVIOR;
+        RET_ERROR(MFX_ERR_UNDEFINED_BEHAVIOR);
     }
-    else if (err == 0) {
+    else {
         // copy encoded data to output buffer
         nBytesOut   = m_avEncPacket->size;
         nBytesAvail = bs->MaxLength - (bs->DataLength + bs->DataOffset);

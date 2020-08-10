@@ -12,8 +12,8 @@
 #include "src/cpu_common.h"
 #include "src/cpu_decode.h"
 #include "src/cpu_encode.h"
+#include "src/cpu_frame.h"
 #include "src/cpu_frame_pool.h"
-#include "src/cpu_frames.h"
 #include "src/cpu_vpp.h"
 
 class CpuWorkstream {

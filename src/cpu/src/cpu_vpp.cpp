@@ -578,6 +578,16 @@ CpuVPP::~CpuVPP() {
 mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
                                mfxFrameSurface1* surface_out,
                                mfxExtVppAuxData* aux) {
+    // Try get AVFrame from surface_out
+    AVFrame* dst_avframe = nullptr;
+    CpuFrame* dst_frame  = CpuFrame::TryCast(surface_out);
+    if (dst_frame) {
+        dst_avframe = dst_frame->GetAVFrame();
+    }
+    if (!dst_avframe) { // Otherwise use AVFrame allocated in this class
+        dst_avframe = m_avVppFrameOut;
+    }
+
     if (surface_in) {
         FrameLock locker_in;
         RET_ERROR(locker_in.Lock(surface_in,
@@ -623,9 +633,16 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
             }
         }
 
-        RET_ERROR(AVFrame2mfxFrameSurface(surface_out,
-                                          m_avVppFrameOut,
-                                          m_session->GetFrameAllocator()));
+        if (dst_avframe == m_avVppFrameOut) { // copy image data
+            RET_ERROR(AVFrame2mfxFrameSurface(surface_out,
+                                              m_avVppFrameOut,
+                                              m_session->GetFrameAllocator()));
+        }
+        else {
+            if (dst_frame) { // update MFXFrameSurface from AVFrame
+                dst_frame->Update();
+            }
+        }
     }
 
     return MFX_ERR_NONE;

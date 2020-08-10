@@ -8,17 +8,35 @@
 #include "src/frame_lock.h"
 
 AVPixelFormat MFXFourCC2AVPixelFormat(uint32_t fourcc) {
-    return (fourcc == MFX_FOURCC_I010)
-               ? AV_PIX_FMT_YUV420P10LE
-               : (fourcc == MFX_FOURCC_P010)
-                     ? AV_PIX_FMT_P010LE
-                     : (fourcc == MFX_FOURCC_NV12)
-                           ? AV_PIX_FMT_NV12
-                           : (fourcc == MFX_FOURCC_RGB4)
-                                 ? AV_PIX_FMT_BGRA
-                                 : (fourcc == MFX_FOURCC_I420)
-                                       ? AV_PIX_FMT_YUV420P
-                                       : (AVPixelFormat)-1;
+    switch (fourcc) {
+        case MFX_FOURCC_I010:
+            return AV_PIX_FMT_YUV420P10LE;
+        case MFX_FOURCC_P010:
+            return AV_PIX_FMT_P010LE;
+        case MFX_FOURCC_NV12:
+            return AV_PIX_FMT_NV12;
+        case MFX_FOURCC_RGB4:
+            return AV_PIX_FMT_BGRA;
+        case MFX_FOURCC_I420:
+            return AV_PIX_FMT_YUV420P;
+    }
+    return (AVPixelFormat)-1;
+}
+
+uint32_t AVPixelFormat2MFXFourCC(int format) {
+    switch (format) {
+        case AV_PIX_FMT_YUV420P10LE:
+            return MFX_FOURCC_I010;
+        case AV_PIX_FMT_P010LE:
+            return MFX_FOURCC_P010;
+        case AV_PIX_FMT_NV12:
+            return MFX_FOURCC_NV12;
+        case AV_PIX_FMT_BGRA:
+            return MFX_FOURCC_RGB4;
+        case AV_PIX_FMT_YUV420P:
+            return MFX_FOURCC_I420;
+    }
+    return 0;
 }
 
 AVCodecID MFXCodecId_to_AVCodecID(mfxU32 CodecId) {

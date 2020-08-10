@@ -5,6 +5,7 @@
   ############################################################################*/
 
 #include "src/cpu_workstream.h"
+#include "src/cpu_common.h"
 
 CpuWorkstream::CpuWorkstream() : m_allocator({}) {
     av_log_set_level(AV_LOG_QUIET);

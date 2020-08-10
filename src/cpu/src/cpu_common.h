@@ -70,14 +70,15 @@ protected:
 #define VPL_TRACE_FUNC VPL_TRACE(__FUNCTION__)
 
 // Returns from current function if (value<0)
-#define RET_ERROR(_VAR)                                        \
-    {                                                          \
-        auto sts = _VAR;                                       \
-        if (sts < 0) {                                         \
-            VPL_DEBUG_MESSAGE("Error " + std::to_string(sts) + \
-                              " calling " #_VAR);              \
-            return sts;                                        \
-        }                                                      \
+#define RET_ERROR(_VAR)                                                      \
+    {                                                                        \
+        auto _sts = _VAR;                                                    \
+        /*VPL_DEBUG_MESSAGE("#info: " #_VAR " = " + std::to_string(_sts));*/ \
+        if (_sts < 0) {                                                      \
+            VPL_DEBUG_MESSAGE("Error " + std::to_string(_sts) +              \
+                              " calling " #_VAR);                            \
+            return _sts;                                                     \
+        }                                                                    \
     }
 
 // Returns from current function if (!value)
@@ -90,6 +91,7 @@ protected:
     }
 
 AVPixelFormat MFXFourCC2AVPixelFormat(uint32_t fourcc);
+uint32_t AVPixelFormat2MFXFourCC(int format);
 
 AVCodecID MFXCodecId_to_AVCodecID(mfxU32 CodecId);
 

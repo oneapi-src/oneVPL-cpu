@@ -7,14 +7,14 @@
 #ifndef SRC_CPU_SRC_CPU_FRAME_POOL_H_
 #define SRC_CPU_SRC_CPU_FRAME_POOL_H_
 
+#include <memory>
+#include <vector>
 #include "src/cpu_common.h"
-
-#define MAX_NUM_PLANES 4
+#include "src/cpu_frame.h"
 
 class CpuFramePool {
 public:
-    CpuFramePool() : surf(nullptr), nPoolSize(0){};
-    ~CpuFramePool();
+    mfxStatus Init(mfxU32 nPoolSize);
     mfxStatus Init(mfxU32 FourCC,
                    mfxU32 width,
                    mfxU32 height,
@@ -22,17 +22,7 @@ public:
     mfxStatus GetFreeSurface(mfxFrameSurface1** surface);
 
 private:
-    mfxFrameSurface1* surf;
-    mfxU32 nPoolSize;
-
-    static void GetSurfaceSizes(mfxU32 FourCC,
-                                mfxU32 width,
-                                mfxU32 height,
-                                mfxU32 planeBytes[MAX_NUM_PLANES]);
-
-    static mfxU8* AllocAlignedBuffer(mfxU32 nBytes, mfxU32 nAlign);
-
-    static void FreeAlignedBuffer(mfxU8* alignedPtr);
+    std::vector<std::unique_ptr<CpuFrame>> m_surfaces;
 };
 
 #endif // SRC_CPU_SRC_CPU_FRAME_POOL_H_

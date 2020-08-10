@@ -11,7 +11,11 @@
 
 class FrameLock {
 public:
-    FrameLock() : m_data(nullptr), m_surface(nullptr), m_allocator(nullptr) {}
+    FrameLock()
+            : m_data(nullptr),
+              m_surface(nullptr),
+              m_allocator(nullptr),
+              m_newapi(false) {}
     FrameLock(mfxFrameSurface1 *surface,
               mfxU32 flags                 = 0,
               mfxFrameAllocator *allocator = nullptr) {
@@ -24,6 +28,11 @@ public:
                    mfxU32 flags                 = 0,
                    mfxFrameAllocator *allocator = nullptr) {
         VPL_TRACE_FUNC;
+        RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
+        m_surface   = surface;
+        m_allocator = allocator;
+        m_newapi    = surface->Version.Version >= MFX_FRAMESURFACE1_VERSION &&
+                   surface->FrameInterface;
         if (allocator && allocator->pthis) {
             mem_id = surface->Data.MemId;
             RET_ERROR(
@@ -31,28 +40,34 @@ public:
             m_data = &m_locked_data;
         }
         else {
-            if (surface->Version.Version >= MFX_FRAMESURFACE1_VERSION &&
-                surface->FrameInterface) {
+            if (m_newapi) {
                 RET_ERROR(surface->FrameInterface->Map(surface, flags));
+                surface->FrameInterface->AddRef(surface);
+            }
+            else {
+                surface->Data.Locked++; // TODO(make atomic)
             }
             m_data = &surface->Data;
         }
-        m_surface   = surface;
-        m_allocator = allocator;
         return MFX_ERR_NONE;
     }
-    mfxStatus Unlock() {
+    void Unlock() {
         VPL_TRACE_FUNC;
-        if (m_allocator && m_allocator->pthis) {
-            m_allocator->Unlock(m_allocator->pthis, mem_id, &m_locked_data);
+        if (m_data) {
+            if (m_allocator && m_allocator->pthis) {
+                m_allocator->Unlock(m_allocator->pthis, mem_id, m_data);
+            }
+            else if (m_surface) {
+                if (m_newapi) {
+                    m_surface->FrameInterface->Unmap(m_surface);
+                    m_surface->FrameInterface->Release(m_surface);
+                }
+                else {
+                    m_surface->Data.Locked--; // TODO(make atomic)
+                }
+            }
+            m_data = nullptr;
         }
-        else if (m_surface &&
-                 m_surface->Version.Version >= MFX_FRAMESURFACE1_VERSION &&
-                 m_surface->FrameInterface) {
-            RET_ERROR(m_surface->FrameInterface->Unmap(m_surface));
-        }
-        m_data = nullptr;
-        return MFX_ERR_NONE;
     }
     mfxFrameData *GetData() {
         return m_data;
@@ -61,6 +76,7 @@ public:
 private:
     mfxFrameSurface1 *m_surface;
     mfxFrameAllocator *m_allocator;
+    bool m_newapi;
     mfxFrameData *m_data;
     mfxFrameData m_locked_data;
     mfxMemId mem_id;

@@ -186,6 +186,16 @@ CpuDecode::~CpuDecode() {
 mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                                  mfxFrameSurface1 *surface_work,
                                  mfxFrameSurface1 **surface_out) {
+    // Try get AVFrame from surface_work
+    AVFrame *avframe    = nullptr;
+    CpuFrame *cpu_frame = CpuFrame::TryCast(surface_work);
+    if (cpu_frame) {
+        avframe = cpu_frame->GetAVFrame();
+    }
+    if (!avframe) { // Otherwise use AVFrame allocated in this class
+        avframe = m_avDecFrameOut;
+    }
+
     for (;;) {
         // parse
         auto data_ptr    = bs ? (bs->Data + bs->DataOffset) : nullptr;
@@ -217,13 +227,20 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
         }
 
         // receive frame
-        auto av_ret = avcodec_receive_frame(m_avDecContext, m_avDecFrameOut);
+        auto av_ret = avcodec_receive_frame(m_avDecContext, avframe);
         if (av_ret == 0) {
-            if (surface_work && surface_out) {
-                RET_ERROR(
-                    AVFrame2mfxFrameSurface(surface_work,
-                                            m_avDecFrameOut,
-                                            m_session->GetFrameAllocator()));
+            if (surface_out) {
+                if (avframe == m_avDecFrameOut) { // copy image data
+                    RET_ERROR(AVFrame2mfxFrameSurface(
+                        surface_work,
+                        m_avDecFrameOut,
+                        m_session->GetFrameAllocator()));
+                }
+                else {
+                    if (cpu_frame) { // update MFXFrameSurface from AVFrame
+                        cpu_frame->Update();
+                    }
+                }
                 *surface_out = surface_work;
             }
             if (m_param.mfx.FrameInfo.Width != m_avDecContext->width ||
@@ -238,7 +255,6 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 else
                     m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
             }
-            //av_frame_free(&m_avDecFrameOut);
             return MFX_ERR_NONE;
         }
         if (av_ret == AVERROR(EAGAIN)) {
@@ -264,8 +280,8 @@ mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
     else
         memset(&request->Info, 0, sizeof(mfxFrameInfo));
 
-    request->NumFrameMin       = 4; // TO DO - calculate correctly from libav
-    request->NumFrameSuggested = 4;
+    request->NumFrameMin       = 16; // TO DO - calculate correctly from libav
+    request->NumFrameSuggested = 16;
     request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_DECODE;
 
     return MFX_ERR_NONE;
@@ -310,10 +326,7 @@ mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
         RET_ERROR(DecodeQueryIOSurf(&m_param, &DecRequest));
 
         auto pool = std::make_unique<CpuFramePool>();
-        RET_ERROR(pool->Init(m_param.mfx.FrameInfo.FourCC,
-                             m_param.mfx.FrameInfo.Width,
-                             m_param.mfx.FrameInfo.Height,
-                             DecRequest.NumFrameSuggested));
+        RET_ERROR(pool->Init(DecRequest.NumFrameSuggested));
         m_decSurfaces = std::move(pool);
     }
 

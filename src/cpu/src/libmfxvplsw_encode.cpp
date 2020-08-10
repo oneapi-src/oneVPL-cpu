@@ -72,7 +72,9 @@ mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
 
     *syncp = (mfxSyncPoint)(0x12345678);
 
-    return encoder->EncodeFrame(surface, bs);
+    mfxStatus sts = encoder->EncodeFrame(surface, bs);
+    RET_ERROR(sts);
+    return sts;
 }
 
 // stubs

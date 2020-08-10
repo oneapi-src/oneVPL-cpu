@@ -37,13 +37,11 @@ private:
     mfxStatus InitAVCParams(mfxVideoParam* par);
     mfxStatus InitJPEGParams(mfxVideoParam* par);
 
-    // libav objects - Encode
+    AVFrame* CreateAVFrame(mfxFrameSurface1* surface);
+
     const AVCodec* m_avEncCodec;
     AVCodecContext* m_avEncContext;
     AVPacket* m_avEncPacket;
-
-    // libav frames
-    AVFrame* m_avEncFrameIn;
 
     mfxVideoParam m_param;
 
