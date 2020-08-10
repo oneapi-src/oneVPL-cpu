@@ -4,8 +4,11 @@
 # SPDX-License-Identifier: MIT
 # ==============================================================================
 
-# VPL dependencies build
-FROM ubuntu:20.04 AS vpl_bootstrap
+ARG VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
+ARG VPL_INSTALL_PREFIX=/opt/intel/onevpl
+
+# Stage 1
+FROM ubuntu:20.04 AS vpl_base
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Moscow
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -20,35 +23,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3-pip && \
     pip3 install -U wheel --user && \
     pip3 install meson ninja && \
-    rm -rf /var/lib/apt/lsits/* 
-
-COPY ./script /oneVPL/script
-
-ENV VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/oneVPL/_build/
-
-RUN cd /oneVPL && \
-   ./script/bootstrap 
+    rm -rf /var/lib/apt/lsits/*
 
 
-# VPL build
-FROM vpl_bootstrap AS vpl_build
+# Stage 2
+FROM vpl_base AS vpl_bootstrap
+COPY script /oneVPL/script
+ARG VPL_BUILD_DEPENDENCIES
+RUN /oneVPL/script/bootstrap
+
+
+# Stage 3
+FROM vpl_base AS vpl_build
 COPY . /oneVPL
-
-ENV VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/oneVPL/_build/
-
+COPY --from=vpl_bootstrap /oneVPL/_deps /oneVPL/_deps
+COPY --from=vpl_bootstrap /oneVPL/_extbuild /oneVPL/_extbuild
+ARG VPL_BUILD_DEPENDENCIES
+ARG VPL_INSTALL_PREFIX
 RUN cd /oneVPL && \
-   mkdir -p _build && \ 
-   cd _build && \
-   cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/intel/onevpl .. && \
-   make -j $(nproc) && make install
+    mkdir _build && \
+    cd _build && \
+    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} .. && \
+    make -j $(nproc --all) && \
+    make install
 
 
 # Runtime image build
 FROM ubuntu:20.04 
 LABEL Description="This is the base image for the oneAPI Video Processing Library CPU Reference Implementation"
 LABEL Vendor="Intel Corporation"
-ENV LD_LIBRARY_PATH=/opt/intel/onevpl/lib
-ENV PKG_CONFIG_PATH=/opt/intel/onevpl/lib/pkgconfig
-COPY --from=vpl_build /opt/intel/onevpl /opt/intel/onevpl 
+ARG VPL_INSTALL_PREFIX
+ENV LD_LIBRARY_PATH=${VPL_INSTALL_PREFIX}/lib
+ENV PKG_CONFIG_PATH=${VPL_INSTALL_PREFIX}/pkgconfig
+ENV PATH="${PATH}:/${VPL_INSTALL_PREFIX}/bin"
+COPY --from=vpl_build ${VPL_INSTALL_PREFIX} ${VPL_INSTALL_PREFIX} 
