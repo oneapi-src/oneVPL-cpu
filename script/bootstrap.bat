@@ -45,9 +45,7 @@ md %build_dir% 2>NUL
 
 :: checkout SVT-HEVC
 cd %build_dir%
-git clone https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
-git config advice.detachedHead false
-git checkout v1.4.3
+git clone --depth=1 --single-branch -b v1.4.3 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 
 :: checkout SVT-AV1
 cd %build_dir%
@@ -67,9 +65,7 @@ if "%~1"=="gpl" (
 
 :: checkout dav1d
 cd %build_dir%
-git clone https://code.videolan.org/videolan/dav1d.git && cd dav1d
-git config advice.detachedHead false
-git checkout 0.7.0
+git clone --depth=1 --single-branch -b 0.7.0 https://code.videolan.org/videolan/dav1d.git && cd dav1d
 
 :: set path for build
 set PATH=%MINGWPATH%
@@ -113,8 +109,7 @@ cd %build_dir%
 set PATH=%GITPATH%
 
 :: checkout ffmpeg
-git clone https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
-git checkout release/4.2
+git clone --depth=1 --single-branch -b release/4.2 https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
 
 :: patch of SVT-HEVC and SVT-AV1 ffmpeg plugin
 git config user.email "bootstrap@localhost"

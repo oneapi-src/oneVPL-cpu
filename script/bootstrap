@@ -36,9 +36,7 @@ rm -rf ${VPL_BUILD_DEPENDENCIES}
 ## build FFmpeg with SVT-HEVC
 mkdir -p ${build_dir}
 cd ${build_dir}
-git clone https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
-git config advice.detachedHead false
-git checkout v1.4.3
+git clone --depth=1 --single-branch -b v1.4.3 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' \
       ./Source/Lib/Codec/EbDefinitions.h
 mkdir release && cd release
@@ -69,16 +67,13 @@ fi
 
 ## build libdav1d
 cd ${build_dir}
-git clone https://code.videolan.org/videolan/dav1d.git && cd dav1d
-git config advice.detachedHead false
-git checkout 0.7.0
+git clone --depth=1 --single-branch -b0.7.0  https://code.videolan.org/videolan/dav1d.git && cd dav1d
 meson build --prefix ${install_dir}/ --libdir ${install_dir}/lib --buildtype release --default-library=static -Denable_avx512=false
 ninja -C build && cd build
 ninja install
 
 cd ${build_dir}
-git clone https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
-git checkout release/4.2
+git clone --depth=1 --single-branch -b release/4.2 https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
 
 git config user.email "bootstrap@localhost"
 git config user.name "bootstrap"
