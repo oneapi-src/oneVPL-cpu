@@ -22,13 +22,21 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 if not defined VPL_BUILD_DEPENDENCIES (
-   call "script/bootstrap.bat"
+   if "%~1"=="gpl" (
+     call "script/bootstrap.bat" gpl
+   ) else (
+     call "script/bootstrap.bat"
+   )
    if %ERRORLEVEL% NEQ 0 (
       echo "--- Bootstrapping FAILED ---"
       exit /b 1
    )
 )
-call "script/package.bat"
+if "%~1"=="gpl" (
+  call "script/package.bat" gpl
+) else (
+  call "script/package.bat"
+)
 if %ERRORLEVEL% NEQ 0 (
    echo "--- Packaging FAILED ---"
    exit /b 1

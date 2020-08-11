@@ -20,13 +20,22 @@ if [ $? -ne 0 ];then
 fi
 
 if [ -z "$VPL_BUILD_DEPENDENCIES" ];then
-    source script/bootstrap
+    if [ "$1" == "gpl" ]; then
+      source script/bootstrap gpl
+    else
+      source script/bootstrap
+    fi
     if [ $? -ne 0 ];then
         echo "--- Bootstrapping FAILED---"
         exit 1
     fi
 fi
-script/package
+
+if [ "$1" == "gpl" ]; then
+  source script/package gpl
+else 
+  source script/package
+fi
 if [ $? -ne 0 ];then
     echo "--- Packaging FAILED---"
     exit 1
