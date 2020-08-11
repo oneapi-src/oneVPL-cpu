@@ -74,6 +74,8 @@ mfxStatus MFXVideoDECODE_Init(mfxSession session, mfxVideoParam *par) {
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    if (ws->GetDecoder())
+        return MFX_ERR_UNDEFINED_BEHAVIOR;
 
     std::unique_ptr<CpuDecode> decoder(new CpuDecode(ws));
     RET_IF_FALSE(decoder, MFX_ERR_MEMORY_ALLOC);
@@ -93,6 +95,9 @@ mfxStatus MFXVideoDECODE_Close(mfxSession session) {
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+
+    if (ws->GetDecoder() == nullptr)
+        return MFX_ERR_NOT_INITIALIZED;
 
     ws->SetDecoder(nullptr);
 
@@ -121,8 +126,6 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
         mfxVideoParam param{};
         param.mfx.CodecId = bs->CodecId;
         RET_ERROR(MFXVideoDECODE_DecodeHeader(session, bs, &param));
-
-        param.IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
         RET_ERROR(MFXVideoDECODE_Init(session, &param));
         decoder = ws->GetDecoder();
     }
@@ -163,6 +166,9 @@ mfxStatus MFXVideoDECODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {
 
 mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
+    MFXVideoDECODE_Close(session);
     return MFXVideoDECODE_Init(session, par);
 }
 

@@ -61,6 +61,7 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
     switch (par->mfx.FrameInfo.BitDepthLuma) {
         case 8:
         case 10:
+        case 0:
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -70,10 +71,17 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
     switch (par->mfx.FrameInfo.BitDepthChroma) {
         case 8:
         case 10:
+        case 0:
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
+
+    if (par->mfx.CodecProfile > 0x1FF)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.CodecLevel > 0x1FF)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
 
     return MFX_ERR_NONE;
 }
@@ -334,9 +342,6 @@ mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
 }
 
 mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
-    //RET_IF_FALSE(m_param.mfx.FrameInfo.Width, MFX_ERR_NOT_INITIALIZED);
-    //RET_IF_FALSE(m_param.mfx.FrameInfo.Height, MFX_ERR_NOT_INITIALIZED);
-    //*par = m_param;
     par->mfx = m_param.mfx;
 
     //Get parameters from the decode context
@@ -439,5 +444,6 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
             return MFX_ERR_NONE;
     }
 
+    par->IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
     return MFX_ERR_NONE;
 }
