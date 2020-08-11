@@ -8,4 +8,4 @@ Description: oneAPI Video Processing Library
 Version: 2021.1.7 
 
 Libs: -L${libdir} -lmfx 
-Cflags: -I${includedir}
+Cflags: -I${includedir} -I${includedir}/vpl
