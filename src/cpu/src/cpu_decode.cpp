@@ -271,12 +271,19 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                     // if resolution is changed
                     if (m_prevAVFrameWidth != avframe->width ||
                         m_prevAVFrameHeight != avframe->height) {
-                        m_prevAVFrameWidth       = avframe->width;
-                        m_prevAVFrameHeight      = avframe->height;
-                        m_avDecFrameOut          = avframe;
-                        m_bExtMemToBeReallocated = true;
+                        if (m_prevAVFrameWidth == 0 &&
+                            m_prevAVFrameHeight == 0) {
+                            m_prevAVFrameWidth  = avframe->width;
+                            m_prevAVFrameHeight = avframe->height;
+                        }
+                        else {
+                            m_prevAVFrameWidth       = avframe->width;
+                            m_prevAVFrameHeight      = avframe->height;
+                            m_avDecFrameOut          = avframe;
+                            m_bExtMemToBeReallocated = true;
 
-                        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+                            return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+                        }
                     }
                 }
             }
@@ -293,13 +300,6 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                     }
                 }
                 *surface_out = surface_work;
-            }
-            else {
-                // just once for 1st frame
-                if (m_prevAVFrameWidth == 0 || m_prevAVFrameHeight == 0) {
-                    m_prevAVFrameWidth  = avframe->width;
-                    m_prevAVFrameHeight = avframe->height;
-                }
             }
             return MFX_ERR_NONE;
         }

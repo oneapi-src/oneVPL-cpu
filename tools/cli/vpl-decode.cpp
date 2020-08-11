@@ -379,7 +379,6 @@ int main(int argc, char* argv[]) {
                 if (pmfxOutSurface->Info.Width == params.outWidth &&
                     pmfxOutSurface->Info.Height == params.outHeight) {
                     WriteRawFrame(pmfxOutSurface, fSink);
-                    printf(" stored\n");
                 }
             }
             else {
@@ -394,7 +393,6 @@ int main(int argc, char* argv[]) {
         }
 
         framenum++;
-        printf("#.%d", framenum);
     }
 
     printf("read %d frames\n", framenum);
@@ -686,11 +684,6 @@ bool ValidateParams(Params* params) {
         params->srcbsbufSize = DEFAULT_BS_BUFFER_SIZE;
     }
 
-    // memory mode
-    if (params->memoryMode >= MEM_MODE_COUNT) {
-        params->memoryMode = static_cast<enum MemoryMode>(MEM_MODE_AUTO);
-    }
-
     if (params->memoryMode == MEM_MODE_EXTERNAL) {
         puts("[external memory mode]");
     }
@@ -902,14 +895,12 @@ void Usage(void) {
     printf("  -o     outputFile    ... output file name\n");
     printf("  -n     maxFrames     ... max frames to decode\n");
     printf("  -if    inputFormat   ... [h264, h265, av1, jpeg]\n");
-    printf("  -mm    memoryMode    ... [0=external, 1=internal, 2=auto]\n");
-    printf(
-        "                       ... external = external memory (1.0 style)\n");
-    printf(
-        "                       ... internal = internal memory with MFXMemory_GetSurfaceForDecode\n");
-    printf(
-        "                       ... auto     = internal memory with NULL working surface + simplified decode path\n");
     printf("  -sbs   bsbufSize     ... source bitstream buffer size (bytes)\n");
+    printf("\nMemory model (default = -ext)\n");
+    printf("  -ext  = external memory (1.0 style)\n");
+    printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");
+    printf(
+        "  -auto = internal memory with NULL working surface + simplified decode path\n");
     printf("More for resolution change test\n");
     printf(
         "  -o_res outputRes     ... exclude all frames except those of specified resolution (ex: 128x96)\n");
