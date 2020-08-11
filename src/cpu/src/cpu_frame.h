@@ -67,14 +67,22 @@ public:
         RET_IF_FALSE(avframe, MFX_ERR_NULL_PTR);
         RET_IF_FALSE(m_avframe == nullptr || avframe == m_avframe,
                      MFX_ERR_UNDEFINED_BEHAVIOR);
-        m_avframe      = avframe;
-        Info.Width     = avframe->width;
-        Info.Height    = avframe->height;
-        Info.FourCC    = AVPixelFormat2MFXFourCC(avframe->format);
-        Data.Y         = avframe->data[0];
-        Data.U         = avframe->data[1];
-        Data.V         = avframe->data[2];
-        Data.A         = avframe->data[3];
+        m_avframe   = avframe;
+        Info.Width  = avframe->width;
+        Info.Height = avframe->height;
+        Info.FourCC = AVPixelFormat2MFXFourCC(avframe->format);
+        if (Info.FourCC == MFX_FOURCC_RGB4) {
+            Data.B = avframe->data[0] + 0;
+            Data.G = avframe->data[0] + 1;
+            Data.R = avframe->data[0] + 2;
+            Data.A = avframe->data[0] + 3;
+        }
+        else {
+            Data.Y = avframe->data[0];
+            Data.U = avframe->data[1];
+            Data.V = avframe->data[2];
+            Data.A = avframe->data[3];
+        }
         Data.Pitch     = avframe->linesize[0];
         Data.TimeStamp = avframe->pts; // TODO(check units)
         // TODO(fill more fields)
