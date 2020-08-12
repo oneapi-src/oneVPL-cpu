@@ -26,6 +26,7 @@ LoaderCtxVPL::LoaderCtxVPL()
           m_configCtxList(),
           m_implIdxNext(0),
           m_userSearchDirs(),
+          m_packageSearchDirs(),
           m_vplPackageDir() {
     return;
 }
@@ -35,37 +36,37 @@ LoaderCtxVPL::~LoaderCtxVPL() {
 }
 
 // creates ordered list of user-specified directories to search
-mfxU32 LoaderCtxVPL::ParseUserSearchPaths(
-    std::list<STRING_TYPE>& userSearchDirs) {
+mfxU32 LoaderCtxVPL::ParseEnvSearchPaths(const CHAR_TYPE* envVarName,
+                                         std::list<STRING_TYPE>& searchDirs) {
+    searchDirs.clear();
+
 #if defined(_WIN32) || defined(_WIN64)
     DWORD err;
     CHAR_TYPE envVar[MAX_VPL_SEARCH_PATH] = { L"" };
-    err = GetEnvironmentVariableW(L"ONEVPL_SEARCH_PATH",
-                                  envVar,
-                                  MAX_VPL_SEARCH_PATH);
+    err = GetEnvironmentVariableW(envVarName, envVar, MAX_VPL_SEARCH_PATH);
     if (!err)
         return 0; // environment variable not defined
 
     // parse env variable into individual directories
-    std::wstringstream userPath((CHAR_TYPE*)envVar);
+    std::wstringstream envPath((CHAR_TYPE*)envVar);
     STRING_TYPE s;
-    while (std::getline(userPath, s, L';')) {
-        userSearchDirs.push_back(s);
+    while (std::getline(envPath, s, L';')) {
+        searchDirs.push_back(s);
     }
 #else
-    CHAR_TYPE* envVar = getenv("ONEVPL_SEARCH_PATH");
+    CHAR_TYPE* envVar = getenv(envVarName);
     if (!envVar)
         return 0; // environment variable not defined
 
     // parse env variable into individual directories
-    std::stringstream userPath((CHAR_TYPE*)envVar);
+    std::stringstream envPath((CHAR_TYPE*)envVar);
     STRING_TYPE s;
-    while (std::getline(userPath, s, ':')) {
-        userSearchDirs.push_back(s);
+    while (std::getline(envPath, s, ':')) {
+        searchDirs.push_back(s);
     }
 #endif
 
-    return (mfxU32)userSearchDirs.size();
+    return (mfxU32)searchDirs.size();
 }
 
 mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
@@ -166,39 +167,49 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 }
 
 // search for implementations of oneAPI Video Processing Library (oneVPL)
-//   according to the rules in the spec:
-//
-// "Dispatcher searches implementation in the following folders at runtime (in priority order):
-//    1) User-defined search folders.
-//    2) oneVPL package.
-//    3) Standalone MSDK package (or driver).
-// "
-//
-// for now, we only look in the current working directory
-// TO DO - need to add category 3, clarify package path for category 2
+//   according to the rules in the spec
 mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     mfxStatus sts = MFX_ERR_NONE;
 
     STRING_TYPE emptyPath; // default construction = empty
+    std::list<STRING_TYPE>::iterator it;
 
     // first priority: user-defined directories in environment variable
-    ParseUserSearchPaths(m_userSearchDirs);
-    std::list<STRING_TYPE>::iterator it = m_userSearchDirs.begin();
+    ParseEnvSearchPaths(ENV_ONEVPL_SEARCH_PATH, m_userSearchDirs);
+    it = m_userSearchDirs.begin();
     while (it != m_userSearchDirs.end()) {
         STRING_TYPE nextDir = (*it);
         sts =
-            SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_USE_DEFINED);
+            SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_USER_DEFINED);
         it++;
     }
 
-    // second priority: oneVPL package (current location for now)
+    // second priority: oneVPL package
+    ParseEnvSearchPaths(ENV_ONEVPL_PACKAGE_PATH, m_packageSearchDirs);
+    it = m_packageSearchDirs.begin();
+    while (it != m_packageSearchDirs.end()) {
+        STRING_TYPE nextDir = (*it);
+        sts =
+            SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_VPL_PACKAGE);
+        it++;
+    }
+
+    // third priority: OS-specific PATH / LD_LIBRARY_PATH
+    ParseEnvSearchPaths(ENV_OS_PATH, m_pathSearchDirs);
+    it = m_pathSearchDirs.begin();
+    while (it != m_pathSearchDirs.end()) {
+        STRING_TYPE nextDir = (*it);
+        sts = SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_OS_PATH);
+        it++;
+    }
+
+    // fourth priority: default system folders (current location for now)
     m_vplPackageDir = MAKE_STRING("./");
-
-    sts = SearchDirForLibs(m_vplPackageDir,
+    sts             = SearchDirForLibs(m_vplPackageDir,
                            m_libInfoList,
-                           LIB_PRIORITY_VPL_PACKAGE);
+                           LIB_PRIORITY_SYS_DEFAULT);
 
-    // third priority: standalone MSDK/driver installation
+    // fifth priority: standalone MSDK/driver installation
     sts = SearchDirForLibs(emptyPath, m_libInfoList, LIB_PRIORITY_MSDK_PACKAGE);
 
     return sts;

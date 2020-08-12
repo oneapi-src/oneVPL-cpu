@@ -27,12 +27,24 @@ enum MemoryMode {
     MEM_MODE_EXTERNAL = 0,
     MEM_MODE_INTERNAL,
     MEM_MODE_AUTO,
+
     MEM_MODE_COUNT
 };
 
 const char* MemoryModeString[] = { "MEM_MODE_EXTERNAL",
                                    "MEM_MODE_INTERNAL",
                                    "MEM_MODE_AUTO" };
+
+enum DispatcherMode {
+    DISPATCHER_MODE_UNKNOWN = -1,
+    DISPATCHER_MODE_LEGACY  = 0,
+    DISPATCHER_MODE_ONEVPL_20,
+
+    DISPATCHER_MODE_COUNT
+};
+
+const char* DispatcherModeString[] = { "DISPATCHER_MODE_LEGACY",
+                                       "DISPATCHER_MODE_ONEVPL_20" };
 
 typedef struct _Params {
     char* infileName;
@@ -86,6 +98,7 @@ typedef struct _Params {
     mfxU32 dstCropH;
 
     MemoryMode memoryMode;
+    DispatcherMode dispatcherMode;
 
     mfxU32 outWidth;
     mfxU32 outHeight;
@@ -106,6 +119,9 @@ bool ValidateSize(char* in, mfxU32* vsize, mfxU32 vmax);
 bool ValidateParams(Params* params);
 bool ParseArgsAndValidate(int argc, char* argv[], Params* params);
 void Usage(void);
+
+// in vpl-new-dispatcher.cpp
+mfxStatus InitNewDispatcher(mfxU32 srcFourCC, mfxSession* session);
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -141,14 +157,25 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // initialize  session
-    mfxInitParam initPar   = { 0 };
-    initPar.Version.Major  = 2;
-    initPar.Version.Minor  = 0;
-    initPar.Implementation = MFX_IMPL_SOFTWARE;
+    mfxStatus sts      = MFX_ERR_NOT_INITIALIZED;
+    mfxSession session = nullptr;
 
-    mfxSession session;
-    mfxStatus sts = MFXInitEx(initPar, &session);
+    if (params.dispatcherMode == DISPATCHER_MODE_ONEVPL_20) {
+        sts = InitNewDispatcher(params.srcFourCC, &session);
+    }
+    else if (params.dispatcherMode == DISPATCHER_MODE_LEGACY) {
+        // initialize  session
+        mfxInitParam initPar   = { 0 };
+        initPar.Version.Major  = 2;
+        initPar.Version.Minor  = 0;
+        initPar.Implementation = MFX_IMPL_SOFTWARE;
+
+        sts = MFXInitEx(initPar, &session);
+    }
+    else {
+        printf("invalid dispatcher mode %d\n", params.dispatcherMode);
+    }
+
     if (sts != MFX_ERR_NONE) {
         fclose(fSource);
         fclose(fSink);
@@ -156,7 +183,9 @@ int main(int argc, char* argv[]) {
         return sts;
     }
 
-    printf("Memory mode = %s\n", MemoryModeString[params.memoryMode]);
+    printf("Dispatcher mode = %s\n",
+           DispatcherModeString[params.dispatcherMode]);
+    printf("Memory mode     = %s\n", MemoryModeString[params.memoryMode]);
     puts("library initialized");
 
     // prepare input bitstream
@@ -729,7 +758,8 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
     memset(params, 0, sizeof(Params));
 
     // set any non-zero defaults
-    params->memoryMode = MEM_MODE_EXTERNAL;
+    params->memoryMode     = MEM_MODE_EXTERNAL;
+    params->dispatcherMode = DISPATCHER_MODE_LEGACY;
 
     if (argc < 2)
         return false;
@@ -837,6 +867,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         else if (IS_ARG_EQ(s, "auto")) {
             params->memoryMode = MEM_MODE_AUTO;
         }
+        else if (IS_ARG_EQ(s, "dsp1")) {
+            params->dispatcherMode = DISPATCHER_MODE_LEGACY;
+        }
+        else if (IS_ARG_EQ(s, "dsp2")) {
+            params->dispatcherMode = DISPATCHER_MODE_ONEVPL_20;
+        }
         else if (IS_ARG_EQ(s, "scrx")) {
             if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))
                 return false;
@@ -896,6 +932,8 @@ void Usage(void) {
     printf("  -n     maxFrames     ... max frames to decode\n");
     printf("  -if    inputFormat   ... [h264, h265, av1, jpeg]\n");
     printf("  -sbs   bsbufSize     ... source bitstream buffer size (bytes)\n");
+    printf(
+        "  -dsp2                ... use 2.0 \"smart\" dispatcher (default = disabled)\n");
     printf("\nMemory model (default = -ext)\n");
     printf("  -ext  = external memory (1.0 style)\n");
     printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");

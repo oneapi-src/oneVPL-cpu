@@ -37,7 +37,22 @@ typedef std::string STRING_TYPE;
 typedef char CHAR_TYPE;
 #endif
 
-#define MAX_VPL_SEARCH_PATH 1024
+#define MAX_VPL_SEARCH_PATH 4096
+
+// OS-specific environment variables for oneVPL implementation
+//   search paths as defined by spec
+// TO DO - clarify expected behavior for searching Windows "PATH"
+//   (not feasible to query every DLL in every directory in PATH
+//    to determine which might be a oneVPL library)
+#if defined(_WIN32) || defined(_WIN64)
+    #define ENV_ONEVPL_SEARCH_PATH  L"ONEVPL_SEARCH_PATH"
+    #define ENV_ONEVPL_PACKAGE_PATH L"VPL_BIN"
+    #define ENV_OS_PATH             L"" // skip for now (see comment above)
+#else
+    #define ENV_ONEVPL_SEARCH_PATH  "ONEVPL_SEARCH_PATH"
+    #define ENV_ONEVPL_PACKAGE_PATH "VPL_BIN"
+    #define ENV_OS_PATH             "LD_LIBRARY_PATH"
+#endif
 
 // internal function to load dll by full path, fail if unsuccessful
 mfxStatus MFXInitEx2(mfxInitParam par, mfxSession* session, CHAR_TYPE* dllName);
@@ -62,9 +77,11 @@ struct VPLFunctionDesc {
 
 // priority of runtime loading, based on oneAPI-spec
 enum LibPriority {
-    LIB_PRIORITY_USE_DEFINED  = 1,
+    LIB_PRIORITY_USER_DEFINED = 1,
     LIB_PRIORITY_VPL_PACKAGE  = 2,
-    LIB_PRIORITY_MSDK_PACKAGE = 3,
+    LIB_PRIORITY_OS_PATH      = 3,
+    LIB_PRIORITY_SYS_DEFAULT  = 4,
+    LIB_PRIORITY_MSDK_PACKAGE = 5,
 };
 
 enum CfgPropState {
@@ -181,7 +198,8 @@ public:
 
 private:
     // helper functions
-    mfxU32 ParseUserSearchPaths(std::list<STRING_TYPE>& userSearchDirs);
+    mfxU32 ParseEnvSearchPaths(const CHAR_TYPE* envVarName,
+                               std::list<STRING_TYPE>& searchDirs);
     mfxStatus SearchDirForLibs(STRING_TYPE searchDir,
                                std::list<LibInfo*>& libInfoList,
                                mfxU32 priority);
@@ -191,6 +209,8 @@ private:
     std::list<ConfigCtxVPL*> m_configCtxList;
 
     std::list<STRING_TYPE> m_userSearchDirs;
+    std::list<STRING_TYPE> m_packageSearchDirs;
+    std::list<STRING_TYPE> m_pathSearchDirs;
     STRING_TYPE m_vplPackageDir;
 
     mfxU32 m_implIdxNext;
