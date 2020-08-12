@@ -1,26 +1,18 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(hello-dpcpp)
-
 # This sample must be compiled and executed within the oneAPI product enviroment
 # with the dpcpp compiler to use dpcpp features
-if(DEFINED ENV{DPCT_BUNDLE_ROOT})
-  message("Building hello-dpcpp with dpcpp compiler")
-  if(WIN32)
-    set(CMAKE_CXX_COMPILER "dpcpp-cl")
-  else()
-    set(CMAKE_CXX_COMPILER "dpcpp")
-  endif()
+if(WIN32)
+  set(DPCPP_COMPILER_NAME "dpcpp-cl")
 else()
-  message("DPCPP compiler not found, blur feature disabled in hello-dpcpp")
+  set(DPCPP_COMPILER_NAME "dpcpp")
 endif()
-
-set(TARGET hello-dpcpp)
-set(SOURCES src/hello-dpcpp.cpp)
-set(VPL_NAME mfx)
-set(CMAKE_MSVCIDE_RUN_PATH $ENV{PATH})
-set(RUNARGS ${CMAKE_CURRENT_SOURCE_DIR}/content/cars_128x96.i420 128 96)
-
-set(CMAKE_CXX_STANDARD 17)
+find_program(DPCPP_COMPILER ${DPCPP_COMPILER_NAME})
+if(DPCPP_COMPILER)
+  set(CMAKE_CXX_COMPILER ${DPCPP_COMPILER_NAME})
+  message("-- DPCPP compiler found, blur feature enabled")
+else()
+  message("-- DPCPP compiler not found, blur feature disabled")
+endif()
 
 # Set default build type to RelWithDebInfo if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -34,24 +26,28 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif()
 
-add_executable(${TARGET} ${SOURCES})
+project(hello-dpcpp LANGUAGES CXX)
 
-get_directory_property(has_parent PARENT_DIRECTORY)
-if(NOT has_parent)
-  # only make run target available for stand-alone build
-  add_custom_target(run ${TARGET} ${RUNARGS})
-endif()
+set(TARGET hello-dpcpp)
+set(SOURCES src/hello-dpcpp.cpp)
+set(VPL_NAME mfx)
+set(CMAKE_MSVCIDE_RUN_PATH $ENV{PATH})
+set(RUNARGS ${CMAKE_CURRENT_SOURCE_DIR}/content/cars_128x96.i420 128 96)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(${TARGET} ${SOURCES})
 
 if(MSVC)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/api)
-
-if(DEFINED ENV{DPCT_BUNDLE_ROOT})
+if(DPCPP_COMPILER)
   add_definitions(-DBUILD_DPCPP)
   target_link_libraries(${TARGET} OpenCL sycl)
 endif()
+
+target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/api)
 
 if(TARGET mfx)
   target_link_libraries(${TARGET} mfx)
@@ -77,4 +73,10 @@ else()
   endif()
   target_include_directories(${TARGET} PRIVATE $ENV{VPL_INCLUDE})
   target_link_libraries(${TARGET} ${VPL_LIB})
+endif()
+
+get_directory_property(has_parent PARENT_DIRECTORY)
+if(NOT has_parent)
+  # only make run target available for stand-alone build
+  add_custom_target(run ${TARGET} ${RUNARGS})
 endif()
