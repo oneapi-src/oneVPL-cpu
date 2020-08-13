@@ -12,24 +12,6 @@
 #include "src/cpu_workstream.h"
 #include "src/frame_lock.h"
 
-#define MFX_CHECK(EXPR, ERR) \
-    {                        \
-        if (!(EXPR))         \
-            MFX_RETURN(ERR); \
-    }
-#define MFX_CHECK_STS(sts) MFX_CHECK(MFX_SUCCEEDED(sts), sts)
-#define MFX_SAFE_CALL(FUNC)    \
-    {                          \
-        mfxStatus _sts = FUNC; \
-        MFX_CHECK_STS(_sts);   \
-    }
-#define MFX_CHECK_NULL_PTR1(pointer) MFX_CHECK(pointer, MFX_ERR_NULL_PTR)
-#define MFX_CHECK_NULL_PTR2(p1, p2)      \
-    {                                    \
-        MFX_CHECK(p1, MFX_ERR_NULL_PTR); \
-        MFX_CHECK(p2, MFX_ERR_NULL_PTR); \
-    }
-
 #define MFX_MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 #define VPP_GET_REAL_WIDTH(info, width) \
@@ -468,10 +450,10 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
         return MFX_ERR_UNSUPPORTED;
 
     sts = CheckFrameInfo(&(par->vpp.In), VPP_IN);
-    MFX_CHECK_STS(sts);
+    RET_ERROR(sts);
 
     sts = CheckFrameInfo(&(par->vpp.Out), VPP_OUT);
-    MFX_CHECK_STS(sts);
+    RET_ERROR(sts);
 
     sts = CheckExtParam(par->ExtParam, par->NumExtParam);
     if (MFX_WRN_INCOMPATIBLE_VIDEO_PARAM == sts ||
@@ -479,11 +461,11 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
         sts_wrn = sts;
         sts     = MFX_ERR_NONE;
     }
-    MFX_CHECK_STS(sts);
+    RET_ERROR(sts);
 
     std::vector<mfxU32> pipelineList;
     sts = GetPipelineList(par, pipelineList, true);
-    MFX_CHECK_STS(sts);
+    RET_ERROR(sts);
 
     m_vpp_base.src_pixel_format = MFXFourCC2AVPixelFormat(par->vpp.In.FourCC);
     m_vpp_base.src_shift        = par->vpp.In.Shift;
@@ -621,28 +603,22 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
             printf("Failed at av_buffersrc_add_frame_flags()\n");
             return MFX_ERR_UNKNOWN;
         }
+    }
 
-        while (1) {
-            int ret =
-                av_buffersink_get_frame(m_buffersink_ctx, m_avVppFrameOut);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-                break;
-            if (ret < 0) {
-                printf("Failed at av_buffersink_get_frame()\n");
-                return MFX_ERR_UNKNOWN;
-            }
-        }
+    // av_buffersink_get_frame
+    int ret = av_buffersink_get_frame(m_buffersink_ctx, dst_avframe);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+        return MFX_ERR_MORE_DATA;
+    }
+    RET_IF_FALSE(ret >= 0, MFX_ERR_ABORTED);
 
-        if (dst_avframe == m_avVppFrameOut) { // copy image data
-            RET_ERROR(AVFrame2mfxFrameSurface(surface_out,
-                                              m_avVppFrameOut,
-                                              m_session->GetFrameAllocator()));
-        }
-        else {
-            if (dst_frame) { // update MFXFrameSurface from AVFrame
-                dst_frame->Update();
-            }
-        }
+    if (dst_avframe == m_avVppFrameOut) { // copy image data
+        RET_ERROR(AVFrame2mfxFrameSurface(surface_out,
+                                          m_avVppFrameOut,
+                                          m_session->GetFrameAllocator()));
+    }
+    else if (dst_frame) { // update MFXFrameSurface from AVFrame
+        dst_frame->Update();
     }
 
     return MFX_ERR_NONE;
@@ -2108,7 +2084,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     mfxU16 srcH = 0, dstH = 0;
     //mfxU32  lenList = 0;
 
-    MFX_CHECK_NULL_PTR1(videoParam);
+    RET_IF_FALSE(videoParam, MFX_ERR_NULL_PTR);
 
     //MFX_CHECK_NULL_PTR2( pList, pLen );
 
@@ -2528,8 +2504,7 @@ bool CpuVPP::GetExtParamList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen) {
 mfxStatus CpuVPP::GetFilterParam(mfxVideoParam* par,
                                  mfxU32 filterName,
                                  mfxExtBuffer** ppHint) {
-    MFX_CHECK_NULL_PTR1(par);
-    MFX_CHECK_NULL_PTR1(ppHint);
+    RET_IF_FALSE(par && ppHint, MFX_ERR_NULL_PTR);
 
     *ppHint = NULL;
 
@@ -2650,7 +2625,7 @@ mfxStatus CpuVPP::CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count) {
             bError = true;
             sts    = MFX_ERR_NONE;
         }
-        MFX_CHECK_STS(sts); // for double check only
+        RET_ERROR(sts); // for double check only
     }
     //-----------------------------------------------------
 
@@ -2670,7 +2645,7 @@ mfxStatus CpuVPP::CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count) {
                           ppExtParam[extParIdx]->BufferId)) {
             sts = MFX_ERR_INVALID_VIDEO_PARAM;
         }
-        MFX_CHECK_STS(sts);
+        RET_ERROR(sts);
     }
 
     // [4] Do USE

@@ -13,8 +13,6 @@
 #include "src/cpu_common.h"
 #include "src/cpu_frame_pool.h"
 
-#define X264_DEFAULT_QUALITY_VALUE 23
-
 class CpuWorkstream;
 
 class CpuEncode {
@@ -38,8 +36,6 @@ private:
     mfxStatus InitAV1Params(mfxVideoParam* par);
     mfxStatus InitAVCParams(mfxVideoParam* par);
     mfxStatus InitJPEGParams(mfxVideoParam* par);
-
-    AVFrame* CreateAVFrame(mfxFrameSurface1* surface);
 
     const AVCodec* m_avEncCodec;
     AVCodecContext* m_avEncContext;

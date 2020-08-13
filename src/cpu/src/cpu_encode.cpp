@@ -10,6 +10,8 @@
 #include "src/cpu_workstream.h"
 #include "src/frame_lock.h"
 
+#define X264_DEFAULT_QUALITY_VALUE 23
+
 CpuEncode::CpuEncode(CpuWorkstream *session)
         : m_session(session),
           m_avEncCodec(nullptr),
@@ -831,71 +833,23 @@ CpuEncode::~CpuEncode() {
     }
 }
 
-static void DeleteFrameLock(void *opaque, uint8_t *data) {
-    FrameLock *locker = static_cast<FrameLock *>(opaque);
-    delete locker;
-}
-
-AVFrame *CpuEncode::CreateAVFrame(mfxFrameSurface1 *surface) {
-    auto locker = std::make_unique<FrameLock>();
-    RET_IF_FALSE(locker, nullptr);
-    mfxFrameAllocator *allocator = m_session->GetFrameAllocator();
-    RET_IF_FALSE(locker->Lock(surface, MFX_MAP_READ, allocator) == MFX_ERR_NONE,
-                 nullptr);
-    mfxFrameData *data = locker->GetData();
-
-    AVFrame *av_frame = av_frame_alloc();
-    RET_IF_FALSE(av_frame, nullptr);
-    av_frame->format  = m_avEncContext->pix_fmt;
-    av_frame->width   = m_avEncContext->width;
-    av_frame->height  = m_avEncContext->height;
-    av_frame->data[0] = data->Y;
-    av_frame->data[1] = data->U;
-    av_frame->data[2] = data->V;
-    // TODO(linesize for different color formats)
-    av_frame->linesize[0] = data->Pitch;
-    av_frame->linesize[1] = data->Pitch / 2;
-    av_frame->linesize[2] = data->Pitch / 2;
-    // set deleter callback
-    uint8_t *opaque = reinterpret_cast<uint8_t *>(locker.get());
-    av_frame->buf[0] =
-        av_buffer_create(opaque, sizeof(FrameLock), DeleteFrameLock, opaque, 0);
-    RET_IF_FALSE(av_frame->buf[0], nullptr);
-    locker.release();
-    return av_frame;
-}
-
 mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
     RET_IF_FALSE(m_avEncContext, MFX_ERR_NOT_INITIALIZED);
     int err;
 
     // encode one frame
     if (surface) {
-        AVFrame *av_frame = nullptr;
-        // Try get AVFrame
-        CpuFrame *cpu_frame = CpuFrame::TryCast(surface);
-        if (cpu_frame) {
-            av_frame = cpu_frame->GetAVFrame();
-        }
-        // Or create new one without data copy
-        bool bCreated = false;
-        if (!av_frame) {
-            av_frame = CreateAVFrame(surface);
-            RET_IF_FALSE(av_frame, MFX_ERR_MEMORY_ALLOC);
-            bCreated = true;
-        }
+        std::shared_ptr<AVFrame> av_frame =
+            GetAVFrameFromMfxSurface(surface, m_session->GetFrameAllocator());
+        RET_IF_FALSE(av_frame, MFX_ERR_MEMORY_ALLOC);
 
         if (m_param.mfx.CodecId == MFX_CODEC_JPEG) {
             // must be set for every frame
             av_frame->quality = m_avEncContext->global_quality;
         }
 
-        err = avcodec_send_frame(m_avEncContext, av_frame);
+        err = avcodec_send_frame(m_avEncContext, av_frame.get());
         RET_IF_FALSE(err == 0, MFX_ERR_UNKNOWN);
-
-        if (bCreated) {
-            av_frame_unref(av_frame);
-        }
     }
     else {
         // send NULL packet to drain frames

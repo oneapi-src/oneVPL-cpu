@@ -18,9 +18,7 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_avDecFrameOut(nullptr),
           m_param(),
           m_decSurfaces(),
-          m_bExtMemToBeReallocated(false),
-          m_prevAVFrameWidth(0),
-          m_prevAVFrameHeight(0) {}
+          m_bFrameBuffered(false) {}
 
 mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
     //only system memory allowed
@@ -85,23 +83,8 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
 //  1. Attempts to decode a frame
 //  2. Gets parameters
 mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
-    AVCodecID cid = AV_CODEC_ID_NONE;
-    switch (par->mfx.CodecId) {
-        case MFX_CODEC_AVC:
-            cid = AV_CODEC_ID_H264;
-            break;
-        case MFX_CODEC_HEVC:
-            cid = AV_CODEC_ID_HEVC;
-            break;
-        case MFX_CODEC_JPEG:
-            cid = AV_CODEC_ID_MJPEG;
-            break;
-        case MFX_CODEC_AV1:
-            cid = AV_CODEC_ID_AV1;
-            break;
-        default:
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
+    AVCodecID cid = MFXCodecId_to_AVCodecID(par->mfx.CodecId);
+    RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
 
     if (!bs) {
         mfxStatus sts = ValidateDecodeParams(par);
@@ -185,16 +168,18 @@ CpuDecode::~CpuDecode() {
 mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                                  mfxFrameSurface1 *surface_work,
                                  mfxFrameSurface1 **surface_out) {
-    if (bs == nullptr && m_bExtMemToBeReallocated == true) {
+    if (m_bFrameBuffered) {
         if (surface_work && surface_out) {
             RET_ERROR(AVFrame2mfxFrameSurface(surface_work,
                                               m_avDecFrameOut,
                                               m_session->GetFrameAllocator()));
 
-            *surface_out             = surface_work;
-            m_bExtMemToBeReallocated = false;
-
+            *surface_out     = surface_work;
+            m_bFrameBuffered = false;
             return MFX_ERR_NONE;
+        }
+        else {
+            return MFX_ERR_MORE_SURFACE;
         }
     }
 
@@ -253,34 +238,14 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 else
                     m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
             }
-
-            if (!m_decSurfaces) { // external memory mode
-                if (surface_out) { // regular decode process, not part of decodeheader() process
-                    // if resolution is changed
-                    if (m_prevAVFrameWidth != avframe->width ||
-                        m_prevAVFrameHeight != avframe->height) {
-                        if (m_prevAVFrameWidth == 0 &&
-                            m_prevAVFrameHeight == 0) {
-                            m_prevAVFrameWidth  = avframe->width;
-                            m_prevAVFrameHeight = avframe->height;
-                        }
-                        else {
-                            m_prevAVFrameWidth       = avframe->width;
-                            m_prevAVFrameHeight      = avframe->height;
-                            m_avDecFrameOut          = avframe;
-                            m_bExtMemToBeReallocated = true;
-
-                            return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
-                        }
-                    }
-                }
-            }
             if (surface_out) {
                 if (avframe == m_avDecFrameOut) { // copy image data
+                    m_bFrameBuffered = true;
                     RET_ERROR(AVFrame2mfxFrameSurface(
                         surface_work,
                         m_avDecFrameOut,
                         m_session->GetFrameAllocator()));
+                    m_bFrameBuffered = false;
                 }
                 else {
                     if (cpu_frame) { // update MFXFrameSurface from AVFrame
@@ -373,23 +338,7 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     //Get parameters from the decode context
     //This allows checking if parameters have
     //been effectively set
-
-    switch (m_avDecCodec->id) {
-        case AV_CODEC_ID_H264:
-            par->mfx.CodecId = MFX_CODEC_AVC;
-            break;
-        case AV_CODEC_ID_HEVC:
-            par->mfx.CodecId = MFX_CODEC_HEVC;
-            break;
-        case AV_CODEC_ID_MJPEG:
-            par->mfx.CodecId = MFX_CODEC_JPEG;
-            break;
-        case AV_CODEC_ID_AV1:
-            par->mfx.CodecId = MFX_CODEC_AV1;
-            break;
-        default:
-            par->mfx.CodecId = 0;
-    }
+    par->mfx.CodecId = AVCodecID_to_MFXCodecId(m_avDecCodec->id);
 
     // resolution
     par->mfx.FrameInfo.Width  = (uint16_t)m_avDecContext->width;

@@ -39,9 +39,7 @@ private:
 
     mfxVideoParam m_param;
     std::unique_ptr<CpuFramePool> m_decSurfaces;
-    bool m_bExtMemToBeReallocated;
-    int m_prevAVFrameWidth;
-    int m_prevAVFrameHeight;
+    bool m_bFrameBuffered;
 
     CpuWorkstream* m_session;
 

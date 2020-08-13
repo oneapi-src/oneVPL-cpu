@@ -94,6 +94,10 @@ AVPixelFormat MFXFourCC2AVPixelFormat(uint32_t fourcc);
 uint32_t AVPixelFormat2MFXFourCC(int format);
 
 AVCodecID MFXCodecId_to_AVCodecID(mfxU32 CodecId);
+mfxU32 AVCodecID_to_MFXCodecId(AVCodecID CodecId);
+
+std::shared_ptr<AVFrame> GetAVFrameFromMfxSurface(mfxFrameSurface1* surface,
+                                                  mfxFrameAllocator* allocator);
 
 // copy image data from AVFrame to mfxFrameSurface1
 mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1* surface,

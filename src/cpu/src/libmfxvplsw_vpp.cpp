@@ -74,7 +74,7 @@ mfxStatus MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
                                        mfxSyncPoint *syncp) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
-    RET_IF_FALSE(in && out && syncp, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(out && syncp, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     CpuVPP *vpp       = ws->GetVPP();
