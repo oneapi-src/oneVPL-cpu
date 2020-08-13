@@ -1,7 +1,7 @@
 {
   "name": "Hello DPC++ interop",
   "categories": ["Toolkit/Intel® oneAPI Base Toolkit/oneVPL"],
-  "description": "Sample that shows how to use the oneAPI Video Processing Library interop with DPC++ to perform a simple video content blur",
+  "description": "Sample that shows how to use a DPC++ kernel together with oneAPI Video Processing Library to perform a simple video content blur",
   "dependencies": ["vpl"],
   "os": ["linux"],
   "languages": [{"cpp":{}}],

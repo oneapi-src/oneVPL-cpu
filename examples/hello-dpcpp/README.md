@@ -1,31 +1,29 @@
-# Hello dpcpp
+# `hello-dpcpp` Sample
 
-This sample shows how to use the oneAPI Video Processing Library (oneVPL) to
-perform  a simple video content blur.
+This sample shows how to use a DPC++ kernel together with oneAPI Video
+Processing Library (oneVPL) to perform a simple video content blur.
 
 | Optimized for   | Description
 |---------------- | ----------------------------------------
 | OS              | Ubuntu* 18.04; Windows* 10
 | Hardware        | Intel® Processor Graphics GEN9 or newer
 | Software        | Intel® oneAPI Video Processing Library(oneVPL)
-
-## What You Will Learn
-
-- How to use oneVPL and DPC++ to convert I420 raw video file in to RGB32 and blur each frame.
+| What You Will Learn | How to use oneVPL and DPC++ to convert I420 raw video file in to RGB32 and blur each frame.
+| Time to Complete | 5 minutes
 
 
-## Time to Complete
-
-  5 minutes
-
-
-## Sample Details
+## Purpose
 
 This sample is a command line application that takes a file containing a raw
-I420 format video elementary stream as an argument, convert it to RGB32 with oneVPL
-blur each frame with DPC++ by using SYCL kernel
-writes the decoded output to `out.rgba` in RGB32 format.
+I420 format video elementary stream as an argument, converts it to RGB32 with
+oneVPL and blurs each frame with DPC++ by using SYCL kernel, and writes the
+decoded output to `out.rgba` in RGB32 format.
 
+If a DPC++ compiler is not found the blur operation will be disabled
+
+
+
+## Key Implementation details
 
 | Configuration     | Default setting
 | ----------------- | ----------------------------------
@@ -35,80 +33,106 @@ writes the decoded output to `out.rgba` in RGB32 format.
 | Output resolution | same as input
 
 
-## Build and Run the Sample
+## License
 
-To build and run the sample you need to install prerequisite software and set up
-your environment.
-
-### Install Prerequisite Software
-
- - Intel® oneAPI Base Toolkit for Windows* or Linux*
- - [CMake](https://cmake.org)
- - A C/C++ compiler
+This code sample is licensed under MIT license.
 
 
-### Set Up Your Environment
+## Building the `hello-dpcpp` Program
 
-#### Linux
+### On a Linux* System
 
-Run `setvars.sh` every time you open a new terminal window:
+Perform the following steps:
 
-The `setvars.sh` script can be found in the root folder of your oneAPI
-installation, which is `/opt/intel/oneapi/` when installed as root, and
-`~/intel/oneapi/` when installed as a normal user.  If you customized the
-installation folder, the `setvars.sh` is in your custom location.
+1. Install the prerequisite software. To build and run the sample you need to
+   install prerequisite software and set up your environment:
 
-To use the tools, whether from the command line or using Eclipse, initialize
-your environment. To do it in one step for all tools, use the included
-environment variable setup utility:
+   - Intel® oneAPI Base Toolkit for Linux*
+   - [CMake](https://cmake.org)
 
-```
-source <install_dir>/setvars.sh
-```
+2. Set up your environment using the following command.
+   ```
+   $ source <oneapi_install_dir>/setvars.sh
+   ```
+   Here `<oneapi_install_dir>` represents the root folder of your oneAPI
+   installation, which is `/opt/intel/oneapi/` when installed as root, and
+   `~/intel/oneapi/` when installed as a normal user.  If you customized the
+   installation folder, it is in your custom location.
 
+3. Build the program using the following commands:
+   ```
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ cmake --build .
+   ```
 
-#### Windows
-
-Run `setvars.bat` every time you open a new command prompt:
-
-The `setvars.bat` script can be found in the root folder of your oneAPI
-installation, which is typically `C:\Program Files (x86)\inteloneapi\` when
-installed using default options. If you customized the installation folder, the
-`setvars.bat` is in your custom location.
-
-To use the tools,from the command line initialize your environment. Note that if
-a compiler is not part of your oneAPI installation you should run in a Visual
-Studio 64-bit command prompt. To do it in one step for all tools, use the
-included environment variable setup utility:
-
-```
-<install_dir>\setvars.bat
-```
+4. Run the program using the following command:
+   ```
+   $ cmake --build . --target run
+   ```
 
 
-### Build the Sample
+### On a Windows* System Using Visual Studio* Version 2017 or Newer
 
-From the directory containing this README:
+#### Building the program using CMake
 
-```
-mkdir build
-cd build
-cmake ..
-```
+1. Install the prerequisite software. To build and run the sample you need to
+   install prerequisite software and set up your environment:
+
+   - Intel® oneAPI Base Toolkit for Windows*
+   - [CMake](https://cmake.org)
+
+2. Set up your environment using the following command.
+   ```
+   > <oneapi_install_dir>\setvars.bat
+   ```
+   Here `<oneapi_install_dir>` represents the root folder of your oneAPI
+   installation, which is which is `C:\Program Files (x86)\Intel\oneAPI\`
+   when installed using default options. If you customized the installation
+   folder, the `setvars.bat` is in your custom location.  Note that if a
+   compiler is not part of your oneAPI installation you should run in a Visual
+   Studio 64-bit command prompt.
+
+3. Build the program using the following commands:
+   ```
+   $ mkdir build
+   $ cd build
+   $ cmake ..
+   $ cmake --build .
+   ```
+
+4. Run the program using the following command:
+   ```
+   $ cmake --build . --target run
+   ```
 
 
-### Run the Sample
+#### Building the program using VS2017 or VS2019 IDE
 
-```
-cmake --build . --target run
-```
+1. Install the Intel® oneAPI Base Toolkit for Windows*
+2. Right click on the solution file and open using either VS2017 or VS2019 IDE.
+3. Right click on the project in Solution explorer and select Rebuild.
+4. From top menu select Debug -> Start without Debugging.
 
-The run target runs the sample executable with the arguments
+
+## Running the Sample
+
+### Application Parameters
+
+The instructions given above run the sample executable with the argument
 `<sample_dir>/content/cars_128x96.i420 128 96`.
 
-You can find the output file `out.rgba` in the build directory.
 
-### Display the Output
+### Example of Output
+
+```
+Running on Intel(R) Core(TM) i7-6770HQ CPU @ 2.60GHz
+Processing hello-dpcpp/content/cars_128x96.i420 -> out.rgba
+Processed 60 frames
+```
+
+You can find the output file ``out.rgba`` in the build directory.
 
 You can display the output with a video player that supports raw streams such as
 FFplay. You can use the following command to display the output with FFplay:
