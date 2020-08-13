@@ -14,6 +14,8 @@
 
 class CpuFramePool {
 public:
+    CpuFramePool() : m_info({}) {}
+
     mfxStatus Init(mfxU32 nPoolSize);
     mfxStatus Init(mfxU32 FourCC,
                    mfxU32 width,
@@ -23,6 +25,7 @@ public:
 
 private:
     std::vector<std::unique_ptr<CpuFrame>> m_surfaces;
+    mfxFrameInfo m_info;
 };
 
 #endif // SRC_CPU_SRC_CPU_FRAME_POOL_H_

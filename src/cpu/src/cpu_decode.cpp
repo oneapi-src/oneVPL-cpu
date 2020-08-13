@@ -9,16 +9,6 @@
 #include <utility>
 #include "src/cpu_workstream.h"
 
-// callback:
-// int (*get_buffer2)(struct AVCodecContext *s, AVFrame *frame, int flags);
-
-static int get_buffer2_msdk(struct AVCodecContext *s,
-                            AVFrame *frame,
-                            int flags) {
-    // if AV_CODEC_CAP_DR1 is not set, use default method
-    return avcodec_default_get_buffer2(s, frame, flags);
-}
-
 CpuDecode::CpuDecode(CpuWorkstream *session)
         : m_session(session),
           m_avDecCodec(nullptr),
@@ -128,8 +118,6 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
     if (!m_avDecContext) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
-
-    m_avDecContext->get_buffer2 = get_buffer2_msdk;
 
     m_avDecParser = av_parser_init(m_avDecCodec->id);
     if (!m_avDecParser) {
@@ -326,8 +314,8 @@ mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
     else
         memset(&request->Info, 0, sizeof(mfxFrameInfo));
 
-    request->NumFrameMin       = 16; // TO DO - calculate correctly from libav
-    request->NumFrameSuggested = 16;
+    request->NumFrameMin       = 1;
+    request->NumFrameSuggested = 3;
     request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_DECODE;
 
     return MFX_ERR_NONE;

@@ -28,6 +28,10 @@ mfxStatus CpuFramePool::Init(mfxU32 FourCC,
         m_surfaces.push_back(std::move(cpu_frame));
     }
 
+    m_info.FourCC = FourCC;
+    m_info.Width  = width;
+    m_info.Height = height;
+
     return MFX_ERR_NONE;
 }
 
@@ -42,18 +46,21 @@ mfxStatus CpuFramePool::GetFreeSurface(mfxFrameSurface1** surface) {
 
         if (!counter && !surf->Data.Locked) {
             *surface = surf.get();
-            break;
+            (*surface)->FrameInterface->AddRef(*surface);
+            return MFX_ERR_NONE;
         }
     }
 
-    // no free surface found in pool
-    // TO DO - clarify expected behavior here - do we just alloc a new
-    //   surface and add to the pool? (up to some max?)
-    // need to avoid getting in infinite loop due to application
-    //   using the API wrong, e.g. never releasing surfaces
-    RET_IF_FALSE(*surface, MFX_ERR_NOT_FOUND);
-
+    // no free surface found in pool, create new one
+    auto cpu_frame = std::make_unique<CpuFrame>();
+    RET_IF_FALSE(cpu_frame && cpu_frame->GetAVFrame(), MFX_ERR_MEMORY_ALLOC);
+    if (m_info.FourCC) {
+        RET_ERROR(
+            cpu_frame->Allocate(m_info.FourCC, m_info.Width, m_info.Height));
+    }
+    *surface = cpu_frame.get();
     (*surface)->FrameInterface->AddRef(*surface);
+    m_surfaces.push_back(std::move(cpu_frame));
 
     return MFX_ERR_NONE;
 }
