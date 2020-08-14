@@ -9,6 +9,7 @@
 
 #include <string.h>
 
+#include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
 struct ImplDescriptionArray {
