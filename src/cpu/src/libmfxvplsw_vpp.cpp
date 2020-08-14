@@ -87,7 +87,10 @@ mfxStatus MFXVideoVPP_RunFrameVPPAsync(mfxSession session,
 
 mfxStatus MFXVideoVPP_Reset(mfxSession session, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
-    return MFX_ERR_NOT_IMPLEMENTED;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
+    MFXVideoVPP_Close(session);
+    return MFXVideoVPP_Init(session, par);
 }
 
 mfxStatus MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat) {

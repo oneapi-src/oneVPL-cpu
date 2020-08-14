@@ -80,6 +80,9 @@ mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
 // stubs
 mfxStatus MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
+    MFXVideoENCODE_Close(session);
     return MFXVideoENCODE_Init(session, par);
 }
 
