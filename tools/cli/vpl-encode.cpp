@@ -4,16 +4,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <algorithm>
-#include <chrono>
-#include <iostream>
-#include <vector>
-#include "vpl/mfxjpeg.h"
-#include "vpl/mfxvideo.h"
+#include "./vpl-common.h"
 
 #define ALIGN_UP(addr, size) \
     (((addr) + ((size)-1)) & (~((decltype(addr))(size)-1)))
@@ -23,72 +14,6 @@
 #define MAX_WIDTH  3840
 #define MAX_HEIGHT 2160
 #define MAX_LENGTH 260
-
-#define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
-
-enum MemoryMode {
-    MEM_MODE_UNKNOWN = -1,
-
-    MEM_MODE_EXTERNAL = 0,
-    MEM_MODE_INTERNAL,
-};
-
-const char* MemoryModeString[] = { "MEM_MODE_EXTERNAL", "MEM_MODE_INTERNAL" };
-
-typedef struct _Params {
-    char* infileName;
-    char* outfileName;
-
-    char* infileFormat;
-    char* outfileFormat;
-
-    char* targetDeviceType;
-
-    char* gpuCopyMode;
-
-    MemoryMode memoryMode;
-
-    mfxU32 srcFourCC;
-    mfxU32 dstFourCC;
-
-    mfxU32 maxFrames;
-    mfxU32 srcWidth;
-    mfxU32 srcHeight;
-    mfxU32 dstWidth;
-    mfxU32 dstHeight;
-    mfxU32 timeout;
-    mfxU32 frameRate;
-    mfxU32 enableCinterface;
-
-    mfxU32 srcbsbufSize;
-    mfxU32 dstbsbufSize;
-
-    // encoder specific
-    mfxU32 bitRate;
-    mfxU32 targetUsage;
-    mfxU32 brcMode;
-    mfxU32 gopSize;
-    mfxU32 keyFrameDist;
-    mfxU32 qp;
-
-    // jpeg encoder specific
-    mfxU32 quality;
-
-    mfxU32 targetDevice;
-
-    mfxU32 gpuCopy;
-
-    // cropping
-    mfxU32 srcCropX;
-    mfxU32 srcCropY;
-    mfxU32 srcCropW;
-    mfxU32 srcCropH;
-    mfxU32 dstCropX;
-    mfxU32 dstCropY;
-    mfxU32 dstCropW;
-    mfxU32 dstCropH;
-
-} Params;
 
 typedef struct {
     mfxU32 width;

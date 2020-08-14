@@ -4,15 +4,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <chrono>
-#include <iostream>
-#include <vector>
-#include "vpl/mfxjpeg.h"
-#include "vpl/mfxvideo.h"
+#include "./vpl-common.h"
 
 #define MAX_LENGTH             260
 #define MAX_WIDTH              3840
@@ -21,88 +13,6 @@
 #define DEFAULT_BS_BUFFER_SIZE 2 * 1024 * 21024
 
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
-
-enum MemoryMode {
-    MEM_MODE_UNKNOWN  = -1,
-    MEM_MODE_EXTERNAL = 0,
-    MEM_MODE_INTERNAL,
-    MEM_MODE_AUTO,
-
-    MEM_MODE_COUNT
-};
-
-const char* MemoryModeString[] = { "MEM_MODE_EXTERNAL",
-                                   "MEM_MODE_INTERNAL",
-                                   "MEM_MODE_AUTO" };
-
-enum DispatcherMode {
-    DISPATCHER_MODE_UNKNOWN = -1,
-    DISPATCHER_MODE_LEGACY  = 0,
-    DISPATCHER_MODE_ONEVPL_20,
-
-    DISPATCHER_MODE_COUNT
-};
-
-const char* DispatcherModeString[] = { "DISPATCHER_MODE_LEGACY",
-                                       "DISPATCHER_MODE_ONEVPL_20" };
-
-typedef struct _Params {
-    char* infileName;
-    char* outfileName;
-
-    char* infileFormat;
-    char* outfileFormat;
-    char* outResolution;
-
-    char* targetDeviceType;
-
-    char* gpuCopyMode;
-
-    mfxU32 srcFourCC;
-    mfxU32 dstFourCC;
-
-    mfxU32 maxFrames;
-    mfxU32 srcWidth;
-    mfxU32 srcHeight;
-    mfxU32 dstWidth;
-    mfxU32 dstHeight;
-    mfxU32 timeout;
-    mfxU32 frameRate;
-    mfxU32 enableCinterface;
-
-    mfxU32 srcbsbufSize;
-    mfxU32 dstbsbufSize;
-
-    // encoder specific
-    mfxU32 bitRate;
-    mfxU32 targetUsage;
-    mfxU32 brcMode;
-    mfxU32 gopSize;
-    mfxU32 keyFrameDist;
-
-    // jpeg encoder specific
-    mfxU32 quality;
-
-    mfxU32 targetDevice;
-
-    mfxU32 gpuCopy;
-
-    // cropping
-    mfxU32 srcCropX;
-    mfxU32 srcCropY;
-    mfxU32 srcCropW;
-    mfxU32 srcCropH;
-    mfxU32 dstCropX;
-    mfxU32 dstCropY;
-    mfxU32 dstCropW;
-    mfxU32 dstCropH;
-
-    MemoryMode memoryMode;
-    DispatcherMode dispatcherMode;
-
-    mfxU32 outWidth;
-    mfxU32 outHeight;
-} Params;
 
 mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
                                         mfxFrameSurface1* surfpool,
@@ -119,9 +29,6 @@ bool ValidateSize(char* in, mfxU32* vsize, mfxU32 vmax);
 bool ValidateParams(Params* params);
 bool ParseArgsAndValidate(int argc, char* argv[], Params* params);
 void Usage(void);
-
-// in vpl-new-dispatcher.cpp
-mfxStatus InitNewDispatcher(mfxU32 srcFourCC, mfxSession* session);
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -161,7 +68,7 @@ int main(int argc, char* argv[]) {
     mfxSession session = nullptr;
 
     if (params.dispatcherMode == DISPATCHER_MODE_ONEVPL_20) {
-        sts = InitNewDispatcher(params.srcFourCC, &session);
+        sts = InitNewDispatcher(&params, &session);
     }
     else if (params.dispatcherMode == DISPATCHER_MODE_LEGACY) {
         // initialize  session

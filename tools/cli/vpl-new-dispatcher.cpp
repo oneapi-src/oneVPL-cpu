@@ -4,12 +4,16 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "./vpl-common.h"
 
-#include "vpl/mfxdispatcher.h"
-#include "vpl/mfxvideo.h"
+const char *MemoryModeString[MEM_MODE_COUNT] = { "MEM_MODE_EXTERNAL",
+                                                 "MEM_MODE_INTERNAL",
+                                                 "MEM_MODE_AUTO" };
+
+const char *DispatcherModeString[DISPATCHER_MODE_COUNT] = {
+    "DISPATCHER_MODE_LEGACY",
+    "DISPATCHER_MODE_ONEVPL_20"
+};
 
 // check if this implementation can decode our stream
 bool CheckImplCaps(mfxImplDescription *implDesc, mfxU32 codecID) {
@@ -145,7 +149,7 @@ static void TestCfgPropsVPP(mfxLoader loader) {
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_I420);
 }
 
-mfxStatus InitNewDispatcher(mfxU32 srcFourCC, mfxSession *session) {
+mfxStatus InitNewDispatcher(Params *params, mfxSession *session) {
     mfxStatus sts = MFX_ERR_NONE;
     *session      = nullptr;
 
@@ -186,7 +190,7 @@ mfxStatus InitNewDispatcher(mfxU32 srcFourCC, mfxSession *session) {
         if (sts == MFX_ERR_NOT_FOUND)
             break;
 
-        if (CheckImplCaps(implDesc, srcFourCC) == true) {
+        if (CheckImplCaps(implDesc, params->srcFourCC) == true) {
             // this implementation is capable of decoding the input stream
             sts = MFXCreateSession(loader, implIdx, session);
             if (sts != MFX_ERR_NONE) {
