@@ -7,5 +7,29 @@
   "os": ["linux"],
   "languages": [{"cpp":{}}],
   "builder": ["cmake"],
-  "targetDevice": ["CPU"]
+  "targetDevice": ["CPU"],
+  "ciTests": {
+    "linux": [
+      { "id": "builds and runs successfully with CMake",
+        "env": [ ],
+        "steps": [
+          "mkdir build",
+          "cd build",
+          "cmake ..",
+          "cmake --build .",
+          "cmake --build . --target run"
+        ] }
+    ],
+    "windows": [
+      { "id": "builds and runs successfully with CMake",
+        "env": [ ],
+        "steps": [
+          "mkdir build",
+          "cd build",
+          "cmake ..",
+          "cmake --build .",
+          "cmake --build . --target run"
+        ] }
+    ]
+  }
 }

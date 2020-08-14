@@ -7,5 +7,29 @@
   "os": ["linux", "windows"],
   "languages": [{"cpp":{}}],
   "builder": [ "ide", "cmake"],
-  "targetDevice": ["CPU", "GPU"]
+  "targetDevice": ["CPU", "GPU"],
+  "ciTests": {
+    "linux": [
+      { "id": "builds and runs successfully with CMake",
+        "env": [ ],
+        "steps": [
+          "mkdir build",
+          "cd build",
+          "cmake ..",
+          "cmake --build .",
+          "cmake --build . --target run"
+        ] }
+    ],
+    "windows": [
+      { "id": "builds and runs successfully with CMake",
+        "env": [ ],
+        "steps": [
+          "mkdir build",
+          "cd build",
+          "cmake ..",
+          "cmake --build .",
+          "cmake --build . --target run"
+        ] }
+    ]
+  }
 }
