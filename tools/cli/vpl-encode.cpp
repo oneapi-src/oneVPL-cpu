@@ -181,6 +181,8 @@ int main(int argc, char* argv[]) {
         mfxEncParams.mfx.QPB = params.qp;
         mfxEncParams.mfx.QPP = params.qp;
     }
+    mfxEncParams.mfx.GopPicSize              = params.gopSize;
+    mfxEncParams.mfx.GopRefDist              = params.keyFrameDist;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = params.frameRate;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.mfx.FrameInfo.FourCC        = params.srcFourCC;
