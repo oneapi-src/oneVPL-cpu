@@ -192,10 +192,8 @@ int main(int argc, char* argv[]) {
     mfxEncParams.mfx.FrameInfo.CropY         = 0;
     mfxEncParams.mfx.FrameInfo.CropW         = params.srcWidth;
     mfxEncParams.mfx.FrameInfo.CropH         = params.srcHeight;
-    // Width must be a multiple of 16
-    // Height must be a multiple of 16 in case of frame picture and a multiple of 32 in case of field picture
-    mfxEncParams.mfx.FrameInfo.Width  = ALIGN_UP(params.srcWidth, 16);
-    mfxEncParams.mfx.FrameInfo.Height = ALIGN_UP(params.srcHeight, 16);
+    mfxEncParams.mfx.FrameInfo.Width         = params.srcWidth;
+    mfxEncParams.mfx.FrameInfo.Height        = params.srcHeight;
 
     if (params.srcFourCC == MFX_FOURCC_I010) {
         mfxEncParams.mfx.FrameInfo.BitDepthLuma   = 10;
