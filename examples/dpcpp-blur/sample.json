@@ -6,6 +6,7 @@
   "dependencies": ["vpl"],
   "os": ["linux"],
   "languages": [{"cpp":{}}],
+  "toolchain": ["dpcpp"],
   "builder": ["cmake"],
   "targetDevice": ["CPU"],
   "ciTests": {
