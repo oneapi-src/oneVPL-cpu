@@ -126,15 +126,50 @@ TEST(DecodeQuery, NullParamsOutReturnsErrNull) {
 }
 
 //VPPQuery
-TEST(VPPQuery, DISABLED_NullParamsInReturnsConfigurable) {
-    FAIL() << "Test not implemented";
+TEST(VPPQuery, NullParamsInReturnsConfigurable) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams = { 0 };
+
+    mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.FrameInfo.Width  = 128;
+    mfxEncParams.mfx.FrameInfo.Height = 96;
+
+    mfxVideoParam par = { 0 };
+    sts               = MFXVideoVPP_Query(session, nullptr, &par);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(0xFFFFFFFF, par.mfx.FrameInfo.FourCC);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(VPPQuery, DISABLED_PopulatedParamsInReturnsCorrected) {
-    FAIL() << "Test not implemented";
+TEST(VPPQuery, PopulatedParamsInReturnsCorrected) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVPPParams.vpp.In.Width  = 128;
+    mfxVPPParams.vpp.In.Height = 96;
+
+    mfxVideoParam par = { 0 };
+    sts               = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(128, par.vpp.Out.Width);
+    ASSERT_EQ(96, par.vpp.Out.Height);
+    ASSERT_EQ(MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY,
+              par.IOPattern);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(VPPQuery, DISABLED_UnsupportedParamsReturnUnsupported) {
+TEST(VPPQuery, DISABLED_InvalidParamsReturnsInvalid) {
     FAIL() << "Test not implemented";
 }
 
@@ -142,10 +177,20 @@ TEST(VPPQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
     FAIL() << "Test not implemented";
 }
 
-TEST(VPPQuery, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(VPPQuery, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoVPP_Query(nullptr, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(VPPQuery, DISABLED_NullParamsOutReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(VPPQuery, NullParamsOutReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXVideoVPP_Query(session, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
