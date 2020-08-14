@@ -1,4 +1,4 @@
-# `hello-dpcpp` Sample
+# `dpcpp-blur` Sample
 
 This sample shows how to use a DPC++ kernel together with oneAPI Video
 Processing Library (oneVPL) to perform a simple video content blur.
@@ -38,7 +38,7 @@ If a DPC++ compiler is not found the blur operation will be disabled
 This code sample is licensed under MIT license.
 
 
-## Building the `hello-dpcpp` Program
+## Building the `dpcpp-blur` Program
 
 ### On a Linux* System
 
@@ -128,7 +128,7 @@ The instructions given above run the sample executable with the argument
 
 ```
 Running on Intel(R) Core(TM) i7-6770HQ CPU @ 2.60GHz
-Processing hello-dpcpp/content/cars_128x96.i420 -> out.rgba
+Processing dpcpp-blur/content/cars_128x96.i420 -> out.rgba
 Processed 60 frames
 ```
 

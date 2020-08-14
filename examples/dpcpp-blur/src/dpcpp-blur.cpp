@@ -635,7 +635,7 @@ char *ValidateFileName(char *in) {
 
 // Print usage message
 void Usage(void) {
-    printf("Usage: hello-dpcpp SOURCE WIDTH HEIGHT\n\n"
+    printf("Usage: dpcpp-blur SOURCE WIDTH HEIGHT\n\n"
            "Process raw I420 video in SOURCE having dimensions WIDTH x HEIGHT "
            "to blurred raw RGB32 video in %s\n"
            "Default blur kernel is [%d]x[%d]\n\n"

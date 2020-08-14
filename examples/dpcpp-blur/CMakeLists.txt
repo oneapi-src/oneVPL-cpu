@@ -26,10 +26,10 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif()
 
-project(hello-dpcpp LANGUAGES CXX)
+project(dpcpp-blur LANGUAGES CXX)
 
-set(TARGET hello-dpcpp)
-set(SOURCES src/hello-dpcpp.cpp)
+set(TARGET dpcpp-blur)
+set(SOURCES src/dpcpp-blur.cpp)
 set(VPL_NAME mfx)
 set(CMAKE_MSVCIDE_RUN_PATH $ENV{PATH})
 set(RUNARGS ${CMAKE_CURRENT_SOURCE_DIR}/content/cars_128x96.i420 128 96)
