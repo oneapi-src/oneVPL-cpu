@@ -56,15 +56,50 @@ TEST(EncodeQuery, DISABLED_NullParamsOutReturnsErrNull) {
 }
 
 //DecodeQuery
-TEST(DecodeQuery, DISABLED_NullParamsInReturnsConfigurable) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQuery, NullParamsInReturnsConfigurable) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams = { 0 };
+
+    mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.FrameInfo.Width  = 128;
+    mfxEncParams.mfx.FrameInfo.Height = 96;
+
+    mfxVideoParam par = { 0 };
+    sts               = MFXVideoDECODE_Query(session, nullptr, &par);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(0xFFFFFFFF, par.mfx.FrameInfo.FourCC);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeQuery, DISABLED_PopulatedParamsInReturnsCorrected) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQuery, PopulatedParamsInReturnsCorrected) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams        = { 0 };
+    mfxDecParams.mfx.CodecId          = MFX_CODEC_HEVC;
+    mfxDecParams.mfx.FrameInfo.Width  = 128;
+    mfxDecParams.mfx.FrameInfo.Height = 96;
+
+    mfxVideoParam par = { 0 };
+    sts               = MFXVideoDECODE_Query(session, &mfxDecParams, &par);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(128, par.mfx.FrameInfo.Width);
+    ASSERT_EQ(96, par.mfx.FrameInfo.Height);
+    ASSERT_EQ(MFX_IOPATTERN_OUT_SYSTEM_MEMORY, par.IOPattern);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeQuery, DISABLED_UnsupportedParamsReturnUnsupported) {
+TEST(DecodeQuery, DISABLED_InvalidParamsReturnsInvalid) {
     FAIL() << "Test not implemented";
 }
 
@@ -72,12 +107,22 @@ TEST(DecodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
     FAIL() << "Test not implemented";
 }
 
-TEST(DecodeQuery, DISABLED_NullSessionReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQuery, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoDECODE_Query(nullptr, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(DecodeQuery, DISABLED_NullParamsOutReturnsErrNull) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQuery, NullParamsOutReturnsErrNull) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXVideoDECODE_Query(session, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 //VPPQuery

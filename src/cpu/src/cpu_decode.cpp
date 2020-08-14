@@ -20,16 +20,43 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_decSurfaces(),
           m_bFrameBuffered(false) {}
 
-mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
+mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
+    switch (par->mfx.CodecId) {
+        case MFX_CODEC_HEVC:
+        case MFX_CODEC_AVC:
+        case MFX_CODEC_JPEG:
+        case MFX_CODEC_AV1:
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (!par->IOPattern && canCorrect)
+        par->IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    if (!par->AsyncDepth && canCorrect)
+        par->AsyncDepth = 1;
+
     //only system memory allowed
     if (par->IOPattern != MFX_IOPATTERN_OUT_SYSTEM_MEMORY)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
+    if (!par->mfx.FrameInfo.FourCC && canCorrect)
+        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+
     //only I420 and I010 colorspaces allowed
     switch (par->mfx.FrameInfo.FourCC) {
         case MFX_FOURCC_I420:
+            if (canCorrect) {
+                par->mfx.FrameInfo.BitDepthLuma = 8;
+                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+            }
+            break;
         case MFX_FOURCC_I010:
-            //allowed FourCCs
+            if (canCorrect) {
+                par->mfx.FrameInfo.BitDepthLuma = 10;
+                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+            }
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -39,6 +66,9 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par) {
     if (par->mfx.FrameInfo.Width == 0 || par->mfx.FrameInfo.Height == 0) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
+
+    mfxU32 MAX_WIDTH  = 3840;
+    mfxU32 MAX_HEIGHT = 2160;
 
     //width and height must be <= max
     if (par->mfx.FrameInfo.Width > MAX_WIDTH ||
@@ -87,7 +117,7 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
     RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
 
     if (!bs) {
-        mfxStatus sts = ValidateDecodeParams(par);
+        mfxStatus sts = ValidateDecodeParams(par, false);
         if (sts != MFX_ERR_NONE)
             return sts;
     }
@@ -134,8 +164,6 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
         mfxBitstream bs2 = *bs;
         DecodeFrame(&bs2, nullptr, nullptr);
         GetVideoParam(par);
-
-        //RET_ERROR(ValidateDecodeParams(par));
     }
 
     return MFX_ERR_NONE;
@@ -298,21 +326,23 @@ mfxStatus CpuDecode::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
         *out = *in;
 
         // validate fields in the input param struct
-
-        if (in->mfx.FrameInfo.Width == 0 || in->mfx.FrameInfo.Height == 0)
-            sts = MFX_ERR_UNSUPPORTED;
-
-        if (in->mfx.CodecId != MFX_CODEC_AVC &&
-            in->mfx.CodecId != MFX_CODEC_HEVC &&
-            in->mfx.CodecId != MFX_CODEC_AV1 &&
-            in->mfx.CodecId != MFX_CODEC_JPEG &&
-            in->mfx.CodecId != MFX_CODEC_MPEG2)
-            sts = MFX_ERR_UNSUPPORTED;
+        sts = ValidateDecodeParams(out, true);
+        if (sts != MFX_ERR_NONE)
+            return sts;
     }
     else {
-        memset(out, 0, sizeof(mfxVideoParam));
-
         // set output struct to zero for unsupported params, non-zero for supported params
+        *out                              = { 0 };
+        out->mfx.CodecId                  = 0xFFFFFFFF;
+        out->mfx.FrameInfo.BitDepthChroma = 0xFFFF;
+        out->mfx.FrameInfo.Width          = 0xFFFF;
+        out->mfx.FrameInfo.Height         = 0xFFFF;
+        out->mfx.FrameInfo.CropW          = 0xFFFF;
+        out->mfx.FrameInfo.CropH          = 0xFFFF;
+        out->mfx.FrameInfo.FourCC         = 0xFFFFFFFF;
+        out->mfx.CodecProfile             = 0xFFFF;
+        out->mfx.CodecLevel               = 0xFFFF;
+        out->IOPattern                    = 0xFFFF;
     }
 
     return sts;

@@ -30,7 +30,7 @@ public:
     mfxStatus GetDecodeSurface(mfxFrameSurface1** surface);
 
 private:
-    mfxStatus ValidateDecodeParams(mfxVideoParam* par);
+    static mfxStatus ValidateDecodeParams(mfxVideoParam* par, bool canCorrect);
     const AVCodec* m_avDecCodec;
     AVCodecContext* m_avDecContext;
     AVCodecParserContext* m_avDecParser;
@@ -42,9 +42,6 @@ private:
     bool m_bFrameBuffered;
 
     CpuWorkstream* m_session;
-
-    const mfxU32 MAX_WIDTH  = 3840;
-    const mfxU32 MAX_HEIGHT = 2160;
 
     /* copy not allowed */
     CpuDecode(const CpuDecode&);
