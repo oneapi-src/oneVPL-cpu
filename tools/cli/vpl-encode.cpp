@@ -110,6 +110,7 @@ void WriteEncodedStream(mfxU32 nframe,
                         mfxU32 length,
                         mfxU32 codecID,
                         FILE* f);
+void UpdateTotalNumberFrameInfo(FILE* f, mfxU32 total_frames);
 mfxStatus LoadRawFrame(mfxFrameSurface1* pSurface, FILE* fSource);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1>& pSurfacesPool);
@@ -397,6 +398,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    if (params.dstFourCC == MFX_CODEC_AV1) {
+        UpdateTotalNumberFrameInfo(fSink, framenum);
+    }
+
     if (g_conf)
         delete g_conf;
 
@@ -479,11 +484,18 @@ void WriteEncodedStream(mfxU32 nframe,
         if (nframe == 1) {
             WriteIVF_StreamHeader(reinterpret_cast<AV1EncConfig*>(conf), f);
         }
-        WriteIVF_FrameHeader(length, nframe, f);
+        WriteIVF_FrameHeader(length, nframe - 1, f); // pts starts from 0
         fwrite(data, 1, length, f);
     }
     else {
         fwrite(data, 1, length, f);
+    }
+}
+
+void UpdateTotalNumberFrameInfo(FILE* f, mfxU32 total_frames) {
+    if (f) {
+        fseek(f, 24, SEEK_SET);
+        fwrite(&total_frames, 1, sizeof(mfxU32), f);
     }
 }
 
