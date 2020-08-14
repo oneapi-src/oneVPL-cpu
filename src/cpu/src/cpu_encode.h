@@ -31,11 +31,21 @@ public:
 
 private:
     static mfxStatus ValidateEncodeParams(mfxVideoParam* par);
-
+    int convertTargetUsageVal(int val,
+                              int minIn,
+                              int maxIn,
+                              int minOut,
+                              int maxOut);
     mfxStatus InitHEVCParams(mfxVideoParam* par);
+    mfxStatus GetHEVCParams(mfxVideoParam* par);
     mfxStatus InitAV1Params(mfxVideoParam* par);
+    mfxStatus GetAV1Params(mfxVideoParam* par);
     mfxStatus InitAVCParams(mfxVideoParam* par);
+    mfxStatus GetAVCParams(mfxVideoParam* par);
     mfxStatus InitJPEGParams(mfxVideoParam* par);
+    mfxStatus GetJPEGParams(mfxVideoParam* par);
+
+    AVFrame* CreateAVFrame(mfxFrameSurface1* surface);
 
     const AVCodec* m_avEncCodec;
     AVCodecContext* m_avEncContext;
