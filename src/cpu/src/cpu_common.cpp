@@ -167,7 +167,8 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
         w = info->Width * 2;
         h = info->Height;
     }
-    else if (frame->format == AV_PIX_FMT_YUV420P) {
+    else if (frame->format == AV_PIX_FMT_YUV420P ||
+             frame->format == AV_PIX_FMT_YUVJ420P) {
         RET_IF_FALSE(info->FourCC == MFX_FOURCC_I420,
                      MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 
