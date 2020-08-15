@@ -27,7 +27,17 @@ void WriteEncodedStream(mfxU8 *data, mfxU32 length, FILE *f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &pSurfacesPool);
 char *ValidateFileName(char *in);
-void Usage(void);
+
+// Print usage message
+void Usage(void) {
+    printf("Usage: hello-encode SOURCE WIDTH HEIGHT\n\n"
+           "Encode raw I420 video in SOURCE having dimensions WIDTH x HEIGHT "
+           "to H265 in %s\n\n"
+           "To view:\n"
+           " ffplay %s\n",
+           OUTPUT_FILE,
+           OUTPUT_FILE);
+}
 
 int main(int argc, char *argv[]) {
     mfxU32 codecID = MFX_CODEC_HEVC;
@@ -366,15 +376,4 @@ char *ValidateFileName(char *in) {
     }
 
     return in;
-}
-
-// Print usage message
-void Usage(void) {
-    printf("Usage: hello-encode SOURCE WIDTH HEIGHT\n\n"
-           "Encode raw I420 video in SOURCE having dimensions WIDTH x HEIGHT "
-           "to H265 in %s\n\n"
-           "To view:\n"
-           " ffplay %s\n",
-           OUTPUT_FILE,
-           OUTPUT_FILE);
 }

@@ -30,7 +30,18 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &pSurfacesPool);
 char *ValidateFileName(char *in);
-void Usage(void);
+
+// Print usage message
+void Usage(void) {
+    printf("Usage: hello-vpp SOURCE WIDTH HEIGHT\n\n"
+           "Process raw I420 video in SOURCE having dimensions WIDTH x HEIGHT "
+           "to resized I420 raw video in %s\n\n"
+           "To view:\n"
+           " ffplay -video_size [width]x[height] "
+           "-pixel_format yuv420p -f rawvideo %s\n",
+           OUTPUT_FILE,
+           OUTPUT_FILE);
+}
 
 int main(int argc, char *argv[]) {
     mfxU32 fourCC;
@@ -449,16 +460,4 @@ char *ValidateFileName(char *in) {
     }
 
     return in;
-}
-
-// Print usage message
-void Usage(void) {
-    printf("Usage: hello-vpp SOURCE WIDTH HEIGHT\n\n"
-           "Process raw I420 video in SOURCE having dimensions WIDTH x HEIGHT "
-           "to resized I420 raw video in %s\n\n"
-           "To view:\n"
-           " ffplay -video_size [width]x[height] "
-           "-pixel_format yuv420p -f rawvideo %s\n",
-           OUTPUT_FILE,
-           OUTPUT_FILE);
 }

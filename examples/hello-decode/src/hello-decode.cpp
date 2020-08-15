@@ -24,7 +24,18 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 int GetFreeSurfaceIndex(mfxFrameSurface1 *SurfacesPool, mfxU16 nPoolSize);
 char *ValidateFileName(char *in);
-void Usage(void);
+
+// Print usage message
+void Usage(void) {
+    printf("Usage: hello-decode SOURCE\n\n"
+           "Decode H265/HEVC video in SOURCE "
+           "to I420 raw video in %s\n\n"
+           "To view:\n"
+           " ffplay -video_size [width]x[height] "
+           "-pixel_format yuv420p -f rawvideo %s\n",
+           OUTPUT_FILE,
+           OUTPUT_FILE);
+}
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -320,16 +331,4 @@ char *ValidateFileName(char *in) {
     }
 
     return in;
-}
-
-// Print usage message
-void Usage(void) {
-    printf("Usage: hello-decode SOURCE\n\n"
-           "Decode H265/HEVC video in SOURCE "
-           "to I420 raw video in %s\n\n"
-           "To view:\n"
-           " ffplay -video_size [width]x[height] "
-           "-pixel_format yuv420p -f rawvideo %s\n",
-           OUTPUT_FILE,
-           OUTPUT_FILE);
 }
