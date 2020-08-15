@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
         pEncSurfaces[i].Data.Pitch = inputWidth;
     }
 
-    // Initialize the Media SDK encoder
+    // Initialize the encoder
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     if (sts != MFX_ERR_NONE) {
         fclose(fSource);
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Prepare Media SDK bit stream buffer
+    // Prepare bit stream buffer
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = 2000000;
     std::vector<mfxU8> bstData(mfxBS.MaxLength);
@@ -277,9 +277,9 @@ int main(int argc, char *argv[]) {
 
     printf("Encoded %d frames\n", framenum);
 
-    // Clean up resources - It is recommended to close Media SDK components
-    // first, before releasing allocated surfaces, since some surfaces may still
-    // be locked by internal Media SDK resources.
+    // Clean up resources - It is recommended to close components first, before
+    // releasing allocated surfaces, since some surfaces may still be locked by
+    // internal resources.
     MFXVideoENCODE_Close(session);
 
     fclose(fSource);

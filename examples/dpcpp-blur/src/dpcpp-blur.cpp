@@ -378,7 +378,7 @@ int main(int argc, char *argv[]) {
     bluredSurface.Data.A     = bluredSurface.Data.R + 1;
     bluredSurface.Data.Pitch = width * 4;
 
-    // Initialize Media SDK VPP
+    // Initialize VPP
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     if (sts != MFX_ERR_NONE) {
         fclose(fSource);
@@ -387,7 +387,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Prepare Media SDK bit stream buffer
+    // Prepare bit stream buffer
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = 2000000;
     std::vector<mfxU8> bstData(mfxBS.MaxLength);
@@ -525,9 +525,9 @@ int main(int argc, char *argv[]) {
 
     printf("Processed %d frames\n", framenum);
 
-    // Clean up resources - It is recommended to close Media SDK components
-    // first, before releasing allocated surfaces, since some surfaces may still
-    // be locked by internal Media SDK resources.
+    // Clean up resources - It is recommended to close components first, before
+    // releasing allocated surfaces, since some surfaces may still be locked by
+    // internal resources.
     MFXVideoVPP_Close(session);
 
     fclose(fSource);
