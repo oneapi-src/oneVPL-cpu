@@ -47,7 +47,6 @@ static auto exception_handler = [](cl::sycl::exception_list eList) {
         }
     }
 };
-
 }; // namespace dpc_common
 
 // Select device on which to run kernel.
@@ -73,114 +72,9 @@ public:
     }
 };
 
-// Few useful acronyms.
-constexpr auto sycl_read  = sycl::access::mode::read;
-constexpr auto sycl_write = sycl::access::mode::write;
-
-// SYCL kernel scheduler
-// Blur frame by using SYCL kernel
 void BlurFrame(sycl::queue q,
                mfxFrameSurface1 *inSurface,
-               mfxFrameSurface1 *bluredSurface) {
-    int img_width, img_height;
-
-    img_width  = inSurface->Info.Width;
-    img_height = inSurface->Info.Height;
-
-    // Wrap mfx surfaces into SYCL image by using host ptr for zero copy of data
-    sycl::image<2> image_buf_src(inSurface->Data.B,
-                                 sycl::image_channel_order::rgba,
-                                 sycl::image_channel_type::unsigned_int8,
-                                 sycl::range<2>(img_width, img_height));
-
-    sycl::image<2> image_buf_dst(bluredSurface->Data.B,
-                                 sycl::image_channel_order::rgba,
-                                 sycl::image_channel_type::unsigned_int8,
-                                 sycl::range<2>(img_width, img_height));
-
-    try {
-        q.submit([&](cl::sycl::handler &cgh) {
-            // Src image accessor
-            sycl::accessor<cl::sycl::uint4,
-                           2,
-                           sycl_read,
-                           sycl::access::target::image>
-                accessorSrc(image_buf_src, cgh);
-            // Dst image accessor
-            auto accessorDst =
-                image_buf_dst.get_access<cl::sycl::uint4, sycl_write>(cgh);
-            cl::sycl::uint4 black = (cl::sycl::uint4)(0);
-            // Parallel execution of the kerner for each pixel. Kernel
-            // implemented as a lambda function.
-
-            // Important: this is naive implementation of the blur kernel. For
-            // further optimization it is better to use range_nd iterator and
-            // apply moving average technique to reduce # of MAC operations per
-            // pixel.
-            cgh.parallel_for<class NaiveBlur_rgba>(
-                sycl::range<2>(img_width, img_height),
-                [=](sycl::item<2> item) {
-                    auto coords = cl::sycl::int2(item[0], item[1]);
-
-                    // Let's add horizontal black border
-                    if (item[0] <= BLUR_RADIUS ||
-                        item[0] >= img_width - 1 - BLUR_RADIUS) {
-                        accessorDst.write(coords, black);
-                        return;
-                    }
-
-                    // Let's add vertical black border
-                    if (item[1] <= BLUR_RADIUS ||
-                        item[1] >= img_height - 1 - BLUR_RADIUS) {
-                        accessorDst.write(coords, black);
-                        return;
-                    }
-
-                    cl::sycl::float4 tmp = (cl::sycl::float4)(0.f);
-                    cl::sycl::uint4 rgba;
-
-                    for (int i = item[0] - BLUR_RADIUS;
-                         i < item[0] + BLUR_RADIUS;
-                         i++) {
-                        for (int j = item[1] - BLUR_RADIUS;
-                             j < item[1] + BLUR_RADIUS;
-                             j++) {
-                            rgba = accessorSrc.read(cl::sycl::int2(i, j));
-                            // Sum over the square mask
-                            tmp[0] += rgba.x();
-                            tmp[1] += rgba.y();
-                            tmp[2] += rgba.z();
-                            // Keep alpha channel from anchor pixel
-                            if (i == item[0] && j == item[1])
-                                tmp[3] = rgba.w();
-                        }
-                    }
-                    // Compute average intensity
-                    tmp[0] /= BLUR_SIZE * BLUR_SIZE;
-                    tmp[1] /= BLUR_SIZE * BLUR_SIZE;
-                    tmp[2] /= BLUR_SIZE * BLUR_SIZE;
-
-                    // Convert and write blur pixel
-                    cl::sycl::uint4 tmp_u;
-                    tmp_u[0] = tmp[0];
-                    tmp_u[1] = tmp[1];
-                    tmp_u[2] = tmp[2];
-                    tmp_u[3] = tmp[3];
-
-                    accessorDst.write(coords, tmp_u);
-                });
-        });
-
-        // Since we are in blocking execution mode for this sample simplicity,
-        // we need to wait for the execution completeness.
-        q.wait_and_throw();
-    }
-    catch (std::exception e) {
-        std::cout << "SYCL exception caught: " << e.what() << "\n";
-        return;
-    }
-    return;
-}
+               mfxFrameSurface1 *bluredSurface);
 #endif
 
 mfxStatus LoadRawFrame(mfxFrameSurface1 *pSurface, FILE *fSource);
@@ -655,3 +549,115 @@ char *ValidateFileName(char *in) {
 
     return in;
 }
+
+#ifdef BUILD_DPCPP
+
+// Few useful acronyms.
+constexpr auto sycl_read  = sycl::access::mode::read;
+constexpr auto sycl_write = sycl::access::mode::write;
+
+// SYCL kernel scheduler
+// Blur frame by using SYCL kernel
+void BlurFrame(sycl::queue q,
+               mfxFrameSurface1 *inSurface,
+               mfxFrameSurface1 *bluredSurface) {
+    int img_width, img_height;
+
+    img_width  = inSurface->Info.Width;
+    img_height = inSurface->Info.Height;
+
+    // Wrap mfx surfaces into SYCL image by using host ptr for zero copy of data
+    sycl::image<2> image_buf_src(inSurface->Data.B,
+                                 sycl::image_channel_order::rgba,
+                                 sycl::image_channel_type::unsigned_int8,
+                                 sycl::range<2>(img_width, img_height));
+
+    sycl::image<2> image_buf_dst(bluredSurface->Data.B,
+                                 sycl::image_channel_order::rgba,
+                                 sycl::image_channel_type::unsigned_int8,
+                                 sycl::range<2>(img_width, img_height));
+
+    try {
+        q.submit([&](cl::sycl::handler &cgh) {
+            // Src image accessor
+            sycl::accessor<cl::sycl::uint4,
+                           2,
+                           sycl_read,
+                           sycl::access::target::image>
+                accessorSrc(image_buf_src, cgh);
+            // Dst image accessor
+            auto accessorDst =
+                image_buf_dst.get_access<cl::sycl::uint4, sycl_write>(cgh);
+            cl::sycl::uint4 black = (cl::sycl::uint4)(0);
+            // Parallel execution of the kerner for each pixel. Kernel
+            // implemented as a lambda function.
+
+            // Important: this is naive implementation of the blur kernel. For
+            // further optimization it is better to use range_nd iterator and
+            // apply moving average technique to reduce # of MAC operations per
+            // pixel.
+            cgh.parallel_for<class NaiveBlur_rgba>(
+                sycl::range<2>(img_width, img_height),
+                [=](sycl::item<2> item) {
+                    auto coords = cl::sycl::int2(item[0], item[1]);
+
+                    // Let's add horizontal black border
+                    if (item[0] <= BLUR_RADIUS ||
+                        item[0] >= img_width - 1 - BLUR_RADIUS) {
+                        accessorDst.write(coords, black);
+                        return;
+                    }
+
+                    // Let's add vertical black border
+                    if (item[1] <= BLUR_RADIUS ||
+                        item[1] >= img_height - 1 - BLUR_RADIUS) {
+                        accessorDst.write(coords, black);
+                        return;
+                    }
+
+                    cl::sycl::float4 tmp = (cl::sycl::float4)(0.f);
+                    cl::sycl::uint4 rgba;
+
+                    for (int i = item[0] - BLUR_RADIUS;
+                         i < item[0] + BLUR_RADIUS;
+                         i++) {
+                        for (int j = item[1] - BLUR_RADIUS;
+                             j < item[1] + BLUR_RADIUS;
+                             j++) {
+                            rgba = accessorSrc.read(cl::sycl::int2(i, j));
+                            // Sum over the square mask
+                            tmp[0] += rgba.x();
+                            tmp[1] += rgba.y();
+                            tmp[2] += rgba.z();
+                            // Keep alpha channel from anchor pixel
+                            if (i == item[0] && j == item[1])
+                                tmp[3] = rgba.w();
+                        }
+                    }
+                    // Compute average intensity
+                    tmp[0] /= BLUR_SIZE * BLUR_SIZE;
+                    tmp[1] /= BLUR_SIZE * BLUR_SIZE;
+                    tmp[2] /= BLUR_SIZE * BLUR_SIZE;
+
+                    // Convert and write blur pixel
+                    cl::sycl::uint4 tmp_u;
+                    tmp_u[0] = tmp[0];
+                    tmp_u[1] = tmp[1];
+                    tmp_u[2] = tmp[2];
+                    tmp_u[3] = tmp[3];
+
+                    accessorDst.write(coords, tmp_u);
+                });
+        });
+
+        // Since we are in blocking execution mode for this sample simplicity,
+        // we need to wait for the execution completeness.
+        q.wait_and_throw();
+    }
+    catch (std::exception e) {
+        std::cout << "SYCL exception caught: " << e.what() << "\n";
+        return;
+    }
+    return;
+}
+#endif // BUILD_DPCPP
