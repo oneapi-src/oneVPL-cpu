@@ -34,8 +34,8 @@
 #ifdef BUILD_DPCPP
 namespace dpc_common {
 // this exception handler with catch async exceptions
-static auto exception_handler = [](cl::sycl::exception_list eList) {
-    for (std::exception_ptr const &e : eList) {
+static auto exception_handler = [](cl::sycl::exception_list exception_list) {
+    for (std::exception_ptr const &e : exception_list) {
         try {
             std::rethrow_exception(e);
         }
@@ -73,14 +73,14 @@ public:
 };
 
 void BlurFrame(sycl::queue q,
-               mfxFrameSurface1 *inSurface,
-               mfxFrameSurface1 *bluredSurface);
+               mfxFrameSurface1 *in_surface,
+               mfxFrameSurface1 *blured_surface);
 #endif
 
-mfxStatus LoadRawFrame(mfxFrameSurface1 *pSurface, FILE *fSource);
-void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f);
-mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
-mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &pSurfacesPool);
+mfxStatus LoadRawFrame(mfxFrameSurface1 *surface, FILE *f);
+void WriteRawFrame(mfxFrameSurface1 *surface, FILE *f);
+mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height);
+mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &surface_pool);
 char *ValidateFileName(char *in);
 
 // Print usage message
@@ -99,7 +99,7 @@ void Usage(void) {
 }
 
 int main(int argc, char *argv[]) {
-    mfxU32 fourCC;
+    mfxU32 fourcc;
     mfxU32 width;
     mfxU32 height;
 
@@ -117,187 +117,190 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    FILE *fSource = fopen(in_filename, "rb");
-    if (!fSource) {
+    FILE *source = fopen(in_filename, "rb");
+    if (!source) {
         printf("Could not open input file, \"%s\"\n", in_filename);
         return 1;
     }
-    FILE *fSink = fopen(OUTPUT_FILE, "wb");
-    if (!fSink) {
-        fclose(fSource);
+    FILE *sink = fopen(OUTPUT_FILE, "wb");
+    if (!sink) {
+        fclose(source);
         printf("Could not open output file, %s\n", OUTPUT_FILE);
         return 1;
     }
     mfxI32 isize = strtol(argv[2], NULL, 10);
     if (isize <= 0 || isize > MAX_WIDTH) {
-        fclose(fSource);
-        fclose(fSink);
+        fclose(source);
+        fclose(sink);
         puts("Input size is not valid\n");
         return 1;
     }
-    mfxI32 inputWidth = isize;
+    mfxI32 input_width = isize;
 
     isize = strtol(argv[3], NULL, 10);
     if (isize <= 0 || isize > MAX_HEIGHT) {
-        fclose(fSource);
-        fclose(fSink);
+        fclose(source);
+        fclose(sink);
         puts("Input size is not valid\n");
         return 1;
     }
-    mfxI32 inputHeight = isize;
+    mfxI32 input_height = isize;
 
     // initialize  session
-    mfxInitParam initPar   = { 0 };
-    initPar.Version.Major  = 2;
-    initPar.Version.Minor  = 0;
-    initPar.Implementation = MFX_IMPL_SOFTWARE;
+    mfxInitParam init_params   = { 0 };
+    init_params.Version.Major  = 2;
+    init_params.Version.Minor  = 0;
+    init_params.Implementation = MFX_IMPL_SOFTWARE;
 
     mfxSession session;
-    mfxStatus sts = MFXInitEx(initPar, &session);
+    mfxStatus sts = MFXInitEx(init_params, &session);
     if (sts != MFX_ERR_NONE) {
-        fclose(fSource);
-        fclose(fSink);
+        fclose(source);
+        fclose(sink);
         puts("MFXInitEx error.  Could not initialize session");
         return 1;
     }
 
     // Initialize VPP parameters
-    // - For simplistic memory management, system memory surfaces are used to store the raw frames
-    //   (Note that when using HW acceleration video surfaces are prefered, for better performance)
-    mfxVideoParam mfxVPPParams;
-    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
-    // Input data
-    mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
-    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.In.CropX         = 0;
-    mfxVPPParams.vpp.In.CropY         = 0;
-    mfxVPPParams.vpp.In.CropW         = inputWidth;
-    mfxVPPParams.vpp.In.CropH         = inputHeight;
-    mfxVPPParams.vpp.In.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
-    mfxVPPParams.vpp.In.FrameRateExtN = 30;
-    mfxVPPParams.vpp.In.FrameRateExtD = 1;
-    mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
-    mfxVPPParams.vpp.In.Height        = mfxVPPParams.vpp.In.CropH;
-    // Output data in the same size but with RGB32 color format
-    mfxVPPParams.vpp.Out.FourCC        = MFX_FOURCC_RGB4;
-    mfxVPPParams.vpp.Out.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.Out.CropX         = 0;
-    mfxVPPParams.vpp.Out.CropY         = 0;
-    mfxVPPParams.vpp.Out.CropW         = inputWidth;
-    mfxVPPParams.vpp.Out.CropH         = inputHeight;
-    mfxVPPParams.vpp.Out.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
-    mfxVPPParams.vpp.Out.FrameRateExtN = 30;
-    mfxVPPParams.vpp.Out.FrameRateExtD = 1;
-    mfxVPPParams.vpp.Out.Width         = mfxVPPParams.vpp.Out.CropW;
-    mfxVPPParams.vpp.Out.Height        = mfxVPPParams.vpp.Out.CropH;
 
-    mfxVPPParams.IOPattern =
+    // - For simplistic memory management, system memory surfaces are used to
+    //   store the raw frames (Note that when using HW acceleration video
+    //   surfaces are prefered, for better performance)
+    mfxVideoParam vpp_params;
+    memset(&vpp_params, 0, sizeof(vpp_params));
+    // Input data
+    vpp_params.vpp.In.FourCC        = MFX_FOURCC_I420;
+    vpp_params.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    vpp_params.vpp.In.CropX         = 0;
+    vpp_params.vpp.In.CropY         = 0;
+    vpp_params.vpp.In.CropW         = input_width;
+    vpp_params.vpp.In.CropH         = input_height;
+    vpp_params.vpp.In.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    vpp_params.vpp.In.FrameRateExtN = 30;
+    vpp_params.vpp.In.FrameRateExtD = 1;
+    vpp_params.vpp.In.Width         = vpp_params.vpp.In.CropW;
+    vpp_params.vpp.In.Height        = vpp_params.vpp.In.CropH;
+    // Output data in the same size but with RGB32 color format
+    vpp_params.vpp.Out.FourCC        = MFX_FOURCC_RGB4;
+    vpp_params.vpp.Out.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    vpp_params.vpp.Out.CropX         = 0;
+    vpp_params.vpp.Out.CropY         = 0;
+    vpp_params.vpp.Out.CropW         = input_width;
+    vpp_params.vpp.Out.CropH         = input_height;
+    vpp_params.vpp.Out.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    vpp_params.vpp.Out.FrameRateExtN = 30;
+    vpp_params.vpp.Out.FrameRateExtD = 1;
+    vpp_params.vpp.Out.Width         = vpp_params.vpp.Out.CropW;
+    vpp_params.vpp.Out.Height        = vpp_params.vpp.Out.CropH;
+
+    vpp_params.IOPattern =
         MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     // Query number of required surfaces for VPP
-    mfxFrameAllocRequest VPPRequest[2]; // [0] - in, [1] - out
-    memset(&VPPRequest, 0, sizeof(mfxFrameAllocRequest) * 2);
-    sts = MFXVideoVPP_QueryIOSurf(session, &mfxVPPParams, VPPRequest);
+    mfxFrameAllocRequest vpp_request[2]; // [0] - in, [1] - out
+    memset(&vpp_request, 0, sizeof(mfxFrameAllocRequest) * 2);
+    sts = MFXVideoVPP_QueryIOSurf(session, &vpp_params, vpp_request);
     if (sts != MFX_ERR_NONE) {
-        fclose(fSource);
-        fclose(fSink);
+        fclose(source);
+        fclose(sink);
         puts("QueryIOSurf error");
         return 1;
     }
 
-    mfxU16 nVPPSurfNumIn  = VPPRequest[0].NumFrameSuggested;
-    mfxU16 nVPPSurfNumOut = VPPRequest[1].NumFrameSuggested;
+    mfxU16 num_vpp_surfaces_in  = vpp_request[0].NumFrameSuggested;
+    mfxU16 num_vpp_surfaces_out = vpp_request[1].NumFrameSuggested;
 
     // Allocate surfaces for VPP: In
 
     // Frame surface array keeps pointers to all surface planes and general
     // frame info
-    fourCC = mfxVPPParams.vpp.In.FourCC;
-    width  = mfxVPPParams.vpp.In.Width;
-    height = mfxVPPParams.vpp.In.Height;
+    fourcc = vpp_params.vpp.In.FourCC;
+    width  = vpp_params.vpp.In.Width;
+    height = vpp_params.vpp.In.Height;
 
-    mfxU32 surfaceSize = GetSurfaceSize(fourCC, width, height);
-    if (surfaceSize == 0) {
-        fclose(fSource);
-        fclose(fSink);
+    mfxU32 surface_size = GetSurfaceSize(fourcc, width, height);
+    if (surface_size == 0) {
+        fclose(source);
+        fclose(sink);
         puts("VPP-in surface size is wrong");
         return 1;
     }
 
-    std::vector<mfxU8> surfDataIn(surfaceSize * nVPPSurfNumIn);
-    mfxU8 *surfaceBuffersIn = surfDataIn.data();
+    std::vector<mfxU8> surface_data_in(surface_size * num_vpp_surfaces_in);
+    mfxU8 *surface_buffers_in = surface_data_in.data();
 
-    std::vector<mfxFrameSurface1> pVPPSurfacesIn(nVPPSurfNumIn);
-    for (mfxI32 i = 0; i < nVPPSurfNumIn; i++) {
-        memset(&pVPPSurfacesIn[i], 0, sizeof(mfxFrameSurface1));
-        pVPPSurfacesIn[i].Info   = mfxVPPParams.vpp.In;
-        pVPPSurfacesIn[i].Data.Y = &surfaceBuffersIn[surfaceSize * i];
-        pVPPSurfacesIn[i].Data.U = pVPPSurfacesIn[i].Data.Y + width * height;
-        pVPPSurfacesIn[i].Data.V =
-            pVPPSurfacesIn[i].Data.U + ((width / 2) * (height / 2));
-        pVPPSurfacesIn[i].Data.Pitch = width;
+    std::vector<mfxFrameSurface1> vpp_surfaces_in(num_vpp_surfaces_in);
+    for (mfxI32 i = 0; i < num_vpp_surfaces_in; i++) {
+        memset(&vpp_surfaces_in[i], 0, sizeof(mfxFrameSurface1));
+        vpp_surfaces_in[i].Info   = vpp_params.vpp.In;
+        vpp_surfaces_in[i].Data.Y = &surface_buffers_in[surface_size * i];
+        vpp_surfaces_in[i].Data.U = vpp_surfaces_in[i].Data.Y + width * height;
+        vpp_surfaces_in[i].Data.V =
+            vpp_surfaces_in[i].Data.U + ((width / 2) * (height / 2));
+        vpp_surfaces_in[i].Data.Pitch = width;
     }
 
     // Allocate surfaces for VPP: Out
 
     // Frame surface array keeps pointers to all surface planes and general
     // frame info
-    fourCC = mfxVPPParams.vpp.Out.FourCC;
-    width  = mfxVPPParams.vpp.Out.Width;
-    height = mfxVPPParams.vpp.Out.Height;
+    fourcc = vpp_params.vpp.Out.FourCC;
+    width  = vpp_params.vpp.Out.Width;
+    height = vpp_params.vpp.Out.Height;
 
-    surfaceSize = GetSurfaceSize(fourCC, width, height);
-    if (surfaceSize == 0) {
-        fclose(fSource);
-        fclose(fSink);
+    surface_size = GetSurfaceSize(fourcc, width, height);
+    if (surface_size == 0) {
+        fclose(source);
+        fclose(sink);
         puts("VPP-out surface size is wrong");
         return 1;
     }
 
     // we need one more surface for the blured image
-    std::vector<mfxU8> surfDataOut(surfaceSize * (nVPPSurfNumOut + 1));
-    mfxU8 *surfaceBuffersOut = surfDataOut.data();
+    std::vector<mfxU8> surface_data_out(surface_size *
+                                        (num_vpp_surfaces_out + 1));
+    mfxU8 *surface_buffers_out = surface_data_out.data();
 
-    std::vector<mfxFrameSurface1> pVPPSurfacesOut(nVPPSurfNumOut);
-    for (mfxI32 i = 0; i < nVPPSurfNumOut; i++) {
-        memset(&pVPPSurfacesOut[i], 0, sizeof(mfxFrameSurface1));
-        pVPPSurfacesOut[i].Info       = mfxVPPParams.vpp.Out;
-        pVPPSurfacesOut[i].Data.B     = &surfaceBuffersOut[surfaceSize * i];
-        pVPPSurfacesOut[i].Data.G     = pVPPSurfacesOut[i].Data.B + 1;
-        pVPPSurfacesOut[i].Data.R     = pVPPSurfacesOut[i].Data.G + 1;
-        pVPPSurfacesOut[i].Data.A     = pVPPSurfacesOut[i].Data.R + 1;
-        pVPPSurfacesOut[i].Data.Pitch = width * 4;
+    std::vector<mfxFrameSurface1> vpp_surfaces_out(num_vpp_surfaces_out);
+    for (mfxI32 i = 0; i < num_vpp_surfaces_out; i++) {
+        memset(&vpp_surfaces_out[i], 0, sizeof(mfxFrameSurface1));
+        vpp_surfaces_out[i].Info       = vpp_params.vpp.Out;
+        vpp_surfaces_out[i].Data.B     = &surface_buffers_out[surface_size * i];
+        vpp_surfaces_out[i].Data.G     = vpp_surfaces_out[i].Data.B + 1;
+        vpp_surfaces_out[i].Data.R     = vpp_surfaces_out[i].Data.G + 1;
+        vpp_surfaces_out[i].Data.A     = vpp_surfaces_out[i].Data.R + 1;
+        vpp_surfaces_out[i].Data.Pitch = width * 4;
     }
 
     // Initialize surface for blured frame
-    mfxFrameSurface1 bluredSurface;
-    std::vector<mfxU8> blurDataOut(surfaceSize);
+    mfxFrameSurface1 blured_surface;
+    std::vector<mfxU8> blur_data_out(surface_size);
 
-    memset(&bluredSurface, 1, sizeof(bluredSurface));
-    bluredSurface.Info       = mfxVPPParams.vpp.Out;
-    bluredSurface.Data.B     = &blurDataOut[0];
-    bluredSurface.Data.G     = bluredSurface.Data.B + 1;
-    bluredSurface.Data.R     = bluredSurface.Data.G + 1;
-    bluredSurface.Data.A     = bluredSurface.Data.R + 1;
-    bluredSurface.Data.Pitch = width * 4;
+    memset(&blured_surface, 1, sizeof(blured_surface));
+    blured_surface.Info       = vpp_params.vpp.Out;
+    blured_surface.Data.B     = &blur_data_out[0];
+    blured_surface.Data.G     = blured_surface.Data.B + 1;
+    blured_surface.Data.R     = blured_surface.Data.G + 1;
+    blured_surface.Data.A     = blured_surface.Data.R + 1;
+    blured_surface.Data.Pitch = width * 4;
 
     // Initialize VPP
-    sts = MFXVideoVPP_Init(session, &mfxVPPParams);
+    sts = MFXVideoVPP_Init(session, &vpp_params);
     if (sts != MFX_ERR_NONE) {
-        fclose(fSource);
-        fclose(fSink);
+        fclose(source);
+        fclose(sink);
         puts("Could not initialize vpp");
         return 1;
     }
 
     // Prepare bit stream buffer
-    mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 2000000;
-    std::vector<mfxU8> bstData(mfxBS.MaxLength);
-    mfxBS.Data = bstData.data();
+    mfxBitstream bitstream = { 0 };
+    bitstream.MaxLength    = 2000000;
+    std::vector<mfxU8> bitstream_data(bitstream.MaxLength);
+    bitstream.Data = bitstream_data.data();
 
     // Start processing the frames
-    int nSurfIdxIn = 0, nSurfIdxOut = 0;
+    int surface_index_in = 0, surface_index_out = 0;
     mfxSyncPoint syncp;
     mfxU32 framenum = 0;
 
@@ -318,35 +321,36 @@ int main(int argc, char *argv[]) {
 
     // Stage 1: Main processing loop
     while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_DATA == sts) {
-        nSurfIdxIn =
-            GetFreeSurfaceIndex(pVPPSurfacesIn); // Find free frame surface
-        if (nSurfIdxIn == MFX_ERR_NOT_FOUND) {
-            fclose(fSource);
-            fclose(fSink);
+        surface_index_in =
+            GetFreeSurfaceIndex(vpp_surfaces_in); // Find free frame surface
+        if (surface_index_in == MFX_ERR_NOT_FOUND) {
+            fclose(source);
+            fclose(sink);
             puts("no available surface");
             return 1;
         }
 
-        sts = LoadRawFrame(&pVPPSurfacesIn[nSurfIdxIn], fSource);
+        sts = LoadRawFrame(&vpp_surfaces_in[surface_index_in], source);
         if (sts != MFX_ERR_NONE)
             break;
 
-        nSurfIdxOut = GetFreeSurfaceIndex(
-            pVPPSurfacesOut); // Find free output frame surface
-        if (nSurfIdxOut == MFX_ERR_NOT_FOUND) {
-            fclose(fSource);
-            fclose(fSink);
+        surface_index_out = GetFreeSurfaceIndex(
+            vpp_surfaces_out); // Find free output frame surface
+        if (surface_index_out == MFX_ERR_NOT_FOUND) {
+            fclose(source);
+            fclose(sink);
             puts("no available surface");
             return 1;
         }
 
         for (;;) {
             // Process a frame asychronously (returns immediately)
-            sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                               &pVPPSurfacesIn[nSurfIdxIn],
-                                               &pVPPSurfacesOut[nSurfIdxOut],
-                                               NULL,
-                                               &syncp);
+            sts = MFXVideoVPP_RunFrameVPPAsync(
+                session,
+                &vpp_surfaces_in[surface_index_in],
+                &vpp_surfaces_out[surface_index_out],
+                NULL,
+                &syncp);
 
             if (MFX_ERR_NONE < sts && syncp) {
                 sts = MFX_ERR_NONE; // Ignore warnings if output is available
@@ -369,12 +373,12 @@ int main(int argc, char *argv[]) {
             ++framenum;
             // Blur and store processed frame
 #ifdef BUILD_DPCPP
-            BlurFrame(q, &pVPPSurfacesOut[nSurfIdxOut], &bluredSurface);
-            WriteRawFrame(&bluredSurface, fSink);
+            BlurFrame(q, &vpp_surfaces_out[surface_index_out], &blured_surface);
+            WriteRawFrame(&blured_surface, sink);
 #else
-            WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
+            WriteRawFrame(&vpp_surfaces_out[surface_index_out], sink);
 #endif
-            mfxBS.DataLength = 0;
+            bitstream.DataLength = 0;
         }
     }
 
@@ -382,22 +386,23 @@ int main(int argc, char *argv[]) {
 
     // Stage 2: Retrieve the buffered processed frames
     while (MFX_ERR_NONE <= sts) {
-        nSurfIdxOut =
-            GetFreeSurfaceIndex(pVPPSurfacesOut); // Find free frame surface
-        if (nSurfIdxOut == MFX_ERR_NOT_FOUND) {
-            fclose(fSource);
-            fclose(fSink);
+        surface_index_out =
+            GetFreeSurfaceIndex(vpp_surfaces_out); // Find free frame surface
+        if (surface_index_out == MFX_ERR_NOT_FOUND) {
+            fclose(source);
+            fclose(sink);
             puts("no available surface");
             return 1;
         }
 
         for (;;) {
             // Process a frame asychronously (returns immediately)
-            sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                               NULL,
-                                               &pVPPSurfacesOut[nSurfIdxOut],
-                                               NULL,
-                                               &syncp);
+            sts = MFXVideoVPP_RunFrameVPPAsync(
+                session,
+                NULL,
+                &vpp_surfaces_out[surface_index_out],
+                NULL,
+                &syncp);
 
             if (MFX_ERR_NONE < sts && syncp) {
                 sts = MFX_ERR_NONE; // Ignore warnings if output is available
@@ -416,13 +421,13 @@ int main(int argc, char *argv[]) {
             ++framenum;
             // Blur and store processed frame
 #ifdef BUILD_DPCPP
-            BlurFrame(q, &pVPPSurfacesOut[nSurfIdxOut], &bluredSurface);
-            WriteRawFrame(&bluredSurface, fSink);
+            BlurFrame(q, &vpp_surfaces_out[surface_index_out], &blured_surface);
+            WriteRawFrame(&blured_surface, sink);
 #else
-            WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
+            WriteRawFrame(&vpp_surfaces_out[surface_index_out], sink);
 #endif
 
-            mfxBS.DataLength = 0;
+            bitstream.DataLength = 0;
         }
     }
 
@@ -433,30 +438,30 @@ int main(int argc, char *argv[]) {
     // internal resources.
     MFXVideoVPP_Close(session);
 
-    fclose(fSource);
-    fclose(fSink);
+    fclose(source);
+    fclose(sink);
 
     return 0;
 }
 
-mfxStatus LoadRawFrame(mfxFrameSurface1 *pSurface, FILE *fSource) {
+mfxStatus LoadRawFrame(mfxFrameSurface1 *surface, FILE *f) {
     mfxU16 w, h, i, pitch;
-    mfxU32 nBytesRead;
+    mfxU32 bytes_read;
     mfxU8 *ptr;
-    mfxFrameInfo *pInfo = &pSurface->Info;
-    mfxFrameData *pData = &pSurface->Data;
+    mfxFrameInfo *info = &surface->Info;
+    mfxFrameData *data = &surface->Data;
 
-    w = pInfo->Width;
-    h = pInfo->Height;
+    w = info->Width;
+    h = info->Height;
 
-    switch (pInfo->FourCC) {
+    switch (info->FourCC) {
         case MFX_FOURCC_I420:
             // read luminance plane (Y)
-            pitch = pData->Pitch;
-            ptr   = pData->Y;
+            pitch = data->Pitch;
+            ptr   = data->Y;
             for (i = 0; i < h; i++) {
-                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
-                if (w != nBytesRead)
+                bytes_read = (mfxU32)fread(ptr + i * pitch, 1, w, f);
+                if (w != bytes_read)
                     return MFX_ERR_MORE_DATA;
             }
 
@@ -464,17 +469,17 @@ mfxStatus LoadRawFrame(mfxFrameSurface1 *pSurface, FILE *fSource) {
             pitch /= 2;
             h /= 2;
             w /= 2;
-            ptr = pData->U;
+            ptr = data->U;
             for (i = 0; i < h; i++) {
-                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
-                if (w != nBytesRead)
+                bytes_read = (mfxU32)fread(ptr + i * pitch, 1, w, f);
+                if (w != bytes_read)
                     return MFX_ERR_MORE_DATA;
             }
 
-            ptr = pData->V;
+            ptr = data->V;
             for (i = 0; i < h; i++) {
-                nBytesRead = (mfxU32)fread(ptr + i * pitch, 1, w, fSource);
-                if (w != nBytesRead)
+                bytes_read = (mfxU32)fread(ptr + i * pitch, 1, w, f);
+                if (w != bytes_read)
                     return MFX_ERR_MORE_DATA;
             }
             break;
@@ -486,20 +491,20 @@ mfxStatus LoadRawFrame(mfxFrameSurface1 *pSurface, FILE *fSource) {
 }
 
 // Write raw rgb32 frame to file
-void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
+void WriteRawFrame(mfxFrameSurface1 *surface, FILE *f) {
     mfxU16 w, h, i, pitch;
-    mfxFrameInfo *pInfo = &pSurface->Info;
-    mfxFrameData *pData = &pSurface->Data;
+    mfxFrameInfo *info = &surface->Info;
+    mfxFrameData *data = &surface->Data;
 
-    w = pInfo->Width;
-    h = pInfo->Height;
+    w = info->Width;
+    h = info->Height;
 
     // write the output to disk
-    switch (pInfo->FourCC) {
+    switch (info->FourCC) {
         case MFX_FOURCC_RGB4:
-            pitch = pData->Pitch;
+            pitch = data->Pitch;
             for (i = 0; i < h; i++) {
-                fwrite(pData->B + i * pitch, 1, w * 4, f);
+                fwrite(data->B + i * pitch, 1, w * 4, f);
             }
         default:
             break;
@@ -509,36 +514,36 @@ void WriteRawFrame(mfxFrameSurface1 *pSurface, FILE *f) {
 }
 
 // Return the surface size in bytes given format and dimensions
-mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
-    mfxU32 nbytes = 0;
+mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
+    mfxU32 bytes = 0;
 
-    switch (FourCC) {
+    switch (fourcc) {
         case MFX_FOURCC_I420:
-            nbytes = width * height + (width >> 1) * (height >> 1) +
-                     (width >> 1) * (height >> 1);
+            bytes = width * height + (width >> 1) * (height >> 1) +
+                    (width >> 1) * (height >> 1);
             break;
         case MFX_FOURCC_RGB4:
-            nbytes = 4 * width * height;
+            bytes = 4 * width * height;
             break;
         default:
             break;
     }
 
-    return nbytes;
+    return bytes;
 }
 
 // Return index of free surface in given pool
-mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &pSurfacesPool) {
-    auto it = std::find_if(pSurfacesPool.begin(),
-                           pSurfacesPool.end(),
+mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &surface_pool) {
+    auto it = std::find_if(surface_pool.begin(),
+                           surface_pool.end(),
                            [](const mfxFrameSurface1 &surface) {
                                return 0 == surface.Data.Locked;
                            });
 
-    if (it == pSurfacesPool.end())
+    if (it == surface_pool.end())
         return MFX_ERR_NOT_FOUND;
     else
-        return static_cast<mfxI32>(it - pSurfacesPool.begin());
+        return static_cast<mfxI32>(it - surface_pool.begin());
 }
 
 char *ValidateFileName(char *in) {
@@ -559,20 +564,20 @@ constexpr auto sycl_write = sycl::access::mode::write;
 // SYCL kernel scheduler
 // Blur frame by using SYCL kernel
 void BlurFrame(sycl::queue q,
-               mfxFrameSurface1 *inSurface,
-               mfxFrameSurface1 *bluredSurface) {
+               mfxFrameSurface1 *in_surface,
+               mfxFrameSurface1 *blured_surface) {
     int img_width, img_height;
 
-    img_width  = inSurface->Info.Width;
-    img_height = inSurface->Info.Height;
+    img_width  = in_surface->Info.Width;
+    img_height = in_surface->Info.Height;
 
     // Wrap mfx surfaces into SYCL image by using host ptr for zero copy of data
-    sycl::image<2> image_buf_src(inSurface->Data.B,
+    sycl::image<2> image_buf_src(in_surface->Data.B,
                                  sycl::image_channel_order::rgba,
                                  sycl::image_channel_type::unsigned_int8,
                                  sycl::range<2>(img_width, img_height));
 
-    sycl::image<2> image_buf_dst(bluredSurface->Data.B,
+    sycl::image<2> image_buf_dst(blured_surface->Data.B,
                                  sycl::image_channel_order::rgba,
                                  sycl::image_channel_type::unsigned_int8,
                                  sycl::range<2>(img_width, img_height));
@@ -584,9 +589,9 @@ void BlurFrame(sycl::queue q,
                            2,
                            sycl_read,
                            sycl::access::target::image>
-                accessorSrc(image_buf_src, cgh);
+                accessor_src(image_buf_src, cgh);
             // Dst image accessor
-            auto accessorDst =
+            auto accessor_dst =
                 image_buf_dst.get_access<cl::sycl::uint4, sycl_write>(cgh);
             cl::sycl::uint4 black = (cl::sycl::uint4)(0);
             // Parallel execution of the kerner for each pixel. Kernel
@@ -604,14 +609,14 @@ void BlurFrame(sycl::queue q,
                     // Let's add horizontal black border
                     if (item[0] <= BLUR_RADIUS ||
                         item[0] >= img_width - 1 - BLUR_RADIUS) {
-                        accessorDst.write(coords, black);
+                        accessor_dst.write(coords, black);
                         return;
                     }
 
                     // Let's add vertical black border
                     if (item[1] <= BLUR_RADIUS ||
                         item[1] >= img_height - 1 - BLUR_RADIUS) {
-                        accessorDst.write(coords, black);
+                        accessor_dst.write(coords, black);
                         return;
                     }
 
@@ -624,7 +629,7 @@ void BlurFrame(sycl::queue q,
                         for (int j = item[1] - BLUR_RADIUS;
                              j < item[1] + BLUR_RADIUS;
                              j++) {
-                            rgba = accessorSrc.read(cl::sycl::int2(i, j));
+                            rgba = accessor_src.read(cl::sycl::int2(i, j));
                             // Sum over the square mask
                             tmp[0] += rgba.x();
                             tmp[1] += rgba.y();
@@ -646,7 +651,7 @@ void BlurFrame(sycl::queue q,
                     tmp_u[2] = tmp[2];
                     tmp_u[3] = tmp[3];
 
-                    accessorDst.write(coords, tmp_u);
+                    accessor_dst.write(coords, tmp_u);
                 });
         });
 
