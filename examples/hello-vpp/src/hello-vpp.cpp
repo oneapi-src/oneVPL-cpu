@@ -154,7 +154,9 @@ int main(int argc, char *argv[]) {
     mfxU16 nVPPSurfNumOut = VPPRequest[1].NumFrameSuggested;
 
     // Allocate surfaces for VPP: In
-    // - Frame surface array keeps pointers all surface planes and general frame info
+
+    // Frame surface array keeps pointers to all surface planes and general
+    // frame info
     fourCC = mfxVPPParams.vpp.In.FourCC;
     width  = mfxVPPParams.vpp.In.Width;
     height = mfxVPPParams.vpp.In.Height;
@@ -182,7 +184,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Allocate surfaces for VPP: Out
-    // - Frame surface array keeps pointers all surface planes and general frame info
+
+    // Frame surface array keeps pointers to all surface planes and general
+    // frame info
     fourCC = mfxVPPParams.vpp.Out.FourCC;
     width  = mfxVPPParams.vpp.Out.Width;
     height = mfxVPPParams.vpp.Out.Height;
@@ -256,7 +260,7 @@ int main(int argc, char *argv[]) {
         }
 
         for (;;) {
-            // Process a frame asychronously (returns immediately)
+            // Process a frame asynchronously (returns immediately)
             sts = MFXVideoVPP_RunFrameVPPAsync(session,
                                                &pVPPSurfacesIn[nSurfIdxIn],
                                                &pVPPSurfacesOut[nSurfIdxOut],
@@ -301,7 +305,7 @@ int main(int argc, char *argv[]) {
         }
 
         for (;;) {
-            // Process a frame asychronously (returns immediately)
+            // Process a frame asynchronously (returns immediately)
             sts = MFXVideoVPP_RunFrameVPPAsync(session,
                                                NULL,
                                                &pVPPSurfacesOut[nSurfIdxOut],

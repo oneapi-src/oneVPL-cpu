@@ -5,7 +5,7 @@
 //==============================================================================
 
 ///
-/// A minimal oneAPI Video Processing Library (oneVPL) dpc++ interop application.
+/// Minimal oneAPI Video Processing Library (oneVPL) dpc++ interop application.
 ///
 /// @file
 
@@ -50,6 +50,7 @@ static auto exception_handler = [](cl::sycl::exception_list eList) {
 
 }; // namespace dpc_common
 
+// Select device on which to run kernel.
 class MyDeviceSelector : public cl::sycl::device_selector {
 public:
     MyDeviceSelector() {}
@@ -76,7 +77,7 @@ public:
 constexpr auto sycl_read  = sycl::access::mode::read;
 constexpr auto sycl_write = sycl::access::mode::write;
 
-// SYCL kernel scheduller
+// SYCL kernel scheduler
 // Blur frame by using SYCL kernel
 void BlurFrame(sycl::queue q,
                mfxFrameSurface1 *inSurface,
@@ -109,9 +110,13 @@ void BlurFrame(sycl::queue q,
             auto accessorDst =
                 image_buf_dst.get_access<cl::sycl::uint4, sycl_write>(cgh);
             cl::sycl::uint4 black = (cl::sycl::uint4)(0);
-            // Parallel execution of the kerner for each pixel. Kernel implemented as a lambda function.
-            // Important: this is naive implementation of the blur kernel. For further optimization better
-            // to use range_nd iterator and apply moving average technique to reduce # of MAC operations per pixel.
+            // Parallel execution of the kerner for each pixel. Kernel
+            // implemented as a lambda function.
+
+            // Important: this is naive implementation of the blur kernel. For
+            // further optimization it is better to use range_nd iterator and
+            // apply moving average technique to reduce # of MAC operations per
+            // pixel.
             cgh.parallel_for<class NaiveBlur_rgba>(
                 sycl::range<2>(img_width, img_height),
                 [=](sycl::item<2> item) {
@@ -166,8 +171,8 @@ void BlurFrame(sycl::queue q,
                 });
         });
 
-        // Since we are in blocking execution mode for this sample simplicity, we need to wait
-        // for the execution compliteness.
+        // Since we are in blocking execution mode for this sample simplicity,
+        // we need to wait for the execution completeness.
         q.wait_and_throw();
     }
     catch (std::exception e) {
@@ -310,7 +315,9 @@ int main(int argc, char *argv[]) {
     mfxU16 nVPPSurfNumOut = VPPRequest[1].NumFrameSuggested;
 
     // Allocate surfaces for VPP: In
-    // - Frame surface array keeps pointers all surface planes and general frame info
+
+    // Frame surface array keeps pointers to all surface planes and general
+    // frame info
     fourCC = mfxVPPParams.vpp.In.FourCC;
     width  = mfxVPPParams.vpp.In.Width;
     height = mfxVPPParams.vpp.In.Height;
@@ -338,7 +345,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Allocate surfaces for VPP: Out
-    // - Frame surface array keeps pointers all surface planes and general frame info
+
+    // Frame surface array keeps pointers to all surface planes and general
+    // frame info
     fourCC = mfxVPPParams.vpp.Out.FourCC;
     width  = mfxVPPParams.vpp.Out.Width;
     height = mfxVPPParams.vpp.Out.Height;

@@ -140,8 +140,10 @@ int main(int argc, char *argv[]) {
     // Determine the required number of surfaces for encoder
     mfxU16 nEncSurfNum = EncRequest.NumFrameSuggested;
 
-    // Allocate surfaces for encoder - Frame surface array keeps pointers all
-    // surface planes and general frame info
+    // Allocate surfaces for encoder
+
+    // Frame surface array keeps pointers to all surface planes and general
+    // frame info
     mfxU32 surfaceSize = GetSurfaceSize(fourCC, inputWidth, inputHeight);
     if (surfaceSize == 0) {
         fclose(fSource);
@@ -244,7 +246,7 @@ int main(int argc, char *argv[]) {
     // Stage 2: Retrieve the buffered encoded frames
     while (MFX_ERR_NONE <= sts) {
         for (;;) {
-            // Encode a frame asychronously (returns immediately)
+            // Encode a frame asynchronously (returns immediately)
             sts = MFXVideoENCODE_EncodeFrameAsync(session,
                                                   NULL,
                                                   NULL,

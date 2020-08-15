@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
             GetFreeSurfaceIndex(decSurfaces,
                                 nSurfNumDec); // Find free frame surface
 
-        // Decode a frame asychronously (returns immediately)
+        // Decode a frame asynchronously (returns immediately)
 
         sts = MFXVideoDECODE_DecodeFrameAsync(session,
                                               NULL,
@@ -228,8 +228,8 @@ int main(int argc, char *argv[]) {
                                               &pmfxOutSurface,
                                               &syncp);
 
-        // Ignore warnings if output is available,
-        // if no output and no action required just repeat the DecodeFrameAsync call
+        // Ignore warnings if output is available, if no output and no action
+        // required just repeat the DecodeFrameAsync call
         if (MFX_ERR_NONE < sts && syncp)
             sts = MFX_ERR_NONE;
 
