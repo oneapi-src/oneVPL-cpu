@@ -75,14 +75,25 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Initialize Media SDK session
-    mfxInitParam initPar   = { 0 };
-    initPar.Version.Major  = 2;
-    initPar.Version.Minor  = 0;
-    initPar.Implementation = MFX_IMPL_SOFTWARE;
+    mfxStatus sts      = MFX_ERR_NOT_INITIALIZED;
+    mfxSession session = nullptr;
 
-    mfxSession session;
-    mfxStatus sts = MFXInitEx(initPar, &session);
+    if (params.dispatcherMode == DISPATCHER_MODE_ONEVPL_20) {
+        sts = InitNewDispatcher(WSTYPE_ENCODE, &params, &session);
+    }
+    else if (params.dispatcherMode == DISPATCHER_MODE_LEGACY) {
+        // initialize session
+        mfxInitParam initPar   = { 0 };
+        initPar.Version.Major  = 2;
+        initPar.Version.Minor  = 0;
+        initPar.Implementation = MFX_IMPL_SOFTWARE;
+
+        sts = MFXInitEx(initPar, &session);
+    }
+    else {
+        printf("invalid dispatcher mode %d\n", params.dispatcherMode);
+    }
+
     if (sts != MFX_ERR_NONE) {
         puts("MFXInitEx error. could not initialize session");
         fclose(fSource);
@@ -767,6 +778,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         }
         else if (IS_ARG_EQ(s, "int")) {
             params->memoryMode = MEM_MODE_INTERNAL;
+        }
+        else if (IS_ARG_EQ(s, "dsp1")) {
+            params->dispatcherMode = DISPATCHER_MODE_LEGACY;
+        }
+        else if (IS_ARG_EQ(s, "dsp2")) {
+            params->dispatcherMode = DISPATCHER_MODE_ONEVPL_20;
         }
         else if (IS_ARG_EQ(s, "scrx")) {
             if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))

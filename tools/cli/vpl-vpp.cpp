@@ -835,6 +835,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         else if (IS_ARG_EQ(s, "int")) {
             params->memoryMode = MEM_MODE_INTERNAL;
         }
+        else if (IS_ARG_EQ(s, "dsp1")) {
+            params->dispatcherMode = DISPATCHER_MODE_LEGACY;
+        }
+        else if (IS_ARG_EQ(s, "dsp2")) {
+            params->dispatcherMode = DISPATCHER_MODE_ONEVPL_20;
+        }
         else if (IS_ARG_EQ(s, "scrx")) {
             if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))
                 return false;

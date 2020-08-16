@@ -16,7 +16,7 @@ const char *DispatcherModeString[DISPATCHER_MODE_COUNT] = {
 };
 
 // check if this implementation can decode our stream
-bool CheckImplCaps(mfxImplDescription *implDesc, mfxU32 codecID) {
+bool CheckDecoderImplCaps(mfxImplDescription *implDesc, mfxU32 codecID) {
     mfxU32 i;
 
     for (i = 0; i < implDesc->Dec.NumCodecs; i++) {
@@ -29,6 +29,108 @@ bool CheckImplCaps(mfxImplDescription *implDesc, mfxU32 codecID) {
 
     return false;
 }
+
+// check if this implementation can encode our stream
+bool CheckEncoderImplCaps(mfxImplDescription *implDesc,
+                          mfxU32 rawFormat,
+                          mfxU32 codecID) {
+    mfxU32 i, j, k, n;
+
+    for (i = 0; i < implDesc->Enc.NumCodecs; i++) {
+        mfxEncoderDescription::encoder *currEnc = &(implDesc->Enc.Codecs[i]);
+        if (currEnc->CodecID == codecID) {
+            for (j = 0; j < currEnc->NumProfiles; j++) {
+                mfxEncoderDescription::encoder::encprofile *currProfile =
+                    &(currEnc->Profiles[j]);
+
+                for (k = 0; k < currProfile->NumMemTypes; k++) {
+                    mfxEncoderDescription::encoder::encprofile::encmemdesc
+                        *currMemDesc = &(currProfile->MemDesc[k]);
+
+                    for (n = 0; n < currMemDesc->NumColorFormats; n++) {
+                        if (currMemDesc->ColorFormats[n] == rawFormat)
+                            return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+mfxStatus InitNewDispatcher(WSType wsType,
+                            Params *params,
+                            mfxSession *session) {
+    mfxStatus sts = MFX_ERR_NONE;
+    *session      = nullptr;
+
+    // load 2.0 dispatcher
+    mfxLoader loader = MFXLoad();
+    if (!loader) {
+        printf("Error - MFXLoad() returned NULL\n");
+        return MFX_ERR_UNSUPPORTED;
+    }
+
+    mfxVariant ImplValue;
+    mfxConfig cfg;
+
+    // basic filtering - test for SW implementation
+    cfg                = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    MFXSetConfigFilterProperty(cfg,
+                               (const mfxU8 *)"mfxImplDescription.Impl",
+                               ImplValue);
+
+    mfxU32 implIdx = 0;
+    while (1) {
+        // enumerate all implementations, check capabilities
+        mfxImplDescription *implDesc;
+        sts = MFXEnumImplementations(loader,
+                                     implIdx,
+                                     MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
+                                     reinterpret_cast<mfxHDL *>(&implDesc));
+
+        // out of range - we've tested all implementations
+        if (sts == MFX_ERR_NOT_FOUND)
+            break;
+
+        bool isSupported = false;
+
+        if (wsType == WSTYPE_DECODE) {
+            isSupported = CheckDecoderImplCaps(implDesc, params->srcFourCC);
+        }
+        else if (wsType == WSTYPE_ENCODE) {
+            isSupported = CheckEncoderImplCaps(implDesc,
+                                               params->srcFourCC,
+                                               params->dstFourCC);
+        }
+        else if (wsType == WSTYPE_VPP) {
+            isSupported = true;
+        }
+
+        if (isSupported) {
+            // this implementation is capable of processing the stream
+            sts = MFXCreateSession(loader, implIdx, session);
+            if (sts != MFX_ERR_NONE) {
+                printf("Error in MFXCreateSession, sts = %d", sts);
+                return sts;
+            }
+            MFXDispReleaseImplDescription(loader, implDesc);
+            break;
+        }
+        else {
+            MFXDispReleaseImplDescription(loader, implDesc);
+        }
+
+        implIdx++;
+    }
+
+    return sts;
+}
+
+// debugging functions
 
 #define TEST_CFG(type, dType, val)                                           \
     cfg                  = MFXCreateConfig(loader);                          \
@@ -147,65 +249,4 @@ static void TestCfgPropsVPP(mfxLoader loader) {
         (const mfxU8
              *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormats";
     TEST_CFG(MFX_VARIANT_TYPE_U32, U32, MFX_FOURCC_I420);
-}
-
-mfxStatus InitNewDispatcher(Params *params, mfxSession *session) {
-    mfxStatus sts = MFX_ERR_NONE;
-    *session      = nullptr;
-
-    mfxLoader loader = MFXLoad();
-    if (!loader) {
-        printf("Error - MFXLoad() returned NULL\n");
-        return MFX_ERR_UNSUPPORTED;
-    }
-
-    mfxVariant ImplValue;
-    mfxConfig cfg;
-
-    cfg                = MFXCreateConfig(loader);
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
-    MFXSetConfigFilterProperty(cfg,
-                               (const mfxU8 *)"mfxImplDescription.Impl",
-                               ImplValue);
-
-    cfg                = MFXCreateConfig(loader);
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_CODEC_HEVC;
-    MFXSetConfigFilterProperty(
-        cfg,
-        (const mfxU8
-             *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-        ImplValue);
-
-    mfxU32 implIdx = 0;
-    while (1) {
-        mfxImplDescription *implDesc;
-        sts = MFXEnumImplementations(loader,
-                                     implIdx,
-                                     MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                     reinterpret_cast<mfxHDL *>(&implDesc));
-
-        // out of range - we've tested all implementations
-        if (sts == MFX_ERR_NOT_FOUND)
-            break;
-
-        if (CheckImplCaps(implDesc, params->srcFourCC) == true) {
-            // this implementation is capable of decoding the input stream
-            sts = MFXCreateSession(loader, implIdx, session);
-            if (sts != MFX_ERR_NONE) {
-                printf("Error in MFXCreateSession, sts = %d", sts);
-                return sts;
-            }
-            MFXDispReleaseImplDescription(loader, implDesc);
-            break;
-        }
-        else {
-            MFXDispReleaseImplDescription(loader, implDesc);
-        }
-
-        implIdx++;
-    }
-
-    return sts;
 }

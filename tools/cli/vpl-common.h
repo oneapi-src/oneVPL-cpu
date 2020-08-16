@@ -30,6 +30,14 @@ enum DispatcherMode {
     DISPATCHER_MODE_COUNT
 };
 
+enum WSType {
+    WSTYPE_DECODE = 0,
+    WSTYPE_ENCODE,
+    WSTYPE_VPP,
+
+    WSTYPE_COUNT
+};
+
 extern const char* MemoryModeString[MEM_MODE_COUNT];
 extern const char* DispatcherModeString[DISPATCHER_MODE_COUNT];
 
@@ -93,5 +101,5 @@ typedef struct _Params {
 } Params;
 
 // vpl-new-dispatcher.cpp
-mfxStatus InitNewDispatcher(Params *params, mfxSession* session);
+mfxStatus InitNewDispatcher(WSType wsType, Params *params, mfxSession* session);
 

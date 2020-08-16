@@ -68,10 +68,10 @@ int main(int argc, char* argv[]) {
     mfxSession session = nullptr;
 
     if (params.dispatcherMode == DISPATCHER_MODE_ONEVPL_20) {
-        sts = InitNewDispatcher(&params, &session);
+        sts = InitNewDispatcher(WSTYPE_DECODE, &params, &session);
     }
     else if (params.dispatcherMode == DISPATCHER_MODE_LEGACY) {
-        // initialize  session
+        // initialize session
         mfxInitParam initPar   = { 0 };
         initPar.Version.Major  = 2;
         initPar.Version.Minor  = 0;
