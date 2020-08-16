@@ -204,6 +204,10 @@ int main(int argc, char* argv[]) {
             mfxEncParams.mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN10;
             mfxEncParams.mfx.CodecLevel   = MFX_LEVEL_HEVC_51;
         }
+        else if (params.dstFourCC == MFX_CODEC_AVC) {
+            mfxEncParams.mfx.CodecProfile = MFX_PROFILE_AVC_HIGH10;
+            mfxEncParams.mfx.CodecLevel   = MFX_LEVEL_AVC_1;
+        }
     }
 
     mfxEncParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
@@ -237,7 +241,13 @@ int main(int argc, char* argv[]) {
         }
 
         // Determine the required number of surfaces for encoder
-        nEncSurfNum = EncRequest.NumFrameSuggested;
+        if (mfxEncParams.mfx.CodecId == MFX_CODEC_JPEG) {
+            // QueryIOSurf returns always NumFrameSuggested value 3 regardless of any condition, it's not safe to MJPEG.
+            // Need larger number of surfaces than suggested to avoid lack of surface until we improve.
+            nEncSurfNum = 10;
+        }
+        else
+            nEncSurfNum = EncRequest.NumFrameSuggested;
 
         // Allocate surfaces for encoder
         // - Frame surface array keeps pointers all surface planes and general frame info

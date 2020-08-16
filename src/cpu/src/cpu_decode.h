@@ -31,11 +31,14 @@ public:
 
 private:
     static mfxStatus ValidateDecodeParams(mfxVideoParam* par, bool canCorrect);
+    AVFrame* ConvertJPEGOutputColorSpace(AVFrame* avframe,
+                                         AVPixelFormat target_pixfmt);
     const AVCodec* m_avDecCodec;
     AVCodecContext* m_avDecContext;
     AVCodecParserContext* m_avDecParser;
     AVPacket* m_avDecPacket;
     AVFrame* m_avDecFrameOut;
+    struct SwsContext* m_swsContext;
 
     mfxVideoParam m_param;
     std::unique_ptr<CpuFramePool> m_decSurfaces;

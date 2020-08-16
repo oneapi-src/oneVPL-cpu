@@ -99,6 +99,7 @@ AVFrame *CreateAVFrame(mfxFrameSurface1 *surface,
     av_frame->linesize[0] = data->Pitch;
     switch (info->FourCC) {
         case MFX_FOURCC_I420:
+        case MFX_FOURCC_I010:
             av_frame->linesize[1] = data->Pitch / 2;
             av_frame->linesize[2] = data->Pitch / 2;
             break;

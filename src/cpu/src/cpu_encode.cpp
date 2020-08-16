@@ -63,13 +63,23 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                     return MFX_ERR_INVALID_VIDEO_PARAM;
 
             if (par->mfx.CodecProfile) {
-                if (par->mfx.CodecProfile != MFX_PROFILE_AVC_BASELINE &&
-                    par->mfx.CodecProfile != MFX_PROFILE_AVC_MAIN &&
-                    par->mfx.CodecProfile != MFX_PROFILE_AVC_HIGH)
-                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010) {
+                    if (par->mfx.CodecProfile != MFX_PROFILE_AVC_HIGH10 &&
+                        par->mfx.CodecProfile != MFX_PROFILE_AVC_HIGH_422)
+                        return MFX_ERR_INVALID_VIDEO_PARAM;
+                }
+                else {
+                    if (par->mfx.CodecProfile != MFX_PROFILE_AVC_BASELINE &&
+                        par->mfx.CodecProfile != MFX_PROFILE_AVC_MAIN &&
+                        par->mfx.CodecProfile != MFX_PROFILE_AVC_HIGH)
+                        return MFX_ERR_INVALID_VIDEO_PARAM;
+                }
             }
             else {
-                par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
+                if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010)
+                    par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH10;
+                else
+                    par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
             }
 
             if (par->mfx.CodecLevel) {
@@ -717,6 +727,12 @@ mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
     if (par->mfx.CodecProfile) {
         std::string profValue;
         switch (par->mfx.CodecProfile) {
+            case MFX_PROFILE_AVC_HIGH10:
+                profValue = "high10";
+                break;
+            case MFX_PROFILE_AVC_HIGH_422:
+                profValue = "high422";
+                break;
             case MFX_PROFILE_AVC_BASELINE:
                 profValue = "baseline";
                 break;

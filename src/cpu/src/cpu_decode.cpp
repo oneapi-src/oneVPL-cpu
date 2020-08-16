@@ -16,6 +16,7 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_avDecParser(nullptr),
           m_avDecPacket(nullptr),
           m_avDecFrameOut(nullptr),
+          m_swsContext(nullptr),
           m_param(),
           m_decSurfaces(),
           m_bFrameBuffered(false) {}
@@ -170,6 +171,10 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
 }
 
 CpuDecode::~CpuDecode() {
+    if (m_swsContext) {
+        sws_freeContext(m_swsContext);
+    }
+
     if (m_avDecFrameOut) {
         av_frame_free(&m_avDecFrameOut);
         m_avDecFrameOut = nullptr;
@@ -254,17 +259,30 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
         // receive frame
         auto av_ret = avcodec_receive_frame(m_avDecContext, avframe);
         if (av_ret == 0) {
+            // in case mjpeg, convert yuvj420p -> yuv420p
+            if (m_avDecContext->codec_id == AV_CODEC_ID_MJPEG) {
+                if (m_avDecContext->pix_fmt != AV_PIX_FMT_YUV420P) {
+                    avframe = ConvertJPEGOutputColorSpace(avframe,
+                                                          AV_PIX_FMT_YUV420P);
+                    if (avframe == nullptr)
+                        return MFX_ERR_ABORTED;
+                }
+            }
             if (m_param.mfx.FrameInfo.Width != m_avDecContext->width ||
                 m_param.mfx.FrameInfo.Height != m_avDecContext->height) {
                 m_param.mfx.FrameInfo.Width  = m_avDecContext->width;
                 m_param.mfx.FrameInfo.Height = m_avDecContext->height;
 
-                if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P10LE)
-                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
-                else if (m_avDecContext->pix_fmt == AV_PIX_FMT_YUV420P)
-                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
-                else
-                    m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+                switch (m_avDecContext->pix_fmt) {
+                    case AV_PIX_FMT_YUV420P10LE:
+                        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
+                        break;
+                    case AV_PIX_FMT_YUV420P:
+                    case AV_PIX_FMT_YUVJ420P:
+                    default:
+                        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+                        break;
+                }
             }
             if (surface_out) {
                 if (avframe == m_avDecFrameOut) { // copy image data
@@ -297,6 +315,47 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
         }
         return MFX_ERR_ABORTED;
     }
+}
+
+AVFrame *CpuDecode::ConvertJPEGOutputColorSpace(AVFrame *avframe,
+                                                AVPixelFormat target_pixfmt) {
+    static int prev_w, prev_h;
+
+    if (!m_swsContext ||
+        (prev_w != avframe->width || prev_h != avframe->height)) {
+        if (m_swsContext)
+            sws_freeContext(m_swsContext);
+        m_swsContext = sws_getContext(m_avDecContext->width,
+                                      m_avDecContext->height,
+                                      m_avDecContext->pix_fmt,
+                                      m_avDecContext->width,
+                                      m_avDecContext->height,
+                                      target_pixfmt,
+                                      SWS_BILINEAR,
+                                      NULL,
+                                      NULL,
+                                      NULL);
+        if (!m_swsContext) {
+            return nullptr;
+        }
+    }
+
+    int ret = sws_scale(m_swsContext,
+                        avframe->data,
+                        avframe->linesize,
+                        0,
+                        avframe->height,
+                        avframe->data,
+                        avframe->linesize);
+    if (ret != avframe->height)
+        return nullptr;
+    else
+        avframe->format = target_pixfmt;
+
+    prev_w = avframe->width;
+    prev_h = avframe->height;
+
+    return avframe;
 }
 
 mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
