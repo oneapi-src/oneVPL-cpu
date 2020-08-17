@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 #include "src/cpu_workstream.h"
-#include "src/frame_lock.h"
 
 #define MFX_MAX(a, b) (((a) > (b)) ? (a) : (b))
 
@@ -200,7 +199,6 @@ const mfxU32 g_TABLE_EXT_PARAM[] = {
 
 CpuVPP::CpuVPP(CpuWorkstream* session)
         : m_session(session),
-          m_avVppFrameIn(nullptr),
           m_avVppFrameOut(nullptr),
           m_vpp_graph(nullptr),
           m_buffersrc_ctx(nullptr),
@@ -515,21 +513,6 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     if (InitFilters() == false)
         return MFX_ERR_NOT_INITIALIZED;
 
-    if (!m_avVppFrameIn) // skip when m_avVppFrameIn is created from InitDecode(), in case of decodevpp_fused
-        m_avVppFrameIn = av_frame_alloc();
-
-    if (!m_avVppFrameIn)
-        return MFX_ERR_NOT_INITIALIZED;
-
-    ret = av_image_alloc(m_avVppFrameIn->data,
-                         m_avVppFrameIn->linesize,
-                         m_vpp_base.src_width,
-                         m_vpp_base.src_height,
-                         m_vpp_base.src_pixel_format,
-                         16);
-    if (ret < 0)
-        return MFX_ERR_NOT_INITIALIZED;
-
     m_avVppFrameOut = av_frame_alloc();
     if (!m_avVppFrameOut)
         return MFX_ERR_NOT_INITIALIZED;
@@ -571,38 +554,17 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
     }
 
     if (surface_in) {
-        FrameLock locker_in;
-        RET_ERROR(locker_in.Lock(surface_in,
-                                 MFX_MAP_READ,
-                                 m_session->GetFrameAllocator()));
-        mfxFrameData* data_in = locker_in.GetData();
+        AVFrame* av_frame =
+            m_input_locker.GetAVFrame(surface_in,
+                                      MFX_MAP_READ,
+                                      m_session->GetFrameAllocator());
+        RET_IF_FALSE(av_frame, MFX_ERR_ABORTED);
 
-        m_avVppFrameIn->width  = m_vpp_base.src_width;
-        m_avVppFrameIn->height = m_vpp_base.src_height;
-        m_avVppFrameIn->format = m_vpp_base.src_pixel_format;
-
-        if (m_vpp_base.src_pixel_format == AV_PIX_FMT_BGRA) {
-            m_avVppFrameIn->data[0]     = data_in->B;
-            m_avVppFrameIn->linesize[0] = data_in->Pitch;
-        }
-        else { // for AV_PIX_FMT_YUV420P and AV_PIX_FMT_YUV420P10LE
-            m_avVppFrameIn->data[0] = data_in->Y;
-            m_avVppFrameIn->data[1] = data_in->U;
-            m_avVppFrameIn->data[2] = data_in->V;
-
-            m_avVppFrameIn->linesize[0] = data_in->Pitch;
-            m_avVppFrameIn->linesize[1] = data_in->Pitch / 2;
-            m_avVppFrameIn->linesize[2] = data_in->Pitch / 2;
-        }
-
-        int ret = 0;
-        if ((ret = av_buffersrc_add_frame_flags(m_buffersrc_ctx,
-                                                m_avVppFrameIn,
-                                                AV_BUFFERSRC_FLAG_KEEP_REF)) <
-            0) {
-            printf("Failed at av_buffersrc_add_frame_flags()\n");
-            return MFX_ERR_UNKNOWN;
-        }
+        int ret = av_buffersrc_add_frame_flags(m_buffersrc_ctx,
+                                               av_frame,
+                                               AV_BUFFERSRC_FLAG_KEEP_REF);
+        m_input_locker.Unlock();
+        RET_IF_FALSE(ret >= 0, MFX_ERR_ABORTED);
     }
 
     // av_buffersink_get_frame

@@ -12,6 +12,7 @@
 #include <utility>
 #include "src/cpu_common.h"
 #include "src/cpu_frame_pool.h"
+#include "src/frame_lock.h"
 
 class CpuWorkstream;
 
@@ -50,6 +51,7 @@ private:
     const AVCodec* m_avEncCodec;
     AVCodecContext* m_avEncContext;
     AVPacket* m_avEncPacket;
+    FrameLock m_input_locker;
 
     mfxVideoParam m_param;
 

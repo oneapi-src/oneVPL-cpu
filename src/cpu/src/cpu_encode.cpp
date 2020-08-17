@@ -8,7 +8,6 @@
 #include <memory>
 #include <sstream>
 #include "src/cpu_workstream.h"
-#include "src/frame_lock.h"
 
 #define X264_DEFAULT_QUALITY_VALUE 23
 
@@ -1093,17 +1092,20 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
 
     // encode one frame
     if (surface) {
-        std::shared_ptr<AVFrame> av_frame =
-            GetAVFrameFromMfxSurface(surface, m_session->GetFrameAllocator());
-        RET_IF_FALSE(av_frame, MFX_ERR_MEMORY_ALLOC);
+        AVFrame *av_frame =
+            m_input_locker.GetAVFrame(surface,
+                                      MFX_MAP_READ,
+                                      m_session->GetFrameAllocator());
+        RET_IF_FALSE(av_frame, MFX_ERR_ABORTED);
 
         if (m_param.mfx.CodecId == MFX_CODEC_JPEG) {
             // must be set for every frame
             av_frame->quality = m_avEncContext->global_quality;
         }
 
-        err = avcodec_send_frame(m_avEncContext, av_frame.get());
-        RET_IF_FALSE(err == 0, MFX_ERR_UNKNOWN);
+        err = avcodec_send_frame(m_avEncContext, av_frame);
+        m_input_locker.Unlock();
+        RET_IF_FALSE(err >= 0, MFX_ERR_ABORTED);
     }
     else {
         // send NULL packet to drain frames

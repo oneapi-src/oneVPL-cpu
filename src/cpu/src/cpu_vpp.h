@@ -11,6 +11,7 @@
 #include <vector>
 #include "src/cpu_common.h"
 #include "src/cpu_frame_pool.h"
+#include "src/frame_lock.h"
 
 typedef enum {
     VPL_VPP_CSC       = 1,
@@ -77,7 +78,7 @@ private:
     AVFilterGraph* m_vpp_graph;
     AVFilterContext* m_buffersrc_ctx;
     AVFilterContext* m_buffersink_ctx;
-    AVFrame* m_avVppFrameIn;
+    FrameLock m_input_locker;
     AVFrame* m_avVppFrameOut;
 
     mfxU32 m_vppInFormat;
