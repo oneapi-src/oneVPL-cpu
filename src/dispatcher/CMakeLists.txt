@@ -40,9 +40,9 @@ if(WIN32)
   # force correct name on Windows
   set_target_properties(${TARGET} PROPERTIES PREFIX "lib")
   set_target_properties(${TARGET} PROPERTIES IMPORT_PREFIX "lib")
-else()
-  set_target_properties(${TARGET} PROPERTIES SUFFIX ".so.2")
 endif()
+set_target_properties(${TARGET} PROPERTIES VERSION ${CMAKE_PROJECT_VERSION})
+set_target_properties(${TARGET} PROPERTIES SOVERSION ${API_VERSION_MAJOR})
 
 target_sources(${TARGET} PRIVATE ${SOURCES})
 
