@@ -17,6 +17,8 @@ set(DEPENDENT_LIBS gtest mfx)
 
 set(SOURCE_FILES
     main.cpp
+    api/test_bitstream_96x64_8bit_hevc.cpp
+    api/test_bitstream_96x64_10bit_hevc.cpp
     api/adapter.cpp
     api/x_getvideoparam.cpp
     api/core.cpp
@@ -31,5 +33,7 @@ set(SOURCE_FILES
     api/x_notimplemented.cpp)
 
 add_executable(${TARGET} ${SOURCE_FILES})
+set_property(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
 target_link_libraries(${TARGET} ${DEPENDENT_LIBS})
+target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/test/unit)
 gtest_discover_tests(${TARGET})

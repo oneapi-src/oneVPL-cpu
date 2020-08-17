@@ -5,6 +5,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 #include <gtest/gtest.h>
+#include "api/test_bitstreams.h"
 #include "vpl/mfxvideo.h"
 
 /* DecodeHeader overview
@@ -24,11 +25,61 @@
 */
 
 TEST(DecodeHeader, DISABLED_EightBitInReturnsCorrectMetadata) {
-    FAIL() << "Test not implemented";
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength    = mfxBS.DataLength =
+        test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+
+    sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    //check metadata
+    ASSERT_EQ(96, mfxDecParams.mfx.FrameInfo.Width);
+    ASSERT_EQ(64, mfxDecParams.mfx.FrameInfo.Height);
+    ASSERT_EQ(96, mfxDecParams.mfx.FrameInfo.CropW);
+    ASSERT_EQ(64, mfxDecParams.mfx.FrameInfo.CropH);
+    ASSERT_EQ(MFX_FOURCC_I420, mfxDecParams.mfx.FrameInfo.FourCC);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(DecodeHeader, DISABLED_TenBitInReturnsCorrectMetadata) {
-    FAIL() << "Test not implemented";
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength    = mfxBS.DataLength =
+        test_bitstream_96x64_10bit_hevc::getlen();
+    mfxBS.Data = test_bitstream_96x64_10bit_hevc::getdata();
+
+    sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    //check metadata
+    ASSERT_EQ(96, mfxDecParams.mfx.FrameInfo.Width);
+    ASSERT_EQ(64, mfxDecParams.mfx.FrameInfo.Height);
+    ASSERT_EQ(96, mfxDecParams.mfx.FrameInfo.CropW);
+    ASSERT_EQ(64, mfxDecParams.mfx.FrameInfo.CropH);
+    ASSERT_EQ(MFX_FOURCC_I010, mfxDecParams.mfx.FrameInfo.FourCC);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(DecodeHeader, NullSessionReturnsInvalidHandle) {

@@ -76,8 +76,19 @@ TEST(EncodeQuery, PopulatedParamsInReturnsCorrected) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(EncodeQuery, DISABLED_InvalidParamsReturnsInvalid) {
-    FAIL() << "Test not implemented";
+TEST(EncodeQuery, InvalidParamsReturnsInvalid) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams = { 0 };
+    mfxVideoParam par          = { 0 };
+    sts = MFXVideoENCODE_Query(session, &mfxEncParams, &par);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(EncodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
@@ -146,8 +157,20 @@ TEST(DecodeQuery, PopulatedParamsInReturnsCorrected) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeQuery, DISABLED_InvalidParamsReturnsInvalid) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQuery, InvalidParamsReturnsInvalid) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+
+    mfxVideoParam par = { 0 };
+    sts               = MFXVideoDECODE_Query(session, &mfxDecParams, &par);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(DecodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
@@ -217,7 +240,19 @@ TEST(VPPQuery, PopulatedParamsInReturnsCorrected) {
 }
 
 TEST(VPPQuery, DISABLED_InvalidParamsReturnsInvalid) {
-    FAIL() << "Test not implemented";
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_NV12;
+    mfxVideoParam par          = { 0 };
+    sts = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(VPPQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
