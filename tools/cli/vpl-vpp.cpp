@@ -66,17 +66,29 @@ int main(int argc, char* argv[]) {
     initPar.Version.Minor  = 0;
     initPar.Implementation = MFX_IMPL_SOFTWARE;
 
-    mfxSession session;
-    mfxStatus sts = MFXInitEx(initPar, &session);
-    if (sts != MFX_ERR_NONE) {
-        puts("MFXInitEx error. could not initialize session");
-        fclose(fSource);
-        fclose(fSink);
-        return 1;
+    mfxStatus sts      = MFX_ERR_NOT_INITIALIZED;
+    mfxSession session = nullptr;
+
+    if (params.dispatcherMode == DISPATCHER_MODE_ONEVPL_20) {
+        sts = InitNewDispatcher(WSTYPE_VPP, &params, &session);
+    }
+    else if (params.dispatcherMode == DISPATCHER_MODE_LEGACY) {
+        // initialize session
+        mfxInitParam initPar   = { 0 };
+        initPar.Version.Major  = 2;
+        initPar.Version.Minor  = 0;
+        initPar.Implementation = MFX_IMPL_SOFTWARE;
+
+        sts = MFXInitEx(initPar, &session);
+    }
+    else {
+        printf("invalid dispatcher mode %d\n", params.dispatcherMode);
     }
 
+    printf("Dispatcher mode = %s\n",
+           DispatcherModeString[params.dispatcherMode]);
+    printf("Memory mode     = %s\n", MemoryModeString[params.memoryMode]);
     puts("library initialized");
-    printf("Memory mode = %s\n", MemoryModeString[params.memoryMode]);
 
     // Initialize VPP parameters
     // - For simplistic memory management, system memory surfaces are used to store the raw frames
@@ -907,7 +919,11 @@ void Usage(void) {
     printf("  -ext  = external memory (1.0 style)\n");
     printf("  -int  = internal memory with MFXMemory_GetSurfaceForVPP\n");
 
-    printf("To view:\n");
+    printf("\nDispatcher (default = -dsp1)\n");
+    printf("  -dsp1 = legacy dispatcher (MSDK 1.x)\n");
+    printf("  -dsp2 = oneVPL smart dispatcher (API 2.0)\n");
+
+    printf("\nTo view:\n");
     printf(
         " ffplay -video_size [width]x[height] -pixel_format [pixel format] -f rawvideo [out filename]\n");
 }

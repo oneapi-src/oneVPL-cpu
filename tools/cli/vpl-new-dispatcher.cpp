@@ -59,6 +59,34 @@ bool CheckEncoderImplCaps(mfxImplDescription *implDesc,
     return false;
 }
 
+// check if this implementation can process our stream (just check in/out colorspaces)
+bool CheckVPPImplCaps(mfxImplDescription *implDesc,
+                      mfxU32 inFormat,
+                      mfxU32 outFormat) {
+    mfxU32 i, j, k, n;
+
+    for (i = 0; i < implDesc->VPP.NumFilters; i++) {
+        mfxVPPDescription::filter *currFilter = &(implDesc->VPP.Filters[i]);
+        if (currFilter->FilterFourCC == MFX_EXTBUFF_VPP_COLOR_CONVERSION) {
+            for (j = 0; j < currFilter->NumMemTypes; j++) {
+                mfxVPPDescription::filter::memdesc *currMemDesc =
+                    &(currFilter->MemDesc[j]);
+                for (k = 0; k < currMemDesc->NumInFormats; k++) {
+                    mfxVPPDescription::filter::memdesc::format *currFormat =
+                        &(currMemDesc->Formats[k]);
+                    if (currFormat->InFormat == inFormat) {
+                        for (n = 0; n < currFormat->NumOutFormat; n++) {
+                            if (currFormat->OutFormats[n] == outFormat)
+                                return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 mfxStatus InitNewDispatcher(WSType wsType,
                             Params *params,
                             mfxSession *session) {
@@ -107,7 +135,9 @@ mfxStatus InitNewDispatcher(WSType wsType,
                                                params->dstFourCC);
         }
         else if (wsType == WSTYPE_VPP) {
-            isSupported = true;
+            isSupported = CheckVPPImplCaps(implDesc,
+                                           params->srcFourCC,
+                                           params->dstFourCC);
         }
 
         if (isSupported) {

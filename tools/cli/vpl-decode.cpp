@@ -839,14 +839,18 @@ void Usage(void) {
     printf("  -n     maxFrames     ... max frames to decode\n");
     printf("  -if    inputFormat   ... [h264, h265, av1, jpeg]\n");
     printf("  -sbs   bsbufSize     ... source bitstream buffer size (bytes)\n");
-    printf(
-        "  -dsp2                ... use 2.0 \"smart\" dispatcher (default = disabled)\n");
+
     printf("\nMemory model (default = -ext)\n");
     printf("  -ext  = external memory (1.0 style)\n");
     printf("  -int  = internal memory with MFXMemory_GetSurfaceForDecode\n");
     printf(
         "  -auto = internal memory with NULL working surface + simplified decode path\n");
-    printf("More for resolution change test\n");
+
+    printf("\nDispatcher (default = -dsp1)\n");
+    printf("  -dsp1 = legacy dispatcher (MSDK 1.x)\n");
+    printf("  -dsp2 = oneVPL smart dispatcher (API 2.0)\n");
+
+    printf("\nMore for resolution change test\n");
     printf(
         "  -o_res outputRes     ... exclude all frames except those of specified resolution (ex: 128x96)\n");
     printf("\nTo view:\n");

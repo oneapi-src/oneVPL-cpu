@@ -1,3 +1,11 @@
+/*############################################################################
+  # Copyright (C) 2020 Intel Corporation
+  #
+  # SPDX-License-Identifier: MIT
+  ############################################################################*/
+#ifndef TOOLS_CLI_VPL_COMMON_H_
+#define TOOLS_CLI_VPL_COMMON_H_
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,5 +109,6 @@ typedef struct _Params {
 } Params;
 
 // vpl-new-dispatcher.cpp
-mfxStatus InitNewDispatcher(WSType wsType, Params *params, mfxSession* session);
+mfxStatus InitNewDispatcher(WSType wsType, Params* params, mfxSession* session);
 
+#endif // TOOLS_CLI_VPL_COMMON_H_

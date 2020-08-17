@@ -101,8 +101,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    printf("Dispatcher mode = %s\n",
+           DispatcherModeString[params.dispatcherMode]);
+    printf("Memory mode     = %s\n", MemoryModeString[params.memoryMode]);
     puts("library initialized");
-    printf("Memory mode = %s\n", MemoryModeString[params.memoryMode]);
 
     // Initialize encoder parameters
     mfxVideoParam mfxEncParams;
@@ -850,7 +852,11 @@ void Usage(void) {
     printf("  -ext  = external memory (1.0 style)\n");
     printf("  -int  = internal memory with MFXMemory_GetSurfaceForEncode\n");
 
-    printf("In case of AV1, output will be contained with IVF headers.\n");
+    printf("\nDispatcher (default = -dsp1)\n");
+    printf("  -dsp1 = legacy dispatcher (MSDK 1.x)\n");
+    printf("  -dsp2 = oneVPL smart dispatcher (API 2.0)\n");
+
+    printf("\nIn case of AV1, output will be contained with IVF headers.\n");
     printf("To view:\n");
     printf(" ffplay [out filename]\n");
     return;

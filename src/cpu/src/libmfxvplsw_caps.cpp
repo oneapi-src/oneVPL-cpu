@@ -376,8 +376,9 @@ mfxStatus InitEncoderCaps(mfxEncoderDescription *Enc) {
                                      MFX_RESOURCE_SYSTEM_SURFACE,
                                      DefaultRange,
                                      DefaultRange,
-                                     1);
+                                     2);
     ColorFormats[0] = MFX_FOURCC_I420;
+    ColorFormats[1] = MFX_FOURCC_I010;
 
     // add codec type JPEG
     Profiles =
