@@ -30,9 +30,11 @@ TEST(DecodeHeader, EightBitInReturnsCorrectMetadata) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    ;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -59,9 +61,11 @@ TEST(DecodeHeader, TenBitInReturnsCorrectMetadata) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    ;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -93,7 +97,9 @@ TEST(DecodeHeader, NullBitstreamInReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
+    mfxVideoParam mfxDecParams;
+    ;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
     sts = MFXVideoDECODE_DecodeHeader(session, nullptr, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 

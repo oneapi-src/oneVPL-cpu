@@ -38,7 +38,8 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
     mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
@@ -103,7 +104,8 @@ TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
     mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
@@ -173,7 +175,8 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
     mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
@@ -263,9 +266,10 @@ TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -325,9 +329,10 @@ TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -389,9 +394,10 @@ TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -455,9 +461,10 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -511,9 +518,10 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -567,9 +575,10 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams = { 0 };
-    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -690,7 +699,8 @@ TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
@@ -751,7 +761,8 @@ TEST(RunFrameVPPAsync, NullSurfaceOutReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
@@ -806,7 +817,8 @@ TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
@@ -861,7 +873,8 @@ TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;

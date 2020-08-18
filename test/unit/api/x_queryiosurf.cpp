@@ -31,14 +31,16 @@ TEST(EncodeQueryIOSurf, PopulatedParamsInReturnsRequest) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams = { 0 };
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
     mfxEncParams.mfx.FrameInfo.Width  = 128;
     mfxEncParams.mfx.FrameInfo.Height = 96;
 
-    mfxVideoParam par = { 0 };
-    sts               = MFXVideoENCODE_Query(session, &mfxEncParams, &par);
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
+    sts = MFXVideoENCODE_Query(session, &mfxEncParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxFrameAllocRequest request;
@@ -56,7 +58,8 @@ TEST(EncodeQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam par        = { 0 };
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
     par.mfx.CodecId          = MFX_CODEC_HEVC;
     par.mfx.FrameInfo.Width  = 128;
     par.mfx.FrameInfo.Height = 96;
@@ -101,14 +104,16 @@ TEST(DecodeQueryIOSurf, PopulatedParamsInReturnsRequest) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams = { 0 };
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
     mfxEncParams.mfx.FrameInfo.Width  = 128;
     mfxEncParams.mfx.FrameInfo.Height = 96;
 
-    mfxVideoParam par = { 0 };
-    sts               = MFXVideoDECODE_Query(session, &mfxEncParams, &par);
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
+    sts = MFXVideoDECODE_Query(session, &mfxEncParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxFrameAllocRequest request;
@@ -126,7 +131,8 @@ TEST(DecodeQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam par        = { 0 };
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
     par.mfx.CodecId          = MFX_CODEC_HEVC;
     par.mfx.FrameInfo.Width  = 128;
     par.mfx.FrameInfo.Height = 96;
@@ -171,14 +177,16 @@ TEST(VPPQueryIOSurf, DISABLED_PopulatedParamsInReturnsRequest) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     mfxVPPParams.mfx.CodecId          = MFX_CODEC_HEVC;
     mfxVPPParams.mfx.FrameInfo.Width  = 128;
     mfxVPPParams.mfx.FrameInfo.Height = 96;
 
-    mfxVideoParam par = { 0 };
-    sts               = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
+    sts = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxFrameAllocRequest request;
@@ -196,7 +204,8 @@ TEST(VPPQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxVPPParams = { 0 };
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
     mfxVPPParams.vpp.In.Width  = 128;
     mfxVPPParams.vpp.In.Height = 96;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_I420;
