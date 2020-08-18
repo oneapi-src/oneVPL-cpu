@@ -163,6 +163,7 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
         // todo: this only works if input is large enough to
         // decode a frame
         mfxBitstream bs2 = *bs;
+        bs2.DataFlag     = MFX_BITSTREAM_EOS;
         DecodeFrame(&bs2, nullptr, nullptr);
         GetVideoParam(par);
     }
@@ -251,9 +252,16 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 return MFX_ERR_ABORTED;
             }
         }
-        // send EOF packet
+
         if (!bs) {
+            // null bitstream indicates drain, send EOF packet
             avcodec_send_packet(m_avDecContext, nullptr);
+        }
+        else {
+            // send EOF packet if EOS flag is set
+            if (bs->DataFlag & MFX_BITSTREAM_EOS == MFX_BITSTREAM_EOS) {
+                avcodec_send_packet(m_avDecContext, nullptr);
+            }
         }
 
         // receive frame
@@ -307,7 +315,14 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 continue; // we have more input data
             }
             else {
-                return MFX_ERR_MORE_DATA;
+                if (bs && bs->DataFlag == MFX_BITSTREAM_EOS) {
+                    //send a null packet and continue
+                    avcodec_send_packet(m_avDecContext, nullptr);
+                    continue;
+                }
+                else {
+                    return MFX_ERR_MORE_DATA;
+                }
             }
         }
         if (av_ret == AVERROR_EOF) {

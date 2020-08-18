@@ -276,7 +276,7 @@ TEST(EncodeInit, EncodeParamsInReturnsInitializedAV1Context) {
         mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
 
     mfxU8* surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
-    memset(surfaceBuffers, 0, lumaSize * 1.5 * nEncSurfNum);
+    memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
 
     mfxFrameSurface1* encSurfaces = new mfxFrameSurface1[nEncSurfNum];
     for (mfxI32 i = 0; i < nEncSurfNum; i++) {

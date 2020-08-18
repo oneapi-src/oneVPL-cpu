@@ -103,8 +103,8 @@ TEST(SyncOperation, ValidInputReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxSyncPoint syncp;
-    sts = MFXVideoCORE_SyncOperation(session, syncp, 1000);
+    mfxSyncPoint syncp = {};
+    sts                = MFXVideoCORE_SyncOperation(session, syncp, 1000);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources

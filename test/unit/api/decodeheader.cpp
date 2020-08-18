@@ -24,7 +24,7 @@
    MFX_ERR_NULL_PTR  bs or par pointer is NULL.
 */
 
-TEST(DecodeHeader, DISABLED_EightBitInReturnsCorrectMetadata) {
+TEST(DecodeHeader, EightBitInReturnsCorrectMetadata) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -53,7 +53,7 @@ TEST(DecodeHeader, DISABLED_EightBitInReturnsCorrectMetadata) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeHeader, DISABLED_TenBitInReturnsCorrectMetadata) {
+TEST(DecodeHeader, TenBitInReturnsCorrectMetadata) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);

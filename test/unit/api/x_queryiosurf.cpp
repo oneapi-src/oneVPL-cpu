@@ -165,7 +165,7 @@ TEST(DecodeQueryIOSurf, NullParamsInReturnsErrNull) {
 }
 
 //VPPQueryIOSurf
-TEST(VPPQueryIOSurf, PopulatedParamsInReturnsRequest) {
+TEST(VPPQueryIOSurf, DISABLED_PopulatedParamsInReturnsRequest) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);

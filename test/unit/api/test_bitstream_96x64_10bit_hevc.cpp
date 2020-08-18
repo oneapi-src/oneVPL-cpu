@@ -6,6 +6,11 @@
 
 #include "api/test_bitstreams.h"
 
+unsigned int test_bitstream_96x64_10bit_hevc::pkt_pos[] = { 0,    919, 936,
+                                                            962,  979, 1024,
+                                                            1041, 1075 };
+unsigned int test_bitstream_96x64_10bit_hevc::npkt      = 8;
+
 unsigned char test_bitstream_96x64_10bit_hevc::data[] = {
     0x00, 0x00, 0x00, 0x01, 0x40, 0x01, 0x0c, 0x06, 0xff, 0xff, 0x02, 0x20,
     0x00, 0x00, 0x03, 0x00, 0x80, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00,
