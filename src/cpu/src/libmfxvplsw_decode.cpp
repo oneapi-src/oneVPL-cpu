@@ -96,10 +96,8 @@ mfxStatus MFXVideoDECODE_Close(mfxSession session) {
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    if (ws->GetDecoder() == nullptr)
-        return MFX_ERR_NOT_INITIALIZED;
-
-    ws->SetDecoder(nullptr);
+    if (ws->GetDecoder() != nullptr)
+        ws->SetDecoder(nullptr);
 
     return MFX_ERR_NONE;
 }
@@ -169,7 +167,12 @@ mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
-    MFXVideoDECODE_Close(session);
+
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    if (ws->GetDecoder() == nullptr)
+        return MFX_ERR_NOT_INITIALIZED;
+
+    RET_ERROR(MFXVideoDECODE_Close(session));
     return MFXVideoDECODE_Init(session, par);
 }
 

@@ -105,6 +105,13 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
     if (par->mfx.CodecLevel > 0x1FF)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
+    switch (par->mfx.FrameInfo.ChromaFormat) {
+        case MFX_CHROMAFORMAT_YUV420:
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
     return MFX_ERR_NONE;
 }
 
@@ -438,6 +445,12 @@ mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
 
 mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     par->mfx = m_param.mfx;
+
+    //If DecodeFrame() is not executed at all, we can't update params from m_avDecContext
+    //but return current params
+    if (!m_avDecContext->width && !m_avDecContext->height &&
+        m_avDecContext->pix_fmt == AV_PIX_FMT_NONE)
+        return MFX_ERR_NONE;
 
     //Get parameters from the decode context
     //This allows checking if parameters have
