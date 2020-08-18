@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 # This sample must be compiled and executed within the oneAPI product enviroment
 # with the dpcpp compiler to use dpcpp features
-if(WIN32)
-  set(DPCPP_COMPILER_NAME "dpcpp-cl")
-else()
-  set(DPCPP_COMPILER_NAME "dpcpp")
-endif()
+set(DPCPP_COMPILER_NAME "dpcpp")
 find_program(DPCPP_COMPILER ${DPCPP_COMPILER_NAME})
 if(DPCPP_COMPILER)
   set(CMAKE_CXX_COMPILER ${DPCPP_COMPILER_NAME})
