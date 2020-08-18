@@ -4,11 +4,11 @@
   "categories": ["Toolkit/Intel® oneAPI Base Toolkit/oneVPL"],
   "description": "Sample that shows how to use a DPC++ kernel together with oneAPI Video Processing Library to perform a simple video content blur",
   "dependencies": ["vpl"],
-  "os": ["linux"],
+  "os": ["linux", "windows"],
   "languages": [{"cpp":{}}],
   "toolchain": ["dpcpp"],
-  "builder": ["cmake"],
-  "targetDevice": ["CPU"],
+  "builder": ["ide", "cmake"],
+  "targetDevice": ["CPU", "GPU"],
   "ciTests": {
     "linux": [
       { "id": "builds and runs successfully with CMake",
