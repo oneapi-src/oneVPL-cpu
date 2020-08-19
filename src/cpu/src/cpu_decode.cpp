@@ -234,22 +234,40 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
         avframe = m_avDecFrameOut;
     }
 
+    bool complete_frame_mode = false;
+    if (bs && (bs->DataFlag &
+               MFX_BITSTREAM_COMPLETE_FRAME == MFX_BITSTREAM_COMPLETE_FRAME)) {
+        complete_frame_mode = true;
+    }
+
     for (;;) {
-        // parse
-        auto data_ptr    = bs ? (bs->Data + bs->DataOffset) : nullptr;
-        int data_size    = bs ? bs->DataLength : 0;
-        int bytes_parsed = av_parser_parse2(m_avDecParser,
-                                            m_avDecContext,
-                                            &m_avDecPacket->data,
-                                            &m_avDecPacket->size,
-                                            data_ptr,
-                                            data_size,
-                                            AV_NOPTS_VALUE,
-                                            AV_NOPTS_VALUE,
-                                            0);
-        if (bs && bytes_parsed) {
+        int bytes_parsed = 0;
+
+        if (complete_frame_mode) {
+            m_avDecPacket->data = bs->Data + bs->DataOffset;
+            m_avDecPacket->size = bs->DataLength;
+            bytes_parsed        = bs->DataLength;
             bs->DataOffset += bytes_parsed;
             bs->DataLength -= bytes_parsed;
+        }
+        else {
+            // parse
+            auto data_ptr = bs ? (bs->Data + bs->DataOffset) : nullptr;
+            int data_size = bs ? bs->DataLength : 0;
+            bytes_parsed += av_parser_parse2(m_avDecParser,
+                                             m_avDecContext,
+                                             &m_avDecPacket->data,
+                                             &m_avDecPacket->size,
+                                             data_ptr,
+                                             data_size,
+                                             AV_NOPTS_VALUE,
+                                             AV_NOPTS_VALUE,
+                                             0);
+
+            if (bs && bytes_parsed) {
+                bs->DataOffset += bytes_parsed;
+                bs->DataLength -= bytes_parsed;
+            }
         }
 
         // send packet

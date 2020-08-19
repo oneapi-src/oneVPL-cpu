@@ -338,6 +338,139 @@ TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {
     delete[] decSurfaces;
 }
 
+TEST(DecodeFrameAsync, CompleteFrameJPEGReturnsFrame) {
+    mfxStatus sts = MFX_ERR_NONE;
+
+    mfxVersion ver = {};
+    mfxSession session;
+    sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_JPEG;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_32x32_mjpeg::getlen();
+    mfxBS.Data                         = test_bitstream_32x32_mjpeg::getdata();
+
+    sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 nSurfNumDec            = 8;
+    mfxFrameSurface1 *decSurfaces = new mfxFrameSurface1[nSurfNumDec];
+    mfxU32 surfW                  = mfxDecParams.mfx.FrameInfo.Width;
+    mfxU32 surfH                  = mfxDecParams.mfx.FrameInfo.Height;
+
+    mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
+
+    for (mfxU32 i = 0; i < nSurfNumDec; i++) {
+        decSurfaces[i]        = { 0 };
+        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
+        int buf_offset        = i * surfW * surfH;
+        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V =
+            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i].Data.Pitch = surfW;
+    }
+
+    sts = MFXVideoDECODE_Init(session, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameSurface1 *pmfxOutSurface = nullptr;
+    mfxSyncPoint syncp               = {};
+    int nIndex                       = 0;
+
+    mfxBS.DataFlag = MFX_BITSTREAM_COMPLETE_FRAME;
+
+    int frame = 2; //use the 3rd frame in the bitstream
+
+    mfxBS.Data = test_bitstream_32x32_mjpeg::getdata() +
+                 test_bitstream_32x32_mjpeg::getpos(frame);
+    mfxBS.DataLength = test_bitstream_32x32_mjpeg::getpos(frame + 1) -
+                       test_bitstream_32x32_mjpeg::getpos(frame);
+    mfxBS.DataOffset = 0;
+
+    sts = MFXVideoDECODE_DecodeFrameAsync(session,
+                                          &mfxBS,
+                                          &decSurfaces[nIndex++],
+                                          &pmfxOutSurface,
+                                          &syncp);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXClose(session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] DECoutbuf;
+    delete[] decSurfaces;
+}
+
+TEST(DecodeFrameAsync, CompleteFrameHEVCReturnsFrame) {
+    mfxStatus sts = MFX_ERR_NONE;
+
+    mfxVersion ver = {};
+    mfxSession session;
+    sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength    = mfxBS.DataLength =
+        test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+
+    sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 nSurfNumDec            = 8;
+    mfxFrameSurface1 *decSurfaces = new mfxFrameSurface1[nSurfNumDec];
+    mfxU32 surfW                  = mfxDecParams.mfx.FrameInfo.Width;
+    mfxU32 surfH                  = mfxDecParams.mfx.FrameInfo.Height;
+
+    mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
+
+    for (mfxU32 i = 0; i < nSurfNumDec; i++) {
+        decSurfaces[i]        = { 0 };
+        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
+        int buf_offset        = i * surfW * surfH;
+        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V =
+            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i].Data.Pitch = surfW;
+    }
+
+    sts = MFXVideoDECODE_Init(session, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameSurface1 *pmfxOutSurface = nullptr;
+    mfxSyncPoint syncp               = {};
+    int nIndex                       = 0;
+
+    mfxBS.DataFlag = MFX_BITSTREAM_COMPLETE_FRAME;
+
+    mfxBS.Data       = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getpos(1);
+    mfxBS.DataOffset = 0;
+
+    sts = MFXVideoDECODE_DecodeFrameAsync(session,
+                                          &mfxBS,
+                                          &decSurfaces[nIndex++],
+                                          &pmfxOutSurface,
+                                          &syncp);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXClose(session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] DECoutbuf;
+    delete[] decSurfaces;
+}
+
 TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
     mfxVersion ver = {};
     mfxSession session;
@@ -402,6 +535,7 @@ TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXClose(session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     delete[] DECoutbuf;
     delete[] decSurfaces;
@@ -413,10 +547,9 @@ TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxDecParams;
-    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
-    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
-    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = mfxBS.DataLength =
@@ -463,6 +596,7 @@ TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {
     EXPECT_EQ(sts, MFX_ERR_MORE_DATA);
 
     sts = MFXClose(session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     delete[] DECoutbuf;
     delete[] decSurfaces;
