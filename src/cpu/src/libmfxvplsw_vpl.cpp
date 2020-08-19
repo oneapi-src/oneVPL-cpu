@@ -34,7 +34,7 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format,
     ImplDescriptionArray *implDescArray = new ImplDescriptionArray;
     if (!implDescArray) {
         if (hImpls)
-            delete hImpls;
+            delete[] hImpls;
         return nullptr;
     }
 
