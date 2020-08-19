@@ -375,8 +375,8 @@ mfxStatus AllocateExternalMemorySurface(std::vector<mfxU8>* dec_buf,
     mfxU16 surfH = frame_info->Height;
 
     for (mfxU32 i = 0; i < surfnum; i++) {
-        surfpool[i] = { 0 };
-        memcpy(&surfpool[i].Info, frame_info, sizeof(mfxFrameInfo));
+        surfpool[i]        = { 0 };
+        surfpool[i].Info   = *frame_info;
         size_t buf_offset  = static_cast<size_t>(i) * surfaceSize;
         surfpool[i].Data.Y = decout + buf_offset;
         surfpool[i].Data.U = decout + buf_offset + (surfW * surfH);
