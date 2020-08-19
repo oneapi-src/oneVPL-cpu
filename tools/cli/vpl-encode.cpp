@@ -256,6 +256,8 @@ int main(int argc, char* argv[]) {
                     pEncSurfaces); // Find free frame surface
 
                 if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
+                    if (output_buffer)
+                        delete output_buffer;
                     fclose(fSource);
                     fclose(fSink);
                     puts("no available surface");
@@ -267,6 +269,8 @@ int main(int argc, char* argv[]) {
             else if (params.memoryMode == MEM_MODE_INTERNAL) {
                 sts = MFXMemory_GetSurfaceForEncode(session, &pmfxWorkSurface);
                 if (sts) {
+                    if (output_buffer)
+                        delete output_buffer;
                     printf(
                         "Unknown error in MFXMemory_GetSurfaceForEncode, sts = %d\n",
                         sts);
@@ -282,6 +286,8 @@ int main(int argc, char* argv[]) {
                 isdraining = true;
             }
             else if (sts) {
+                if (output_buffer)
+                    delete output_buffer;
                 printf("Unknown error in LoadRawFrame()\n");
                 return 1;
             }

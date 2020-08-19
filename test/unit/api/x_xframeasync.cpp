@@ -67,7 +67,11 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
     }
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (encSurfaces)
+            delete[] encSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = 20000;
@@ -133,7 +137,11 @@ TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
     }
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (encSurfaces)
+            delete[] encSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxBitstream mfxBS = { 0 };
     mfxBS.MaxLength    = 20;
@@ -204,7 +212,11 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
     }
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (encSurfaces)
+            delete[] encSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxI32 nEncSurfIdx = 0;
     mfxSyncPoint syncp;
@@ -298,7 +310,11 @@ TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxSyncPoint syncp;
     int nIndex                       = 0;
@@ -361,7 +377,11 @@ TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxSyncPoint syncp;
     int nIndex = 0;
@@ -426,7 +446,11 @@ TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;
@@ -493,7 +517,11 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;
@@ -550,7 +578,11 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp                 = {};
@@ -607,7 +639,11 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;

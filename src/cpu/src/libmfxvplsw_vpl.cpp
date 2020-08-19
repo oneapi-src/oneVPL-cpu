@@ -32,8 +32,11 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format,
     //   so the dispatcher can cast mfxHDL to mfxImplDescription, and
     //   will just be unaware of any other fields that follow
     ImplDescriptionArray *implDescArray = new ImplDescriptionArray;
-    if (!implDescArray)
+    if (!implDescArray) {
+        if (hImpls)
+            delete hImpls;
         return nullptr;
+    }
 
     // in _each_ implDescArray we allocate, save the pointer to the array of handles
     //   and the number of elements

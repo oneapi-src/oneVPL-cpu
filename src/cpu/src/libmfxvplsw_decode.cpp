@@ -121,9 +121,8 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
         // Only 2.0 API permits lazy init - requires internal memory management
         RET_IF_FALSE(surface_work == 0, MFX_ERR_NOT_INITIALIZED);
 
-        mfxVideoParam param;
-        memset(&param, 0, sizeof(param));
-        param.mfx.CodecId = bs->CodecId;
+        mfxVideoParam param = { 0 };
+        param.mfx.CodecId   = bs->CodecId;
         RET_ERROR(MFXVideoDECODE_DecodeHeader(session, bs, &param));
         RET_ERROR(MFXVideoDECODE_Init(session, &param));
         decoder = ws->GetDecoder();

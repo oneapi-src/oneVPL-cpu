@@ -14,7 +14,7 @@
 
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
 
-mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
+mfxStatus AllocateExternalMemorySurface(std::vector<mfxU8>* dec_buf,
                                         mfxFrameSurface1* surfpool,
                                         mfxFrameInfo* frame_info,
                                         mfxU16 surfnum);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     mfxU16 nSurfNumDec              = 0;
     mfxFrameSurface1* decSurfaces   = nullptr;
     int nIndex                      = -1;
-    mfxU8* DECoutbuf                = nullptr;
+    std::vector<mfxU8> DECoutbuf;
 
     if (params.memoryMode == MEM_MODE_EXTERNAL) {
         // Query number required surfaces for decoder
@@ -158,11 +158,13 @@ int main(int argc, char* argv[]) {
         nSurfNumDec = DecRequest.NumFrameSuggested;
 
         decSurfaces = new mfxFrameSurface1[nSurfNumDec];
-        sts         = AllocateExternalMemorySurface(DECoutbuf,
+        sts         = AllocateExternalMemorySurface(&DECoutbuf,
                                             decSurfaces,
                                             &mfxDecParams.mfx.FrameInfo,
                                             nSurfNumDec);
         if (sts != MFX_ERR_NONE) {
+            if (decSurfaces)
+                delete[] decSurfaces;
             fclose(fSource);
             fclose(fSink);
             puts("External memory allocation error.");
@@ -251,7 +253,7 @@ int main(int argc, char* argv[]) {
                     if (params.memoryMode == MEM_MODE_EXTERNAL) {
                         MFXVideoDECODE_GetVideoParam(session, &mfxDecParams);
                         sts = AllocateExternalMemorySurface(
-                            DECoutbuf,
+                            &DECoutbuf,
                             decSurfaces,
                             &mfxDecParams.mfx.FrameInfo,
                             nSurfNumDec);
@@ -352,15 +354,10 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
+mfxStatus AllocateExternalMemorySurface(std::vector<mfxU8>* dec_buf,
                                         mfxFrameSurface1* surfpool,
                                         mfxFrameInfo* frame_info,
                                         mfxU16 surfnum) {
-    if (dec_buff) {
-        delete[] dec_buff;
-        dec_buff = NULL;
-    }
-
     // initialize surface pool for decode (I420 format)
     mfxU32 surfaceSize = GetSurfaceSize(frame_info->FourCC,
                                         frame_info->Width,
@@ -369,11 +366,8 @@ mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
         return MFX_ERR_MEMORY_ALLOC;
 
     size_t framePoolBufSize = static_cast<size_t>(surfaceSize) * surfnum;
-    dec_buff                = new mfxU8[framePoolBufSize];
-    if (!dec_buff)
-        return MFX_ERR_MEMORY_ALLOC;
-    else
-        memset(dec_buff, 0, framePoolBufSize);
+    dec_buf->resize(framePoolBufSize);
+    mfxU8* decout = dec_buf->data();
 
     mfxU16 surfW = (frame_info->FourCC == MFX_FOURCC_I010)
                        ? frame_info->Width * 2
@@ -384,8 +378,8 @@ mfxStatus AllocateExternalMemorySurface(mfxU8* dec_buff,
         surfpool[i] = { 0 };
         memcpy(&surfpool[i].Info, frame_info, sizeof(mfxFrameInfo));
         size_t buf_offset  = static_cast<size_t>(i) * surfaceSize;
-        surfpool[i].Data.Y = dec_buff + buf_offset;
-        surfpool[i].Data.U = dec_buff + buf_offset + (surfW * surfH);
+        surfpool[i].Data.Y = decout + buf_offset;
+        surfpool[i].Data.U = decout + buf_offset + (surfW * surfH);
         surfpool[i].Data.V = surfpool[i].Data.U + ((surfW / 2) * (surfH / 2));
         surfpool[i].Data.Pitch = surfW;
     }

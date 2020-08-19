@@ -20,8 +20,7 @@ TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams;
-    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
+    mfxVideoParam mfxEncParams = { 0 };
 
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_HEVC;
     mfxEncParams.mfx.TargetUsage             = MFX_TARGETUSAGE_BALANCED;
