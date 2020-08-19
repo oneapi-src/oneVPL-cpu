@@ -649,7 +649,7 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
 }
 
 mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par,
-                                 mfxFrameAllocRequest* request) {
+                                 mfxFrameAllocRequest request[2]) {
     mfxStatus sts;
 
     // VPP_IN
