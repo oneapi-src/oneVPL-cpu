@@ -271,6 +271,8 @@ int main(int argc, char* argv[]) {
         else if (params.memoryMode == MEM_MODE_INTERNAL) {
             sts = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
             if (sts) {
+                fclose(fSource);
+                fclose(fSink);
                 printf(
                     "Unknown error in MFXMemory_GetSurfaceForVPP, sts = %d()\n",
                     sts);
@@ -280,7 +282,13 @@ int main(int argc, char* argv[]) {
             vppSurfaceIn->FrameInterface->Map(vppSurfaceIn, MFX_MAP_READ);
         }
 
-        sts = LoadRawFrame(vppSurfaceIn, fSource);
+        if (vppSurfaceIn) {
+            sts = LoadRawFrame(vppSurfaceIn, fSource);
+        }
+        else {
+            sts = MFX_ERR_UNKNOWN;
+        }
+
         if (sts != MFX_ERR_NONE)
             break;
 

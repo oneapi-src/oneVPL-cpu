@@ -271,6 +271,8 @@ int main(int argc, char* argv[]) {
                 if (sts) {
                     if (output_buffer)
                         delete output_buffer;
+                    fclose(fSource);
+                    fclose(fSink);
                     printf(
                         "Unknown error in MFXMemory_GetSurfaceForEncode, sts = %d\n",
                         sts);
@@ -281,13 +283,20 @@ int main(int argc, char* argv[]) {
                                                      MFX_MAP_READ);
             }
 
-            sts = LoadRawFrame(pmfxWorkSurface, fSource);
+            if (pmfxWorkSurface)
+                sts = LoadRawFrame(pmfxWorkSurface, fSource);
+            else {
+                sts = MFX_ERR_UNKNOWN;
+            }
+
             if (sts == MFX_ERR_MORE_DATA) {
                 isdraining = true;
             }
             else if (sts) {
                 if (output_buffer)
                     delete output_buffer;
+                fclose(fSource);
+                fclose(fSink);
                 printf("Unknown error in LoadRawFrame()\n");
                 return 1;
             }

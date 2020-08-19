@@ -806,10 +806,6 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
             if (!ValidateSize(argv[idx++], &params->dstCropH, MAX_HEIGHT))
                 return false;
         }
-        else if (IS_ARG_EQ(s, "mm")) {
-            params->memoryMode =
-                static_cast<enum MemoryMode>(atoi(argv[idx++]));
-        }
         else if (IS_ARG_EQ(s, "o_res")) {
             params->outResolution = argv[idx++];
             str_upper(params->outResolution,
