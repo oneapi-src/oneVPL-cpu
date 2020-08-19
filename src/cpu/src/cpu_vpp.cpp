@@ -1775,102 +1775,110 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     mfxU32 configCount =
         MFX_MAX(sizeof(g_TABLE_CONFIG) / sizeof(*g_TABLE_CONFIG),
                 videoParam->NumExtParam);
-    std::vector<mfxU32> configList(configCount);
+    if (configCount) {
+        std::vector<mfxU32> configList(configCount);
 
-    GetConfigurableFilterList(videoParam, &configList[0], &configCount);
+        GetConfigurableFilterList(videoParam, &configList[0], &configCount);
 
-    /* [FrameRateConversion] FILTER */
-    if (IsFilterFound(&configList[0],
-                      configCount,
-                      MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION)) {
-        if (!IsFilterFound(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_DI_30i60p) &&
+        /* [FrameRateConversion] FILTER */
+        if (IsFilterFound(&configList[0],
+                          configCount,
+                          MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_ITC)) {
-            pipelineList.push_back(MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION);
+                           MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION)) {
+            if (!IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_DI_30i60p) &&
+                !IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_ITC)) {
+                pipelineList.push_back(MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION);
+            }
         }
-    }
 
-    /* ROTATION FILTER */
-    if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_ROTATION) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_ROTATION)) {
-        if (!IsFilterFound(&pipelineList[0],
+        /* ROTATION FILTER */
+        if (IsFilterFound(&configList[0],
+                          configCount,
+                          MFX_EXTBUFF_VPP_ROTATION) &&
+            !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_ROTATION)) {
-            pipelineList.push_back(MFX_EXTBUFF_VPP_ROTATION);
+            if (!IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_ROTATION)) {
+                pipelineList.push_back(MFX_EXTBUFF_VPP_ROTATION);
+            }
         }
-    }
 
-    if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_SCALING) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_SCALING)) {
-        if (!IsFilterFound(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_SCALING)) {
-            pipelineList.push_back(MFX_EXTBUFF_VPP_SCALING);
-        }
-    }
-
-#if (MFX_VERSION >= 1025)
-    if (IsFilterFound(&configList[0],
-                      configCount,
-                      MFX_EXTBUFF_VPP_COLOR_CONVERSION) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_COLOR_CONVERSION)) {
-        if (!IsFilterFound(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_COLOR_CONVERSION)) {
-            pipelineList.push_back(MFX_EXTBUFF_VPP_COLOR_CONVERSION);
-        }
-    }
-#endif
-
-    if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_MIRRORING) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_MIRRORING)) {
-        if (!IsFilterFound(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_MIRRORING)) {
-            pipelineList.push_back(MFX_EXTBUFF_VPP_MIRRORING);
-        }
-    }
-
-    if (IsFilterFound(&configList[0],
-                      configCount,
-                      MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO)) {
-        if (!IsFilterFound(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO)) {
-            pipelineList.push_back(MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO);
-        }
-    }
-
-    searchCount = sizeof(g_TABLE_CONFIG) / sizeof(*g_TABLE_CONFIG);
-    fCount      = configCount;
-    for (fIdx = 0; fIdx < fCount; fIdx++) {
-        if (IsFilterFound(g_TABLE_CONFIG, searchCount, configList[fIdx]) &&
+        if (IsFilterFound(&configList[0],
+                          configCount,
+                          MFX_EXTBUFF_VPP_SCALING) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
-                           configList[fIdx])) {
-            /* Add filter to the list.
-			 * Don't care about duplicates, they will be eliminated by Reorder... calls below
-			 */
-            pipelineList.push_back(configList[fIdx]);
-        } /* if( IsFilterFound( g_TABLE_CONFIG */
-    } /*for(fIdx = 0; fIdx < fCount; fIdx++)*/
+                           MFX_EXTBUFF_VPP_SCALING)) {
+            if (!IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_SCALING)) {
+                pipelineList.push_back(MFX_EXTBUFF_VPP_SCALING);
+            }
+        }
+
+#if (MFX_VERSION >= 1025)
+        if (IsFilterFound(&configList[0],
+                          configCount,
+                          MFX_EXTBUFF_VPP_COLOR_CONVERSION) &&
+            !IsFilterFound(&pipelineList[0],
+                           (mfxU32)pipelineList.size(),
+                           MFX_EXTBUFF_VPP_COLOR_CONVERSION)) {
+            if (!IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_COLOR_CONVERSION)) {
+                pipelineList.push_back(MFX_EXTBUFF_VPP_COLOR_CONVERSION);
+            }
+        }
+#endif
+
+        if (IsFilterFound(&configList[0],
+                          configCount,
+                          MFX_EXTBUFF_VPP_MIRRORING) &&
+            !IsFilterFound(&pipelineList[0],
+                           (mfxU32)pipelineList.size(),
+                           MFX_EXTBUFF_VPP_MIRRORING)) {
+            if (!IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_MIRRORING)) {
+                pipelineList.push_back(MFX_EXTBUFF_VPP_MIRRORING);
+            }
+        }
+
+        if (IsFilterFound(&configList[0],
+                          configCount,
+                          MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO) &&
+            !IsFilterFound(&pipelineList[0],
+                           (mfxU32)pipelineList.size(),
+                           MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO)) {
+            if (!IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO)) {
+                pipelineList.push_back(MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO);
+            }
+        }
+
+        searchCount = sizeof(g_TABLE_CONFIG) / sizeof(*g_TABLE_CONFIG);
+        fCount      = configCount;
+        for (fIdx = 0; fIdx < fCount; fIdx++) {
+            if (IsFilterFound(g_TABLE_CONFIG, searchCount, configList[fIdx]) &&
+                !IsFilterFound(&pipelineList[0],
+                               (mfxU32)pipelineList.size(),
+                               configList[fIdx])) {
+                /* Add filter to the list.
+                * Don't care about duplicates, they will be eliminated by Reorder... calls below
+                */
+                pipelineList.push_back(configList[fIdx]);
+            } /* if( IsFilterFound( g_TABLE_CONFIG */
+        } /*for(fIdx = 0; fIdx < fCount; fIdx++)*/
+    }
 
     /* *************************************************************************** */
     /* 5. reordering for speed/quality                                             */

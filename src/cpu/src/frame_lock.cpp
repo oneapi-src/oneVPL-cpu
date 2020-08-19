@@ -12,7 +12,8 @@ FrameLock::FrameLock()
           m_surface(nullptr),
           m_allocator(nullptr),
           m_newapi(false),
-          m_avframe(nullptr) {}
+          m_avframe(nullptr),
+          mem_id(0) {}
 
 FrameLock::~FrameLock() {
     Unlock();
