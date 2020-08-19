@@ -47,6 +47,7 @@ mfxStatus MFXVideoDECODE_Query(mfxSession session,
     RET_IF_FALSE(out, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    (void)ws;
     return CpuDecode::DecodeQuery(in, out);
 }
 
@@ -62,6 +63,7 @@ mfxStatus MFXVideoDECODE_QueryIOSurf(mfxSession session,
     RET_IF_FALSE(par && request, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    (void)ws;
     return CpuDecode::DecodeQueryIOSurf(par, request);
 }
 

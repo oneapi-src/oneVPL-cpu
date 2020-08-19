@@ -593,8 +593,6 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
     if (in != 0 && in->Protected != 0)
         return MFX_ERR_UNSUPPORTED;
 
-    mfxStatus sts = MFX_ERR_NONE;
-
     if (in == NULL) {
         memset(&out->mfx, 0, sizeof(mfxInfoMFX));
         memset(&out->vpp, 0, sizeof(mfxInfoVPP));

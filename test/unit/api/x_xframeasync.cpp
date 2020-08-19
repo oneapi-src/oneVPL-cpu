@@ -246,7 +246,6 @@ TEST(EncodeFrameAsync, EncodeUninitializedReturnsNotInitialized) {
 
     mfxBitstream mfxBS = { 0 };
 
-    mfxI32 nEncSurfIdx = 0;
     mfxSyncPoint syncp;
 
     sts = MFXVideoENCODE_EncodeFrameAsync(session,
@@ -525,7 +524,6 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;
-    int nIndex                       = 0;
     mfxFrameSurface1 *pmfxOutSurface = nullptr;
     sts                              = MFXVideoDECODE_DecodeFrameAsync(session,
                                           &mfxBS,
@@ -585,7 +583,6 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {
     }
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
-    mfxSyncPoint syncp                 = {};
     int nIndex                         = 0;
     mfxFrameSurface1 *pmfxOutSurface   = nullptr;
     sts = MFXVideoDECODE_DecodeFrameAsync(session,
@@ -647,9 +644,8 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
 
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;
-    int nIndex                       = 0;
-    mfxFrameSurface1 *pmfxOutSurface = nullptr;
-    sts                              = MFXVideoDECODE_DecodeFrameAsync(session,
+    int nIndex = 0;
+    sts        = MFXVideoDECODE_DecodeFrameAsync(session,
                                           &mfxBS,
                                           &decSurfaces[nIndex++],
                                           nullptr,
@@ -891,8 +887,7 @@ TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
         vppSurfaces[i].Data.Pitch = surfW;
     }
 
-    mfxSyncPoint sync = {};
-    sts               = MFXVideoVPP_RunFrameVPPAsync(session,
+    sts = MFXVideoVPP_RunFrameVPPAsync(session,
                                        &vppSurfaces[0],
                                        &vppSurfaces[0],
                                        nullptr,
