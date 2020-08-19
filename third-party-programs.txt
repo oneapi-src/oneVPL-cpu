@@ -685,9 +685,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 4. Scalable Video Technology for HEVC Encoder (SVT-HEVC Encoder)
    Copyright (c) 2018 Intel Corporation
 
-   Scalable Video Technology for VP9 Encoder (SVT-VP9 Encoder)
-   Copyright (c) 2018 Intel Corporation
-
    Scalable Video Technology for AV1 (SVT-AV1)
    Copyright (c) 2018 Intel Corporation
 
@@ -717,9 +714,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 5. dav1d
    Copyright © 2018-2019, VideoLAN and dav1d authors
    
-   OpenH264
-   Copyright (c) 2013, Cisco Systems
-
 BSD 2-Clause
 
 Redistribution and use in source and binary forms, with or without
