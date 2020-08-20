@@ -404,7 +404,7 @@ mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
     if (par)
         request->Info = par->mfx.FrameInfo;
     else
-        memset(&request->Info, 0, sizeof(mfxFrameInfo));
+        request->Info = { 0 };
 
     request->NumFrameMin       = 1;
     request->NumFrameSuggested = 3;

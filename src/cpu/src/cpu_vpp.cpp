@@ -594,8 +594,8 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
         return MFX_ERR_UNSUPPORTED;
 
     if (in == NULL) {
-        memset(&out->mfx, 0, sizeof(mfxInfoMFX));
-        memset(&out->vpp, 0, sizeof(mfxInfoVPP));
+        out->mfx = { 0 };
+        out->vpp = { 0 };
 
         // We have to set FourCC and FrameRate below to
         // pass requirements of CheckPlatformLimitation for frame interpolation
@@ -670,8 +670,8 @@ mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par,
                                               &request[VPP_OUT].Type);
     }
     else {
-        memset(&request[VPP_IN].Info, 0, sizeof(mfxFrameInfo));
-        memset(&request[VPP_OUT].Info, 0, sizeof(mfxFrameInfo));
+        request[VPP_IN].Info  = { 0 };
+        request[VPP_OUT].Info = { 0 };
 
         sts = MFX_ERR_NONE;
     }
