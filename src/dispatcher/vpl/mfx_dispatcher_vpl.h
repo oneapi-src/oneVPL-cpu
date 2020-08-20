@@ -39,11 +39,11 @@ typedef char CHAR_TYPE;
 
 #define MAX_VPL_SEARCH_PATH 4096
 
-// OS-specific environment variables for oneVPL implementation
+// OS-specific environment variables for implementation
 //   search paths as defined by spec
 // TO DO - clarify expected behavior for searching Windows "PATH"
 //   (not feasible to query every DLL in every directory in PATH
-//    to determine which might be a oneVPL library)
+//    to determine which might be an implementation library)
 #if defined(_WIN32) || defined(_WIN64)
     #define ENV_ONEVPL_SEARCH_PATH  L"ONEVPL_SEARCH_PATH"
     #define ENV_ONEVPL_PACKAGE_PATH L"VPL_BIN"

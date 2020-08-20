@@ -11,7 +11,6 @@
 
 # Get absolute path to script, when sourced from bash, zsh and ksh shells.
 # Uses `readlink` to remove links and `pwd -P` to turn into an absolute path.
-# Derived from similar function used by VTune and Advisor.
 # Converted into a POSIX-compliant function.
 
 # Usage:

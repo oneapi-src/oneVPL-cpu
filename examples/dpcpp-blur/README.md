@@ -1,13 +1,13 @@
 # `dpcpp-blur` Sample
 
-This sample shows how to use a DPC++ kernel together with oneAPI Video
-Processing Library (oneVPL) to perform a simple video content blur.
+This sample shows how to use a DPC++ kernel together with
+oneAPI Video Processing Library to perform a simple video content blur.
 
 | Optimized for   | Description
 |---------------- | ----------------------------------------
 | OS              | Ubuntu* 18.04; Windows* 10
 | Hardware        | Intel® Processor Graphics GEN9 or newer
-| Software        | Intel® oneAPI Video Processing Library(oneVPL)
+| Software        | Intel® oneAPI Video Processing Library (oneVPL)
 | What You Will Learn | How to use oneVPL and DPC++ to convert I420 raw video file in to RGB32 and blur each frame.
 | Time to Complete | 5 minutes
 
@@ -19,7 +19,7 @@ I420 format video elementary stream as an argument, converts it to RGB32 with
 oneVPL and blurs each frame with DPC++ by using SYCL kernel, and writes the
 decoded output to `out.rgba` in RGB32 format.
 
-If a DPC++ compiler is not found the blur operation will be disabled
+If the oneAPI DPC++ Compiler is not found the blur operation will be disabled.
 
 
 
@@ -127,7 +127,6 @@ The instructions given above run the sample executable with the argument
 ### Example of Output
 
 ```
-Running on Intel(R) Core(TM) i7-6770HQ CPU @ 2.60GHz
 Processing dpcpp-blur/content/cars_128x96.i420 -> out.rgba
 Processed 60 frames
 ```
