@@ -12,7 +12,7 @@ const char *MemoryModeString[MEM_MODE_COUNT] = { "MEM_MODE_EXTERNAL",
 
 const char *DispatcherModeString[DISPATCHER_MODE_COUNT] = {
     "DISPATCHER_MODE_LEGACY",
-    "DISPATCHER_MODE_ONEVPL_20"
+    "DISPATCHER_MODE_VPL_20"
 };
 
 // check if this implementation can decode our stream

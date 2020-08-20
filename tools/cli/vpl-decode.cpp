@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     mfxStatus sts      = MFX_ERR_NOT_INITIALIZED;
     mfxSession session = nullptr;
 
-    if (params.dispatcherMode == DISPATCHER_MODE_ONEVPL_20) {
+    if (params.dispatcherMode == DISPATCHER_MODE_VPL_20) {
         sts = InitNewDispatcher(WSTYPE_DECODE, &params, &session);
     }
     else if (params.dispatcherMode == DISPATCHER_MODE_LEGACY) {
@@ -772,7 +772,7 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
             params->dispatcherMode = DISPATCHER_MODE_LEGACY;
         }
         else if (IS_ARG_EQ(s, "dsp2")) {
-            params->dispatcherMode = DISPATCHER_MODE_ONEVPL_20;
+            params->dispatcherMode = DISPATCHER_MODE_VPL_20;
         }
         else if (IS_ARG_EQ(s, "scrx")) {
             if (!ValidateSize(argv[idx++], &params->srcCropX, MAX_WIDTH))
@@ -838,7 +838,7 @@ void Usage(void) {
 
     printf("\nDispatcher (default = -dsp1)\n");
     printf("  -dsp1 = legacy dispatcher (MSDK 1.x)\n");
-    printf("  -dsp2 = oneVPL smart dispatcher (API 2.0)\n");
+    printf("  -dsp2 = smart dispatcher (API 2.0)\n");
 
     printf("\nMore for resolution change test\n");
     printf(
