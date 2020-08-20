@@ -376,7 +376,11 @@ TEST(DecodeFrameAsync, CompleteFrameJPEGReturnsFrame) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxFrameSurface1 *pmfxOutSurface = nullptr;
     mfxSyncPoint syncp               = {};
@@ -445,7 +449,11 @@ TEST(DecodeFrameAsync, CompleteFrameHEVCReturnsFrame) {
     }
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    if (sts != MFX_ERR_NONE) {
+        if (decSurfaces)
+            delete[] decSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
 
     mfxFrameSurface1 *pmfxOutSurface = nullptr;
     mfxSyncPoint syncp               = {};
