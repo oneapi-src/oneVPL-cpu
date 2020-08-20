@@ -470,6 +470,13 @@ TEST(DecodeFrameAsync, CompleteFrameHEVCReturnsFrame) {
                                           &decSurfaces[nIndex++],
                                           &pmfxOutSurface,
                                           &syncp);
+    ASSERT_EQ(sts, MFX_ERR_MORE_DATA);
+
+    sts = MFXVideoDECODE_DecodeFrameAsync(session,
+                                          nullptr,
+                                          &decSurfaces[nIndex++],
+                                          &pmfxOutSurface,
+                                          &syncp);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXClose(session);
