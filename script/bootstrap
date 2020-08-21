@@ -59,7 +59,7 @@ make -j $(nproc) && make install
 if [ "$1" == "gpl" ]; then
   ## build x264
   cd ${build_dir}
-  git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264
+  git clone --depth 1 --single-branch -b stable https://code.videolan.org/videolan/x264.git && cd x264
   ./configure --prefix=${install_dir} --enable-static --enable-pic
   PATH="${install_dir}/bin:$PATH" && PKG_CONFIG_PATH="${install_dir}/lib/pkgconfig"
   make && make install

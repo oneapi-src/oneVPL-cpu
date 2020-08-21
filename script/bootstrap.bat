@@ -60,7 +60,7 @@ git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 if "%~1"=="gpl" (
   :: checkout x264
   cd %build_dir%
-  git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264
+  git clone --depth 1 --single-branch -b stable https://code.videolan.org/videolan/x264.git && cd x264
 )
 
 :: checkout dav1d
