@@ -54,6 +54,10 @@ int main(int argc, char* argv[]) {
     }
     char** cmd_args;
     cmd_args = ValidateInput(argc, argv);
+    if (cmd_args == NULL) {
+        Usage();
+        return 1;
+    }
 
     Params params = { 0 };
     if (ParseArgsAndValidate(argc, cmd_args, &params) == false) {
