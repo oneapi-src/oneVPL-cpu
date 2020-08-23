@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
         if (mfxEncParams.mfx.CodecId == MFX_CODEC_JPEG) {
             // QueryIOSurf returns always NumFrameSuggested value 3 regardless of any condition, it's not safe to MJPEG.
             // Need larger number of surfaces than suggested to avoid lack of surface until we improve.
-            nEncSurfNum = 10;
+            nEncSurfNum = 15;
         }
         else
             nEncSurfNum = EncRequest.NumFrameSuggested;

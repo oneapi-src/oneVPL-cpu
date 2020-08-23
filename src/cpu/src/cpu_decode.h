@@ -29,6 +29,9 @@ public:
     mfxStatus GetVideoParam(mfxVideoParam* par);
     mfxStatus GetDecodeSurface(mfxFrameSurface1** surface);
 
+    mfxStatus CheckVideoParamDecoders(mfxVideoParam* in);
+    mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
+
 private:
     static mfxStatus ValidateDecodeParams(mfxVideoParam* par, bool canCorrect);
     AVFrame* ConvertJPEGOutputColorSpace(AVFrame* avframe,

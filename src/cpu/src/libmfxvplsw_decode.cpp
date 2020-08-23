@@ -169,9 +169,14 @@ mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
 
-    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-    if (ws->GetDecoder() == nullptr)
-        return MFX_ERR_NOT_INITIALIZED;
+    CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
+    CpuDecode *decoder = ws->GetDecoder();
+    RET_IF_FALSE(decoder, MFX_ERR_NOT_INITIALIZED);
+
+    RET_ERROR(decoder->CheckVideoParamDecoders(par));
+    mfxVideoParam oldParam = { 0 };
+    decoder->GetVideoParam(&oldParam);
+    RET_ERROR(decoder->IsSameVideoParam(par, &oldParam));
 
     RET_ERROR(MFXVideoDECODE_Close(session));
     return MFXVideoDECODE_Init(session, par);

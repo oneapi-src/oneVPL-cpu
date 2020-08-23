@@ -112,6 +112,24 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
+    if (par->mfx.FrameInfo.AspectRatioW == 0)
+        par->mfx.FrameInfo.AspectRatioW = 1;
+
+    if (par->mfx.FrameInfo.AspectRatioH == 0)
+        par->mfx.FrameInfo.AspectRatioH = 1;
+
+    if (par->mfx.FrameInfo.FrameRateExtN == 0)
+        par->mfx.FrameInfo.FrameRateExtN = 30;
+
+    if (par->mfx.FrameInfo.FrameRateExtN > 65535)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.FrameRateExtD == 0)
+        par->mfx.FrameInfo.FrameRateExtD = 1;
+
+    if (par->mfx.FrameInfo.FrameRateExtD > 65535)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
     return MFX_ERR_NONE;
 }
 
@@ -235,8 +253,8 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
     }
 
     bool complete_frame_mode = false;
-    if (bs && (bs->DataFlag &
-               MFX_BITSTREAM_COMPLETE_FRAME == MFX_BITSTREAM_COMPLETE_FRAME)) {
+    if (bs && ((bs->DataFlag & MFX_BITSTREAM_COMPLETE_FRAME) ==
+               MFX_BITSTREAM_COMPLETE_FRAME)) {
         complete_frame_mode = true;
     }
 
@@ -463,7 +481,8 @@ mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
 }
 
 mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
-    par->mfx = m_param.mfx;
+    par->mfx       = m_param.mfx;
+    par->IOPattern = m_param.IOPattern;
 
     //If DecodeFrame() is not executed at all, we can't update params from m_avDecContext
     //but return current params
@@ -556,5 +575,80 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     }
 
     par->IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuDecode::CheckVideoParamDecoders(mfxVideoParam *in) {
+    mfxStatus sts = CheckVideoParamCommon(in);
+    RET_ERROR(sts);
+
+    if (in->IOPattern != MFX_IOPATTERN_OUT_SYSTEM_MEMORY) {
+        if (in->IOPattern == 0x40) { //MFX_IOPATTERN_OUT_OPAQUE_MEMORY
+            return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+        }
+        else {
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+    }
+
+    if (in->mfx.DecodedOrder)
+        return MFX_ERR_UNSUPPORTED;
+
+    if (in->NumExtParam)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuDecode::IsSameVideoParam(mfxVideoParam *newPar,
+                                      mfxVideoParam *oldPar) {
+    if ((newPar->IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY) !=
+        (oldPar->IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY)) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (newPar->AsyncDepth != oldPar->AsyncDepth) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.Width > oldPar->mfx.FrameInfo.Width) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+    else if (newPar->mfx.FrameInfo.Width < oldPar->mfx.FrameInfo.Width) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.Height > oldPar->mfx.FrameInfo.Height) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+    else if (newPar->mfx.FrameInfo.Height < oldPar->mfx.FrameInfo.Height) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.FourCC != oldPar->mfx.FrameInfo.FourCC) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.ChromaFormat !=
+        oldPar->mfx.FrameInfo.ChromaFormat) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    mfxFrameAllocRequest requestOld = { 0 };
+    mfxFrameAllocRequest requestNew = { 0 };
+
+    mfxStatus mfxSts = DecodeQueryIOSurf(oldPar, &requestOld);
+    if (mfxSts != MFX_ERR_NONE)
+        return mfxSts;
+
+    mfxSts = DecodeQueryIOSurf(newPar, &requestNew);
+    if (mfxSts != MFX_ERR_NONE)
+        return mfxSts;
+
+    if (requestNew.NumFrameMin > requestOld.NumFrameMin ||
+        requestNew.Type != requestOld.Type) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
     return MFX_ERR_NONE;
 }

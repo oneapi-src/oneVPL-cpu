@@ -104,4 +104,7 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1* surface,
                                   AVFrame* frame,
                                   mfxFrameAllocator* allocator);
 
+mfxStatus CheckFrameInfoCommon(mfxFrameInfo* info, mfxU32 codecId);
+mfxStatus CheckFrameInfoCodecs(mfxFrameInfo* info, mfxU32 codecId);
+mfxStatus CheckVideoParamCommon(mfxVideoParam* in);
 #endif // SRC_CPU_SRC_CPU_COMMON_H_
