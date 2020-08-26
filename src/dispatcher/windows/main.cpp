@@ -713,7 +713,9 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
                                      mfxFrameSurface1 **surface) {
     mfxStatus sts = MFX_ERR_INVALID_HANDLE;
 
-    if (!session || !surface)
+    if (!session)
+        return MFX_ERR_INVALID_HANDLE;
+    if (!surface)
         return MFX_ERR_NULL_PTR;
 
     struct _mfxSession *pHandle = (struct _mfxSession *)session;
@@ -734,7 +736,9 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
     mfxStatus sts = MFX_ERR_INVALID_HANDLE;
 
-    if (!session || !surface)
+    if (!session)
+        return MFX_ERR_INVALID_HANDLE;
+    if (!surface)
         return MFX_ERR_NULL_PTR;
 
     struct _mfxSession *pHandle = (struct _mfxSession *)session;
@@ -755,7 +759,9 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
     mfxStatus sts = MFX_ERR_INVALID_HANDLE;
 
-    if (!session || !surface)
+    if (!session)
+        return MFX_ERR_INVALID_HANDLE;
+    if (!surface)
         return MFX_ERR_NULL_PTR;
 
     struct _mfxSession *pHandle = (struct _mfxSession *)session;

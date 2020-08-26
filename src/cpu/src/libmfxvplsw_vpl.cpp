@@ -134,7 +134,8 @@ mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
 mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
                                      mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
-    RET_IF_FALSE(session && surface, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     CpuVPP *vpp       = ws->GetVPP();
@@ -146,7 +147,8 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
 mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
-    RET_IF_FALSE(session && surface, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
     CpuEncode *encoder = ws->GetEncoder();
@@ -158,7 +160,8 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
 mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
-    RET_IF_FALSE(session && surface, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
     CpuDecode *decoder = ws->GetDecoder();

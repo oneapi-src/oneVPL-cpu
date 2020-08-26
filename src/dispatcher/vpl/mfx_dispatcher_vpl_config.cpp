@@ -237,6 +237,9 @@ mfxStatus ConfigCtxVPL::SetFilterPropertyVPP(mfxVariant value) {
 //   MFX_ERR_NOT_FOUND - name contains unknown parameter name
 //   MFX_ERR_UNSUPPORTED - value data type != parameter with provided name
 mfxStatus ConfigCtxVPL::SetFilterProperty(const mfxU8 *name, mfxVariant value) {
+    if (!name)
+        return MFX_ERR_NULL_PTR;
+
     m_propName = std::string((char *)name);
 
     m_propValue.Version.Version = MFX_VARIANT_VERSION;

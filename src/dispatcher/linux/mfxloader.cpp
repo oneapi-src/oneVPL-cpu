@@ -364,7 +364,9 @@ mfxStatus MFXClose(mfxSession session) {
 // passthrough functions to implementation
 mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
                                      mfxFrameSurface1** surface) {
-    if (!session || !surface)
+    if (!session)
+        return MFX_ERR_INVALID_HANDLE;
+    if (!surface)
         return MFX_ERR_NULL_PTR;
 
     MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
@@ -380,7 +382,9 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
 
 mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
                                         mfxFrameSurface1** surface) {
-    if (!session || !surface)
+    if (!session)
+        return MFX_ERR_INVALID_HANDLE;
+    if (!surface)
         return MFX_ERR_NULL_PTR;
 
     MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;
@@ -396,7 +400,9 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
 
 mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
                                         mfxFrameSurface1** surface) {
-    if (!session || !surface)
+    if (!session)
+        return MFX_ERR_INVALID_HANDLE;
+    if (!surface)
         return MFX_ERR_NULL_PTR;
 
     MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;

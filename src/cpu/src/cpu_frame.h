@@ -12,7 +12,7 @@
 // Implemented via AVFrame
 class CpuFrame : public mfxFrameSurface1 {
 public:
-    CpuFrame() : m_refCount(0) {
+    CpuFrame() : m_refCount(0), m_mappedFlags(0) {
         m_avframe = av_frame_alloc();
 
         *(mfxFrameSurface1*)this    = {};
@@ -95,6 +95,7 @@ public:
 
 private:
     std::atomic<mfxU32> m_refCount; // TODO(we have C++11, correct?)
+    mfxU32 m_mappedFlags;
     AVFrame* m_avframe;
     mfxFrameSurfaceInterface m_interface;
 
