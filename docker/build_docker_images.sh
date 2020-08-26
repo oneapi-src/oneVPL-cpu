@@ -7,5 +7,6 @@
 
 set -e
 BASEDIR=$(dirname "$0")
-docker build -f ${BASEDIR}/Dockerfile-ubuntu-18.04 -t vpl:18.04 ${BASEDIR}/..
-docker build -f ${BASEDIR}/Dockerfile-ubuntu-20.04 -t vpl:20.04 ${BASEDIR}/..
+docker build -f ${BASEDIR}/Dockerfile-centos-8 -t vpl-centos:8 ${BASEDIR}/..
+docker build -f ${BASEDIR}/Dockerfile-ubuntu-18.04 -t vpl-ubuntu:18.04 ${BASEDIR}/..
+docker build -f ${BASEDIR}/Dockerfile-ubuntu-20.04 -t vpl-ubuntu:20.04 ${BASEDIR}/..

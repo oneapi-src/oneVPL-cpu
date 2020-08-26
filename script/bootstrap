@@ -61,7 +61,7 @@ if [ "$1" == "gpl" ]; then
   cd ${build_dir}
   git clone --depth 1 --single-branch -b stable https://code.videolan.org/videolan/x264.git && cd x264
   ./configure --prefix=${install_dir} --enable-static --enable-pic
-  PATH="${install_dir}/bin:$PATH" && PKG_CONFIG_PATH="${install_dir}/lib/pkgconfig"
+  PATH="${install_dir}/bin:$PATH" && PKG_CONFIG_PATH="${install_dir}/lib/pkgconfig:${install_dir}/lib64/pkgconfig"
   make && make install
 fi
 
@@ -85,7 +85,7 @@ git am ${build_dir}/SVT-AV1/ffmpeg_plugin/${patch}
 sed -i 's/OBJS-$(CONFIG_TESTSRC2_FILTER)               += vsrc_testsrc.o/OBJS-$(CONFIG_TESTSRC2_FILTER)               += vsrc_testsrc.o ..\/libavutil\/xga_font_data.o/' \
       ./libavfilter/Makefile
 
-export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}
+export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${install_dir}/lib64/pkgconfig:${PKG_CONFIG_PATH}
 echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
 
 if [ "$1" == "gpl" ]; then
