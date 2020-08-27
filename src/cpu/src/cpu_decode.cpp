@@ -112,19 +112,19 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    if (par->mfx.FrameInfo.AspectRatioW == 0)
+    if (par->mfx.FrameInfo.AspectRatioW == 0 && canCorrect)
         par->mfx.FrameInfo.AspectRatioW = 1;
 
-    if (par->mfx.FrameInfo.AspectRatioH == 0)
+    if (par->mfx.FrameInfo.AspectRatioH == 0 && canCorrect)
         par->mfx.FrameInfo.AspectRatioH = 1;
 
-    if (par->mfx.FrameInfo.FrameRateExtN == 0)
+    if (par->mfx.FrameInfo.FrameRateExtN == 0 && canCorrect)
         par->mfx.FrameInfo.FrameRateExtN = 30;
 
     if (par->mfx.FrameInfo.FrameRateExtN > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    if (par->mfx.FrameInfo.FrameRateExtD == 0)
+    if (par->mfx.FrameInfo.FrameRateExtD == 0 && canCorrect)
         par->mfx.FrameInfo.FrameRateExtD = 1;
 
     if (par->mfx.FrameInfo.FrameRateExtD > 65535)
@@ -487,8 +487,20 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     //If DecodeFrame() is not executed at all, we can't update params from m_avDecContext
     //but return current params
     if (!m_avDecContext->width && !m_avDecContext->height &&
-        m_avDecContext->pix_fmt == AV_PIX_FMT_NONE)
+        m_avDecContext->pix_fmt == AV_PIX_FMT_NONE) {
+        if (!par->mfx.FrameInfo.FrameRateExtD &&
+            !par->mfx.FrameInfo.FrameRateExtN) {
+            par->mfx.FrameInfo.FrameRateExtN = 30;
+            par->mfx.FrameInfo.FrameRateExtD = 1;
+        }
+
+        if (!par->mfx.FrameInfo.AspectRatioH &&
+            !par->mfx.FrameInfo.AspectRatioW) {
+            par->mfx.FrameInfo.AspectRatioH = 1;
+            par->mfx.FrameInfo.AspectRatioW = 1;
+        }
         return MFX_ERR_NONE;
+    }
 
     //Get parameters from the decode context
     //This allows checking if parameters have
