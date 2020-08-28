@@ -50,10 +50,15 @@ if(MSVC)
   else()
     set(MSYS_ROOT $ENV{MSYS_ROOT})
   endif()
+  execute_process(COMMAND ${MSYS_ROOT}/mingw64/bin/gcc.exe --version
+                  OUTPUT_VARIABLE gcc_version_text)
+  string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" gcc_version ${gcc_version_text})
 
-  set(GCC_LIB ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/10.1.0/libgcc.a)
+  set(GCC_LIB
+      ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/${gcc_version}/libgcc.a)
   set(GCC_EH_LIB
-      ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/10.1.0/libgcc_eh.a)
+      ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/${gcc_version}/libgcc_eh.a
+  )
   set(BCRYPT_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libbcrypt.a)
   set(MINGW32_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingw32.a)
   set(MINGWEX_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingwex.a)
