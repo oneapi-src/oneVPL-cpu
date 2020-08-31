@@ -48,11 +48,12 @@ mfxStatus MFXVideoENCODE_Close(mfxSession session) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
 
-    CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
-    CpuEncode *encoder = ws->GetEncoder();
-    RET_IF_FALSE(encoder, MFX_ERR_NOT_INITIALIZED);
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    ws->SetEncoder(nullptr);
+    if (ws->GetEncoder() != nullptr)
+        ws->SetEncoder(nullptr);
+    else
+        return MFX_ERR_NOT_INITIALIZED;
 
     return MFX_ERR_NONE;
 }
@@ -81,8 +82,16 @@ mfxStatus MFXVideoENCODE_EncodeFrameAsync(mfxSession session,
 mfxStatus MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
-    RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
-    MFXVideoENCODE_Close(session);
+    if (par == nullptr) {
+        RET_ERROR(MFXVideoENCODE_Close(session));
+        return MFX_ERR_NULL_PTR;
+    }
+
+    CpuWorkstream *ws  = reinterpret_cast<CpuWorkstream *>(session);
+    CpuEncode *encoder = ws->GetEncoder();
+    RET_IF_FALSE(encoder, MFX_ERR_NOT_INITIALIZED);
+
+    RET_ERROR(MFXVideoENCODE_Close(session));
     return MFXVideoENCODE_Init(session, par);
 }
 

@@ -1067,13 +1067,6 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
 }
 
 CpuEncode::~CpuEncode() {
-    // drain encoder - workaround for SVT encoder hang on avcodec_close
-    mfxBitstream bs{};
-    mfxStatus sts;
-    do {
-        sts = EncodeFrame(nullptr, &bs);
-    } while (sts == MFX_ERR_NOT_ENOUGH_BUFFER || sts == MFX_ERR_NONE);
-
     if (m_avEncContext) {
         avcodec_close(m_avEncContext);
         avcodec_free_context(&m_avEncContext);
@@ -1266,8 +1259,8 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     }
 
     // Frame rate
-    par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avEncContext->framerate.num;
-    par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avEncContext->framerate.den;
+    par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avEncContext->framerate.num;
+    par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avEncContext->framerate.den;
 
     // Aspect ratio
     par->mfx.FrameInfo.AspectRatioW =
