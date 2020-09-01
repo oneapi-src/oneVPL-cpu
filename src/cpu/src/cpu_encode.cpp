@@ -29,6 +29,12 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
         par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
     }
 
+    if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I420 ||
+        par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010) {
+        if (par->mfx.FrameInfo.CropW % 2 || par->mfx.FrameInfo.CropH % 2)
+            return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
     // validate fields in the input param struct
     if (par->mfx.CodecId != MFX_CODEC_HEVC &&
         par->mfx.CodecId != MFX_CODEC_AVC &&
@@ -303,7 +309,7 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     m_param = *par;
     par     = &m_param;
 
-    RET_ERROR(ValidateEncodeParams(par));
+    RET_VAR_IF_NOT(ValidateEncodeParams(par), MFX_ERR_NONE);
 
     AVCodecID cid = MFXCodecId_to_AVCodecID(m_param.mfx.CodecId);
     RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);

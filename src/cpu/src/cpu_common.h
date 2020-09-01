@@ -81,6 +81,18 @@ protected:
         }                                                                    \
     }
 
+// Returns value from current function if (value != _STS_CODE)
+#define RET_VAR_IF_NOT(_VAR, _STS_CODE)                                      \
+    {                                                                        \
+        auto _sts = _VAR;                                                    \
+        /*VPL_DEBUG_MESSAGE("#info: " #_VAR " = " + std::to_string(_sts));*/ \
+        if (_sts != _STS_CODE) {                                             \
+            VPL_DEBUG_MESSAGE("Error or Warning " + std::to_string(_sts) +   \
+                              " calling " #_VAR);                            \
+            return _sts;                                                     \
+        }                                                                    \
+    }
+
 // Returns from current function if (!value)
 #define RET_IF_FALSE(_VAR, _ERR_CODE)             \
     {                                             \

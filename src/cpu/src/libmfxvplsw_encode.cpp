@@ -37,11 +37,14 @@ mfxStatus MFXVideoENCODE_Init(mfxSession session, mfxVideoParam *par) {
 
     std::unique_ptr<CpuEncode> encoder(new CpuEncode(ws));
     RET_IF_FALSE(encoder, MFX_ERR_MEMORY_ALLOC);
-    RET_ERROR(encoder->InitEncode(par));
+    mfxStatus sts = encoder->InitEncode(par);
 
-    ws->SetEncoder(encoder.release());
+    if (sts < MFX_ERR_NONE)
+        return sts;
+    else
+        ws->SetEncoder(encoder.release());
 
-    return MFX_ERR_NONE;
+    return sts;
 }
 
 mfxStatus MFXVideoENCODE_Close(mfxSession session) {
