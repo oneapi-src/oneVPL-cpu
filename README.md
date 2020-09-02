@@ -11,7 +11,7 @@ of the specification.
 
 ### Configure the build environment
 
-See BUILD.md for instructions on installing build prerequisites
+See [BUILD.md](BUILD.md) for instructions on installing build prerequisites
 
 
 ### Build dependencies and oneVPL (default, no GPL)

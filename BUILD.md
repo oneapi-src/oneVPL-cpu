@@ -21,13 +21,13 @@ by the `VPL_BUILD_DEPENDENCIES` environment variable.
 
 Install common developer tools
 
-        - [Microsoft Visual Studio](https://visualstudio.microsoft.com/) Visual Studio 2017 or newer
+* [Microsoft Visual Studio](https://visualstudio.microsoft.com/) Visual Studio 2017 or newer
 
-        - [CMake](https://cmake.org/) 
+* [CMake](https://cmake.org/) 
 
-        - [Python3](https://www.python.org/)
+* [Python3](https://www.python.org/)
 
-        - [git](https://git-scm.com/)
+* [git](https://git-scm.com/)
 
 
 ### Install MSYS2 based tools
