@@ -31,7 +31,7 @@ public:
     mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
 
 private:
-    static mfxStatus ValidateEncodeParams(mfxVideoParam* par);
+    static mfxStatus ValidateEncodeParams(mfxVideoParam* par, bool canCorrect);
     int convertTargetUsageVal(int val,
                               int minIn,
                               int maxIn,

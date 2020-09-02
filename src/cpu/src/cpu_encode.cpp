@@ -19,15 +19,30 @@ CpuEncode::CpuEncode(CpuWorkstream *session)
           m_param({}),
           m_encSurfaces() {}
 
-mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
+mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     if (par->mfx.FrameInfo.FourCC) {
         if (par->mfx.FrameInfo.FourCC != MFX_FOURCC_I420 &&
             par->mfx.FrameInfo.FourCC != MFX_FOURCC_I010)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
-    else {
+    else if (canCorrect) {
         par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
     }
+
+    if (!par->mfx.FrameInfo.CropW && canCorrect)
+        par->mfx.FrameInfo.CropW = par->mfx.FrameInfo.Width;
+
+    if (!par->mfx.FrameInfo.CropH && canCorrect)
+        par->mfx.FrameInfo.CropH = par->mfx.FrameInfo.Height;
+
+    if (!par->mfx.FrameInfo.CropW || !par->mfx.FrameInfo.CropH)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.CropW + par->mfx.FrameInfo.CropX >
+            par->mfx.FrameInfo.Width ||
+        par->mfx.FrameInfo.CropH + par->mfx.FrameInfo.CropY >
+            par->mfx.FrameInfo.Height)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I420 ||
         par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010) {
@@ -59,7 +74,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                     par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
             }
 
@@ -80,7 +95,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                         return MFX_ERR_INVALID_VIDEO_PARAM;
                 }
             }
-            else {
+            else if (canCorrect) {
                 if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010)
                     par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH10;
                 else
@@ -157,7 +172,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                     par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
             }
 
@@ -170,7 +185,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                     par->mfx.CodecProfile != MFX_PROFILE_HEVC_MAIN10)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN;
             }
 
@@ -190,7 +205,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                     par->mfx.CodecLevel != MFX_LEVEL_HEVC_62)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.CodecLevel = MFX_LEVEL_HEVC_31;
             }
 
@@ -209,7 +224,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                 if (par->mfx.Quality < 1 || par->mfx.Quality > 100)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.Quality = 80;
             }
 
@@ -217,7 +232,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                 if (par->mfx.CodecProfile != MFX_PROFILE_JPEG_BASELINE)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.CodecProfile = MFX_PROFILE_JPEG_BASELINE;
             }
 
@@ -238,7 +253,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
                     par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
-            else {
+            else if (canCorrect) {
                 par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
             }
 
@@ -251,25 +266,25 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    if (par->mfx.TargetKbps == 0)
+    if (par->mfx.TargetKbps == 0 && canCorrect)
         par->mfx.TargetKbps = 4000;
 
-    if (par->mfx.FrameInfo.FrameRateExtN == 0)
+    if (par->mfx.FrameInfo.FrameRateExtN == 0 && canCorrect)
         par->mfx.FrameInfo.FrameRateExtN = 30;
 
     if (par->mfx.FrameInfo.FrameRateExtN > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    if (par->mfx.FrameInfo.FrameRateExtD == 0)
+    if (par->mfx.FrameInfo.FrameRateExtD == 0 && canCorrect)
         par->mfx.FrameInfo.FrameRateExtD = 1;
 
     if (par->mfx.FrameInfo.FrameRateExtD > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    if (par->mfx.FrameInfo.AspectRatioW == 0)
+    if (par->mfx.FrameInfo.AspectRatioW == 0 && canCorrect)
         par->mfx.FrameInfo.AspectRatioW = 1;
 
-    if (par->mfx.FrameInfo.AspectRatioH == 0)
+    if (par->mfx.FrameInfo.AspectRatioH == 0 && canCorrect)
         par->mfx.FrameInfo.AspectRatioH = 1;
 
     if (par->mfx.GopOptFlag != 0 && par->mfx.GopOptFlag != MFX_GOP_CLOSED)
@@ -280,7 +295,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
             par->mfx.FrameInfo.BitDepthChroma != 10)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
-    else {
+    else if (canCorrect) {
         par->mfx.FrameInfo.BitDepthChroma = 8;
     }
 
@@ -289,7 +304,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
             par->mfx.FrameInfo.BitDepthLuma != 10)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
-    else {
+    else if (canCorrect) {
         par->mfx.FrameInfo.BitDepthLuma = 8;
     }
 
@@ -298,8 +313,35 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par) {
             par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
-    else {
+    else if (canCorrect) {
         par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+    }
+
+    if (par->mfx.NumSlice == 0 && canCorrect)
+        par->mfx.NumSlice = 1;
+
+    if (par->mfx.NumSlice > 1)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.PicStruct == MFX_PICSTRUCT_UNKNOWN && canCorrect) {
+        par->mfx.FrameInfo.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+    }
+
+    if (par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_PROGRESSIVE &&
+        par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_UNKNOWN) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    switch (par->mfx.FrameInfo.ChromaFormat) {
+        case MFX_CHROMAFORMAT_YUV420:
+            break;
+        default:
+            if (canCorrect) {
+                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+                break;
+            }
+            else
+                return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
     return MFX_ERR_NONE;
@@ -309,7 +351,7 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     m_param = *par;
     par     = &m_param;
 
-    RET_VAR_IF_NOT(ValidateEncodeParams(par), MFX_ERR_NONE);
+    RET_VAR_IF_NOT(ValidateEncodeParams(par, false), MFX_ERR_NONE);
 
     AVCodecID cid = MFXCodecId_to_AVCodecID(m_param.mfx.CodecId);
     RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
@@ -338,11 +380,11 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 
     m_avEncContext->framerate.num = par->mfx.FrameInfo.FrameRateExtN;
     m_avEncContext->framerate.den = par->mfx.FrameInfo.FrameRateExtD;
-    m_avEncContext->time_base.num = par->mfx.FrameInfo.FrameRateExtD;
-    m_avEncContext->time_base.den = par->mfx.FrameInfo.FrameRateExtN;
+    m_avEncContext->time_base.num = par->mfx.FrameInfo.FrameRateExtN;
+    m_avEncContext->time_base.den = par->mfx.FrameInfo.FrameRateExtD;
 
-    m_avEncContext->sample_aspect_ratio.num = par->mfx.FrameInfo.AspectRatioH;
-    m_avEncContext->sample_aspect_ratio.den = par->mfx.FrameInfo.AspectRatioW;
+    m_avEncContext->sample_aspect_ratio.num = par->mfx.FrameInfo.AspectRatioW;
+    m_avEncContext->sample_aspect_ratio.den = par->mfx.FrameInfo.AspectRatioH;
 
     m_avEncContext->slices = par->mfx.NumSlice;
     m_avEncContext->refs   = par->mfx.NumRefFrame;
@@ -608,12 +650,13 @@ mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
                              "qp",
                              AV_OPT_SEARCH_CHILDREN,
                              &qpval);
-        par->mfx.QPP = (mfxU16)qpval;
+        par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
         par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         if (m_avEncContext->bit_rate) {
-            par->mfx.TargetKbps = (mfxU16)(m_avEncContext->bit_rate / 1000);
+            par->mfx.TargetKbps =
+                static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
         }
         if (m_avEncContext->rc_initial_buffer_occupancy) {
             par->mfx.InitialDelayInKB =
@@ -623,7 +666,8 @@ mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
             par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
         }
         if (m_avEncContext->rc_max_rate) {
-            par->mfx.MaxKbps = (mfxU16)(m_avEncContext->rc_max_rate / 1000);
+            par->mfx.MaxKbps =
+                static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
         }
     }
 
@@ -662,7 +706,7 @@ mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
                          &optval);
 
     if (ret == 0) {
-        par->mfx.CodecLevel = (mfxU16)(optval | tierval);
+        par->mfx.CodecLevel = static_cast<mfxU16>(optval | tierval);
     }
 
     return MFX_ERR_NONE;
@@ -844,12 +888,13 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
                              "qp",
                              AV_OPT_SEARCH_CHILDREN,
                              &qpval);
-        par->mfx.QPP = (mfxU16)qpval;
+        par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
         par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         if (m_avEncContext->bit_rate) {
-            par->mfx.TargetKbps = (mfxU16)(m_avEncContext->bit_rate / 1000);
+            par->mfx.TargetKbps =
+                static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
         }
         if (m_avEncContext->rc_initial_buffer_occupancy) {
             par->mfx.InitialDelayInKB =
@@ -859,7 +904,8 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
             par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
         }
         if (m_avEncContext->rc_max_rate) {
-            par->mfx.MaxKbps = (mfxU16)(m_avEncContext->rc_max_rate / 1000);
+            par->mfx.MaxKbps =
+                static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
         }
     }
 
@@ -1037,7 +1083,7 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
                              "qp",
                              AV_OPT_SEARCH_CHILDREN,
                              &qpval);
-        par->mfx.QPP = (mfxU16)(qpval);
+        par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
         if (optval == 2) {
@@ -1047,7 +1093,8 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
             par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         }
         if (m_avEncContext->bit_rate) {
-            par->mfx.TargetKbps = (mfxU16)(m_avEncContext->bit_rate / 1000);
+            par->mfx.TargetKbps =
+                static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
         }
         if (m_avEncContext->rc_initial_buffer_occupancy) {
             par->mfx.InitialDelayInKB =
@@ -1057,7 +1104,8 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
             par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
         }
         if (m_avEncContext->rc_max_rate) {
-            par->mfx.MaxKbps = (mfxU16)(m_avEncContext->rc_max_rate / 1000);
+            par->mfx.MaxKbps =
+                static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
         }
     }
 
@@ -1175,7 +1223,7 @@ mfxStatus CpuEncode::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
         *out = *in;
 
         // validate fields in the input param struct
-        sts            = ValidateEncodeParams(out);
+        sts            = ValidateEncodeParams(out, true);
         out->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
     }
     else {

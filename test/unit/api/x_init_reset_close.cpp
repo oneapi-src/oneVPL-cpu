@@ -28,15 +28,17 @@ TEST(EncodeInit, ValidParamsInReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -97,15 +99,17 @@ TEST(EncodeInit, DoubleInitReturnsUndefinedBehavior) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -140,7 +144,7 @@ TEST(EncodeInit, EncodeParamsInReturnsInitializedHEVCContext) {
     mfxEncParams.mfx.FrameInfo.CropH         = 96;
     mfxEncParams.mfx.FrameInfo.Width         = 128;
     mfxEncParams.mfx.FrameInfo.Height        = 96;
-    mfxEncParams.mfx.NumSlice                = 2;
+    mfxEncParams.mfx.NumSlice                = 0;
     mfxEncParams.mfx.FrameInfo.AspectRatioW  = 4;
     mfxEncParams.mfx.FrameInfo.AspectRatioH  = 3;
     mfxEncParams.mfx.CodecProfile            = MFX_PROFILE_HEVC_MAIN;
@@ -158,7 +162,7 @@ TEST(EncodeInit, EncodeParamsInReturnsInitializedHEVCContext) {
     ASSERT_EQ(MFX_RATECONTROL_VBR, par.mfx.RateControlMethod);
     ASSERT_EQ(4000, par.mfx.TargetKbps);
     ASSERT_EQ(1000, par.mfx.InitialDelayInKB);
-    ASSERT_EQ(2, par.mfx.NumSlice);
+    ASSERT_EQ(0, par.mfx.NumSlice);
     ASSERT_EQ(MFX_PROFILE_HEVC_MAIN, par.mfx.CodecProfile);
     ASSERT_EQ(MFX_TARGETUSAGE_BALANCED, par.mfx.TargetUsage);
     ASSERT_EQ(4, mfxEncParams.mfx.FrameInfo.AspectRatioW);
@@ -260,15 +264,17 @@ TEST(EncodeInit, EncodeParamsInReturnsInitializedAV1Context) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_AV1;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_AV1;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
     mfxU32 lumaSize =
@@ -567,15 +573,17 @@ TEST(EncodeReset, ValidParamsInReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -625,15 +633,17 @@ TEST(EncodeReset, NullParamsInReturnsErrNull) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -915,15 +925,17 @@ TEST(EncodeClose, InitializedEncodeReturnsErrNone) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -959,15 +971,17 @@ TEST(EncodeClose, DoubleCloseReturnsNotInitialized) {
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVideoParam mfxEncParams              = { 0 };
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxVideoParam mfxEncParams               = { 0 };
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);

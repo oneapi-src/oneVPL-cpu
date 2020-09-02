@@ -40,14 +40,16 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
 
     mfxVideoParam mfxEncParams;
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
     mfxU32 lumaSize =
@@ -110,14 +112,16 @@ TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
 
     mfxVideoParam mfxEncParams;
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
     mfxU32 lumaSize =
@@ -185,14 +189,16 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
 
     mfxVideoParam mfxEncParams;
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
-    mfxEncParams.mfx.CodecId                = MFX_CODEC_JPEG;
-    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
-    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW        = 128;
-    mfxEncParams.mfx.FrameInfo.CropH        = 96;
-    mfxEncParams.mfx.FrameInfo.Width        = 128;
-    mfxEncParams.mfx.FrameInfo.Height       = 96;
-    mfxEncParams.IOPattern                  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
     mfxU32 lumaSize =
