@@ -52,11 +52,29 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
                 par->mfx.FrameInfo.BitDepthLuma = 8;
                 par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
             }
+            else {
+                if (par->mfx.FrameInfo.BitDepthLuma &&
+                    (par->mfx.FrameInfo.BitDepthLuma != 8))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.ChromaFormat &&
+                    (par->mfx.FrameInfo.ChromaFormat !=
+                     MFX_CHROMAFORMAT_YUV420))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
             break;
         case MFX_FOURCC_I010:
             if (canCorrect) {
                 par->mfx.FrameInfo.BitDepthLuma = 10;
                 par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+            }
+            else {
+                if (par->mfx.FrameInfo.BitDepthLuma &&
+                    (par->mfx.FrameInfo.BitDepthLuma != 10))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.ChromaFormat &&
+                    (par->mfx.FrameInfo.ChromaFormat !=
+                     MFX_CHROMAFORMAT_YUV420))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
             }
             break;
         default:
