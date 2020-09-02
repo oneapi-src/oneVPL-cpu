@@ -92,7 +92,7 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
             break;
         nEncSurfIdx++;
     }
-    ASSERT_GT(mfxBS.DataLength, 0);
+    ASSERT_GT(mfxBS.DataLength, (mfxU32)0);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     MFXClose(session);
