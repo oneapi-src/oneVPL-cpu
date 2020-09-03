@@ -1289,8 +1289,9 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.CropW  = (uint16_t)m_avEncContext->width;
     par->mfx.FrameInfo.CropH  = (uint16_t)m_avEncContext->height;
 
-    par->mfx.BufferSizeInKB =
-        par->mfx.FrameInfo.Width * par->mfx.FrameInfo.Height;
+    if (!par->mfx.BufferSizeInKB) {
+        par->mfx.BufferSizeInKB = par->mfx.TargetKbps;
+    }
 
     // FourCC and chroma format
     switch (m_avEncContext->pix_fmt) {
