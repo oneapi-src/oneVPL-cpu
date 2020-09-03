@@ -20,6 +20,10 @@ mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session,
 mfxStatus MFXVideoCORE_SetHandle(mfxSession session,
                                  mfxHandleType type,
                                  mfxHDL hdl) {
+    if (0 == session) {
+        return MFX_ERR_INVALID_HANDLE;
+    }
+
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
     //Handle should not be redefined.  If the handle is null,
@@ -37,6 +41,10 @@ mfxStatus MFXVideoCORE_SetHandle(mfxSession session,
 mfxStatus MFXVideoCORE_GetHandle(mfxSession session,
                                  mfxHandleType type,
                                  mfxHDL *hdl) {
+    if (0 == session) {
+        return MFX_ERR_INVALID_HANDLE;
+    }
+
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     hdl               = ws->GetHandle(type);
     return MFX_ERR_NONE;

@@ -13,7 +13,15 @@ set(INSTALL_GTEST
 add_subdirectory(googletest)
 
 set(TARGET vpl-utest)
-set(DEPENDENT_LIBS gtest mfx)
+
+if(DEFINED VPL_UTEST_LINK_RUNTIME)
+  message(STATUS "Linking vpl-utest against vplswref64")
+  add_definitions(-DVPL_UTEST_LINK_RUNTIME)
+  set(DEPENDENT_LIBS gtest vplswref64)
+else()
+  message(STATUS "Linking vpl-utest against dispatcher")
+  set(DEPENDENT_LIBS gtest mfx)
+endif()
 
 set(SOURCE_FILES
     main.cpp

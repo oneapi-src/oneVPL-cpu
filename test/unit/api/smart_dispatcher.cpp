@@ -9,7 +9,11 @@
 #include "vpl/mfximplcaps.h"
 #include "vpl/mfxvideo.h"
 
-#define VPL_UTEST_DISPATCHER_TYPE_SOFTWARE
+// if linking directly against the runtime, 2.0 dispatcher
+//   functions will not be available
+#ifndef VPL_UTEST_LINK_RUNTIME
+
+    #define VPL_UTEST_DISPATCHER_TYPE_SOFTWARE
 
 //MFXLoad
 TEST(Dispatcher_Load, CallReturnsLoader) {
@@ -586,3 +590,5 @@ TEST(Dispatcher_DispReleaseImplDescription,
     MFXUnload(loader1);
     MFXUnload(loader2);
 }
+
+#endif // VPL_UTEST_LINK_RUNTIME

@@ -144,3 +144,45 @@ TEST(QueryVersion, NullSessionReturnsInvalidHandle) {
     mfxStatus sts = MFXQueryVersion(nullptr, &ver);
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
+
+// if linking directly against the runtime, we can
+//   test functions which the dispatcher does not
+//   expose directly to the application
+#ifdef VPL_UTEST_LINK_RUNTIME
+
+TEST(Initialize, SoftwareImplReturnsErrNone) {
+    mfxSession session;
+    mfxInitializationParam initPar2 = {};
+
+    // software
+    initPar2.AccelerationMode = MFX_ACCEL_MODE_NA;
+
+    mfxStatus sts = MFXInitialize(initPar2, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(Initialize, HardwareImplReturnsErrUnsupported) {
+    mfxSession session;
+    mfxInitializationParam initPar2 = {};
+
+    initPar2.AccelerationMode = MFX_ACCEL_MODE_VIA_VAAPI;
+
+    mfxStatus sts = MFXInitialize(initPar2, &session);
+    ASSERT_EQ(sts, MFX_ERR_UNSUPPORTED);
+}
+
+TEST(Initialize, NullSessionReturnsInvalidHandle) {
+    mfxInitializationParam initPar2 = {};
+
+    // software
+    initPar2.AccelerationMode = MFX_ACCEL_MODE_NA;
+
+    mfxStatus sts = MFXInitialize(initPar2, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+}
+
+#endif // VPL_UTEST_LINK_RUNTIME
