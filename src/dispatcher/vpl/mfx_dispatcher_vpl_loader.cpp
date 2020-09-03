@@ -15,6 +15,7 @@ static const VPLFunctionDesc FunctionDesc2[NumVPLFunctions] = {
     { "MFXMemory_GetSurfaceForVPP", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForEncode", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForDecode", { { 0, 2 } } },
+    { "MFXInitialize", { { 0, 2 } } },
 };
 
 // implementation of loader context (mfxLoader)

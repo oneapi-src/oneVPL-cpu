@@ -68,6 +68,7 @@ enum eVideoFunc2 {
     eMFXMemory_GetSurfaceForVPP,
     eMFXMemory_GetSurfaceForEncode,
     eMFXMemory_GetSurfaceForDecode,
+    eMFXInitialize,
 
     eVideoFunc2Total
 };

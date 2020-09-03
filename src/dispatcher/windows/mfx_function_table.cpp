@@ -37,6 +37,7 @@ const FUNCTION_DESCRIPTION APIVideoFunc2[eVideoFunc2Total] = {
     { "MFXMemory_GetSurfaceForVPP", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForEncode", { { 0, 2 } } },
     { "MFXMemory_GetSurfaceForDecode", { { 0, 2 } } },
+    { "MFXInitialize", { { 0, 2 } } },
 };
 
 // static section of the file

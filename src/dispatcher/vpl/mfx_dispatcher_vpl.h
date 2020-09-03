@@ -65,6 +65,7 @@ enum VPLFunctionIdx {
     IdxMFXMemory_GetSurfaceForVPP,
     IdxMFXMemory_GetSurfaceForEncode,
     IdxMFXMemory_GetSurfaceForDecode,
+    IdxMFXInitialize,
 
     NumVPLFunctions
 };

@@ -10,6 +10,27 @@
 #include "./cpu_workstream.h"
 #include "./libmfxvplsw_caps.h"
 
+// preferred entrypoint for 2.0 implementations (instead of MFXInitEx)
+mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {
+    if (par.AccelerationMode != MFX_ACCEL_MODE_NA)
+        return MFX_ERR_UNSUPPORTED;
+
+    if (!session)
+        return MFX_ERR_NULL_PTR;
+
+    // create CPU workstream
+    CpuWorkstream *ws = new CpuWorkstream;
+
+    if (!ws) {
+        return MFX_ERR_UNSUPPORTED;
+    }
+
+    // save the handle
+    *session = (mfxSession)(ws);
+
+    return MFX_ERR_NONE;
+}
+
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
 mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format,

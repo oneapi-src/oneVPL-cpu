@@ -56,6 +56,7 @@ enum Function2 {
     eMFXMemory_GetSurfaceForVPP,
     eMFXMemory_GetSurfaceForEncode,
     eMFXMemory_GetSurfaceForDecode,
+    eMFXInitialize,
 
     eFunctionsNum2,
 };
@@ -105,6 +106,7 @@ static const FunctionsTable2 g_mfxFuncTable2[] = {
     { eMFXMemory_GetSurfaceForDecode,
       "MFXMemory_GetSurfaceForDecode",
       VERSION(0, 2) },
+    { eMFXInitialize, "MFXInitialize", VERSION(0, 2) },
 };
 
 class LoaderCtx {
@@ -216,10 +218,31 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
                     break;
                 }
 
-                /* Initializing loaded library */
-                mfx_res =
-                    ((decltype(MFXInitEx)*)m_table[eMFXInitEx])(par,
-                                                                &m_session);
+                if (par.Version.Major >= 2) {
+                    // for API >= 2.0 call MFXInitialize instead of MFXInitEx
+                    mfxInitializationParam initPar2 = {};
+
+                    if (par.Implementation & MFX_IMPL_SOFTWARE) {
+                        // software
+                        initPar2.AccelerationMode = MFX_ACCEL_MODE_NA;
+                    }
+                    else {
+                        // hardware - VAAPI
+                        initPar2.AccelerationMode = MFX_ACCEL_MODE_VIA_VAAPI;
+                    }
+
+                    mfx_res =
+                        ((decltype(MFXInitialize)*)m_table2[eMFXInitialize])(
+                            initPar2,
+                            &m_session);
+                }
+                else {
+                    /* Initializing loaded library */
+                    mfx_res =
+                        ((decltype(MFXInitEx)*)m_table[eMFXInitEx])(par,
+                                                                    &m_session);
+                }
+
                 if (MFX_ERR_NONE != mfx_res) {
                     break;
                 }

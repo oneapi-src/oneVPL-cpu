@@ -190,28 +190,52 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
     if (MFX_ERR_NONE == mfxRes) {
         mfxVersion version(apiVersion);
 
-        mfxFunctionPointer* actualTable = callTable;
+        if (version.Major >= 2) {
+            // for API >= 2.0 call MFXInitialize instead of MFXInitEx
+            int tableIndex                  = eMFXInitialize;
+            mfxFunctionPointer pFunc        = callVideoTable2[tableIndex];
+            mfxInitializationParam initPar2 = {};
 
-        // only support MFXInitEx
-        int tableIndex           = eMFXInitEx;
-        mfxFunctionPointer pFunc = actualTable[tableIndex];
+            if (reqImplType == MFX_LIB_HARDWARE) {
+                // hardware - D3D11 by default
+                if (reqImplInterface == MFX_IMPL_VIA_D3D9)
+                    initPar2.AccelerationMode = MFX_ACCEL_MODE_VIA_D3D9;
+                else
+                    initPar2.AccelerationMode = MFX_ACCEL_MODE_VIA_D3D11;
+            }
+            else {
+                // software
+                initPar2.AccelerationMode = MFX_ACCEL_MODE_NA;
+            }
 
-        {
-            DISPATCHER_LOG_BLOCK(
-                ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
-                 DispatcherLog_GetMFXImplString(impl | implInterface).c_str(),
-                 apiVersion.Major,
-                 apiVersion.Minor,
-                 par.ExternalThreads,
-                 &session));
+            mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxInitializationParam,
+                                              mfxSession*))pFunc)(initPar2,
+                                                                  &session);
+        }
+        else {
+            // only support MFXInitEx for 1.x
+            int tableIndex           = eMFXInitEx;
+            mfxFunctionPointer pFunc = callTable[tableIndex];
 
-            mfxInitParam initPar = par;
-            // adjusting user parameters
-            initPar.Implementation = impl | implInterface;
-            initPar.Version        = version;
-            mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(
-                initPar,
-                &session);
+            {
+                DISPATCHER_LOG_BLOCK(
+                    ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
+                     DispatcherLog_GetMFXImplString(impl | implInterface)
+                         .c_str(),
+                     apiVersion.Major,
+                     apiVersion.Minor,
+                     par.ExternalThreads,
+                     &session));
+
+                mfxInitParam initPar = par;
+                // adjusting user parameters
+                initPar.Implementation = impl | implInterface;
+                initPar.Version        = version;
+                mfxRes =
+                    (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(
+                        initPar,
+                        &session);
+            }
         }
 
         if (MFX_ERR_NONE != mfxRes) {

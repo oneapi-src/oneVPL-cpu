@@ -56,4 +56,4 @@ EXPORTS
     MFXMemory_GetSurfaceForEncode
     MFXMemory_GetSurfaceForDecode
 
-    
+    MFXInitialize
