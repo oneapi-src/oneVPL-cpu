@@ -81,11 +81,14 @@ mfxStatus MFXVideoDECODE_Init(mfxSession session, mfxVideoParam *par) {
 
     std::unique_ptr<CpuDecode> decoder(new CpuDecode(ws));
     RET_IF_FALSE(decoder, MFX_ERR_MEMORY_ALLOC);
-    RET_ERROR(decoder->InitDecode(par, nullptr));
+    mfxStatus sts = decoder->InitDecode(par, nullptr);
 
-    ws->SetDecoder(decoder.release());
+    if (sts < MFX_ERR_NONE)
+        return sts;
+    else
+        ws->SetDecoder(decoder.release());
 
-    return MFX_ERR_NONE;
+    return sts;
 }
 
 // NOTES -
@@ -100,6 +103,8 @@ mfxStatus MFXVideoDECODE_Close(mfxSession session) {
 
     if (ws->GetDecoder() != nullptr)
         ws->SetDecoder(nullptr);
+    else
+        return MFX_ERR_NOT_INITIALIZED;
 
     return MFX_ERR_NONE;
 }

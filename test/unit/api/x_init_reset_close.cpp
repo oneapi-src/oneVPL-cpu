@@ -1023,14 +1023,14 @@ TEST(DecodeClose, InitializedEncodeReturnsErrNone) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeClose, UninitializedDecodeReturnsErrNone) {
+TEST(DecodeClose, UninitializedDecodeReturnsErrNotInitialized) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXVideoDECODE_Close(session);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -1041,7 +1041,7 @@ TEST(DecodeClose, NullSessionInReturnsInvalidHandle) {
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(DecodeClose, DoubleCloseReturnsErrNone) {
+TEST(DecodeClose, DoubleCloseReturnsErrNotInitialized) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -1065,7 +1065,7 @@ TEST(DecodeClose, DoubleCloseReturnsErrNone) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXVideoDECODE_Close(session);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
