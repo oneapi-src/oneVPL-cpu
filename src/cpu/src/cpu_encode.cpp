@@ -123,37 +123,6 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
 
-            //Update AVC level to match resolution
-            int MBsTotal =
-                par->mfx.FrameInfo.Width * par->mfx.FrameInfo.Height / 256;
-            int recommendedLevel;
-            if (MBsTotal <= 99)
-                recommendedLevel = MFX_LEVEL_AVC_1b;
-            else if (MBsTotal <= 396)
-                recommendedLevel = MFX_LEVEL_AVC_2;
-            else if (MBsTotal <= 792)
-                recommendedLevel = MFX_LEVEL_AVC_21;
-            else if (MBsTotal <= 1620)
-                recommendedLevel = MFX_LEVEL_AVC_3;
-            else if (MBsTotal <= 3600)
-                recommendedLevel = MFX_LEVEL_AVC_31;
-            else if (MBsTotal <= 5120)
-                recommendedLevel = MFX_LEVEL_AVC_32;
-            else if (MBsTotal <= 8192)
-                recommendedLevel = MFX_LEVEL_AVC_41;
-            else if (MBsTotal <= 8704)
-                recommendedLevel = MFX_LEVEL_AVC_42;
-            else if (MBsTotal <= 22080)
-                recommendedLevel = MFX_LEVEL_AVC_5;
-            else if (MBsTotal <= 36864)
-                recommendedLevel = MFX_LEVEL_AVC_52;
-            else
-                return MFX_ERR_INVALID_VIDEO_PARAM;
-
-            if (par->mfx.CodecLevel != recommendedLevel) {
-                par->mfx.CodecLevel = recommendedLevel;
-                return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
-            }
         }
 
         break;
