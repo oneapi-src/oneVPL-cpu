@@ -98,7 +98,7 @@ Perform the following steps:
    ```
    mkdir build
    cd build
-   cmake ..
+   cmake .. -T "Intel(R) oneAPI DPC++ Compiler"
    cmake --build .
    ```
 
