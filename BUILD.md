@@ -57,6 +57,8 @@ Get packages required by build
        pacman -Syu
        pacman --needed -Sy mingw-w64-x86_64-toolchain base-devel yasm nasm mingw-w64-x86_64-cmake git python-pip mingw-w64-x86_64-meson mingw-w64-x86_64-ninja
 ```
+Note: while the msys2 shell is used for this step in initial setup it is
+not otherwise supported as a build or run environment.
 
 ## Configuring the Ubuntu Environment
 

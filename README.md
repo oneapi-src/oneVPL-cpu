@@ -24,11 +24,14 @@ script/build
 
 You can find the build output in `_build`.
 
-Windows cmd prompt:
+Windows cmd or powershell prompt:
 ```
 script\bootstrap
 script\build
 ```
+
+Note: while msys2 shell is installed for initial configuration it is not
+supported for this step.
 
 You can find the build output in `_build\Release`.
 
@@ -58,7 +61,8 @@ _build\Release\hello-decode test\content\cars_128x96.h265
 _build\Release\hello-encode test\content\cars_128x96.i420 128 96
 _build\Release\hello-vpp test\content\cars_128x96.i420 128 96
 ```
-
+Note: while msys2 shell is installed for initial configuration it is not
+supported for this step.
 
 ### Other builds
 
