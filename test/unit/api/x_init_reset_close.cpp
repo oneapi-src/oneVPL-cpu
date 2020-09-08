@@ -258,7 +258,7 @@ TEST(EncodeInit, DISABLED_AV1CloseCrashes) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(EncodeInit, EncodeParamsInReturnsInitializedAV1Context) {
+TEST(EncodeInit, DISABLED_EncodeParamsInReturnsInitializedAV1Context) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
