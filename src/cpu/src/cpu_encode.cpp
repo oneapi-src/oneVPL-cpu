@@ -349,8 +349,10 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 
     m_avEncContext->framerate.num = par->mfx.FrameInfo.FrameRateExtN;
     m_avEncContext->framerate.den = par->mfx.FrameInfo.FrameRateExtD;
-    m_avEncContext->time_base.num = par->mfx.FrameInfo.FrameRateExtN;
-    m_avEncContext->time_base.den = par->mfx.FrameInfo.FrameRateExtD;
+
+    //time_base is intended to be 1/framerate
+    m_avEncContext->time_base.num = par->mfx.FrameInfo.FrameRateExtD;
+    m_avEncContext->time_base.den = par->mfx.FrameInfo.FrameRateExtN;
 
     m_avEncContext->sample_aspect_ratio.num = par->mfx.FrameInfo.AspectRatioW;
     m_avEncContext->sample_aspect_ratio.den = par->mfx.FrameInfo.AspectRatioH;
