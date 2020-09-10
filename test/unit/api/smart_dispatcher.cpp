@@ -178,7 +178,7 @@ TEST(Dispatcher_EnumImplementations, ValidInputsReturnValidDesc) {
                                      (const mfxU8 *)"mfxImplDescription.Impl",
                                      ImplValue);
 
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
@@ -186,10 +186,10 @@ TEST(Dispatcher_EnumImplementations, ValidInputsReturnValidDesc) {
                                  0,
                                  MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
                                  reinterpret_cast<mfxHDL *>(&implDesc));
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // confirm correct Impl type was found
-    EXPECT_EQ(implDesc->Impl, MFX_IMPL_TYPE_SOFTWARE);
+    ASSERT_EQ(implDesc->Impl, MFX_IMPL_TYPE_SOFTWARE);
 
     sts = MFXDispReleaseImplDescription(loader, implDesc);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -497,7 +497,7 @@ TEST(Dispatcher_DispReleaseImplDescription, ValidInputReturnsErrNone) {
                                      (const mfxU8 *)"mfxImplDescription.Impl",
                                      ImplValue);
 
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
@@ -505,10 +505,10 @@ TEST(Dispatcher_DispReleaseImplDescription, ValidInputReturnsErrNone) {
                                  0,
                                  MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
                                  reinterpret_cast<mfxHDL *>(&implDesc));
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // confirm correct Impl type was found
-    EXPECT_EQ(implDesc->Impl, MFX_IMPL_TYPE_SOFTWARE);
+    ASSERT_EQ(implDesc->Impl, MFX_IMPL_TYPE_SOFTWARE);
 
     sts = MFXDispReleaseImplDescription(loader, implDesc);
     EXPECT_EQ(sts, MFX_ERR_NONE);
