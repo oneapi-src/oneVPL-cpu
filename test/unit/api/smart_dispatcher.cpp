@@ -305,6 +305,28 @@ TEST(Dispatcher_CreateSession, SimpleConfigCanCreateSession) {
     MFXUnload(loader);
 }
 
+TEST(Dispatcher_CreateSession, UnusedCfgCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    // create mfxConfig but do not apply filter property
+    // should still create session with default props
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    mfxStatus sts      = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_NE(session, nullptr);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 TEST(Dispatcher_CreateSession, RequestSWImplCreatesSession) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);

@@ -418,8 +418,11 @@ mfxStatus ConfigCtxVPL::ValidateConfig(
     while (it != m_configCtxList.end()) {
         ConfigCtxVPL *config = (*it);
 
-        cfgPropState[config->m_propIdx] =
-            CheckProp(config->m_propIdx, config->m_propValue, libImplDesc);
+        // ignore config objects that were never assigned a property
+        if (config->m_propValue.Type != MFX_VARIANT_TYPE_UNSET) {
+            cfgPropState[config->m_propIdx] =
+                CheckProp(config->m_propIdx, config->m_propValue, libImplDesc);
+        }
 
         it++;
     }
