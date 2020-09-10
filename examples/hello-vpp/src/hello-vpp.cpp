@@ -5,16 +5,15 @@
 //==============================================================================
 
 ///
-/// A minimal oneAPI Video Processing Library (oneVPL) vpp application.
+/// A minimal oneAPI Video Processing Library (oneVPL) vpp application,
+/// using oneVPL internal memory management
 ///
 /// @file
 
-#include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <vector>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "vpl/mfxdispatcher.h"
 #include "vpl/mfxvideo.h"
 
 #define MAX_PATH   260
@@ -25,11 +24,20 @@
 #define OUTPUT_WIDTH  640
 #define OUTPUT_HEIGHT 480
 
+#define WAIT_100_MILLSECONDS 100
+
+#define VERIFY(x, y)       \
+    if (!(x)) {            \
+        printf("%s\n", y); \
+        goto end;          \
+    }
+
 mfxStatus LoadRawFrame(mfxFrameSurface1 *surface, FILE *f);
 void WriteRawFrame(mfxFrameSurface1 *surface, FILE *f);
 mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height);
-mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &surface_pool);
+mfxI32 GetFreeSurfaceIndex(mfxFrameSurface1 **surface_pool, mfxU16 pool_size);
 char *ValidateFileName(char *in);
+mfxI32 ValidateSize(char *in, mfxI32 max);
 
 // Print usage message
 void Usage(void) {
@@ -44,75 +52,80 @@ void Usage(void) {
 }
 
 int main(int argc, char *argv[]) {
-    mfxU32 fourcc;
-    mfxU32 width;
-    mfxU32 height;
-
     if (argc != 4) {
         Usage();
         return 1;
     }
 
-    char *in_filename = NULL;
+    char *in_filename                   = NULL;
+    FILE *source                        = NULL;
+    FILE *sink                          = NULL;
+    mfxLoader loader                    = NULL;
+    mfxConfig cfg                       = NULL;
+    mfxVariant ImplValue                = { 0 };
+    mfxSession session                  = NULL;
+    mfxStatus sts                       = MFX_ERR_NONE;
+    mfxVideoParam vpp_params            = { 0 };
+    mfxFrameAllocRequest vpp_request[2] = { 0 };
+    mfxU16 num_surfaces_in;
+    mfxU16 num_surfaces_out;
+    mfxU8 *buffers_out = NULL;
+    mfxU32 fourcc;
+    mfxU32 width;
+    mfxU32 height;
+    mfxI32 input_width;
+    mfxI32 input_height;
+    mfxU32 surface_size;
+    mfxFrameSurface1 *vpp_surfaces_in   = NULL;
+    mfxFrameSurface1 **vpp_surfaces_out = NULL;
+    bool isdraining                     = false;
+    bool stillgoing                     = true;
+    mfxI32 i, j;
+    mfxU32 index_out  = 0;
+    mfxU32 index_impl = 0;
+    mfxSyncPoint syncp;
+    mfxU32 framenum           = 0;
+    bool vpp_support_scaling  = false;
+    mfxImplDescription *idesc = NULL;
 
+    // Setup input and output files
     in_filename = ValidateFileName(argv[1]);
-    if (!in_filename) {
-        printf("Input filename is not valid\n");
-        Usage();
-        return 1;
-    }
+    VERIFY(in_filename, "Input filename is not valid");
 
-    FILE *source = fopen(in_filename, "rb");
-    if (!source) {
-        printf("Could not open input file, \"%s\"\n", in_filename);
-        return 1;
-    }
-    FILE *sink = fopen(OUTPUT_FILE, "wb");
-    if (!sink) {
-        fclose(source);
-        printf("Could not open output file, %s\n", OUTPUT_FILE);
-        return 1;
-    }
-    mfxI32 isize = strtol(argv[2], NULL, 10);
-    if (isize <= 0 || isize > MAX_WIDTH) {
-        fclose(source);
-        fclose(sink);
-        puts("Input size is not valid\n");
-        return 1;
-    }
-    mfxI32 input_width = isize;
+    source = fopen(in_filename, "rb");
+    VERIFY(source, "Could not open input file");
 
-    isize = strtol(argv[3], NULL, 10);
-    if (isize <= 0 || isize > MAX_HEIGHT) {
-        fclose(source);
-        fclose(sink);
-        puts("Input size is not valid\n");
-        return 1;
-    }
-    mfxI32 input_height = isize;
+    sink = fopen(OUTPUT_FILE, "wb");
+    VERIFY(sink, "Could not create output file");
 
-    // initialize session
-    mfxInitParam init_params   = { 0 };
-    init_params.Version.Major  = 2;
-    init_params.Version.Minor  = 0;
-    init_params.Implementation = MFX_IMPL_SOFTWARE;
+    input_width = ValidateSize(argv[2], MAX_WIDTH);
+    VERIFY(input_width, "Input width is not valid");
 
-    mfxSession session;
-    mfxStatus sts = MFXInitEx(init_params, &session);
-    if (sts != MFX_ERR_NONE) {
-        fclose(source);
-        fclose(sink);
-        puts("MFXInitEx error.  Could not initialize session");
-        return 1;
-    }
+    input_height = ValidateSize(argv[3], MAX_HEIGHT);
+    VERIFY(input_height, "Input height is not valid");
+
+    // Initialize VPL session for video processing
+    loader = MFXLoad();
+    VERIFY(NULL != loader, "MFXLoad failed");
+
+    cfg = MFXCreateConfig(loader);
+    VERIFY(NULL != cfg, "MFXCreateConfig failed")
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_EXTBUFF_VPP_SCALING;
+    sts                = MFXSetConfigFilterProperty(
+        cfg,
+        (mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.FilterFourCC",
+        ImplValue);
+    VERIFY(MFX_ERR_NONE == sts, "MFXSetConfigFilterProperty failed");
+
+    sts = MFXCreateSession(loader, 0, &session);
+    VERIFY(MFX_ERR_NONE == sts, "Not able to create VPL session");
 
     // Initialize VPP parameters
-
     // For simplistic memory management, system memory surfaces are used to
     // store the raw frames (Note that when using HW acceleration video surfaces
     // are prefered, for better performance)
-    mfxVideoParam vpp_params;
-    memset(&vpp_params, 0, sizeof(vpp_params));
     // Input data
     vpp_params.vpp.In.FourCC        = MFX_FOURCC_I420;
     vpp_params.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
@@ -141,50 +154,13 @@ int main(int argc, char *argv[]) {
     vpp_params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     // Query number of required surfaces for VPP
-    mfxFrameAllocRequest vpp_request[2]; // [0] - in, [1] - out
-    memset(&vpp_request, 0, sizeof(mfxFrameAllocRequest) * 2);
     sts = MFXVideoVPP_QueryIOSurf(session, &vpp_params, vpp_request);
-    if (sts != MFX_ERR_NONE) {
-        fclose(source);
-        fclose(sink);
-        puts("QueryIOSurf error");
-        return 1;
-    }
+    VERIFY(MFX_ERR_NONE == sts, "QueryIOSurf error");
 
-    mfxU16 num_surfaces_in  = vpp_request[0].NumFrameSuggested;
-    mfxU16 num_surfaces_out = vpp_request[1].NumFrameSuggested;
-
-    // Allocate surfaces for VPP: In
-
-    // Frame surface array keeps pointers to all surface planes and general
-    // frame info
-    fourcc = vpp_params.vpp.In.FourCC;
-    width  = vpp_params.vpp.In.Width;
-    height = vpp_params.vpp.In.Height;
-
-    mfxU32 surface_size = GetSurfaceSize(fourcc, width, height);
-    if (surface_size == 0) {
-        fclose(source);
-        fclose(sink);
-        puts("VPP-in surface size is wrong");
-        return 1;
-    }
-
-    std::vector<mfxU8> buffers_in(surface_size * num_surfaces_in);
-    mfxU8 *buffers_in_data = buffers_in.data();
-
-    std::vector<mfxFrameSurface1> vpp_surfaces_in(num_surfaces_in);
-    for (mfxI32 i = 0; i < num_surfaces_in; i++) {
-        memset(&vpp_surfaces_in[i], 0, sizeof(mfxFrameSurface1));
-        vpp_surfaces_in[i].Info       = vpp_params.vpp.In;
-        vpp_surfaces_in[i].Data.Y     = &buffers_in_data[surface_size * i];
-        vpp_surfaces_in[i].Data.U     = vpp_surfaces_in[i].Data.Y + width * height;
-        vpp_surfaces_in[i].Data.V     = vpp_surfaces_in[i].Data.U + ((width / 2) * (height / 2));
-        vpp_surfaces_in[i].Data.Pitch = width;
-    }
+    num_surfaces_in  = vpp_request[0].NumFrameSuggested;
+    num_surfaces_out = vpp_request[1].NumFrameSuggested;
 
     // Allocate surfaces for VPP: Out
-
     // Frame surface array keeps pointers to all surface planes and general
     // frame info
     fourcc = vpp_params.vpp.Out.FourCC;
@@ -192,149 +168,100 @@ int main(int argc, char *argv[]) {
     height = vpp_params.vpp.Out.Height;
 
     surface_size = GetSurfaceSize(fourcc, width, height);
-    if (surface_size == 0) {
-        fclose(source);
-        fclose(sink);
-        puts("VPP-out surface size is wrong");
-        return 1;
-    }
+    VERIFY(surface_size, "VPP-out surface size is wrong");
 
-    std::vector<mfxU8> buffers_out(surface_size * num_surfaces_out);
-    mfxU8 *buffers_out_data = buffers_out.data();
+    buffers_out      = (mfxU8 *)malloc(surface_size * num_surfaces_out);
+    vpp_surfaces_out = (mfxFrameSurface1 **)malloc(sizeof(mfxFrameSurface1) * num_surfaces_out);
 
-    std::vector<mfxFrameSurface1> vpp_surfaces_out(num_surfaces_out);
-    for (mfxI32 i = 0; i < num_surfaces_out; i++) {
-        memset(&vpp_surfaces_out[i], 0, sizeof(mfxFrameSurface1));
-        vpp_surfaces_out[i].Info       = vpp_params.vpp.Out;
-        vpp_surfaces_out[i].Data.Y     = &buffers_out_data[surface_size * i];
-        vpp_surfaces_out[i].Data.U     = vpp_surfaces_out[i].Data.Y + width * height;
-        vpp_surfaces_out[i].Data.V     = vpp_surfaces_out[i].Data.U + ((width / 2) * (height / 2));
-        vpp_surfaces_out[i].Data.Pitch = width;
+    for (i = 0; i < num_surfaces_out; i++) {
+        vpp_surfaces_out[i] = (mfxFrameSurface1 *)malloc(sizeof(mfxFrameSurface1));
+        memset(vpp_surfaces_out[i], 0, sizeof(mfxFrameSurface1));
+        vpp_surfaces_out[i]->Info   = vpp_params.vpp.Out;
+        vpp_surfaces_out[i]->Data.Y = &buffers_out[surface_size * i];
+        vpp_surfaces_out[i]->Data.U = vpp_surfaces_out[i]->Data.Y + width * height;
+        vpp_surfaces_out[i]->Data.V = vpp_surfaces_out[i]->Data.U + ((width / 2) * (height / 2));
+        vpp_surfaces_out[i]->Data.Pitch = width;
     }
 
     // Initialize VPP
     sts = MFXVideoVPP_Init(session, &vpp_params);
-    if (sts != MFX_ERR_NONE) {
-        fclose(source);
-        fclose(sink);
-        puts("Could not initialize vpp");
-        return 1;
-    }
-
-    // Prepare bit stream buffer
-    mfxBitstream bitstream = { 0 };
-    bitstream.MaxLength    = 2000000;
-    std::vector<mfxU8> bitstream_data(bitstream.MaxLength);
-    bitstream.Data = bitstream_data.data();
+    VERIFY(MFX_ERR_NONE == sts, "Could not initialize vpp");
 
     // Start processing the frames
-    int index_in = 0, index_out = 0;
-    mfxSyncPoint syncp;
-    mfxU32 framenum = 0;
-
     printf("Processing %s -> %s\n", in_filename, OUTPUT_FILE);
 
-    // Stage 1: Main processing loop
-    while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_DATA == sts) {
-        index_in = GetFreeSurfaceIndex(vpp_surfaces_in); // Find free frame surface
-        if (index_in == MFX_ERR_NOT_FOUND) {
-            fclose(source);
-            fclose(sink);
-            puts("no available surface");
-            return 1;
-        }
+    // Main processing loop
+    while (stillgoing) {
+        vpp_surfaces_in = NULL;
 
-        sts = LoadRawFrame(&vpp_surfaces_in[index_in], source);
-        if (sts != MFX_ERR_NONE)
-            break;
+        sts = MFXMemory_GetSurfaceForVPP(session, &vpp_surfaces_in);
+        VERIFY(MFX_ERR_NONE == sts, "Unknown error in MFXMemory_GetSurfaceForVPP");
 
-        index_out = GetFreeSurfaceIndex(vpp_surfaces_out); // Find free output frame surface
-        if (index_out == MFX_ERR_NOT_FOUND) {
-            fclose(source);
-            fclose(sink);
-            puts("no available surface");
-            return 1;
-        }
+        sts = vpp_surfaces_in->FrameInterface->Map(vpp_surfaces_in, MFX_MAP_READ);
+        VERIFY(MFX_ERR_NONE == sts, "mfxFrameSurfaceInterface->Map failed");
 
-        for (;;) {
-            // Process a frame asynchronously (returns immediately)
-            sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                               &vpp_surfaces_in[index_in],
-                                               &vpp_surfaces_out[index_out],
-                                               NULL,
-                                               &syncp);
+        index_out = GetFreeSurfaceIndex(vpp_surfaces_out,
+                                        num_surfaces_out); // Find free frame surface
+        VERIFY(index_out != MFX_ERR_NOT_FOUND, "No available surface");
 
-            if (MFX_ERR_NONE < sts && syncp) {
-                sts = MFX_ERR_NONE; // Ignore warnings if output is available
+        sts = LoadRawFrame(vpp_surfaces_in, source);
+        if (sts == MFX_ERR_MORE_DATA)
+            isdraining = true;
+
+        // Process a frame asynchronously (returns immediately)
+        sts = MFXVideoVPP_RunFrameVPPAsync(session,
+                                           (isdraining) ? NULL : vpp_surfaces_in,
+                                           vpp_surfaces_out[index_out],
+                                           NULL,
+                                           &syncp);
+
+        switch (sts) {
+            case MFX_ERR_NONE:
+                sts = MFXVideoCORE_SyncOperation(
+                    session,
+                    syncp,
+                    WAIT_100_MILLSECONDS); // Synchronize. Wait until a frame is ready
+                ++framenum;
+                VERIFY(MFX_ERR_NONE == sts, "MFXVideoCORE_SyncOperation error");
+
+                WriteRawFrame(vpp_surfaces_out[index_out], sink);
+
+                if (!isdraining) {
+                    vpp_surfaces_in->FrameInterface->Unmap(vpp_surfaces_in);
+                    vpp_surfaces_in->FrameInterface->Release(vpp_surfaces_in);
+                }
                 break;
-            }
-            else if (MFX_ERR_NOT_ENOUGH_BUFFER == sts) {
-                // Allocate more bitstream buffer memory here if needed...
-                break;
-            }
-            else {
-                break;
-            }
-        }
 
-        if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(session,
-                                             syncp,
-                                             60000); // Synchronize. Wait until a frame is ready
-            ++framenum;
-            WriteRawFrame(&vpp_surfaces_out[index_out], sink);
-            bitstream.DataLength = 0;
+            case MFX_ERR_MORE_DATA:
+                if (isdraining)
+                    stillgoing = false;
+                break;
+
+            default:
+                if (sts < 0) // error
+                    stillgoing = false;
+                break;
         }
     }
 
-    sts = MFX_ERR_NONE;
-
-    // Stage 2: Retrieve the buffered processed frames
-    while (MFX_ERR_NONE <= sts) {
-        index_out = GetFreeSurfaceIndex(vpp_surfaces_out); // Find free frame surface
-        if (index_out == MFX_ERR_NOT_FOUND) {
-            fclose(source);
-            fclose(sink);
-            puts("no available surface");
-            return 1;
-        }
-
-        for (;;) {
-            // Process a frame asynchronously (returns immediately)
-            sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                               NULL,
-                                               &vpp_surfaces_out[index_out],
-                                               NULL,
-                                               &syncp);
-
-            if (MFX_ERR_NONE < sts && syncp) {
-                sts = MFX_ERR_NONE; // Ignore warnings if output is available
-                break;
-            }
-            else {
-                break;
-            }
-        }
-
-        if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(session,
-                                             syncp,
-                                             60000); // Synchronize. Wait until a frame is ready
-            ++framenum;
-            WriteRawFrame(&vpp_surfaces_out[index_out], sink);
-            bitstream.DataLength = 0;
-        }
-    }
-
+end:
     printf("Processed %d frames\n", framenum);
 
-    // Clean up resources - It is recommended to close components first, before
-    // releasing allocated surfaces, since some surfaces may still be locked by
-    // internal resources.
-    MFXVideoVPP_Close(session);
+    if (loader)
+        MFXUnload(loader);
 
-    fclose(source);
-    fclose(sink);
+    if (vpp_surfaces_out) {
+        for (i = 0; i < num_surfaces_out; i++)
+            free(vpp_surfaces_out[i]);
+
+        free(vpp_surfaces_out);
+    }
+
+    if (source)
+        fclose(source);
+
+    if (sink)
+        fclose(sink);
 
     return 0;
 }
@@ -437,16 +364,12 @@ mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
 }
 
 // Return index of free surface in given pool
-mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &surface_pool) {
-    auto it =
-        std::find_if(surface_pool.begin(), surface_pool.end(), [](const mfxFrameSurface1 &surface) {
-            return 0 == surface.Data.Locked;
-        });
-
-    if (it == surface_pool.end())
-        return MFX_ERR_NOT_FOUND;
-    else
-        return static_cast<mfxI32>(it - surface_pool.begin());
+mfxI32 GetFreeSurfaceIndex(mfxFrameSurface1 **surface_pool, mfxU16 pool_size) {
+    if (surface_pool)
+        for (mfxU16 i = 0; i < pool_size; i++)
+            if (0 == surface_pool[i]->Data.Locked)
+                return i;
+    return MFX_ERR_NOT_FOUND;
 }
 
 char *ValidateFileName(char *in) {
@@ -456,4 +379,13 @@ char *ValidateFileName(char *in) {
     }
 
     return in;
+}
+
+mfxI32 ValidateSize(char *in, mfxI32 max) {
+    mfxI32 isize = strtol(in, NULL, 10);
+    if (isize <= 0 || isize > max) {
+        return 0;
+    }
+
+    return isize;
 }
