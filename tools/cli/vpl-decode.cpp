@@ -4,6 +4,7 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
+#include <string>
 #include "./vpl-common.h"
 
 #define MAX_LENGTH             260
@@ -126,6 +127,43 @@ int main(int argc, char* argv[]) {
         mfxDecParams.mfx.CodecId = params.srcFourCC;
         mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
         sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+
+        //only MFX_CHROMAFORMAT_YUV420 in I420 and I010 colorspaces allowed
+        switch (mfxDecParams.mfx.FrameInfo.FourCC) {
+            case MFX_FOURCC_I420:
+                if (mfxDecParams.mfx.FrameInfo.BitDepthLuma &&
+                    (mfxDecParams.mfx.FrameInfo.BitDepthLuma != 8)) {
+                    printf("Unsupported Luma Bit Depth for I420\n");
+                    return 1;
+                }
+
+                if (mfxDecParams.mfx.FrameInfo.ChromaFormat &&
+                    (mfxDecParams.mfx.FrameInfo.ChromaFormat !=
+                     MFX_CHROMAFORMAT_YUV420)) {
+                    printf("Unsupported chroma format for I420\n");
+                    return 1;
+                }
+
+                break;
+            case MFX_FOURCC_I010:
+                if (mfxDecParams.mfx.FrameInfo.BitDepthLuma &&
+                    (mfxDecParams.mfx.FrameInfo.BitDepthLuma != 10)) {
+                    printf("Unsupported Luma Bit Depth for I010\n");
+                    return 1;
+                }
+
+                if (mfxDecParams.mfx.FrameInfo.ChromaFormat &&
+                    (mfxDecParams.mfx.FrameInfo.ChromaFormat !=
+                     MFX_CHROMAFORMAT_YUV420)) {
+                    printf("Unsupported chroma format for I010\n");
+                    return 1;
+                }
+                break;
+            default:
+                printf("Unsupported FourCC\n");
+                return 1;
+        }
+
         if (sts != MFX_ERR_NONE) {
             fclose(fSource);
             fclose(fSink);
