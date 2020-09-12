@@ -73,7 +73,9 @@ mfxStatus CSmplYUVReader::Init(std::list<msdk_string> inputs,
         MFX_FOURCC_RGB4 != ColorFormat && MFX_FOURCC_BGR4 != ColorFormat &&
         MFX_FOURCC_P010 != ColorFormat && MFX_FOURCC_P210 != ColorFormat &&
         MFX_FOURCC_AYUV != ColorFormat && MFX_FOURCC_A2RGB10 != ColorFormat
-#if (MFX_VERSION >= 1027)
+#if (MFX_VERSION >= 2000)
+        && MFX_FOURCC_I010 != ColorFormat
+#elif (MFX_VERSION >= 1027)
         && MFX_FOURCC_Y210 != ColorFormat && MFX_FOURCC_Y410 != ColorFormat
 #endif
     ) {
@@ -1540,6 +1542,10 @@ const msdk_char* ColorFormatToStr(mfxU32 format) {
         case MFX_FOURCC_Y410:
             return MSDK_STRING("Y410");
 #endif
+#if (MFX_VERSION >= 2000)
+        case MFX_FOURCC_I010:
+            return MSDK_STRING("I010");
+#endif
         default:
             return MSDK_STRING("unsupported");
     }
@@ -2341,6 +2347,10 @@ mfxU16 FourCCToChroma(mfxU32 fourCC) {
     switch (fourCC) {
         case MFX_FOURCC_NV12:
         case MFX_FOURCC_P010:
+#if (MFX_VERSION >= 2000)
+        case MFX_FOURCC_I420:
+        case MFX_FOURCC_I010:
+#endif
             return MFX_CHROMAFORMAT_YUV420;
         case MFX_FOURCC_NV16:
         case MFX_FOURCC_P210:

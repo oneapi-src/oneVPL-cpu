@@ -110,7 +110,7 @@ void PrintHelp(msdk_char* strAppName, const msdk_char* strErrorMessage, ...) {
     msdk_printf(MSDK_STRING("   [-hw] - use platform specific SDK implementation (default)\n"));
     msdk_printf(MSDK_STRING(
         "   [-sw] - use software implementation, if not specified platform specific SDK implementation is used\n"));
-    msdk_printf(MSDK_STRING("   [-vpl] - use VPL software implementation (libmfxvplsw64)\n"));
+    msdk_printf(MSDK_STRING("   [-vpl] - use VPL software implementation (libvplswref64)\n"));
     msdk_printf(MSDK_STRING(
         "   [-p plugin] - encoder plugin. Supported values: hevce_sw, hevce_gacc, hevce_hw, vp8e_hw, vp9e_hw, hevce_fei_hw\n"));
     msdk_printf(MSDK_STRING(

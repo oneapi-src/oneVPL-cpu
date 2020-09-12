@@ -41,12 +41,12 @@ call sample_decode.exe h265 -i %PROJ_DIR%\test\content\cars_128x96.h265 ^
      -o out_vpl_h265.i420 -vpl
 call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
      -i %PROJ_DIR%\test\content\cars_128x96.h265 ^
-     -f rawvideo -pix_fmt yuv420p out_ref_h265.i420
+     -f rawvideo -pixel_format yuv420p out_ref_h265.i420
 call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
-     -r 30 -s 128x96 -pix_fmt yuv420p -f rawvideo -i out_vpl_h265.i420 ^
-     -r 30 -s 128x96 -pix_fmt yuv420p -f rawvideo -i out_ref_h265.i420 ^
+     -r 30 -video_size 128x96 -pixel_format yuv420p -f rawvideo -i out_vpl_h265.i420 ^
+     -r 30 -video_size 128x96 -pixel_format yuv420p -f rawvideo -i out_ref_h265.i420 ^
      -filter_complex psnr= -f null nullsink
-call python %PYTHONPATH%\check_content\check_smoke_output.py ^
+call py -3 %PYTHONPATH%\check_content\check_smoke_output.py ^
      out_ref_h265.i420 out_vpl_h265.i420 I420 128x96@30
 
 echo.
@@ -63,17 +63,48 @@ echo *** Running Encode Smoke Test***
 call sample_encode.exe h265 -i out_ref_h265.i420 ^
      -o out_vpl.h265 -w 128 -h 96 -vpl
 call sample_decode.exe h265 -i out_vpl.h265 -o out_vpl_dec_h265.i420 -vpl
-call python %PYTHONPATH%\check_content\check_smoke_output.py ^
+call py -3 %PYTHONPATH%\check_content\check_smoke_output.py ^
      out_ref_h265.i420 out_vpl_dec_h265.i420 I420 128x96@30
 
 echo.
 if %errorlevel%==0 goto test_encode_passed
 echo *** Encode Smoke Test FAILED ***
 set /A result_all = 1
-goto test_end
+goto test_vpp
 
 :test_encode_passed
 echo *** Encode Smoke Test PASSED ***
+
+:test_vpp
+echo *** Running VPP Smoke Test***
+call sample_vpp.exe -sw 128 -sh 96 -scrX 0 -scrY 0 -scrW 96 -scrH 48 -scc i420 ^
+     -dw 352 -dh 288 -dcrX 50 -dcrY 50 -dcrW 100 -dcrH 100 -dcc i010 ^
+     -i out_ref_h265.i420 ^
+     -o out_vpl_vpp.i010 ^
+     -lib vpl
+
+set VPP_FILTER=split=2[bg][main];^
+               [bg]scale=352:288,drawbox=x=0:y=0:w=352:h=288:t=fill[bg2];^
+               [main]crop=96:48:0:0,scale=100:100[ovr];^
+               [bg2][ovr]overlay=50:50,format=pix_fmts=yuv420p10le
+
+call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
+     -f rawvideo -pixel_format yuv420p -video_size 128x96 ^
+     -i out_ref_h265.i420 ^
+     -filter_complex "%VPP_FILTER%" ^
+     -f rawvideo -pixel_format yuv420p10le -video_size 352x288 ^
+     out_ref_vpp.i010
+call py -3 %PYTHONPATH%\check_content\check_smoke_output.py ^
+     out_vpl_vpp.i010 out_ref_vpp.i010 I010 352x288@30
+
+echo.
+if %errorlevel%==0 goto test_vpp_passed
+echo *** VPP Smoke Test FAILED ***
+set /A result_all = 1
+goto test_end
+
+:test_vpp_passed
+echo *** VPP Smoke Test PASSED ***
 
 :test_end
 exit /B %result_all%

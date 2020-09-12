@@ -38,12 +38,12 @@ echo --- Running Decode Smoke Test ---
                 -o out_vpl_h265.i420 -vpl
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
                                    -i ${proj_dir}/test/content/cars_128x96.h265\
-                                   -f rawvideo -pix_fmt yuv420p \
+                                   -f rawvideo -pixel_format yuv420p \
                                    out_ref_h265.i420
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
-                                   -r 30 -s 128x96 -pix_fmt yuv420p \
+                                   -r 30 -video_size 128x96 -pixel_format yuv420p \
                                    -f rawvideo -i out_vpl_h265.i420 \
-                                   -r 30 -s 128x96 -pix_fmt yuv420p \
+                                   -r 30 -video_size 128x96 -pixel_format yuv420p \
                                    -f rawvideo -i out_ref_h265.i420 \
                                    -filter_complex psnr= -f null nullsink
 python3 $PYTHONPATH/check_content/check_smoke_output.py \
@@ -61,9 +61,9 @@ echo --- Running Encode Smoke Test ---
 ./sample_encode h265 -i out_ref_h265.i420 -o out_vpl.h265 -w 128 -h 96 -vpl
 ./sample_decode h265 -i out_vpl.h265 -o out_vpl_dec_h265.i420 -vpl
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
-                                   -r 30 -s 128x96 -pix_fmt yuv420p \
+                                   -r 30 -video_size 128x96 -pixel_format yuv420p \
                                    -f rawvideo -i out_ref_h265.i420 \
-                                   -r 30 -s 128x96 -pix_fmt yuv420p \
+                                   -r 30 -video_size 128x96 -pixel_format yuv420p \
                                    -f rawvideo -i out_vpl_dec_h265.i420 \
                                    -filter_complex psnr= -f null nullsink
 python3 $PYTHONPATH/check_content/check_smoke_output.py \
@@ -75,6 +75,41 @@ if [ $ret -ne 0 ]; then
     let result_all++
 else
     echo --- Encode Smoke Test PASSED ---
+fi
+
+echo --- Running VPP Smoke Test ---
+./sample_vpp -sw 128 -sh 96 -scrX 0 -scrY 0 -scrW 96 -scrH 48 -scc i420 \
+             -dw 352 -dh 288 -dcrX 50 -dcrY 50 -dcrW 100 -dcrH 100 -dcc i010 \
+             -i out_ref_h265.i420 \
+             -o out_vpl_vpp.i010 \
+             -lib vpl
+
+VPP_FILTER="split=2[bg][main];\
+            [bg]scale=352:288,drawbox=x=0:y=0:w=352:h=288:t=fill[bg2];\
+            [main]crop=96:48:0:0,scale=100:100[ovr];\
+            [bg2][ovr]overlay=50:50,format=pix_fmts=yuv420p10le"
+
+$VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
+            -f rawvideo -pixel_format yuv420p -video_size 128x96 \
+            -i out_ref_h265.i420 \
+            -filter_complex "$VPP_FILTER" \
+            -f rawvideo -pixel_format yuv420p10le -video_size 352x288 \
+            out_ref_vpp.i010
+$VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
+            -r 30 -video_size 352x288 -pixel_format yuv420p10le \
+            -f rawvideo -i out_ref_vpp.i010 \
+            -r 30 -video_size 352x288 -pixel_format yuv420p10le \
+            -f rawvideo -i out_vpl_vpp.i010 \
+            -filter_complex psnr= -f null nullsink
+python3 $PYTHONPATH/check_content/check_smoke_output.py \
+        out_ref_vpp.i010 out_vpl_vpp.i010 I010 352x288@30
+
+ret=$?
+if [ $ret -ne 0 ]; then
+    echo --- VPP Smoke Test FAILED ---
+    let result_all++
+else
+    echo --- VPP Smoke Test PASSED ---
 fi
 
 exit $result_all
