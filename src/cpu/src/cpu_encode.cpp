@@ -1104,9 +1104,28 @@ CpuEncode::~CpuEncode() {
     }
 }
 
-mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxBitstream *bs) {
+mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface,
+                                 mfxEncodeCtrl *ctrl,
+                                 mfxBitstream *bs) {
     RET_IF_FALSE(m_avEncContext, MFX_ERR_NOT_INITIALIZED);
     int err;
+
+    // check mfxEncodeCtrl
+    // none of these features are implemented so function returns invalid param
+    if (ctrl) {
+        if (ctrl->MfxNalUnitType)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (ctrl->SkipFrame)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (ctrl->QP)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (ctrl->FrameType)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (ctrl->NumExtParam)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (ctrl->NumPayload)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
 
     // encode one frame
     if (surface) {

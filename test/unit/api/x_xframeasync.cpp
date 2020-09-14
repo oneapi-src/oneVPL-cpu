@@ -104,6 +104,75 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
     delete[] mfxBS.Data;
 }
 
+TEST(EncodeFrameAsync, EncCtrlReturnsErrInvalidVideoParam) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
+    mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW         = 128;
+    mfxEncParams.mfx.FrameInfo.CropH         = 96;
+    mfxEncParams.mfx.FrameInfo.Width         = 128;
+    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
+    mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+
+    mfxU16 nEncSurfNum = 16;
+    mfxU32 lumaSize =
+        mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
+
+    mfxU8 *surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
+    memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
+
+    mfxFrameSurface1 *encSurfaces = new mfxFrameSurface1[nEncSurfNum];
+    for (mfxI32 i = 0; i < nEncSurfNum; i++) {
+        encSurfaces[i]        = { 0 };
+        encSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
+        encSurfaces[i].Data.Y = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
+        encSurfaces[i].Data.U = encSurfaces[i].Data.Y + lumaSize;
+        encSurfaces[i].Data.V = encSurfaces[i].Data.U + lumaSize / 4;
+        encSurfaces[i].Data.Pitch = mfxEncParams.mfx.FrameInfo.Width;
+    }
+
+    sts = MFXVideoENCODE_Init(session, &mfxEncParams);
+    if (sts != MFX_ERR_NONE) {
+        if (encSurfaces)
+            delete[] encSurfaces;
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength    = 20000;
+    mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
+
+    mfxI32 nEncSurfIdx = 0;
+    mfxSyncPoint syncp;
+
+    mfxEncodeCtrl ctrl = { 0 };
+    ctrl.QP            = 1;
+
+    // Encode a frame asynchronously (returns immediately)
+    sts = MFXVideoENCODE_EncodeFrameAsync(session,
+                                          &ctrl,
+                                          &encSurfaces[nEncSurfIdx],
+                                          &mfxBS,
+                                          &syncp);
+
+    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+
+    MFXClose(session);
+
+    delete[] surfaceBuffers;
+    delete[] encSurfaces;
+    delete[] mfxBS.Data;
+}
+
 TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
     mfxVersion ver = {};
     mfxSession session;

@@ -26,7 +26,9 @@ public:
                                        mfxFrameAllocRequest* request);
 
     mfxStatus InitEncode(mfxVideoParam* par);
-    mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxBitstream* bs);
+    mfxStatus EncodeFrame(mfxFrameSurface1* surface,
+                          mfxEncodeCtrl* ctrl,
+                          mfxBitstream* bs);
     mfxStatus GetVideoParam(mfxVideoParam* par);
     mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
 

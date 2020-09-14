@@ -2145,11 +2145,20 @@ mfxStatus CEncodingPipeline::Run() {
             sts = InitEncFrameParams(pCurrentTask);
             MSDK_CHECK_STATUS(sts, "ENCODE: InitEncFrameParams failed");
 
-            // at this point surface for encoder contains either a frame from file or a frame processed by vpp
-            sts          = m_pmfxENC->EncodeFrameAsync(&m_encCtrl,
-                                              &m_pEncSurfaces[nEncSurfIdx],
-                                              &pCurrentTask->mfxBS,
-                                              &pCurrentTask->EncSyncP);
+            //mfxEncodeCtrl is not implemented for the CPU reference implementation
+            if (m_bUseVPLLib) {
+                sts = m_pmfxENC->EncodeFrameAsync(nullptr,
+                                                  &m_pEncSurfaces[nEncSurfIdx],
+                                                  &pCurrentTask->mfxBS,
+                                                  &pCurrentTask->EncSyncP);
+            }
+            else {
+                sts = m_pmfxENC->EncodeFrameAsync(&m_encCtrl,
+                                                  &m_pEncSurfaces[nEncSurfIdx],
+                                                  &pCurrentTask->mfxBS,
+                                                  &pCurrentTask->EncSyncP);
+            }
+
             m_bInsertIDR = false;
 
             if (m_nMemBuffer) {
@@ -2240,10 +2249,22 @@ mfxStatus CEncodingPipeline::Run() {
 
             for (;;) {
                 InsertIDR(m_bInsertIDR);
-                sts          = m_pmfxENC->EncodeFrameAsync(&m_encCtrl,
-                                                  &m_pEncSurfaces[nEncSurfIdx],
-                                                  &pCurrentTask->mfxBS,
-                                                  &pCurrentTask->EncSyncP);
+
+                //mfxEncodeCtrl is not implemented for the CPU reference implementation
+                if (m_bUseVPLLib) {
+                    sts = m_pmfxENC->EncodeFrameAsync(
+                        nullptr,
+                        &m_pEncSurfaces[nEncSurfIdx],
+                        &pCurrentTask->mfxBS,
+                        &pCurrentTask->EncSyncP);
+                }
+                else {
+                    sts = m_pmfxENC->EncodeFrameAsync(
+                        &m_encCtrl,
+                        &m_pEncSurfaces[nEncSurfIdx],
+                        &pCurrentTask->mfxBS,
+                        &pCurrentTask->EncSyncP);
+                }
                 m_bInsertIDR = false;
 
                 if (MFX_ERR_NONE < sts &&
@@ -2285,10 +2306,20 @@ mfxStatus CEncodingPipeline::Run() {
 
         for (;;) {
             InsertIDR(m_bInsertIDR);
-            sts          = m_pmfxENC->EncodeFrameAsync(&m_encCtrl,
-                                              NULL,
-                                              &pCurrentTask->mfxBS,
-                                              &pCurrentTask->EncSyncP);
+
+            //mfxEncodeCtrl is not implemented for the CPU reference implementation
+            if (m_bUseVPLLib) {
+                sts = m_pmfxENC->EncodeFrameAsync(&m_encCtrl,
+                                                  NULL,
+                                                  &pCurrentTask->mfxBS,
+                                                  &pCurrentTask->EncSyncP);
+            }
+            else {
+                sts = m_pmfxENC->EncodeFrameAsync(&m_encCtrl,
+                                                  NULL,
+                                                  &pCurrentTask->mfxBS,
+                                                  &pCurrentTask->EncSyncP);
+            }
             m_bInsertIDR = false;
 
             if (MFX_ERR_NONE < sts &&
