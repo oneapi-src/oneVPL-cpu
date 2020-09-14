@@ -33,8 +33,7 @@ mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {
 
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
-mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format,
-                                 mfxU32 *num_impls) {
+mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_impls) {
     VPL_TRACE_FUNC;
     // only structure format is currently supported
     if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
@@ -152,8 +151,7 @@ mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
 }
 
 // memory functions are associated with initialized session
-mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
-                                     mfxFrameSurface1 **surface) {
+mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session, mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
@@ -165,8 +163,7 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
     return vpp->GetVPPSurface(surface);
 }
 
-mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
-                                        mfxFrameSurface1 **surface) {
+mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
@@ -178,8 +175,7 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
     return encoder->GetEncodeSurface(surface);
 }
 
-mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
-                                        mfxFrameSurface1 **surface) {
+mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);

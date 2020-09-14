@@ -21,9 +21,7 @@
 struct CodeStringTable {
     int code;
     const char *string;
-} LevelStrings[] = { { DL_INFO, "INFO:   " },
-                     { DL_WRN, "WARNING:" },
-                     { DL_ERROR, "ERROR:  " } };
+} LevelStrings[] = { { DL_INFO, "INFO:   " }, { DL_WRN, "WARNING:" }, { DL_ERROR, "ERROR:  " } };
 
     #define DEFINE_CODE(code) \
         { code, #code }
@@ -72,8 +70,7 @@ static CodeStringTable StringsOfStatus[] = {
 
 };
 
-    #define CODE_TO_STRING(code, array) \
-        CodeToString(code, array, sizeof(array) / sizeof(array[0]))
+    #define CODE_TO_STRING(code, array) CodeToString(code, array, sizeof(array) / sizeof(array[0]))
 
 const char *CodeToString(int code, CodeStringTable array[], int len) {
     for (int i = 0; i < len; i++) {
@@ -84,10 +81,8 @@ const char *CodeToString(int code, CodeStringTable array[], int len) {
 }
 
 std::string DispatcherLog_GetMFXImplString(int impl) {
-    std::string str1 =
-        CODE_TO_STRING(impl & ~(-MFX_IMPL_VIA_ANY), StringsOfImpl);
-    std::string str2 =
-        CODE_TO_STRING(impl & (-MFX_IMPL_VIA_ANY), StringsOfImplVIA);
+    std::string str1 = CODE_TO_STRING(impl & ~(-MFX_IMPL_VIA_ANY), StringsOfImpl);
+    std::string str2 = CODE_TO_STRING(impl & (-MFX_IMPL_VIA_ANY), StringsOfImplVIA);
 
     return str1 + (str2 == "undef" ? "" : "|" + str2);
 }
@@ -139,9 +134,7 @@ void DispatchLog::DetachSink(int nsink, IMsgHandler *pHandler) {
     m_DispatcherLogSink &= ~nsink;
 }
 
-void DispatchLog::ExchangeSink(int nsink,
-                               IMsgHandler *oldHdl,
-                               IMsgHandler *newHdl) {
+void DispatchLog::ExchangeSink(int nsink, IMsgHandler *oldHdl, IMsgHandler *newHdl) {
     if (nsink & DL_SINK_IMsgHandler) {
         std::list<IMsgHandler *>::iterator it =
             std::find(m_Recepients.begin(), m_Recepients.end(), oldHdl);
@@ -159,10 +152,7 @@ void DispatchLog::DetachAllSinks() {
     m_DispatcherLogSink = DL_SINK_NULL;
 }
 
-void DispatchLog::Write(int level,
-                        int opcode,
-                        const char *msg,
-                        va_list argptr) {
+void DispatchLog::Write(int level, int opcode, const char *msg, va_list argptr) {
     int sinkTable[] = {
         DL_SINK_PRINTF,
         DL_SINK_IMsgHandler,
@@ -189,9 +179,7 @@ void DispatchLog::Write(int level,
                               argptr);
     #endif
                     //TODO(XX): improve this , add opcode handling
-                    printf("%s %s",
-                           CODE_TO_STRING(level, LevelStrings),
-                           msg_formated);
+                    printf("%s %s", CODE_TO_STRING(level, LevelStrings), msg_formated);
                 }
                 break;
             }
@@ -199,8 +187,7 @@ void DispatchLog::Write(int level,
             case DL_SINK_IMsgHandler: {
                 std::list<IMsgHandler *>::iterator it;
 
-                for (it = m_Recepients.begin(); it != m_Recepients.end();
-                     ++it) {
+                for (it = m_Recepients.begin(); it != m_Recepients.end(); ++it) {
                     (*it)->Write(level, opcode, msg, argptr);
                 }
                 break;
@@ -316,8 +303,7 @@ class EventRegistrator : public IMsgHandler {
     const wchar_t *m_sguid;
 
 public:
-    explicit EventRegistrator(const wchar_t *sguid = DISPATCHER_LOG_EVENT_GUID)
-            : m_sguid(sguid) {
+    explicit EventRegistrator(const wchar_t *sguid = DISPATCHER_LOG_EVENT_GUID) : m_sguid(sguid) {
         DispatchLog::get().AttachSink(DL_SINK_IMsgHandler, this);
     }
 
@@ -325,10 +311,9 @@ public:
         //we cannot call attach sink since we may have been called from iteration
         //we axchanging preserve that placeholding
         IMsgHandler *pSink = NULL;
-        DispatchLog::get().ExchangeSink(
-            DL_SINK_IMsgHandler,
-            this,
-            pSink = ETWHandlerFactory::get().GetSink(m_sguid));
+        DispatchLog::get().ExchangeSink(DL_SINK_IMsgHandler,
+                                        this,
+                                        pSink = ETWHandlerFactory::get().GetSink(m_sguid));
         //need to call only once here all next calls will be done inside dispatcherlog
         if (NULL != pSink) {
             pSink->Write(level, opcode, msg, argptr);
@@ -345,8 +330,7 @@ template <>
 class SinkRegistrator<ETWHandlerFactory> {
 public:
     explicit SinkRegistrator(const wchar_t *sguid = DISPATCHER_LOG_EVENT_GUID) {
-        DispatchLog::get().AttachSink(DL_SINK_IMsgHandler,
-                                      ETWHandlerFactory::get().GetSink(sguid));
+        DispatchLog::get().AttachSink(DL_SINK_IMsgHandler, ETWHandlerFactory::get().GetSink(sguid));
     }
 };
     #endif
@@ -356,15 +340,11 @@ template <>
 class SinkRegistrator<FileSink> {
 public:
     SinkRegistrator() {
-        DispatchLog::get().AttachSink(DL_SINK_IMsgHandler,
-                                      &FileSink::get(DISPACTHER_LOG_FW_PATH));
+        DispatchLog::get().AttachSink(DL_SINK_IMsgHandler, &FileSink::get(DISPACTHER_LOG_FW_PATH));
     }
 };
 
-void FileSink::Write(int level,
-                     int /*opcode*/,
-                     const char *msg,
-                     va_list argptr) {
+void FileSink::Write(int level, int /*opcode*/, const char *msg, va_list argptr) {
     if (NULL != m_hdl && NULL != msg) {
         fprintf(m_hdl, "%s", CODE_TO_STRING(level, LevelStrings));
         vfprintf(m_hdl, msg, argptr);

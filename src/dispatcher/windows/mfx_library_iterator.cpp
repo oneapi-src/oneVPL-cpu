@@ -49,29 +49,25 @@ mfxStatus SelectImplementationType(const mfxU32 adapterNum,
     if (MFX_IMPL_VIA_D3D9 == impl_via) {
         // try to create the Direct3D 9 device and find right adapter
         if (!dxvaDevice.InitD3D9(adapterNum)) {
-            DISPATCHER_LOG_INFO(
-                (("dxvaDevice.InitD3D9(%d) Failed "), adapterNum));
+            DISPATCHER_LOG_INFO((("dxvaDevice.InitD3D9(%d) Failed "), adapterNum));
             return MFX_ERR_UNSUPPORTED;
         }
     }
     else if (MFX_IMPL_VIA_D3D11 == impl_via) {
         // try to open DXGI 1.1 device to get hardware ID
         if (!dxvaDevice.InitDXGI1(adapterNum)) {
-            DISPATCHER_LOG_INFO(
-                (("dxvaDevice.InitDXGI1(%d) Failed "), adapterNum));
+            DISPATCHER_LOG_INFO((("dxvaDevice.InitDXGI1(%d) Failed "), adapterNum));
             return MFX_ERR_UNSUPPORTED;
         }
     }
     else if (MFX_IMPL_VIA_ANY == impl_via) {
         // try the Direct3D 9 device
         if (dxvaDevice.InitD3D9(adapterNum)) {
-            *pImplInterface =
-                MFX_IMPL_VIA_D3D9; // store value for GetImplementationType() call
+            *pImplInterface = MFX_IMPL_VIA_D3D9; // store value for GetImplementationType() call
         }
         // else try to open DXGI 1.1 device to get hardware ID
         else if (dxvaDevice.InitDXGI1(adapterNum)) {
-            *pImplInterface =
-                MFX_IMPL_VIA_D3D11; // store value for GetImplementationType() call
+            *pImplInterface = MFX_IMPL_VIA_D3D11; // store value for GetImplementationType() call
         }
         else {
             DISPATCHER_LOG_INFO((("Unsupported adapter %d "), adapterNum));
@@ -79,8 +75,7 @@ mfxStatus SelectImplementationType(const mfxU32 adapterNum,
         }
     }
     else {
-        DISPATCHER_LOG_ERROR(
-            (("Unknown implementation type %d "), *pImplInterface));
+        DISPATCHER_LOG_ERROR((("Unknown implementation type %d "), *pImplInterface));
         return MFX_ERR_UNSUPPORTED;
     }
 
@@ -134,10 +129,10 @@ void MFXLibraryIterator::Release(void) {
 DECLSPEC_NOINLINE HMODULE GetThisDllModuleHandle() {
     HMODULE hDll = NULL;
 
-    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                           GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                       reinterpret_cast<LPCWSTR>(&GetThisDllModuleHandle),
-                       &hDll);
+    GetModuleHandleExW(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCWSTR>(&GetThisDllModuleHandle),
+        &hDll);
     return hDll;
 }
 
@@ -175,8 +170,7 @@ bool GetImplPath(int storageID, wchar_t *sImplPath) {
     sImplPath[nSize] = L'\0';
 
     wchar_t *dirSeparator = wcsrchr(sImplPath, L'\\');
-    if (dirSeparator != NULL &&
-        dirSeparator < (sImplPath + msdk_disp_path_len)) {
+    if (dirSeparator != NULL && dirSeparator < (sImplPath + msdk_disp_path_len)) {
         *++dirSeparator = 0;
     }
     return true;
@@ -197,8 +191,7 @@ mfxStatus MFXLibraryIterator::Init(eMfxImplType implType,
     m_lastLibIndex = 0;
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)
-    if (storageID == MFX_CURRENT_USER_KEY ||
-        storageID == MFX_LOCAL_MACHINE_KEY) {
+    if (storageID == MFX_CURRENT_USER_KEY || storageID == MFX_LOCAL_MACHINE_KEY) {
         return InitRegistry(implType, implInterface, adapterNum, storageID);
     }
 #endif
@@ -209,11 +202,7 @@ mfxStatus MFXLibraryIterator::Init(eMfxImplType implType,
         return MFX_ERR_UNSUPPORTED;
     }
 
-    return InitFolder(implType,
-                      implInterface,
-                      adapterNum,
-                      sCurrentModulePath,
-                      storageID);
+    return InitFolder(implType, implInterface, adapterNum, sCurrentModulePath, storageID);
 
 } // mfxStatus MFXLibraryIterator::Init(eMfxImplType implType, const mfxU32 adapterNum, int storageID)
 
@@ -226,16 +215,14 @@ mfxStatus MFXLibraryIterator::InitRegistry(eMfxImplType implType,
     bool bRes;
 
     // open required registry key
-    rootHKey = (MFX_LOCAL_MACHINE_KEY == storageID) ? (HKEY_LOCAL_MACHINE)
-                                                    : (HKEY_CURRENT_USER);
-    bRes = m_baseRegKey.Open(rootHKey, rootDispPath, KEY_READ);
+    rootHKey = (MFX_LOCAL_MACHINE_KEY == storageID) ? (HKEY_LOCAL_MACHINE) : (HKEY_CURRENT_USER);
+    bRes     = m_baseRegKey.Open(rootHKey, rootDispPath, KEY_READ);
     if (false == bRes) {
-        DISPATCHER_LOG_WRN((("Can't open %s\\%S : RegOpenKeyExA()==0x%x\n"),
-                            (MFX_LOCAL_MACHINE_KEY == storageID)
-                                ? ("HKEY_LOCAL_MACHINE")
-                                : ("HKEY_CURRENT_USER"),
-                            rootDispPath,
-                            GetLastError()))
+        DISPATCHER_LOG_WRN(
+            (("Can't open %s\\%S : RegOpenKeyExA()==0x%x\n"),
+             (MFX_LOCAL_MACHINE_KEY == storageID) ? ("HKEY_LOCAL_MACHINE") : ("HKEY_CURRENT_USER"),
+             rootDispPath,
+             GetLastError()))
         return MFX_ERR_UNKNOWN;
     }
 
@@ -245,20 +232,17 @@ mfxStatus MFXLibraryIterator::InitRegistry(eMfxImplType implType,
 
     //deviceID and vendorID are not actual for SW library loading
     if (m_implType != MFX_LIB_SOFTWARE) {
-        mfxStatus mfxRes = MFX::SelectImplementationType(adapterNum,
-                                                         &m_implInterface,
-                                                         &m_vendorID,
-                                                         &m_deviceID);
+        mfxStatus mfxRes =
+            MFX::SelectImplementationType(adapterNum, &m_implInterface, &m_vendorID, &m_deviceID);
         if (MFX_ERR_NONE != mfxRes) {
             return mfxRes;
         }
     }
 
-    DISPATCHER_LOG_INFO((("Inspecting %s\\%S\n"),
-                         (MFX_LOCAL_MACHINE_KEY == storageID)
-                             ? ("HKEY_LOCAL_MACHINE")
-                             : ("HKEY_CURRENT_USER"),
-                         rootDispPath))
+    DISPATCHER_LOG_INFO(
+        (("Inspecting %s\\%S\n"),
+         (MFX_LOCAL_MACHINE_KEY == storageID) ? ("HKEY_LOCAL_MACHINE") : ("HKEY_CURRENT_USER"),
+         rootDispPath))
 
     return MFX_ERR_NONE;
 #else
@@ -283,14 +267,10 @@ mfxStatus MFXLibraryIterator::InitFolder(eMfxImplType implType,
 
     if (storageID == MFX_APP_FOLDER) {
         // we looking for runtime in application folder, it should be named libmfxsw64 or libmfxsw32
-        mfx_get_default_dll_name(m_path + pathLen,
-                                 msdk_disp_path_len - pathLen,
-                                 MFX_LIB_SOFTWARE);
+        mfx_get_default_dll_name(m_path + pathLen, msdk_disp_path_len - pathLen, MFX_LIB_SOFTWARE);
     }
     else {
-        mfx_get_default_dll_name(m_path + pathLen,
-                                 msdk_disp_path_len - pathLen,
-                                 implType);
+        mfx_get_default_dll_name(m_path + pathLen, msdk_disp_path_len - pathLen, implType);
     }
 
     // set the required library's implementation type
@@ -299,10 +279,8 @@ mfxStatus MFXLibraryIterator::InitFolder(eMfxImplType implType,
 
     //deviceID and vendorID are not actual for SW library loading
     if (m_implType != MFX_LIB_SOFTWARE) {
-        mfxStatus mfxRes = MFX::SelectImplementationType(adapterNum,
-                                                         &m_implInterface,
-                                                         &m_vendorID,
-                                                         &m_deviceID);
+        mfxStatus mfxRes =
+            MFX::SelectImplementationType(adapterNum, &m_implInterface, &m_vendorID, &m_deviceID);
         if (MFX_ERR_NONE != mfxRes) {
             return mfxRes;
         }
@@ -353,13 +331,12 @@ mfxStatus MFXLibraryIterator::SelectDLLVersion(wchar_t *pPath,
     do {
         WinRegKey subKey;
         wchar_t subKeyName[MFX_MAX_REGISTRY_KEY_NAME] = { 0 };
-        DWORD subKeyNameSize = sizeof(subKeyName) / sizeof(subKeyName[0]);
+        DWORD subKeyNameSize                          = sizeof(subKeyName) / sizeof(subKeyName[0]);
 
         // query next value name
         enumRes = m_baseRegKey.EnumKey(index, subKeyName, &subKeyNameSize);
         if (!enumRes) {
-            DISPATCHER_LOG_WRN(
-                (("no more subkeys : RegEnumKeyExA()==0x%x\n"), GetLastError()))
+            DISPATCHER_LOG_WRN((("no more subkeys : RegEnumKeyExA()==0x%x\n"), GetLastError()))
         }
         else {
             DISPATCHER_LOG_INFO((("found subkey: %S\n"), subKeyName))
@@ -369,10 +346,9 @@ mfxStatus MFXLibraryIterator::SelectDLLVersion(wchar_t *pPath,
             // open the sub key
             bRes = subKey.Open(m_baseRegKey, subKeyName, KEY_READ);
             if (!bRes) {
-                DISPATCHER_LOG_WRN(
-                    (("error opening key %S :RegOpenKeyExA()==0x%x\n"),
-                     subKeyName,
-                     GetLastError()));
+                DISPATCHER_LOG_WRN((("error opening key %S :RegOpenKeyExA()==0x%x\n"),
+                                    subKeyName,
+                                    GetLastError()));
             }
             else {
                 DISPATCHER_LOG_INFO((("opened key: %S\n"), subKeyName));
@@ -382,61 +358,45 @@ mfxStatus MFXLibraryIterator::SelectDLLVersion(wchar_t *pPath,
 
                 // query vendor and device IDs
                 size = sizeof(vendorID);
-                bRes = subKey.Query(vendorIDKeyName,
-                                    REG_DWORD,
-                                    (LPBYTE)&vendorID,
-                                    &size);
+                bRes = subKey.Query(vendorIDKeyName, REG_DWORD, (LPBYTE)&vendorID, &size);
                 DISPATCHER_LOG_OPERATION({
                     if (bRes) {
-                        DISPATCHER_LOG_INFO((("loaded %S : 0x%x\n"),
-                                             vendorIDKeyName,
-                                             vendorID));
+                        DISPATCHER_LOG_INFO((("loaded %S : 0x%x\n"), vendorIDKeyName, vendorID));
                     }
                     else {
-                        DISPATCHER_LOG_WRN(
-                            (("querying %S : RegQueryValueExA()==0x%x\n"),
-                             vendorIDKeyName,
-                             GetLastError()));
+                        DISPATCHER_LOG_WRN((("querying %S : RegQueryValueExA()==0x%x\n"),
+                                            vendorIDKeyName,
+                                            GetLastError()));
                     }
                 })
 
                 if (bRes) {
                     size = sizeof(deviceID);
-                    bRes = subKey.Query(deviceIDKeyName,
-                                        REG_DWORD,
-                                        (LPBYTE)&deviceID,
-                                        &size);
+                    bRes = subKey.Query(deviceIDKeyName, REG_DWORD, (LPBYTE)&deviceID, &size);
                     DISPATCHER_LOG_OPERATION({
                         if (bRes) {
-                            DISPATCHER_LOG_INFO((("loaded %S : 0x%x\n"),
-                                                 deviceIDKeyName,
-                                                 deviceID));
+                            DISPATCHER_LOG_INFO(
+                                (("loaded %S : 0x%x\n"), deviceIDKeyName, deviceID));
                         }
                         else {
-                            DISPATCHER_LOG_WRN(
-                                (("querying %S : RegQueryValueExA()==0x%x\n"),
-                                 deviceIDKeyName,
-                                 GetLastError()));
+                            DISPATCHER_LOG_WRN((("querying %S : RegQueryValueExA()==0x%x\n"),
+                                                deviceIDKeyName,
+                                                GetLastError()));
                         }
                     })
                 }
                 // query merit value
                 if (bRes) {
                     size = sizeof(merit);
-                    bRes = subKey.Query(meritKeyName,
-                                        REG_DWORD,
-                                        (LPBYTE)&merit,
-                                        &size);
+                    bRes = subKey.Query(meritKeyName, REG_DWORD, (LPBYTE)&merit, &size);
                     DISPATCHER_LOG_OPERATION({
                         if (bRes) {
-                            DISPATCHER_LOG_INFO(
-                                (("loaded %S : %d\n"), meritKeyName, merit));
+                            DISPATCHER_LOG_INFO((("loaded %S : %d\n"), meritKeyName, merit));
                         }
                         else {
-                            DISPATCHER_LOG_WRN(
-                                (("querying %S : RegQueryValueExA()==0x%x\n"),
-                                 meritKeyName,
-                                 GetLastError()));
+                            DISPATCHER_LOG_WRN((("querying %S : RegQueryValueExA()==0x%x\n"),
+                                                meritKeyName,
+                                                GetLastError()));
                         }
                     })
                 }
@@ -448,27 +408,24 @@ mfxStatus MFXLibraryIterator::SelectDLLVersion(wchar_t *pPath,
                     if (MFX_LIB_HARDWARE == m_implType) {
                         if (m_vendorID != vendorID) {
                             bRes = false;
-                            DISPATCHER_LOG_WRN((
-                                ("%S conflict, actual = 0x%x : required = 0x%x\n"),
-                                vendorIDKeyName,
-                                m_vendorID,
-                                vendorID));
+                            DISPATCHER_LOG_WRN((("%S conflict, actual = 0x%x : required = 0x%x\n"),
+                                                vendorIDKeyName,
+                                                m_vendorID,
+                                                vendorID));
                         }
                         if (bRes && m_deviceID != deviceID) {
                             bRes = false;
-                            DISPATCHER_LOG_WRN((
-                                ("%S conflict, actual = 0x%x : required = 0x%x\n"),
-                                deviceIDKeyName,
-                                m_deviceID,
-                                deviceID));
+                            DISPATCHER_LOG_WRN((("%S conflict, actual = 0x%x : required = 0x%x\n"),
+                                                deviceIDKeyName,
+                                                m_deviceID,
+                                                deviceID));
                         }
                     }
 
                     DISPATCHER_LOG_OPERATION({
                         if (bRes) {
                             if (!(((m_lastLibMerit > merit) ||
-                                   ((m_lastLibMerit == merit) &&
-                                    (m_lastLibIndex < index))) &&
+                                   ((m_lastLibMerit == merit) && (m_lastLibIndex < index))) &&
                                   (libMerit < merit))) {
                                 DISPATCHER_LOG_WRN((
                                     ("merit conflict: lastMerit = 0x%x, requiredMerit = 0x%x, libraryMerit = 0x%x, lastindex = %d, index = %d\n"),
@@ -483,33 +440,24 @@ mfxStatus MFXLibraryIterator::SelectDLLVersion(wchar_t *pPath,
 
                     if ((bRes) &&
                         ((m_lastLibMerit > merit) ||
-                         ((m_lastLibMerit == merit) &&
-                          (m_lastLibIndex < index))) &&
+                         ((m_lastLibMerit == merit) && (m_lastLibIndex < index))) &&
                         (libMerit < merit)) {
                         wchar_t tmpPath[MFX_MAX_DLL_PATH];
                         DWORD tmpPathSize = sizeof(tmpPath);
 
-                        bRes = subKey.Query(pathKeyName,
-                                            REG_SZ,
-                                            (LPBYTE)tmpPath,
-                                            &tmpPathSize);
+                        bRes = subKey.Query(pathKeyName, REG_SZ, (LPBYTE)tmpPath, &tmpPathSize);
                         if (!bRes) {
-                            DISPATCHER_LOG_WRN((
-                                ("error querying %S : RegQueryValueExA()==0x%x\n"),
-                                pathKeyName,
-                                GetLastError()));
+                            DISPATCHER_LOG_WRN((("error querying %S : RegQueryValueExA()==0x%x\n"),
+                                                pathKeyName,
+                                                GetLastError()));
                         }
                         else {
-                            DISPATCHER_LOG_INFO(
-                                (("loaded %S : %S\n"), pathKeyName, tmpPath));
+                            DISPATCHER_LOG_INFO((("loaded %S : %S\n"), pathKeyName, tmpPath));
 
-                            wcscpy_s(libPath,
-                                     sizeof(libPath) / sizeof(libPath[0]),
-                                     tmpPath);
-                            wcscpy_s(
-                                m_SubKeyName,
-                                sizeof(m_SubKeyName) / sizeof(m_SubKeyName[0]),
-                                subKeyName);
+                            wcscpy_s(libPath, sizeof(libPath) / sizeof(libPath[0]), tmpPath);
+                            wcscpy_s(m_SubKeyName,
+                                     sizeof(m_SubKeyName) / sizeof(m_SubKeyName[0]),
+                                     subKeyName);
 
                             libMerit = merit;
                             libIndex = index;
@@ -517,13 +465,11 @@ mfxStatus MFXLibraryIterator::SelectDLLVersion(wchar_t *pPath,
                             // set the library's type
                             if ((0 == vendorID) || (0 == deviceID)) {
                                 *pImplType = MFX_LIB_SOFTWARE;
-                                DISPATCHER_LOG_INFO(
-                                    (("Library type is MFX_LIB_SOFTWARE\n")));
+                                DISPATCHER_LOG_INFO((("Library type is MFX_LIB_SOFTWARE\n")));
                             }
                             else {
                                 *pImplType = MFX_LIB_HARDWARE;
-                                DISPATCHER_LOG_INFO(
-                                    (("Library type is MFX_LIB_HARDWARE\n")));
+                                DISPATCHER_LOG_INFO((("Library type is MFX_LIB_HARDWARE\n")));
                             }
                         }
                     }
@@ -558,8 +504,7 @@ mfxIMPL MFXLibraryIterator::GetImplementationType() {
     return m_implInterface;
 } // mfxIMPL MFXLibraryIterator::GetImplementationType()
 
-bool MFXLibraryIterator::GetSubKeyName(wchar_t *subKeyName,
-                                       size_t length) const {
+bool MFXLibraryIterator::GetSubKeyName(wchar_t *subKeyName, size_t length) const {
     wcscpy_s(subKeyName, length, m_SubKeyName);
     return m_bIsSubKeyValid;
 }

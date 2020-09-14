@@ -22,15 +22,12 @@ FrameLock::~FrameLock() {
     }
 }
 
-mfxStatus FrameLock::Lock(mfxFrameSurface1 *surface,
-                          mfxU32 flags,
-                          mfxFrameAllocator *allocator) {
+mfxStatus FrameLock::Lock(mfxFrameSurface1 *surface, mfxU32 flags, mfxFrameAllocator *allocator) {
     Unlock();
 
     m_surface   = surface;
     m_allocator = allocator;
-    m_newapi    = surface->Version.Version >= MFX_FRAMESURFACE1_VERSION &&
-               surface->FrameInterface;
+    m_newapi    = surface->Version.Version >= MFX_FRAMESURFACE1_VERSION && surface->FrameInterface;
     if (allocator && allocator->pthis) {
         mem_id = surface->Data.MemId;
         RET_ERROR(allocator->Lock(allocator->pthis, mem_id, &m_locked_data));

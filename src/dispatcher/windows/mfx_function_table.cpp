@@ -11,10 +11,7 @@
 //
 
 #undef FUNCTION
-#define FUNCTION(return_value,      \
-                 func_name,         \
-                 formal_param_list, \
-                 actual_param_list) \
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) \
     { #func_name, API_VERSION },
 
 const FUNCTION_DESCRIPTION APIFunc[eVideoFuncTotal] = {
@@ -91,13 +88,10 @@ void SuppressWarnings(...) {
 } // void SuppressWarnings(...)
 
 #undef FUNCTION
-#define FUNCTION(return_value,                         \
-                 func_name,                            \
-                 formal_param_list,                    \
-                 actual_param_list)                    \
-    return_value pseudo##func_name formal_param_list { \
-        SuppressWarnings actual_param_list;            \
-        return MFX_ERR_UNKNOWN;                        \
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) \
+    return_value pseudo##func_name formal_param_list {                          \
+        SuppressWarnings actual_param_list;                                     \
+        return MFX_ERR_UNKNOWN;                                                 \
     }
 
 #include "windows/mfx_exposed_functions_list.h" // NOLINT(build/include)

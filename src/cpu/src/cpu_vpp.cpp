@@ -56,26 +56,21 @@
 
 // names of VPP smart filters. internal using only
 enum {
-    MFX_EXTBUFF_VPP_CSC =
-        MFX_MAKEFOURCC('C', 'S', 'C', 'F'), //COLOR SPACE CONVERSION FILTER
-    MFX_EXTBUFF_VPP_RESIZE = MFX_MAKEFOURCC('R', 'S', 'Z', 'F'),
-    MFX_EXTBUFF_VPP_DI =
-        MFX_MAKEFOURCC('S',
-                       'D',
-                       'I',
-                       'F'), //STANDARD DEINTERLACE FILTER (60i->30p)
-    MFX_EXTBUFF_VPP_DI_30i60p =
-        MFX_MAKEFOURCC('F',
-                       'D',
-                       'I',
-                       'F'), //FULL PTS DEINTERLACE FILTER (60i->60p)
-    MFX_EXTBUFF_VPP_DI_WEAVE =
-        MFX_MAKEFOURCC('F',
-                       'D',
-                       'I',
-                       'W'), //WEAVE DEINTERLACE FILTER (60i->30p)
-    MFX_EXTBUFF_VPP_ITC =
-        MFX_MAKEFOURCC('I', 'T', 'C', 'F'), //INV TELECINE FILTER
+    MFX_EXTBUFF_VPP_CSC       = MFX_MAKEFOURCC('C', 'S', 'C', 'F'), //COLOR SPACE CONVERSION FILTER
+    MFX_EXTBUFF_VPP_RESIZE    = MFX_MAKEFOURCC('R', 'S', 'Z', 'F'),
+    MFX_EXTBUFF_VPP_DI        = MFX_MAKEFOURCC('S',
+                                        'D',
+                                        'I',
+                                        'F'), //STANDARD DEINTERLACE FILTER (60i->30p)
+    MFX_EXTBUFF_VPP_DI_30i60p = MFX_MAKEFOURCC('F',
+                                               'D',
+                                               'I',
+                                               'F'), //FULL PTS DEINTERLACE FILTER (60i->60p)
+    MFX_EXTBUFF_VPP_DI_WEAVE  = MFX_MAKEFOURCC('F',
+                                              'D',
+                                              'I',
+                                              'W'), //WEAVE DEINTERLACE FILTER (60i->30p)
+    MFX_EXTBUFF_VPP_ITC       = MFX_MAKEFOURCC('I', 'T', 'C', 'F'), //INV TELECINE FILTER
     MFX_EXTBUFF_VPP_FIELD_WEAVING   = MFX_MAKEFOURCC('F', 'I', 'W', 'F'),
     MFX_EXTBUFF_VPP_FIELD_SPLITTING = MFX_MAKEFOURCC('F', 'I', 'S', 'F'),
 
@@ -228,15 +223,14 @@ bool CpuVPP::InitFilters(void) {
         return false;
     }
 
-    snprintf(
-        buffersrc_fmt,
-        sizeof(buffersrc_fmt),
-        "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d", //:pixel_aspect=1/1",
-        m_vpp_base.src_width,
-        m_vpp_base.src_height,
-        m_vpp_base.src_pixel_format,
-        m_vpp_base.src_fr_num,
-        m_vpp_base.src_fr_den);
+    snprintf(buffersrc_fmt,
+             sizeof(buffersrc_fmt),
+             "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d", //:pixel_aspect=1/1",
+             m_vpp_base.src_width,
+             m_vpp_base.src_height,
+             m_vpp_base.src_pixel_format,
+             m_vpp_base.src_fr_num,
+             m_vpp_base.src_fr_den);
 
     ret = avfilter_graph_create_filter(&m_buffersrc_ctx,
                                        buffersrc,
@@ -288,23 +282,19 @@ bool CpuVPP::InitFilters(void) {
                      m_vpp_base.dst_rc.h);
         }
         else {
-            std::string f_split = "split=2[bg][main];";
-            std::string f_scale_dst =
-                "[bg]scale=" + std::to_string(m_vpp_base.dst_width) + ":" +
-                std::to_string(m_vpp_base.dst_height) + ",";
-            std::string f_bg =
-                "drawbox=x=0:y=0:w=" + std::to_string(m_vpp_base.dst_width) +
-                ":h=" + std::to_string(m_vpp_base.dst_height) + ":t=fill[bg2];";
-            std::string f_crop_src =
-                "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
-                std::to_string(m_vpp_base.src_rc.h) + ":" +
-                std::to_string(m_vpp_base.src_rc.x) + ":" +
-                std::to_string(m_vpp_base.src_rc.y) +
-                ",scale=" + std::to_string(m_vpp_base.dst_rc.w) + ":" +
-                std::to_string(m_vpp_base.dst_rc.h) + "[ovr];";
-            std::string f_ovr =
-                "[bg2][ovr]overlay=" + std::to_string(m_vpp_base.dst_rc.x) +
-                ":" + std::to_string(m_vpp_base.dst_rc.y);
+            std::string f_split     = "split=2[bg][main];";
+            std::string f_scale_dst = "[bg]scale=" + std::to_string(m_vpp_base.dst_width) + ":" +
+                                      std::to_string(m_vpp_base.dst_height) + ",";
+            std::string f_bg = "drawbox=x=0:y=0:w=" + std::to_string(m_vpp_base.dst_width) +
+                               ":h=" + std::to_string(m_vpp_base.dst_height) + ":t=fill[bg2];";
+            std::string f_crop_src = "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
+                                     std::to_string(m_vpp_base.src_rc.h) + ":" +
+                                     std::to_string(m_vpp_base.src_rc.x) + ":" +
+                                     std::to_string(m_vpp_base.src_rc.y) +
+                                     ",scale=" + std::to_string(m_vpp_base.dst_rc.w) + ":" +
+                                     std::to_string(m_vpp_base.dst_rc.h) + "[ovr];";
+            std::string f_ovr = "[bg2][ovr]overlay=" + std::to_string(m_vpp_base.dst_rc.x) + ":" +
+                                std::to_string(m_vpp_base.dst_rc.y);
 
             snprintf(m_vpp_filter_desc,
                      sizeof(m_vpp_filter_desc),
@@ -337,23 +327,14 @@ bool CpuVPP::InitFilters(void) {
 
         char pixel_format[50] = { 0 };
         if (csc_dst_fmt == AV_PIX_FMT_YUV420P)
-            snprintf(pixel_format,
-                     sizeof(pixel_format),
-                     "format=pix_fmts=yuv420p");
+            snprintf(pixel_format, sizeof(pixel_format), "format=pix_fmts=yuv420p");
         else if (csc_dst_fmt == AV_PIX_FMT_YUV420P10LE)
-            snprintf(pixel_format,
-                     sizeof(pixel_format),
-                     "format=pix_fmts=yuv420p10le");
+            snprintf(pixel_format, sizeof(pixel_format), "format=pix_fmts=yuv420p10le");
         else if (csc_dst_fmt == AV_PIX_FMT_BGRA)
-            snprintf(pixel_format,
-                     sizeof(pixel_format),
-                     "format=pix_fmts=bgra");
+            snprintf(pixel_format, sizeof(pixel_format), "format=pix_fmts=bgra");
 
         if (m_vpp_base.vpp_func == VPL_VPP_CSC) // there's no filter assigned
-            snprintf(m_vpp_filter_desc,
-                     sizeof(m_vpp_filter_desc),
-                     "%s",
-                     pixel_format);
+            snprintf(m_vpp_filter_desc, sizeof(m_vpp_filter_desc), "%s", pixel_format);
         else {
             std::string curr_desc = m_vpp_filter_desc;
             snprintf(m_vpp_filter_desc,
@@ -454,8 +435,7 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     RET_ERROR(sts);
 
     sts = CheckExtParam(par->ExtParam, par->NumExtParam);
-    if (MFX_WRN_INCOMPATIBLE_VIDEO_PARAM == sts ||
-        MFX_WRN_FILTER_SKIPPED == sts) {
+    if (MFX_WRN_INCOMPATIBLE_VIDEO_PARAM == sts || MFX_WRN_FILTER_SKIPPED == sts) {
         sts_wrn = sts;
         sts     = MFX_ERR_NONE;
     }
@@ -491,22 +471,20 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
         m_vpp_base.vpp_func |= VPL_VPP_CSC;
     }
 
-    if (m_vpp_base.src_rc.x != 0 || m_vpp_base.src_rc.y != 0 ||
-        m_vpp_base.dst_rc.x != 0 || m_vpp_base.dst_rc.y != 0) {
+    if (m_vpp_base.src_rc.x != 0 || m_vpp_base.src_rc.y != 0 || m_vpp_base.dst_rc.x != 0 ||
+        m_vpp_base.dst_rc.y != 0) {
         m_vpp_base.vpp_func |= VPL_VPP_CROP;
     }
 
-    if (!(m_vpp_base.vpp_func & VPL_VPP_CROP) &&
-        (m_vpp_base.src_rc.w != m_vpp_base.src_width ||
-         m_vpp_base.src_rc.h != m_vpp_base.src_height ||
-         m_vpp_base.dst_rc.w != m_vpp_base.dst_width ||
-         m_vpp_base.dst_rc.h != m_vpp_base.dst_height)) {
+    if (!(m_vpp_base.vpp_func & VPL_VPP_CROP) && (m_vpp_base.src_rc.w != m_vpp_base.src_width ||
+                                                  m_vpp_base.src_rc.h != m_vpp_base.src_height ||
+                                                  m_vpp_base.dst_rc.w != m_vpp_base.dst_width ||
+                                                  m_vpp_base.dst_rc.h != m_vpp_base.dst_height)) {
         m_vpp_base.vpp_func |= VPL_VPP_CROP;
     }
 
-    if (!(m_vpp_base.vpp_func & VPL_VPP_CROP) &&
-        (m_vpp_base.src_width != m_vpp_base.dst_width ||
-         m_vpp_base.src_height != m_vpp_base.dst_height)) {
+    if (!(m_vpp_base.vpp_func & VPL_VPP_CROP) && (m_vpp_base.src_width != m_vpp_base.dst_width ||
+                                                  m_vpp_base.src_height != m_vpp_base.dst_height)) {
         m_vpp_base.vpp_func |= VPL_VPP_SCALE;
     }
 
@@ -555,14 +533,11 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
 
     if (surface_in) {
         AVFrame* av_frame =
-            m_input_locker.GetAVFrame(surface_in,
-                                      MFX_MAP_READ,
-                                      m_session->GetFrameAllocator());
+            m_input_locker.GetAVFrame(surface_in, MFX_MAP_READ, m_session->GetFrameAllocator());
         RET_IF_FALSE(av_frame, MFX_ERR_ABORTED);
 
-        int ret = av_buffersrc_add_frame_flags(m_buffersrc_ctx,
-                                               av_frame,
-                                               AV_BUFFERSRC_FLAG_KEEP_REF);
+        int ret =
+            av_buffersrc_add_frame_flags(m_buffersrc_ctx, av_frame, AV_BUFFERSRC_FLAG_KEEP_REF);
         m_input_locker.Unlock();
         RET_IF_FALSE(ret >= 0, MFX_ERR_ABORTED);
     }
@@ -575,9 +550,8 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
     RET_IF_FALSE(ret >= 0, MFX_ERR_ABORTED);
 
     if (dst_avframe == m_avVppFrameOut) { // copy image data
-        RET_ERROR(AVFrame2mfxFrameSurface(surface_out,
-                                          m_avVppFrameOut,
-                                          m_session->GetFrameAllocator()));
+        RET_ERROR(
+            AVFrame2mfxFrameSurface(surface_out, m_avVppFrameOut, m_session->GetFrameAllocator()));
     }
     else if (dst_frame) { // update MFXFrameSurface from AVFrame
         dst_frame->Update();
@@ -641,15 +615,13 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
         }
 
         //query, always correct
-        out->IOPattern =
-            MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+        out->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
     }
 
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par,
-                                 mfxFrameAllocRequest request[2]) {
+mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest request[2]) {
     mfxStatus sts;
 
     // VPP_IN
@@ -682,19 +654,18 @@ mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par,
 mfxStatus CpuVPP::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
                                                   mfxU16* pInMemType,
                                                   mfxU16* pOutMemType) {
-    if (IOPattern & MFX_IOPATTERN_IN_VIDEO_MEMORY ||
-        IOPattern & MFX_IOPATTERN_OUT_VIDEO_MEMORY)
+    if (IOPattern & MFX_IOPATTERN_IN_VIDEO_MEMORY || IOPattern & MFX_IOPATTERN_OUT_VIDEO_MEMORY)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (IOPattern & MFX_IOPATTERN_IN_SYSTEM_MEMORY)
-        *pInMemType = MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_EXTERNAL_FRAME |
-                      MFX_MEMTYPE_SYSTEM_MEMORY;
+        *pInMemType =
+            MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_EXTERNAL_FRAME | MFX_MEMTYPE_SYSTEM_MEMORY;
     else
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY)
-        *pOutMemType = MFX_MEMTYPE_FROM_VPPOUT | MFX_MEMTYPE_EXTERNAL_FRAME |
-                       MFX_MEMTYPE_SYSTEM_MEMORY;
+        *pOutMemType =
+            MFX_MEMTYPE_FROM_VPPOUT | MFX_MEMTYPE_EXTERNAL_FRAME | MFX_MEMTYPE_SYSTEM_MEMORY;
     else
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -763,38 +734,32 @@ mfxStatus CpuVPP::ExtendedQuery(mfxU32 filterName, mfxExtBuffer* pHint) {
         /* Brightness */
         if (pParam->Brightness < VPP_PROCAMP_BRIGHTNESS_MIN ||
             pParam->Brightness > VPP_PROCAMP_BRIGHTNESS_MAX) {
-            pParam->Brightness = std::min(
-                VPP_PROCAMP_BRIGHTNESS_MAX,
-                std::max(pParam->Brightness, VPP_PROCAMP_BRIGHTNESS_MIN));
-            sts = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+            pParam->Brightness = std::min(VPP_PROCAMP_BRIGHTNESS_MAX,
+                                          std::max(pParam->Brightness, VPP_PROCAMP_BRIGHTNESS_MIN));
+            sts                = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
         }
         /* Contrast */
         if (pParam->Contrast < VPP_PROCAMP_CONTRAST_MIN ||
             pParam->Contrast > VPP_PROCAMP_CONTRAST_MAX) {
-            pParam->Contrast =
-                std::min(VPP_PROCAMP_CONTRAST_MAX,
-                         std::max(pParam->Contrast, VPP_PROCAMP_CONTRAST_MIN));
-            sts = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+            pParam->Contrast = std::min(VPP_PROCAMP_CONTRAST_MAX,
+                                        std::max(pParam->Contrast, VPP_PROCAMP_CONTRAST_MIN));
+            sts              = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
         }
         /* Hue */
-        if (pParam->Hue < VPP_PROCAMP_HUE_MIN ||
-            pParam->Hue > VPP_PROCAMP_HUE_MAX) {
-            pParam->Hue = std::min(VPP_PROCAMP_HUE_MAX,
-                                   std::max(pParam->Hue, VPP_PROCAMP_HUE_MIN));
+        if (pParam->Hue < VPP_PROCAMP_HUE_MIN || pParam->Hue > VPP_PROCAMP_HUE_MAX) {
+            pParam->Hue = std::min(VPP_PROCAMP_HUE_MAX, std::max(pParam->Hue, VPP_PROCAMP_HUE_MIN));
             sts         = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
         }
         /* Saturation */
         if (pParam->Saturation < VPP_PROCAMP_SATURATION_MIN ||
             pParam->Saturation > VPP_PROCAMP_SATURATION_MAX) {
-            pParam->Saturation = std::min(
-                VPP_PROCAMP_SATURATION_MAX,
-                std::max(pParam->Saturation, VPP_PROCAMP_SATURATION_MIN));
-            sts = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+            pParam->Saturation = std::min(VPP_PROCAMP_SATURATION_MAX,
+                                          std::max(pParam->Saturation, VPP_PROCAMP_SATURATION_MIN));
+            sts                = MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
         }
     }
     else if (MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION == filterName) {
-        mfxExtVPPFrameRateConversion* pParam =
-            (mfxExtVPPFrameRateConversion*)pHint;
+        mfxExtVPPFrameRateConversion* pParam = (mfxExtVPPFrameRateConversion*)pHint;
         if (MFX_FRCALGM_PRESERVE_TIMESTAMP == pParam->Algorithm ||
             MFX_FRCALGM_DISTRIBUTED_TIMESTAMP == pParam->Algorithm ||
             MFX_FRCALGM_FRAME_INTERPOLATION == pParam->Algorithm) {
@@ -870,9 +835,7 @@ bool CpuVPP::IsFilterFound(const mfxU32* pList, mfxU32 len, mfxU32 filterName) {
     return false;
 }
 
-void CpuVPP::GetDoUseFilterList(mfxVideoParam* par,
-                                mfxU32** ppList,
-                                mfxU32* pLen) {
+void CpuVPP::GetDoUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen) {
     mfxU32 i                 = 0;
     mfxExtVPPDoUse* pVPPHint = NULL;
 
@@ -893,9 +856,7 @@ void CpuVPP::GetDoUseFilterList(mfxVideoParam* par,
     return;
 }
 
-void CpuVPP::GetConfigurableFilterList(mfxVideoParam* par,
-                                       mfxU32* pList,
-                                       mfxU32* pLen) {
+void CpuVPP::GetConfigurableFilterList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen) {
     mfxU32 fIdx = 0;
 
     /* robustness */
@@ -915,8 +876,7 @@ void CpuVPP::GetConfigurableFilterList(mfxVideoParam* par,
     return;
 }
 
-double CpuVPP::CalculateUMCFramerate(mfxU32 FrameRateExtN,
-                                     mfxU32 FrameRateExtD) {
+double CpuVPP::CalculateUMCFramerate(mfxU32 FrameRateExtN, mfxU32 FrameRateExtD) {
     if (FrameRateExtN && FrameRateExtD)
         return (double)FrameRateExtN / FrameRateExtD;
     else
@@ -932,17 +892,13 @@ void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
     mfxU32 index = 0;
 
     // [-1] Shift is very first, since shifted content is not supported by VPP
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_RSHIFT_IN)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_RSHIFT_IN)) {
         newList[index] = MFX_EXTBUFF_VPP_RSHIFT_IN;
         index++;
     }
 
     // [0] canonical order
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_CSC)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_CSC)) {
         newList[index] = MFX_EXTBUFF_VPP_CSC;
         index++;
     }
@@ -952,49 +908,33 @@ void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
 		newList[index] = MFX_EXTBUFF_VPP_RESIZE;
 		index++;
 	}*/
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_DENOISE)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DENOISE)) {
         newList[index] = MFX_EXTBUFF_VPP_DENOISE;
         index++;
     }
     // DI, advDI, ITC has the same priority
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_DI)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI)) {
         newList[index] = MFX_EXTBUFF_VPP_DI;
         index++;
     }
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_DI_WEAVE)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI_WEAVE)) {
         newList[index] = MFX_EXTBUFF_VPP_DI_WEAVE;
         index++;
     }
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_DI_30i60p)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI_30i60p)) {
         newList[index] = MFX_EXTBUFF_VPP_DI_30i60p;
         index++;
     }
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_ITC)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_ITC)) {
         newList[index] = MFX_EXTBUFF_VPP_ITC;
         index++;
     }
     if (IsFilterFound(&pipelineList[0],
                       (mfxU32)pipelineList.size(),
                       MFX_EXTBUFF_VPP_DEINTERLACING) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_DI_30i60p) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_DI_WEAVE) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_DI)) {
+        !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI_30i60p) &&
+        !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI_WEAVE) &&
+        !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI)) {
         newList[index] = MFX_EXTBUFF_VPP_DEINTERLACING;
         index++;
     }
@@ -1016,23 +956,17 @@ void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
 #endif
 
     // Resize for Best Quality
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_RESIZE)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_RESIZE)) {
         newList[index] = MFX_EXTBUFF_VPP_RESIZE;
         index++;
     }
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_DETAIL)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DETAIL)) {
         newList[index] = MFX_EXTBUFF_VPP_DETAIL;
         index++;
     }
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_PROCAMP)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_PROCAMP)) {
         newList[index] = MFX_EXTBUFF_VPP_PROCAMP;
         index++;
     }
@@ -1075,9 +1009,7 @@ void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
         index++;
     }
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_COMPOSITE)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_COMPOSITE)) {
         newList[index] = MFX_EXTBUFF_VPP_COMPOSITE;
         index++;
     }
@@ -1103,23 +1035,17 @@ void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
         index++;
     }
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_LSHIFT_OUT)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_LSHIFT_OUT)) {
         newList[index] = MFX_EXTBUFF_VPP_LSHIFT_OUT;
         index++;
     }
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_ROTATION)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_ROTATION)) {
         newList[index] = MFX_EXTBUFF_VPP_ROTATION;
         index++;
     }
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_SCALING)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_SCALING)) {
         newList[index] = MFX_EXTBUFF_VPP_SCALING;
         index++;
     }
@@ -1133,9 +1059,7 @@ void CpuVPP::ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList) {
     }
 #endif
 
-    if (IsFilterFound(&pipelineList[0],
-                      (mfxU32)pipelineList.size(),
-                      MFX_EXTBUFF_VPP_MIRRORING)) {
+    if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_MIRRORING)) {
         newList[index] = MFX_EXTBUFF_VPP_MIRRORING;
         index++;
     }
@@ -1156,27 +1080,21 @@ void CpuVPP::ReorderPipelineListForSpeed(mfxVideoParam* videoParam,
         mfxFrameInfo* in  = &(videoParam->vpp.In);
         mfxFrameInfo* out = &(videoParam->vpp.Out);
 
-        mfxF64 inFrameRate =
-            CalculateUMCFramerate(in->FrameRateExtN, in->FrameRateExtD);
-        mfxF64 outFrameRate =
-            CalculateUMCFramerate(out->FrameRateExtN, out->FrameRateExtD);
+        mfxF64 inFrameRate  = CalculateUMCFramerate(in->FrameRateExtN, in->FrameRateExtD);
+        mfxF64 outFrameRate = CalculateUMCFramerate(out->FrameRateExtN, out->FrameRateExtD);
 
-        mfxU32 filterIndex = 0;
-        mfxU32 filterIndexFRC =
-            GetFilterIndex(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION);
+        mfxU32 filterIndex    = 0;
+        mfxU32 filterIndexFRC = GetFilterIndex(&pipelineList[0],
+                                               (mfxU32)pipelineList.size(),
+                                               MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION);
 
         if (inFrameRate > outFrameRate) {
             // FRC_DOWN must be first filter in pipeline
             for (filterIndex = filterIndexFRC; filterIndex > 0; filterIndex--) {
-                std::swap(pipelineList[filterIndex],
-                          pipelineList[filterIndex - 1]);
+                std::swap(pipelineList[filterIndex], pipelineList[filterIndex - 1]);
             }
             //exclude CSC
-            if (IsFilterFound(&pipelineList[0],
-                              (mfxU32)pipelineList.size(),
-                              MFX_EXTBUFF_VPP_CSC)) {
+            if (IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_CSC)) {
                 std::swap(pipelineList[1], pipelineList[0]);
             }
         }
@@ -1207,37 +1125,25 @@ void CpuVPP::ShowPipeline(std::vector<mfxU32> pipelineList) {
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_RSHIFT_IN: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_RSHIFT_IN");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_RSHIFT_IN");
                 printf("%s\n", cStr);
                 break;
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_RSHIFT_OUT: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_RSHIFT_OUT");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_RSHIFT_OUT");
                 printf("%s\n", cStr);
                 break;
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_LSHIFT_IN: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_LSHIFT_IN");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_LSHIFT_IN");
                 printf("%s\n", cStr);
                 break;
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_LSHIFT_OUT: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_LSHIFT_OUT");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_LSHIFT_OUT");
                 printf("%s\n", cStr);
                 break;
             }
@@ -1343,47 +1249,32 @@ void CpuVPP::ShowPipeline(std::vector<mfxU32> pipelineList) {
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_ROTATION: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_ROTATION");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_ROTATION");
                 printf("%s\n", cStr);
                 break;
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_SCALING: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_SCALING");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_SCALING");
                 printf("%s\n", cStr);
                 break;
             }
 
         #ifndef MFX_FUTURE_FEATURE_DISABLE
             case (mfxU32)MFX_EXTBUFF_VPP_COLOR_CONVERSION: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_COLOR_CONVERSION");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_COLOR_CONVERSION");
                 printf("%s\n", cStr);
                 break;
             }
         #endif
             case (mfxU32)MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO");
                 printf("%s\n", cStr);
                 break;
             }
 
             case (mfxU32)MFX_EXTBUFF_VPP_MIRRORING: {
-                sprintf_s(cStr,
-                          sizeof(cStr),
-                          "%s \n",
-                          "MFX_EXTBUFF_VPP_MIRRORING");
+                sprintf_s(cStr, sizeof(cStr), "%s \n", "MFX_EXTBUFF_VPP_MIRRORING");
                 printf("%s\n", cStr);
                 break;
             }
@@ -1585,8 +1476,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     /* ************************************************************************** */
     /* [1] the filter chain first based on input and output mismatch formats only */
     /* ************************************************************************** */
-    if ((MFX_FOURCC_RGB4 != par->In.FourCC) ||
-        (MFX_FOURCC_RGB4 != par->Out.FourCC)) {
+    if ((MFX_FOURCC_RGB4 != par->In.FourCC) || (MFX_FOURCC_RGB4 != par->Out.FourCC)) {
         switch (par->In.FourCC) {
             case MFX_FOURCC_P010:
                 switch (par->Out.FourCC) {
@@ -1616,8 +1506,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
                 break;
         }
 
-        if (MFX_FOURCC_NV12 != par->In.FourCC &&
-            MFX_FOURCC_P010 != par->In.FourCC &&
+        if (MFX_FOURCC_NV12 != par->In.FourCC && MFX_FOURCC_P010 != par->In.FourCC &&
             MFX_FOURCC_P210 != par->In.FourCC) {
             /* [Color Space Conversion] FILTER */
             pipelineList.push_back(MFX_EXTBUFF_VPP_CSC);
@@ -1635,8 +1524,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     /* VPP natively supports P010 and P210 formats w/o shift. If input is shifted,
 	 * need get it back to normal position.
 	 */
-    if ((MFX_FOURCC_P010 == srcFrameInfo->FourCC ||
-         MFX_FOURCC_P210 == srcFrameInfo->FourCC) &&
+    if ((MFX_FOURCC_P010 == srcFrameInfo->FourCC || MFX_FOURCC_P210 == srcFrameInfo->FourCC) &&
         srcFrameInfo->Shift) {
         pipelineList.push_back(MFX_EXTBUFF_VPP_RSHIFT_IN);
     }
@@ -1644,8 +1532,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     /*
 	 * VPP produces P010 and P210 formats w/o shift. If output is requested to be shifted, need to do so
 	 */
-    if ((MFX_FOURCC_P010 == dstFrameInfo->FourCC ||
-         MFX_FOURCC_P210 == dstFrameInfo->FourCC) &&
+    if ((MFX_FOURCC_P010 == dstFrameInfo->FourCC || MFX_FOURCC_P210 == dstFrameInfo->FourCC) &&
         dstFrameInfo->Shift) {
         pipelineList.push_back(MFX_EXTBUFF_VPP_LSHIFT_OUT);
     }
@@ -1683,8 +1570,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
 #endif
     PicStructMode picStructMode;
 
-    if ((par->In.PicStruct &
-         (MFX_PICSTRUCT_FIELD_BFF | MFX_PICSTRUCT_FIELD_TFF)) &&
+    if ((par->In.PicStruct & (MFX_PICSTRUCT_FIELD_BFF | MFX_PICSTRUCT_FIELD_TFF)) &&
         MFX_PICSTRUCT_PROGRESSIVE == par->Out.PicStruct) {
         picStructMode = DYNAMIC_DI_PICSTRUCT_MODE;
     }
@@ -1699,10 +1585,9 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     mfxI32 deinterlacingMode = 0;
     // look for user defined deinterlacing mode
     for (mfxU32 i = 0; i < videoParam->NumExtParam; i++) {
-        if (videoParam->ExtParam[i] && videoParam->ExtParam[i]->BufferId ==
-                                           MFX_EXTBUFF_VPP_DEINTERLACING) {
-            mfxExtVPPDeinterlacing* extDI =
-                (mfxExtVPPDeinterlacing*)videoParam->ExtParam[i];
+        if (videoParam->ExtParam[i] &&
+            videoParam->ExtParam[i]->BufferId == MFX_EXTBUFF_VPP_DEINTERLACING) {
+            mfxExtVPPDeinterlacing* extDI = (mfxExtVPPDeinterlacing*)videoParam->ExtParam[i];
             /* MSDK ignored all any DI modes values except two defined:
 			 * MFX_DEINTERLACING_ADVANCED && MFX_DEINTERLACING_BOB
 			 * If DI mode in Ext Buffer is not related BOB or ADVANCED Ext buffer ignored
@@ -1739,18 +1624,10 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
 
     /* [Core Frame Rate Conversion] FILTER */
     /* must be used AFTER [Deinterlace] FILTER !!! due to SW performance specific */
-    if (!IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_DI_30i60p) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_DI_WEAVE) &&
-        !IsFilterFound(&pipelineList[0],
-                       (mfxU32)pipelineList.size(),
-                       MFX_EXTBUFF_VPP_ITC)) {
-        if (IsFilterFound(pExtList,
-                          extCount,
-                          MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION) ||
+    if (!IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI_30i60p) &&
+        !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_DI_WEAVE) &&
+        !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), MFX_EXTBUFF_VPP_ITC)) {
+        if (IsFilterFound(pExtList, extCount, MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION) ||
             (par->In.FrameRateExtN * par->Out.FrameRateExtD !=
              par->Out.FrameRateExtN * par->In.FrameRateExtD)) {
             pipelineList.push_back(MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION);
@@ -1762,9 +1639,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     mfxU32 fIdx        = 0;
     for (fIdx = 0; fIdx < fCount; fIdx++) {
         if (IsFilterFound(&g_TABLE_DO_USE[0], searchCount, pExtList[fIdx]) &&
-            !IsFilterFound(&pipelineList[0],
-                           (mfxU32)pipelineList.size(),
-                           pExtList[fIdx])) {
+            !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), pExtList[fIdx])) {
             pipelineList.push_back(pExtList[fIdx]);
         }
     }
@@ -1773,17 +1648,14 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     /* 4. optional filters, disabled by default, enabled by EXT_BUFFER             */
     /* *************************************************************************** */
     mfxU32 configCount =
-        MFX_MAX(sizeof(g_TABLE_CONFIG) / sizeof(*g_TABLE_CONFIG),
-                videoParam->NumExtParam);
+        MFX_MAX(sizeof(g_TABLE_CONFIG) / sizeof(*g_TABLE_CONFIG), videoParam->NumExtParam);
     if (configCount) {
         std::vector<mfxU32> configList(configCount);
 
         GetConfigurableFilterList(videoParam, &configList[0], &configCount);
 
         /* [FrameRateConversion] FILTER */
-        if (IsFilterFound(&configList[0],
-                          configCount,
-                          MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION) &&
+        if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_FRAME_RATE_CONVERSION)) {
@@ -1798,9 +1670,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
         }
 
         /* ROTATION FILTER */
-        if (IsFilterFound(&configList[0],
-                          configCount,
-                          MFX_EXTBUFF_VPP_ROTATION) &&
+        if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_ROTATION) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_ROTATION)) {
@@ -1811,9 +1681,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
             }
         }
 
-        if (IsFilterFound(&configList[0],
-                          configCount,
-                          MFX_EXTBUFF_VPP_SCALING) &&
+        if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_SCALING) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_SCALING)) {
@@ -1825,9 +1693,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
         }
 
 #if (MFX_VERSION >= 1025)
-        if (IsFilterFound(&configList[0],
-                          configCount,
-                          MFX_EXTBUFF_VPP_COLOR_CONVERSION) &&
+        if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_COLOR_CONVERSION) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_COLOR_CONVERSION)) {
@@ -1839,9 +1705,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
         }
 #endif
 
-        if (IsFilterFound(&configList[0],
-                          configCount,
-                          MFX_EXTBUFF_VPP_MIRRORING) &&
+        if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_MIRRORING) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_MIRRORING)) {
@@ -1852,9 +1716,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
             }
         }
 
-        if (IsFilterFound(&configList[0],
-                          configCount,
-                          MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO) &&
+        if (IsFilterFound(&configList[0], configCount, MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO) &&
             !IsFilterFound(&pipelineList[0],
                            (mfxU32)pipelineList.size(),
                            MFX_EXTBUFF_VPP_VIDEO_SIGNAL_INFO)) {
@@ -1869,9 +1731,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
         fCount      = configCount;
         for (fIdx = 0; fIdx < fCount; fIdx++) {
             if (IsFilterFound(g_TABLE_CONFIG, searchCount, configList[fIdx]) &&
-                !IsFilterFound(&pipelineList[0],
-                               (mfxU32)pipelineList.size(),
-                               configList[fIdx])) {
+                !IsFilterFound(&pipelineList[0], (mfxU32)pipelineList.size(), configList[fIdx])) {
                 /* Add filter to the list.
                 * Don't care about duplicates, they will be eliminated by Reorder... calls below
                 */
@@ -1891,8 +1751,7 @@ mfxStatus CpuVPP::GetPipelineList(mfxVideoParam* videoParam,
     //if (pipelineList.size() > 0)
     //ShowPipeline(pipelineList);
 
-    return ((pipelineList.size() > 0) ? MFX_ERR_NONE
-                                      : MFX_ERR_INVALID_VIDEO_PARAM);
+    return ((pipelineList.size() > 0) ? MFX_ERR_NONE : MFX_ERR_INVALID_VIDEO_PARAM);
 }
 
 mfxStatus CpuVPP::CheckIOPattern(mfxVideoParam* par) {
@@ -2000,9 +1859,7 @@ bool CpuVPP::GetExtParamList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen) {
     return bResOK;
 }
 
-mfxStatus CpuVPP::GetFilterParam(mfxVideoParam* par,
-                                 mfxU32 filterName,
-                                 mfxExtBuffer** ppHint) {
+mfxStatus CpuVPP::GetFilterParam(mfxVideoParam* par, mfxU32 filterName, mfxExtBuffer** ppHint) {
     RET_IF_FALSE(par && ppHint, MFX_ERR_NULL_PTR);
 
     *ppHint = NULL;
@@ -2021,9 +1878,7 @@ mfxStatus CpuVPP::GetFilterParam(mfxVideoParam* par,
     return MFX_ERR_NONE;
 }
 
-void CpuVPP::GetDoNotUseFilterList(mfxVideoParam* par,
-                                   mfxU32** ppList,
-                                   mfxU32* pLen) {
+void CpuVPP::GetDoNotUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen) {
     mfxU32 i                    = 0;
     mfxExtVPPDoNotUse* pVPPHint = NULL;
 
@@ -2089,8 +1944,7 @@ mfxStatus CpuVPP::CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count) {
     tmpParam.ExtParam    = ppExtParam;
     tmpParam.NumExtParam = count;
 
-    mfxU32 extParamCount =
-        sizeof(g_TABLE_EXT_PARAM) / sizeof(*g_TABLE_EXT_PARAM);
+    mfxU32 extParamCount = sizeof(g_TABLE_EXT_PARAM) / sizeof(*g_TABLE_EXT_PARAM);
     std::vector<mfxU32> extParamList(extParamCount);
     if (!GetExtParamList(&tmpParam, &extParamList[0], &extParamCount)) {
         bError = true;
@@ -2115,8 +1969,7 @@ mfxStatus CpuVPP::CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count) {
         // AL update: now 4 status, added MFX_WRN_FILTER_SKIPPED
         sts = ExtendedQuery(curId, pHint);
 
-        if (MFX_WRN_INCOMPATIBLE_VIDEO_PARAM == sts ||
-            MFX_WRN_FILTER_SKIPPED == sts) {
+        if (MFX_WRN_INCOMPATIBLE_VIDEO_PARAM == sts || MFX_WRN_FILTER_SKIPPED == sts) {
             sts_wrn = sts;
             sts     = MFX_ERR_NONE;
         }
@@ -2139,9 +1992,7 @@ mfxStatus CpuVPP::CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count) {
 
     for (mfxU32 extParIdx = 0; extParIdx < count; extParIdx++) {
         // configured via extended parameters filter should not be disabled
-        if (IsFilterFound(pDnuList,
-                          dnuCount,
-                          ppExtParam[extParIdx]->BufferId)) {
+        if (IsFilterFound(pDnuList, dnuCount, ppExtParam[extParIdx]->BufferId)) {
             sts = MFX_ERR_INVALID_VIDEO_PARAM;
         }
         RET_ERROR(sts);
@@ -2180,10 +2031,8 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
         VPPQueryIOSurf(nullptr, VPPRequest);
 
         auto pool = std::make_unique<CpuFramePool>();
-        RET_ERROR(pool->Init(m_vppInFormat,
-                             m_vppWidth,
-                             m_vppHeight,
-                             VPPRequest[0].NumFrameSuggested));
+        RET_ERROR(
+            pool->Init(m_vppInFormat, m_vppWidth, m_vppHeight, VPPRequest[0].NumFrameSuggested));
         m_vppSurfaces = std::move(pool);
     }
 

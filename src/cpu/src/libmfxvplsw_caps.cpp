@@ -28,14 +28,10 @@ static void FreeDescObject(T *descObject) {
         delete[] descObject;
 }
 
-static const mfxStructVersion DefaultStructVersion = {
-    DEF_STRUCT_VERSION_MINOR,
-    DEF_STRUCT_VERSION_MAJOR
-};
+static const mfxStructVersion DefaultStructVersion = { DEF_STRUCT_VERSION_MINOR,
+                                                       DEF_STRUCT_VERSION_MAJOR };
 
-static const mfxRange32U DefaultRange = { DEF_RANGE_MIN,
-                                          DEF_RANGE_MAX,
-                                          DEF_RANGE_STEP };
+static const mfxRange32U DefaultRange = { DEF_RANGE_MIN, DEF_RANGE_MAX, DEF_RANGE_STEP };
 
 // Start - Device Description
 
@@ -46,10 +42,7 @@ mfxStatus InitDeviceDescription(mfxDeviceDescription *Dev) {
     Dev->Version.Major = DefaultStructVersion.Major;
     Dev->Version.Minor = DefaultStructVersion.Minor;
 
-    strncpy_s((char *)Dev->DeviceID,
-              sizeof(Dev->DeviceID),
-              "CPU",
-              sizeof(Dev->DeviceID) - 1);
+    strncpy_s((char *)Dev->DeviceID, sizeof(Dev->DeviceID), "CPU", sizeof(Dev->DeviceID) - 1);
 
     // CPU should report 0
     Dev->NumSubDevices = 0;
@@ -160,36 +153,24 @@ mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec) {
     Profiles = AddDecoderCodec(Codecs, 0, MFX_CODEC_HEVC, MFX_LEVEL_HEVC_51, 2);
 
     // profile[0] - HEVC_MAIN
-    MemDesc         = AddDecoderProfile(Profiles, 0, MFX_PROFILE_HEVC_MAIN, 1);
-    ColorFormats    = AddDecoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddDecoderProfile(Profiles, 0, MFX_PROFILE_HEVC_MAIN, 1);
+    ColorFormats =
+        AddDecoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I420;
 
     // profile[1] - HEVC_MAIN10
-    MemDesc      = AddDecoderProfile(Profiles, 1, MFX_PROFILE_HEVC_MAIN10, 1);
-    ColorFormats = AddDecoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddDecoderProfile(Profiles, 1, MFX_PROFILE_HEVC_MAIN10, 1);
+    ColorFormats =
+        AddDecoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I010;
 
     // add codec type AV1
     Profiles = AddDecoderCodec(Codecs, 1, MFX_CODEC_AV1, MFX_LEVEL_UNKNOWN, 1);
 
     // profile[0] - MFX_PROFILE_UNKNOWN
-    MemDesc         = AddDecoderProfile(Profiles, 0, MFX_PROFILE_UNKNOWN, 1);
-    ColorFormats    = AddDecoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     2);
+    MemDesc = AddDecoderProfile(Profiles, 0, MFX_PROFILE_UNKNOWN, 1);
+    ColorFormats =
+        AddDecoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 2);
     ColorFormats[0] = MFX_FOURCC_I420;
     ColorFormats[1] = MFX_FOURCC_I010;
 
@@ -197,26 +178,18 @@ mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec) {
     Profiles = AddDecoderCodec(Codecs, 2, MFX_CODEC_AVC, MFX_LEVEL_UNKNOWN, 1);
 
     // profile[0] - MFX_PROFILE_AVC_HIGH
-    MemDesc         = AddDecoderProfile(Profiles, 0, MFX_PROFILE_AVC_HIGH, 1);
-    ColorFormats    = AddDecoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddDecoderProfile(Profiles, 0, MFX_PROFILE_AVC_HIGH, 1);
+    ColorFormats =
+        AddDecoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I420;
 
     // add codec type JPEG
     Profiles = AddDecoderCodec(Codecs, 3, MFX_CODEC_JPEG, MFX_LEVEL_UNKNOWN, 1);
 
     // profile[0] - MFX_PROFILE_AVC_HIGH
-    MemDesc      = AddDecoderProfile(Profiles, 0, MFX_PROFILE_JPEG_BASELINE, 1);
-    ColorFormats = AddDecoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddDecoderProfile(Profiles, 0, MFX_PROFILE_JPEG_BASELINE, 1);
+    ColorFormats =
+        AddDecoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I420;
 
     return MFX_ERR_NONE;
@@ -342,56 +315,37 @@ mfxStatus InitEncoderCaps(mfxEncoderDescription *Enc) {
         return MFX_ERR_MEMORY_ALLOC;
 
     // add codec type HEVC
-    Profiles =
-        AddEncoderCodec(Codecs, 0, MFX_CODEC_HEVC, MFX_LEVEL_HEVC_51, 1, 2);
+    Profiles = AddEncoderCodec(Codecs, 0, MFX_CODEC_HEVC, MFX_LEVEL_HEVC_51, 1, 2);
 
     // profile[0] - HEVC_MAIN
-    MemDesc         = AddEncoderProfile(Profiles, 0, MFX_PROFILE_HEVC_MAIN, 1);
-    ColorFormats    = AddEncoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddEncoderProfile(Profiles, 0, MFX_PROFILE_HEVC_MAIN, 1);
+    ColorFormats =
+        AddEncoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I420;
 
     // profile[1] - HEVC_MAIN10
-    MemDesc      = AddEncoderProfile(Profiles, 1, MFX_PROFILE_HEVC_MAIN10, 1);
-    ColorFormats = AddEncoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddEncoderProfile(Profiles, 1, MFX_PROFILE_HEVC_MAIN10, 1);
+    ColorFormats =
+        AddEncoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I010;
 
     // add codec type AV1
-    Profiles =
-        AddEncoderCodec(Codecs, 1, MFX_CODEC_AV1, MFX_LEVEL_UNKNOWN, 1, 1);
+    Profiles = AddEncoderCodec(Codecs, 1, MFX_CODEC_AV1, MFX_LEVEL_UNKNOWN, 1, 1);
 
     // profile[0] - MFX_PROFILE_UNKNOWN
-    MemDesc         = AddEncoderProfile(Profiles, 0, MFX_PROFILE_UNKNOWN, 1);
-    ColorFormats    = AddEncoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     2);
+    MemDesc = AddEncoderProfile(Profiles, 0, MFX_PROFILE_UNKNOWN, 1);
+    ColorFormats =
+        AddEncoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 2);
     ColorFormats[0] = MFX_FOURCC_I420;
     ColorFormats[1] = MFX_FOURCC_I010;
 
     // add codec type JPEG
-    Profiles =
-        AddEncoderCodec(Codecs, 2, MFX_CODEC_JPEG, MFX_LEVEL_UNKNOWN, 0, 1);
+    Profiles = AddEncoderCodec(Codecs, 2, MFX_CODEC_JPEG, MFX_LEVEL_UNKNOWN, 0, 1);
 
     // profile[0] - MFX_PROFILE_UNKNOWN
-    MemDesc      = AddEncoderProfile(Profiles, 0, MFX_PROFILE_JPEG_BASELINE, 1);
-    ColorFormats = AddEncoderMemDesc(MemDesc,
-                                     0,
-                                     MFX_RESOURCE_SYSTEM_SURFACE,
-                                     DefaultRange,
-                                     DefaultRange,
-                                     1);
+    MemDesc = AddEncoderProfile(Profiles, 0, MFX_PROFILE_JPEG_BASELINE, 1);
+    ColorFormats =
+        AddEncoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);
     ColorFormats[0] = MFX_FOURCC_I420;
 
     return MFX_ERR_NONE;
@@ -517,12 +471,8 @@ mfxStatus InitVPPCaps(mfxVPPDescription *VPP) {
     // add VPP filter CSC
     MemDesc = AddVPPFilter(Filters, 0, MFX_EXTBUFF_VPP_COLOR_CONVERSION, 1, 1);
 
-    InFormats = AddVPPMemDesc(MemDesc,
-                              0,
-                              MFX_RESOURCE_SYSTEM_SURFACE,
-                              DefaultRange,
-                              DefaultRange,
-                              3);
+    InFormats =
+        AddVPPMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 3);
 
     // add input format MFX_FOURCC_I420
     OutFormats    = AddVPPInFormats(InFormats, 0, MFX_FOURCC_I420, 3);
@@ -545,12 +495,8 @@ mfxStatus InitVPPCaps(mfxVPPDescription *VPP) {
     // add VPP filter resize
     MemDesc = AddVPPFilter(Filters, 1, MFX_EXTBUFF_VPP_SCALING, 1, 1);
 
-    InFormats = AddVPPMemDesc(MemDesc,
-                              0,
-                              MFX_RESOURCE_SYSTEM_SURFACE,
-                              DefaultRange,
-                              DefaultRange,
-                              3);
+    InFormats =
+        AddVPPMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 3);
 
     // add input format MFX_FOURCC_I420
     OutFormats    = AddVPPInFormats(InFormats, 0, MFX_FOURCC_I420, 3);

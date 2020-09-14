@@ -22,23 +22,16 @@ public:
     ~CpuEncode();
 
     static mfxStatus EncodeQuery(mfxVideoParam* in, mfxVideoParam* out);
-    static mfxStatus EncodeQueryIOSurf(mfxVideoParam* par,
-                                       mfxFrameAllocRequest* request);
+    static mfxStatus EncodeQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest* request);
 
     mfxStatus InitEncode(mfxVideoParam* par);
-    mfxStatus EncodeFrame(mfxFrameSurface1* surface,
-                          mfxEncodeCtrl* ctrl,
-                          mfxBitstream* bs);
+    mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxEncodeCtrl* ctrl, mfxBitstream* bs);
     mfxStatus GetVideoParam(mfxVideoParam* par);
     mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
 
 private:
     static mfxStatus ValidateEncodeParams(mfxVideoParam* par, bool canCorrect);
-    int convertTargetUsageVal(int val,
-                              int minIn,
-                              int maxIn,
-                              int minOut,
-                              int maxOut);
+    int convertTargetUsageVal(int val, int minIn, int maxIn, int minOut, int maxOut);
     mfxStatus InitHEVCParams(mfxVideoParam* par);
     mfxStatus GetHEVCParams(mfxVideoParam* par);
     mfxStatus InitAV1Params(mfxVideoParam* par);

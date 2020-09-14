@@ -6,8 +6,7 @@
 
 #include "./vpl-common.h"
 
-#define ALIGN_UP(addr, size) \
-    (((addr) + ((size)-1)) & (~((decltype(addr))(size)-1)))
+#define ALIGN_UP(addr, size) (((addr) + ((size)-1)) & (~((decltype(addr))(size)-1)))
 
 #define MAX_LENGTH 260
 #define MAX_WIDTH  3840
@@ -85,8 +84,7 @@ int main(int argc, char* argv[]) {
         printf("invalid dispatcher mode %d\n", params.dispatcherMode);
     }
 
-    printf("Dispatcher mode = %s\n",
-           DispatcherModeString[params.dispatcherMode]);
+    printf("Dispatcher mode = %s\n", DispatcherModeString[params.dispatcherMode]);
     printf("Memory mode     = %s\n", MemoryModeString[params.memoryMode]);
     puts("library initialized");
 
@@ -96,14 +94,12 @@ int main(int argc, char* argv[]) {
     mfxVideoParam mfxVPPParams;
     memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
     // Input data
-    mfxVPPParams.vpp.In.FourCC       = params.srcFourCC;
-    mfxVPPParams.vpp.In.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.In.CropX        = params.srcCropX;
-    mfxVPPParams.vpp.In.CropY        = params.srcCropY;
-    mfxVPPParams.vpp.In.CropW =
-        params.srcCropW ? params.srcCropW : params.srcWidth;
-    mfxVPPParams.vpp.In.CropH =
-        params.srcCropH ? params.srcCropH : params.srcHeight;
+    mfxVPPParams.vpp.In.FourCC        = params.srcFourCC;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPParams.vpp.In.CropX         = params.srcCropX;
+    mfxVPPParams.vpp.In.CropY         = params.srcCropY;
+    mfxVPPParams.vpp.In.CropW         = params.srcCropW ? params.srcCropW : params.srcWidth;
+    mfxVPPParams.vpp.In.CropH         = params.srcCropH ? params.srcCropH : params.srcHeight;
     mfxVPPParams.vpp.In.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
@@ -116,14 +112,12 @@ int main(int argc, char* argv[]) {
         mfxVPPParams.vpp.In.Shift = 1;
 
     // Output data
-    mfxVPPParams.vpp.Out.FourCC       = params.dstFourCC;
-    mfxVPPParams.vpp.Out.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.Out.CropX        = params.dstCropX;
-    mfxVPPParams.vpp.Out.CropY        = params.dstCropY;
-    mfxVPPParams.vpp.Out.CropW =
-        params.dstCropW ? params.dstCropW : params.dstWidth;
-    mfxVPPParams.vpp.Out.CropH =
-        params.dstCropH ? params.dstCropH : params.dstHeight;
+    mfxVPPParams.vpp.Out.FourCC        = params.dstFourCC;
+    mfxVPPParams.vpp.Out.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPParams.vpp.Out.CropX         = params.dstCropX;
+    mfxVPPParams.vpp.Out.CropY         = params.dstCropY;
+    mfxVPPParams.vpp.Out.CropW         = params.dstCropW ? params.dstCropW : params.dstWidth;
+    mfxVPPParams.vpp.Out.CropH         = params.dstCropH ? params.dstCropH : params.dstHeight;
     mfxVPPParams.vpp.Out.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxVPPParams.vpp.Out.FrameRateExtN = 30;
     mfxVPPParams.vpp.Out.FrameRateExtD = 1;
@@ -132,8 +126,7 @@ int main(int argc, char* argv[]) {
     if (params.dstFourCC == MFX_FOURCC_P010) // enable ms10bit
         mfxVPPParams.vpp.Out.Shift = 1;
 
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     // Query number of required surfaces for VPP
     mfxFrameAllocRequest VPPRequest[2]; // [0] - in, [1] - out
@@ -161,8 +154,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    mfxU16 surf_w =
-        GetSurfaceWidth(mfxVPPParams.vpp.In.FourCC, mfxVPPParams.vpp.In.Width);
+    mfxU16 surf_w = GetSurfaceWidth(mfxVPPParams.vpp.In.FourCC, mfxVPPParams.vpp.In.Width);
     mfxU16 surf_h = mfxVPPParams.vpp.In.Height;
 
     std::vector<mfxU8> surfDataIn;
@@ -178,19 +170,17 @@ int main(int argc, char* argv[]) {
             memset(&pVPPSurfacesIn[i], 0, sizeof(mfxFrameSurface1));
             pVPPSurfacesIn[i].Info = mfxVPPParams.vpp.In;
             if (mfxVPPParams.vpp.In.FourCC == MFX_FOURCC_RGB4) {
-                pVPPSurfacesIn[i].Data.B = &surfaceBuffersIn[surfaceSize * i];
-                pVPPSurfacesIn[i].Data.G = pVPPSurfacesIn[i].Data.B + 1;
-                pVPPSurfacesIn[i].Data.R = pVPPSurfacesIn[i].Data.B + 2;
-                pVPPSurfacesIn[i].Data.A = pVPPSurfacesIn[i].Data.B + 3;
+                pVPPSurfacesIn[i].Data.B     = &surfaceBuffersIn[surfaceSize * i];
+                pVPPSurfacesIn[i].Data.G     = pVPPSurfacesIn[i].Data.B + 1;
+                pVPPSurfacesIn[i].Data.R     = pVPPSurfacesIn[i].Data.B + 2;
+                pVPPSurfacesIn[i].Data.A     = pVPPSurfacesIn[i].Data.B + 3;
                 pVPPSurfacesIn[i].Data.Pitch = surf_w;
             }
             else {
                 pVPPSurfacesIn[i].Data.Y = &surfaceBuffersIn[surfaceSize * i];
-                pVPPSurfacesIn[i].Data.U =
-                    pVPPSurfacesIn[i].Data.Y + (mfxU16)surf_w * surf_h;
+                pVPPSurfacesIn[i].Data.U = pVPPSurfacesIn[i].Data.Y + (mfxU16)surf_w * surf_h;
                 pVPPSurfacesIn[i].Data.V =
-                    pVPPSurfacesIn[i].Data.U +
-                    (((mfxU16)surf_w / 2) * (surf_h / 2));
+                    pVPPSurfacesIn[i].Data.U + (((mfxU16)surf_w / 2) * (surf_h / 2));
                 pVPPSurfacesIn[i].Data.Pitch = surf_w;
             }
         }
@@ -207,8 +197,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    surf_w = GetSurfaceWidth(mfxVPPParams.vpp.Out.FourCC,
-                             mfxVPPParams.vpp.Out.Width);
+    surf_w = GetSurfaceWidth(mfxVPPParams.vpp.Out.FourCC, mfxVPPParams.vpp.Out.Width);
     surf_h = mfxVPPParams.vpp.Out.Height;
 
     std::vector<mfxU8> surfDataOut((mfxU32)surfaceSize * nVPPSurfNumOut);
@@ -227,10 +216,9 @@ int main(int argc, char* argv[]) {
         }
         else {
             pVPPSurfacesOut[i].Data.Y = &surfaceBuffersOut[surfaceSize * i];
-            pVPPSurfacesOut[i].Data.U =
-                pVPPSurfacesOut[i].Data.Y + (mfxU16)surf_w * surf_h;
-            pVPPSurfacesOut[i].Data.V = pVPPSurfacesOut[i].Data.U +
-                                        (((mfxU16)surf_w / 2) * (surf_h / 2));
+            pVPPSurfacesOut[i].Data.U = pVPPSurfacesOut[i].Data.Y + (mfxU16)surf_w * surf_h;
+            pVPPSurfacesOut[i].Data.V =
+                pVPPSurfacesOut[i].Data.U + (((mfxU16)surf_w / 2) * (surf_h / 2));
             pVPPSurfacesOut[i].Data.Pitch = surf_w;
         }
     }
@@ -256,8 +244,7 @@ int main(int argc, char* argv[]) {
         mfxFrameSurface1* vppSurfaceIn = nullptr;
 
         if (params.memoryMode == MEM_MODE_EXTERNAL) {
-            nSurfIdxIn =
-                GetFreeSurfaceIndex(pVPPSurfacesIn); // Find free frame surface
+            nSurfIdxIn = GetFreeSurfaceIndex(pVPPSurfacesIn); // Find free frame surface
 
             if (nSurfIdxIn == MFX_ERR_NOT_FOUND) {
                 fclose(fSource);
@@ -273,9 +260,7 @@ int main(int argc, char* argv[]) {
             if (sts) {
                 fclose(fSource);
                 fclose(fSink);
-                printf(
-                    "Unknown error in MFXMemory_GetSurfaceForVPP, sts = %d()\n",
-                    sts);
+                printf("Unknown error in MFXMemory_GetSurfaceForVPP, sts = %d()\n", sts);
                 return 1;
             }
 
@@ -292,8 +277,7 @@ int main(int argc, char* argv[]) {
         if (sts != MFX_ERR_NONE)
             break;
 
-        nSurfIdxOut = GetFreeSurfaceIndex(
-            pVPPSurfacesOut); // Find free output frame surface
+        nSurfIdxOut = GetFreeSurfaceIndex(pVPPSurfacesOut); // Find free output frame surface
         if (nSurfIdxOut == MFX_ERR_NOT_FOUND) {
             fclose(fSource);
             fclose(fSink);
@@ -323,10 +307,9 @@ int main(int argc, char* argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until a frame is ready
+            sts = MFXVideoCORE_SyncOperation(session,
+                                             syncp,
+                                             60000); // Synchronize. Wait until a frame is ready
             WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
 
             if (params.memoryMode == MEM_MODE_INTERNAL) {
@@ -357,8 +340,7 @@ int main(int argc, char* argv[]) {
 
     // Stage 2: Retrieve the buffered encoded frames
     while (MFX_ERR_NONE <= sts) {
-        nSurfIdxOut =
-            GetFreeSurfaceIndex(pVPPSurfacesOut); // Find free frame surface
+        nSurfIdxOut = GetFreeSurfaceIndex(pVPPSurfacesOut); // Find free frame surface
         if (nSurfIdxOut == MFX_ERR_NOT_FOUND) {
             fclose(fSource);
             fclose(fSink);
@@ -384,10 +366,9 @@ int main(int argc, char* argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until a frame is ready
+            sts = MFXVideoCORE_SyncOperation(session,
+                                             syncp,
+                                             60000); // Synchronize. Wait until a frame is ready
             WriteRawFrame(&pVPPSurfacesOut[nSurfIdxOut], fSink);
             ++framenum;
             if (params.maxFrames) {
@@ -584,13 +565,11 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
 
     switch (FourCC) {
         case MFX_FOURCC_I420:
-            nbytes = width * height + (width >> 1) * (height >> 1) +
-                     (width >> 1) * (height >> 1);
+            nbytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             break;
 
         case MFX_FOURCC_I010:
-            nbytes = width * height + (width >> 1) * (height >> 1) +
-                     (width >> 1) * (height >> 1);
+            nbytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             nbytes *= 2;
             break;
 
@@ -785,14 +764,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         else if (IS_ARG_EQ(s, "if")) {
             params->infileFormat = argv[idx++];
             str_upper(params->infileFormat,
-                      static_cast<int>(
-                          strlen(params->infileFormat))); // to upper case
+                      static_cast<int>(strlen(params->infileFormat))); // to upper case
         }
         else if (IS_ARG_EQ(s, "of")) {
             params->outfileFormat = argv[idx++];
             str_upper(params->outfileFormat,
-                      static_cast<int>(
-                          strlen(params->outfileFormat))); // to upper case
+                      static_cast<int>(strlen(params->outfileFormat))); // to upper case
         }
         else if (IS_ARG_EQ(s, "sw")) {
             if (!ValidateSize(argv[idx++], &params->srcWidth, MAX_WIDTH))

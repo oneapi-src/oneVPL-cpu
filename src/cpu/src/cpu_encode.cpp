@@ -38,10 +38,8 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     if (!par->mfx.FrameInfo.CropW || !par->mfx.FrameInfo.CropH)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    if (par->mfx.FrameInfo.CropW + par->mfx.FrameInfo.CropX >
-            par->mfx.FrameInfo.Width ||
-        par->mfx.FrameInfo.CropH + par->mfx.FrameInfo.CropY >
-            par->mfx.FrameInfo.Height)
+    if (par->mfx.FrameInfo.CropW + par->mfx.FrameInfo.CropX > par->mfx.FrameInfo.Width ||
+        par->mfx.FrameInfo.CropH + par->mfx.FrameInfo.CropY > par->mfx.FrameInfo.Height)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I420 ||
@@ -51,8 +49,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     }
 
     // validate fields in the input param struct
-    if (par->mfx.CodecId != MFX_CODEC_HEVC &&
-        par->mfx.CodecId != MFX_CODEC_AVC &&
+    if (par->mfx.CodecId != MFX_CODEC_HEVC && par->mfx.CodecId != MFX_CODEC_AVC &&
         par->mfx.CodecId != MFX_CODEC_JPEG && par->mfx.CodecId != MFX_CODEC_AV1)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -60,12 +57,10 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     switch (par->mfx.CodecId) {
         case MFX_CODEC_AVC: // leave this for later
         {
-            if (par->mfx.FrameInfo.Width < 64 ||
-                par->mfx.FrameInfo.Width > 4096)
+            if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 4096)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
-            if (par->mfx.FrameInfo.Height < 64 ||
-                par->mfx.FrameInfo.Height > 2304)
+            if (par->mfx.FrameInfo.Height < 64 || par->mfx.FrameInfo.Height > 2304)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
             if (par->mfx.RateControlMethod) {
@@ -128,12 +123,10 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
         break;
         case MFX_CODEC_HEVC:
             // default: vbr, profile main, level 3.1
-            if (par->mfx.FrameInfo.Width < 64 ||
-                par->mfx.FrameInfo.Width > 8192)
+            if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 8192)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
-            if (par->mfx.FrameInfo.Height < 64 ||
-                par->mfx.FrameInfo.Height > 4320)
+            if (par->mfx.FrameInfo.Height < 64 || par->mfx.FrameInfo.Height > 4320)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
             if (par->mfx.RateControlMethod) {
@@ -181,12 +174,10 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             break;
         case MFX_CODEC_JPEG:
             // default: baseline
-            if (par->mfx.FrameInfo.Width < 64 ||
-                par->mfx.FrameInfo.Width > 8192)
+            if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 8192)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
-            if (par->mfx.FrameInfo.Height < 64 ||
-                par->mfx.FrameInfo.Height > 8192)
+            if (par->mfx.FrameInfo.Height < 64 || par->mfx.FrameInfo.Height > 8192)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
             if (par->mfx.Quality) {
@@ -208,12 +199,10 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             break;
         case MFX_CODEC_AV1:
             // default: VBR
-            if (par->mfx.FrameInfo.Width < 64 ||
-                par->mfx.FrameInfo.Width > 4096)
+            if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 4096)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
-            if (par->mfx.FrameInfo.Height < 64 ||
-                par->mfx.FrameInfo.Height > 2304)
+            if (par->mfx.FrameInfo.Height < 64 || par->mfx.FrameInfo.Height > 2304)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
             if (par->mfx.RateControlMethod) {
@@ -260,8 +249,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (par->mfx.FrameInfo.BitDepthChroma) {
-        if (par->mfx.FrameInfo.BitDepthChroma != 8 &&
-            par->mfx.FrameInfo.BitDepthChroma != 10)
+        if (par->mfx.FrameInfo.BitDepthChroma != 8 && par->mfx.FrameInfo.BitDepthChroma != 10)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else if (canCorrect) {
@@ -269,8 +257,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     }
 
     if (par->mfx.FrameInfo.BitDepthLuma) {
-        if (par->mfx.FrameInfo.BitDepthLuma != 8 &&
-            par->mfx.FrameInfo.BitDepthLuma != 10)
+        if (par->mfx.FrameInfo.BitDepthLuma != 8 && par->mfx.FrameInfo.BitDepthLuma != 10)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else if (canCorrect) {
@@ -278,8 +265,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     }
 
     if (par->mfx.TargetUsage) {
-        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 ||
-            par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 || par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else if (canCorrect) {
@@ -327,8 +313,7 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 
     m_avEncCodec = avcodec_find_encoder(cid);
     RET_IF_FALSE(m_avEncCodec, MFX_ERR_INVALID_VIDEO_PARAM);
-    VPL_DEBUG_MESSAGE("AVCodec encoder name=" +
-                      std::string(m_avEncCodec->name));
+    VPL_DEBUG_MESSAGE("AVCodec encoder name=" + std::string(m_avEncCodec->name));
 
     m_avEncContext = avcodec_alloc_context3(m_avEncCodec);
     RET_IF_FALSE(m_avEncContext, MFX_ERR_MEMORY_ALLOC);
@@ -345,7 +330,7 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 
     m_avEncContext->gop_size     = par->mfx.GopPicSize;
     m_avEncContext->max_b_frames = par->mfx.GopRefDist;
-    m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
+    m_avEncContext->bit_rate     = par->mfx.TargetKbps * 1000; // prop is in kbps;
 
     m_avEncContext->framerate.num = par->mfx.FrameInfo.FrameRateExtN;
     m_avEncContext->framerate.den = par->mfx.FrameInfo.FrameRateExtD;
@@ -385,9 +370,8 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     // set defaults for anything not passed in
     if (!m_avEncContext->gop_size)
         m_avEncContext->gop_size =
-            2 *
-            static_cast<int>(static_cast<float>(m_avEncContext->framerate.num) /
-                             m_avEncContext->framerate.den);
+            2 * static_cast<int>(static_cast<float>(m_avEncContext->framerate.num) /
+                                 m_avEncContext->framerate.den);
 
     switch (m_param.mfx.CodecId) {
         case MFX_CODEC_HEVC:
@@ -425,11 +409,7 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 }
 
 //utility function to convert between TargetUsage/Encode Mode
-int CpuEncode::convertTargetUsageVal(int val,
-                                     int minIn,
-                                     int maxIn,
-                                     int minOut,
-                                     int maxOut) {
+int CpuEncode::convertTargetUsageVal(int val, int minIn, int maxIn, int minOut, int maxOut) {
     int rangeIn  = maxIn - minIn;
     int rangeOut = maxOut - minOut;
     double ratio = (double)rangeOut / (double)rangeIn;
@@ -448,39 +428,29 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
     // set rate control
     if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
         // SVT-HEVC rc 0=CBR
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "rc",
-                         "0",
-                         AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set(m_avEncContext->priv_data, "rc", "0", AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
         // since SVT-HEVC does not distinguish between QPI/P/B, use QPP value
         std::stringstream qpss;
         qpss << par->mfx.QPP;
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "qp",
-                         qpss.str().c_str(),
-                         AV_OPT_SEARCH_CHILDREN);
+        ret =
+            av_opt_set(m_avEncContext->priv_data, "qp", qpss.str().c_str(), AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
     else {
         //SVT-HEVC rc 1=VBR
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "rc",
-                         "1",
-                         AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set(m_avEncContext->priv_data, "rc", "1", AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
-        m_avEncContext->bit_rate =
-            par->mfx.TargetKbps * 1000; // prop is in kbps;
+        m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
 
-        m_avEncContext->rc_initial_buffer_occupancy =
-            par->mfx.InitialDelayInKB * 8000;
-        m_avEncContext->rc_buffer_size = par->mfx.BufferSizeInKB * 1000;
-        m_avEncContext->rc_max_rate    = par->mfx.MaxKbps * 1000;
+        m_avEncContext->rc_initial_buffer_occupancy = par->mfx.InitialDelayInKB * 8000;
+        m_avEncContext->rc_buffer_size              = par->mfx.BufferSizeInKB * 1000;
+        m_avEncContext->rc_max_rate                 = par->mfx.MaxKbps * 1000;
     }
 
     if (par->mfx.TargetUsage) {
@@ -526,11 +496,10 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
 
     if (par->mfx.CodecProfile) {
         //       **Profile** | -profile | [1,2] | 2 | 1: Main, 2: Main 10 |
-        ret = av_opt_set_int(
-            m_avEncContext->priv_data,
-            "profile",
-            (par->mfx.CodecProfile == MFX_PROFILE_HEVC_MAIN10) ? 2 : 1,
-            AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set_int(m_avEncContext->priv_data,
+                             "profile",
+                             (par->mfx.CodecProfile == MFX_PROFILE_HEVC_MAIN10) ? 2 : 1,
+                             AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -610,50 +579,35 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
 mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
     int ret;
     int64_t optval;
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "rc",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "rc", AV_OPT_SEARCH_CHILDREN, &optval);
     if (optval == 0) {
         par->mfx.RateControlMethod = MFX_RATECONTROL_CQP;
         int64_t qpval;
-        ret          = av_opt_get_int(m_avEncContext->priv_data,
-                             "qp",
-                             AV_OPT_SEARCH_CHILDREN,
-                             &qpval);
+        ret = av_opt_get_int(m_avEncContext->priv_data, "qp", AV_OPT_SEARCH_CHILDREN, &qpval);
         par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
         par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         if (m_avEncContext->bit_rate) {
-            par->mfx.TargetKbps =
-                static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
+            par->mfx.TargetKbps = static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
         }
         if (m_avEncContext->rc_initial_buffer_occupancy) {
-            par->mfx.InitialDelayInKB =
-                m_avEncContext->rc_initial_buffer_occupancy / 8000;
+            par->mfx.InitialDelayInKB = m_avEncContext->rc_initial_buffer_occupancy / 8000;
         }
         if (m_avEncContext->rc_buffer_size) {
             par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
         }
         if (m_avEncContext->rc_max_rate) {
-            par->mfx.MaxKbps =
-                static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
+            par->mfx.MaxKbps = static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
         }
     }
 
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "preset",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "preset", AV_OPT_SEARCH_CHILDREN, &optval);
     if (ret == 0) {
         par->mfx.TargetUsage = convertTargetUsageVal((int)optval, 0, 9, 1, 7);
     }
 
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "profile",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "profile", AV_OPT_SEARCH_CHILDREN, &optval);
     if (ret == 0) {
         switch (optval) {
             case 2:
@@ -666,15 +620,9 @@ mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
     }
 
     int64_t tierval = MFX_TIER_HEVC_MAIN;
-    ret             = av_opt_get_int(m_avEncContext->priv_data,
-                         "tier",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &tierval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "tier", AV_OPT_SEARCH_CHILDREN, &tierval);
 
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "level",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "level", AV_OPT_SEARCH_CHILDREN, &optval);
 
     if (ret == 0) {
         par->mfx.CodecLevel = static_cast<mfxU16>(optval | tierval);
@@ -688,10 +636,8 @@ mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
     if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
         std::stringstream qpss;
         qpss << par->mfx.QPI;
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "qp",
-                         qpss.str().c_str(),
-                         AV_OPT_SEARCH_CHILDREN);
+        ret =
+            av_opt_set(m_avEncContext->priv_data, "qp", qpss.str().c_str(), AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -848,43 +794,31 @@ mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
 mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
     int ret;
     int64_t optval;
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "rc",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "rc", AV_OPT_SEARCH_CHILDREN, &optval);
     if (optval == 0) {
         par->mfx.RateControlMethod = MFX_RATECONTROL_CQP;
         int64_t qpval;
-        ret          = av_opt_get_int(m_avEncContext->priv_data,
-                             "qp",
-                             AV_OPT_SEARCH_CHILDREN,
-                             &qpval);
+        ret = av_opt_get_int(m_avEncContext->priv_data, "qp", AV_OPT_SEARCH_CHILDREN, &qpval);
         par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
         par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         if (m_avEncContext->bit_rate) {
-            par->mfx.TargetKbps =
-                static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
+            par->mfx.TargetKbps = static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
         }
         if (m_avEncContext->rc_initial_buffer_occupancy) {
-            par->mfx.InitialDelayInKB =
-                m_avEncContext->rc_initial_buffer_occupancy / 8000;
+            par->mfx.InitialDelayInKB = m_avEncContext->rc_initial_buffer_occupancy / 8000;
         }
         if (m_avEncContext->rc_buffer_size) {
             par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
         }
         if (m_avEncContext->rc_max_rate) {
-            par->mfx.MaxKbps =
-                static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
+            par->mfx.MaxKbps = static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
         }
     }
 
     uint8_t *presetval = new uint8_t[2048];
-    ret                = av_opt_get(m_avEncContext->priv_data,
-                     "preset",
-                     AV_OPT_SEARCH_CHILDREN,
-                     &presetval);
+    ret = av_opt_get(m_avEncContext->priv_data, "preset", AV_OPT_SEARCH_CHILDREN, &presetval);
     std::string presetstr((char *)presetval);
     int tu = 4;
     if (presetstr == "veryslow")
@@ -943,20 +877,15 @@ mfxStatus CpuEncode::InitAV1Params(mfxVideoParam *par) {
     // set AV1 rate control (0=CQP, 1=VBR, 2 = CVBR)
     if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
         //SVT-AV1 rc 0=CBR
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "rc",
-                         "0",
-                         AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set(m_avEncContext->priv_data, "rc", "0", AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
         // since SVT-AV1 does not distinguish between QPI/P/B, use the QPP value
         std::stringstream qpss;
         qpss << par->mfx.QPP;
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "qp",
-                         qpss.str().c_str(),
-                         AV_OPT_SEARCH_CHILDREN);
+        ret =
+            av_opt_set(m_avEncContext->priv_data, "qp", qpss.str().c_str(), AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -965,38 +894,28 @@ mfxStatus CpuEncode::InitAV1Params(mfxVideoParam *par) {
         // defaulting to VBR
 
         // SVT-AV1 rc 2=CVBR
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "rc",
-                         "2",
-                         AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set(m_avEncContext->priv_data, "rc", "2", AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
-        m_avEncContext->bit_rate =
-            par->mfx.TargetKbps * 1000; // prop is in kbps;
+        m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
 
-        m_avEncContext->rc_initial_buffer_occupancy =
-            par->mfx.InitialDelayInKB * 8000;
-        m_avEncContext->rc_buffer_size = par->mfx.BufferSizeInKB * 1000;
-        m_avEncContext->rc_max_rate    = par->mfx.MaxKbps * 1000;
+        m_avEncContext->rc_initial_buffer_occupancy = par->mfx.InitialDelayInKB * 8000;
+        m_avEncContext->rc_buffer_size              = par->mfx.BufferSizeInKB * 1000;
+        m_avEncContext->rc_max_rate                 = par->mfx.MaxKbps * 1000;
     }
     else {
         // default to VBR
         // SVT-HEVC rc 1=VBR
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "rc",
-                         "1",
-                         AV_OPT_SEARCH_CHILDREN);
+        ret = av_opt_set(m_avEncContext->priv_data, "rc", "1", AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
-        m_avEncContext->bit_rate =
-            par->mfx.TargetKbps * 1000; // prop is in kbps;
+        m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
 
-        m_avEncContext->rc_initial_buffer_occupancy =
-            par->mfx.InitialDelayInKB * 8000;
-        m_avEncContext->rc_buffer_size = par->mfx.BufferSizeInKB * 1000;
-        m_avEncContext->rc_max_rate    = par->mfx.MaxKbps * 1000;
+        m_avEncContext->rc_initial_buffer_occupancy = par->mfx.InitialDelayInKB * 8000;
+        m_avEncContext->rc_buffer_size              = par->mfx.BufferSizeInKB * 1000;
+        m_avEncContext->rc_max_rate                 = par->mfx.MaxKbps * 1000;
     }
 
     // set targetUsage
@@ -1043,17 +962,11 @@ mfxStatus CpuEncode::InitAV1Params(mfxVideoParam *par) {
 mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
     int ret;
     int64_t optval;
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "rc",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "rc", AV_OPT_SEARCH_CHILDREN, &optval);
     if (optval == 0) {
         par->mfx.RateControlMethod = MFX_RATECONTROL_CQP;
         int64_t qpval;
-        ret          = av_opt_get_int(m_avEncContext->priv_data,
-                             "qp",
-                             AV_OPT_SEARCH_CHILDREN,
-                             &qpval);
+        ret = av_opt_get_int(m_avEncContext->priv_data, "qp", AV_OPT_SEARCH_CHILDREN, &qpval);
         par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
@@ -1064,26 +977,20 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
             par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
         }
         if (m_avEncContext->bit_rate) {
-            par->mfx.TargetKbps =
-                static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
+            par->mfx.TargetKbps = static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
         }
         if (m_avEncContext->rc_initial_buffer_occupancy) {
-            par->mfx.InitialDelayInKB =
-                m_avEncContext->rc_initial_buffer_occupancy / 8000;
+            par->mfx.InitialDelayInKB = m_avEncContext->rc_initial_buffer_occupancy / 8000;
         }
         if (m_avEncContext->rc_buffer_size) {
             par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
         }
         if (m_avEncContext->rc_max_rate) {
-            par->mfx.MaxKbps =
-                static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
+            par->mfx.MaxKbps = static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
         }
     }
 
-    ret = av_opt_get_int(m_avEncContext->priv_data,
-                         "preset",
-                         AV_OPT_SEARCH_CHILDREN,
-                         &optval);
+    ret = av_opt_get_int(m_avEncContext->priv_data, "preset", AV_OPT_SEARCH_CHILDREN, &optval);
     if (ret == 0) {
         par->mfx.TargetUsage = convertTargetUsageVal((int)optval, 0, 8, 1, 7);
     }
@@ -1104,9 +1011,7 @@ CpuEncode::~CpuEncode() {
     }
 }
 
-mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface,
-                                 mfxEncodeCtrl *ctrl,
-                                 mfxBitstream *bs) {
+mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl, mfxBitstream *bs) {
     RET_IF_FALSE(m_avEncContext, MFX_ERR_NOT_INITIALIZED);
     int err;
 
@@ -1130,9 +1035,7 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface,
     // encode one frame
     if (surface) {
         AVFrame *av_frame =
-            m_input_locker.GetAVFrame(surface,
-                                      MFX_MAP_READ,
-                                      m_session->GetFrameAllocator());
+            m_input_locker.GetAVFrame(surface, MFX_MAP_READ, m_session->GetFrameAllocator());
         RET_IF_FALSE(av_frame, MFX_ERR_ABORTED);
 
         if (m_param.mfx.CodecId == MFX_CODEC_JPEG) {
@@ -1174,10 +1077,7 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface,
             //error if encoded bytes out is larger than provided output buffer size
             return MFX_ERR_NOT_ENOUGH_BUFFER;
         }
-        memcpy_s(bs->Data + bs->DataOffset,
-                 nBytesAvail,
-                 m_avEncPacket->data,
-                 nBytesOut);
+        memcpy_s(bs->Data + bs->DataOffset, nBytesAvail, m_avEncPacket->data, nBytesOut);
         bs->DataLength += nBytesOut;
     }
 
@@ -1186,8 +1086,7 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface,
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuEncode::EncodeQueryIOSurf(mfxVideoParam *par,
-                                       mfxFrameAllocRequest *request) {
+mfxStatus CpuEncode::EncodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest *request) {
     // may be null for internal use
     if (par)
         request->Info = par->mfx.FrameInfo;
@@ -1196,7 +1095,7 @@ mfxStatus CpuEncode::EncodeQueryIOSurf(mfxVideoParam *par,
 
     request->NumFrameMin       = 3; // TO DO - calculate correctly from libav
     request->NumFrameSuggested = 3;
-    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
+    request->Type              = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
 
     return MFX_ERR_NONE;
 }
@@ -1308,10 +1207,8 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avEncContext->framerate.den;
 
     // Aspect ratio
-    par->mfx.FrameInfo.AspectRatioW =
-        (uint16_t)m_avEncContext->sample_aspect_ratio.num;
-    par->mfx.FrameInfo.AspectRatioH =
-        (uint16_t)m_avEncContext->sample_aspect_ratio.den;
+    par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avEncContext->sample_aspect_ratio.num;
+    par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avEncContext->sample_aspect_ratio.den;
 
     // Codec params
     switch (par->mfx.CodecId) {

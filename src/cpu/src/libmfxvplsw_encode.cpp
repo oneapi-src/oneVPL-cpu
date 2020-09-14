@@ -7,9 +7,7 @@
 #include "./cpu_workstream.h"
 #include "vpl/mfxvideo.h"
 
-mfxStatus MFXVideoENCODE_Query(mfxSession session,
-                               mfxVideoParam *in,
-                               mfxVideoParam *out) {
+mfxStatus MFXVideoENCODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(out, MFX_ERR_NULL_PTR);
@@ -110,8 +108,7 @@ mfxStatus MFXVideoENCODE_GetVideoParam(mfxSession session, mfxVideoParam *par) {
     return encoder->GetVideoParam(par);
 }
 
-mfxStatus MFXVideoENCODE_GetEncodeStat(mfxSession session,
-                                       mfxEncodeStat *stat) {
+mfxStatus MFXVideoENCODE_GetEncodeStat(mfxSession session, mfxEncodeStat *stat) {
     VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }

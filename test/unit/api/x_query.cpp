@@ -249,8 +249,7 @@ TEST(VPPQuery, PopulatedParamsInReturnsCorrected) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
     ASSERT_EQ(128, par.vpp.Out.Width);
     ASSERT_EQ(96, par.vpp.Out.Height);
-    ASSERT_EQ(MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY,
-              par.IOPattern);
+    ASSERT_EQ(MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY, par.IOPattern);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);

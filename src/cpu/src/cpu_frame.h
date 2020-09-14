@@ -37,8 +37,7 @@ public:
     }
 
     static CpuFrame* TryCast(mfxFrameSurface1* surface) {
-        if (surface && surface->FrameInterface &&
-            surface->FrameInterface->Context &&
+        if (surface && surface->FrameInterface && surface->FrameInterface->Context &&
             surface->Version.Version >= MFX_FRAMESURFACE1_VERSION &&
             surface->FrameInterface->Map == Map) {
             return (CpuFrame*)surface->FrameInterface->Context;
@@ -56,17 +55,14 @@ public:
         m_avframe->width  = width;
         m_avframe->height = height;
         m_avframe->format = MFXFourCC2AVPixelFormat(FourCC);
-        RET_IF_FALSE(m_avframe->format != AV_PIX_FMT_NONE,
-                     MFX_ERR_INVALID_VIDEO_PARAM);
-        RET_IF_FALSE(av_frame_get_buffer(m_avframe, 0) == 0,
-                     MFX_ERR_MEMORY_ALLOC);
+        RET_IF_FALSE(m_avframe->format != AV_PIX_FMT_NONE, MFX_ERR_INVALID_VIDEO_PARAM);
+        RET_IF_FALSE(av_frame_get_buffer(m_avframe, 0) == 0, MFX_ERR_MEMORY_ALLOC);
         return Update();
     }
 
     mfxStatus ImportAVFrame(AVFrame* avframe) {
         RET_IF_FALSE(avframe, MFX_ERR_NULL_PTR);
-        RET_IF_FALSE(m_avframe == nullptr || avframe == m_avframe,
-                     MFX_ERR_UNDEFINED_BEHAVIOR);
+        RET_IF_FALSE(m_avframe == nullptr || avframe == m_avframe, MFX_ERR_UNDEFINED_BEHAVIOR);
         m_avframe   = avframe;
         Info.Width  = avframe->width;
         Info.Height = avframe->height;

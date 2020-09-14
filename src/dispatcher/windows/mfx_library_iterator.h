@@ -88,8 +88,7 @@ protected:
     mfxU32 m_vendorID; // (mfxU32) property of used graphic card
     mfxU32 m_deviceID; // (mfxU32) property of used graphic card
     bool m_bIsSubKeyValid;
-    wchar_t m_SubKeyName
-        [MFX_MAX_REGISTRY_KEY_NAME]; // registry subkey for selected module loaded
+    wchar_t m_SubKeyName[MFX_MAX_REGISTRY_KEY_NAME]; // registry subkey for selected module loaded
     int m_StorageID;
 
 #if !defined(MEDIASDK_UWP_DISPATCHER)

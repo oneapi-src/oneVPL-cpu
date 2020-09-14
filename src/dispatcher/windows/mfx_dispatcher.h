@@ -32,11 +32,7 @@ enum { VPL_MINIMUM_VERSION_MAJOR = 2, VPL_MINIMUM_VERSION_MINOR = 0 };
 //
 
 #undef FUNCTION
-#define FUNCTION(return_value,      \
-                 func_name,         \
-                 formal_param_list, \
-                 actual_param_list) \
-    e##func_name,
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) e##func_name,
 
 enum eFunc {
     eMFXInit,
@@ -96,10 +92,8 @@ struct _mfxSession {
     mfxSession session;
 
     mfxFunctionPointer callTable[eVideoFuncTotal]; // NOLINT(runtime/arrays)
-    mfxFunctionPointer
-        callPlugInsTable[ePluginFuncTotal]; // NOLINT(runtime/arrays)
-    mfxFunctionPointer
-        callVideoTable2[eVideoFunc2Total]; // NOLINT(runtime/arrays)
+    mfxFunctionPointer callPlugInsTable[ePluginFuncTotal]; // NOLINT(runtime/arrays)
+    mfxFunctionPointer callVideoTable2[eVideoFunc2Total]; // NOLINT(runtime/arrays)
 
     // Current library's implementation (exact implementation)
     mfxIMPL impl;
@@ -161,8 +155,7 @@ inline bool operator==(const mfxVersion &one, const mfxVersion &two) {
 }
 
 inline bool operator<(const mfxVersion &one, const mfxVersion &two) {
-    return (one.Major < two.Major) ||
-           ((one.Major == two.Major) && (one.Minor < two.Minor));
+    return (one.Major < two.Major) || ((one.Major == two.Major) && (one.Minor < two.Minor));
 }
 
 inline bool operator<=(const mfxVersion &one, const mfxVersion &two) {

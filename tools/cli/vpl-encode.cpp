@@ -6,8 +6,7 @@
 
 #include "./vpl-common.h"
 
-#define ALIGN_UP(addr, size) \
-    (((addr) + ((size)-1)) & (~((decltype(addr))(size)-1)))
+#define ALIGN_UP(addr, size) (((addr) + ((size)-1)) & (~((decltype(addr))(size)-1)))
 
 // IVF container helper functions and definitions
 #define AV1_FOURCC 0x31305641
@@ -105,8 +104,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    printf("Dispatcher mode = %s\n",
-           DispatcherModeString[params.dispatcherMode]);
+    printf("Dispatcher mode = %s\n", DispatcherModeString[params.dispatcherMode]);
     printf("Memory mode     = %s\n", MemoryModeString[params.memoryMode]);
     puts("library initialized");
 
@@ -155,12 +153,11 @@ int main(int argc, char* argv[]) {
     mfxEncParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     if (params.dstFourCC == MFX_CODEC_AV1) {
-        g_conf                      = new AV1EncConfig;
-        g_conf->width               = params.srcWidth;
-        g_conf->height              = params.srcHeight;
-        g_conf->framerate_numerator = mfxEncParams.mfx.FrameInfo.FrameRateExtN;
-        g_conf->framerate_denominator =
-            mfxEncParams.mfx.FrameInfo.FrameRateExtD;
+        g_conf                        = new AV1EncConfig;
+        g_conf->width                 = params.srcWidth;
+        g_conf->height                = params.srcHeight;
+        g_conf->framerate_numerator   = mfxEncParams.mfx.FrameInfo.FrameRateExtN;
+        g_conf->framerate_denominator = mfxEncParams.mfx.FrameInfo.FrameRateExtD;
     }
     else {
         g_conf = NULL;
@@ -193,8 +190,7 @@ int main(int argc, char* argv[]) {
 
         // Allocate surfaces for encoder
         // - Frame surface array keeps pointers all surface planes and general frame info
-        mfxU32 surfaceSize =
-            GetSurfaceSize(params.srcFourCC, params.srcHeight, params.srcWidth);
+        mfxU32 surfaceSize = GetSurfaceSize(params.srcFourCC, params.srcHeight, params.srcWidth);
         if (surfaceSize == 0) {
             fclose(fSource);
             fclose(fSink);
@@ -205,9 +201,8 @@ int main(int argc, char* argv[]) {
         surfaceBuffersData.resize(surfaceSize * nEncSurfNum);
         mfxU8* surfaceBuffers = surfaceBuffersData.data();
 
-        mfxU16 surfW = (params.srcFourCC == MFX_FOURCC_I010)
-                           ? params.srcWidth * 2
-                           : params.srcWidth;
+        mfxU16 surfW =
+            (params.srcFourCC == MFX_FOURCC_I010) ? params.srcWidth * 2 : params.srcWidth;
         mfxU16 surfH = params.srcHeight;
 
         // Allocate surface headers (mfxFrameSurface1) for encoder
@@ -217,9 +212,8 @@ int main(int argc, char* argv[]) {
             pEncSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
             pEncSurfaces[i].Data.Y = &surfaceBuffers[surfaceSize * i];
 
-            pEncSurfaces[i].Data.U = pEncSurfaces[i].Data.Y + surfW * surfH;
-            pEncSurfaces[i].Data.V =
-                pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+            pEncSurfaces[i].Data.U     = pEncSurfaces[i].Data.Y + surfW * surfH;
+            pEncSurfaces[i].Data.V     = pEncSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
             pEncSurfaces[i].Data.Pitch = surfW;
         }
     }
@@ -256,8 +250,7 @@ int main(int argc, char* argv[]) {
 
         if (!isdraining) {
             if (params.memoryMode == MEM_MODE_EXTERNAL) {
-                nEncSurfIdx = GetFreeSurfaceIndex(
-                    pEncSurfaces); // Find free frame surface
+                nEncSurfIdx = GetFreeSurfaceIndex(pEncSurfaces); // Find free frame surface
 
                 if (nEncSurfIdx == MFX_ERR_NOT_FOUND) {
                     if (output_buffer)
@@ -277,14 +270,11 @@ int main(int argc, char* argv[]) {
                         delete[] output_buffer;
                     fclose(fSource);
                     fclose(fSink);
-                    printf(
-                        "Unknown error in MFXMemory_GetSurfaceForEncode, sts = %d\n",
-                        sts);
+                    printf("Unknown error in MFXMemory_GetSurfaceForEncode, sts = %d\n", sts);
                     return 1;
                 }
 
-                pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface,
-                                                     MFX_MAP_READ);
+                pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_READ);
             }
 
             if (pmfxWorkSurface)
@@ -309,16 +299,13 @@ int main(int argc, char* argv[]) {
         for (;;) {
             // Encode a frame asychronously (returns immediately)
             auto t0 = std::chrono::high_resolution_clock::now();
-            sts     = MFXVideoENCODE_EncodeFrameAsync(
-                session,
-                NULL,
-                (isdraining ? NULL : pmfxWorkSurface),
-                &mfxBS,
-                &syncp);
+            sts     = MFXVideoENCODE_EncodeFrameAsync(session,
+                                                  NULL,
+                                                  (isdraining ? NULL : pmfxWorkSurface),
+                                                  &mfxBS,
+                                                  &syncp);
             auto t1 = std::chrono::high_resolution_clock::now();
-            encode_time +=
-                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
-                    .count();
+            encode_time += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
 
             if (MFX_ERR_NONE < sts && syncp) {
                 sts = MFX_ERR_NONE; // Ignore warnings if output is available
@@ -346,14 +333,12 @@ int main(int argc, char* argv[]) {
 
         if (MFX_ERR_NONE == sts) {
             auto t0 = std::chrono::high_resolution_clock::now();
-            sts     = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+            sts =
+                MFXVideoCORE_SyncOperation(session,
+                                           syncp,
+                                           60000); // Synchronize. Wait until encoded frame is ready
             auto t1 = std::chrono::high_resolution_clock::now();
-            sync_time +=
-                std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
-                    .count();
+            sync_time += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
             ++framenum;
             WriteEncodedStream(framenum,
                                g_conf,
@@ -546,12 +531,10 @@ mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
 
     switch (FourCC) {
         case MFX_FOURCC_I420:
-            nbytes = width * height + (width >> 1) * (height >> 1) +
-                     (width >> 1) * (height >> 1);
+            nbytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             break;
         case MFX_FOURCC_I010:
-            nbytes = width * height + (width >> 1) * (height >> 1) +
-                     (width >> 1) * (height >> 1);
+            nbytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             nbytes *= 2;
             break;
         default:
@@ -724,14 +707,12 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         else if (IS_ARG_EQ(s, "if")) {
             params->infileFormat = argv[idx++];
             str_upper(params->infileFormat,
-                      static_cast<int>(
-                          strlen(params->infileFormat))); // to upper case
+                      static_cast<int>(strlen(params->infileFormat))); // to upper case
         }
         else if (IS_ARG_EQ(s, "of")) {
             params->outfileFormat = argv[idx++];
             str_upper(params->outfileFormat,
-                      static_cast<int>(
-                          strlen(params->outfileFormat))); // to upper case
+                      static_cast<int>(strlen(params->outfileFormat))); // to upper case
         }
         else if (IS_ARG_EQ(s, "sw")) {
             if (!ValidateSize(argv[idx++], &params->srcWidth, MAX_WIDTH))
@@ -860,11 +841,9 @@ void Usage(void) {
     printf("  -tu     targetUsage   ... TU [1-7]\n");
     printf("  -fr     frameRate     ... frames per second\n");
     printf("  -br     bitRate       ... bitrate in kbps\n");
-    printf(
-        "  -bm     brcMode       ... bitrate control [1=CBR, 2=VBR, 3=CQP]\n");
+    printf("  -bm     brcMode       ... bitrate control [1=CBR, 2=VBR, 3=CQP]\n");
     printf("  -qu     quality       ... quality parameter for JPEG encoder\n");
-    printf(
-        "  -qp     qp            ... quantization parameter for CQP bitrate control mode\n");
+    printf("  -qp     qp            ... quantization parameter for CQP bitrate control mode\n");
     printf("  -gs     gopSize       ... GOP size\n");
 
     printf("\nMemory model (default = -ext)\n");

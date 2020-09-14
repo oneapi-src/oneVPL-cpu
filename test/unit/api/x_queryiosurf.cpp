@@ -73,8 +73,7 @@ TEST(EncodeQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(EncodeQueryIOSurf,
-     DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+TEST(EncodeQueryIOSurf, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
     FAIL() << "Test not implemented";
 }
 
@@ -146,8 +145,7 @@ TEST(DecodeQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeQueryIOSurf,
-     DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
+TEST(DecodeQueryIOSurf, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
     FAIL() << "Test not implemented";
 }
 
@@ -210,8 +208,7 @@ TEST(VPPQueryIOSurf, DISABLED_InvalidParamsReturnInvalidVideoParam) {
     mfxVPPParams.vpp.In.Height = 96;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_I420;
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_VIDEO_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_VIDEO_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
 
     mfxFrameAllocRequest request;
     sts = MFXVideoVPP_QueryIOSurf(session, &mfxVPPParams, &request);

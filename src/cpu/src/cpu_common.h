@@ -40,9 +40,9 @@ extern "C" {
 #if defined(DEBUG) || defined(_DEBUG)
     #include <iostream>
 
-    #define VPL_DEBUG_MESSAGE(_MESSAGE)                                  \
-        std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ \
-                  << ": " << (_MESSAGE) << std::endl;
+    #define VPL_DEBUG_MESSAGE(_MESSAGE)                                                        \
+        std::cout << __FILE__ << ":" << __LINE__ << ": " << __FUNCTION__ << ": " << (_MESSAGE) \
+                  << std::endl;
 #else
     #define VPL_DEBUG_MESSAGE(_MESSAGE)
 #endif
@@ -70,27 +70,25 @@ protected:
 #define VPL_TRACE_FUNC VPL_TRACE(__FUNCTION__)
 
 // Returns from current function if (value<0)
-#define RET_ERROR(_VAR)                                                      \
-    {                                                                        \
-        auto _sts = _VAR;                                                    \
-        /*VPL_DEBUG_MESSAGE("#info: " #_VAR " = " + std::to_string(_sts));*/ \
-        if (_sts < 0) {                                                      \
-            VPL_DEBUG_MESSAGE("Error " + std::to_string(_sts) +              \
-                              " calling " #_VAR);                            \
-            return _sts;                                                     \
-        }                                                                    \
+#define RET_ERROR(_VAR)                                                             \
+    {                                                                               \
+        auto _sts = _VAR;                                                           \
+        /*VPL_DEBUG_MESSAGE("#info: " #_VAR " = " + std::to_string(_sts));*/        \
+        if (_sts < 0) {                                                             \
+            VPL_DEBUG_MESSAGE("Error " + std::to_string(_sts) + " calling " #_VAR); \
+            return _sts;                                                            \
+        }                                                                           \
     }
 
 // Returns value from current function if (value != _STS_CODE)
-#define RET_VAR_IF_NOT(_VAR, _STS_CODE)                                      \
-    {                                                                        \
-        auto _sts = _VAR;                                                    \
-        /*VPL_DEBUG_MESSAGE("#info: " #_VAR " = " + std::to_string(_sts));*/ \
-        if (_sts != _STS_CODE) {                                             \
-            VPL_DEBUG_MESSAGE("Error or Warning " + std::to_string(_sts) +   \
-                              " calling " #_VAR);                            \
-            return _sts;                                                     \
-        }                                                                    \
+#define RET_VAR_IF_NOT(_VAR, _STS_CODE)                                                        \
+    {                                                                                          \
+        auto _sts = _VAR;                                                                      \
+        /*VPL_DEBUG_MESSAGE("#info: " #_VAR " = " + std::to_string(_sts));*/                   \
+        if (_sts != _STS_CODE) {                                                               \
+            VPL_DEBUG_MESSAGE("Error or Warning " + std::to_string(_sts) + " calling " #_VAR); \
+            return _sts;                                                                       \
+        }                                                                                      \
     }
 
 // Returns from current function if (!value)

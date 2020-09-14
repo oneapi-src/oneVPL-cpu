@@ -277,19 +277,18 @@ TEST(EncodeInit, DISABLED_EncodeParamsInReturnsInitializedAV1Context) {
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
-    mfxU32 lumaSize =
-        mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
+    mfxU32 lumaSize    = mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
 
     mfxU8* surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
     memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
 
     mfxFrameSurface1* encSurfaces = new mfxFrameSurface1[nEncSurfNum];
     for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        encSurfaces[i]        = { 0 };
-        encSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        encSurfaces[i].Data.Y = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
-        encSurfaces[i].Data.U = encSurfaces[i].Data.Y + lumaSize;
-        encSurfaces[i].Data.V = encSurfaces[i].Data.U + lumaSize / 4;
+        encSurfaces[i]            = { 0 };
+        encSurfaces[i].Info       = mfxEncParams.mfx.FrameInfo;
+        encSurfaces[i].Data.Y     = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
+        encSurfaces[i].Data.U     = encSurfaces[i].Data.Y + lumaSize;
+        encSurfaces[i].Data.V     = encSurfaces[i].Data.U + lumaSize / 4;
         encSurfaces[i].Data.Pitch = mfxEncParams.mfx.FrameInfo.Width;
     }
 
@@ -302,8 +301,7 @@ TEST(EncodeInit, DISABLED_EncodeParamsInReturnsInitializedAV1Context) {
 
     mfxVideoParam par;
     sts = MFXVideoENCODE_GetVideoParam(session, &par);
-    if (sts != MFX_ERR_NONE || par.mfx.FrameInfo.Width != 128 ||
-        par.mfx.FrameInfo.Height != 96 ||
+    if (sts != MFX_ERR_NONE || par.mfx.FrameInfo.Width != 128 || par.mfx.FrameInfo.Height != 96 ||
         par.mfx.RateControlMethod != MFX_RATECONTROL_VBR) {
         if (encSurfaces)
             delete[] encSurfaces;
@@ -322,11 +320,7 @@ TEST(EncodeInit, DISABLED_EncodeParamsInReturnsInitializedAV1Context) {
 
     for (int i = 0; i < nEncSurfNum; i++) {
         // Encode a frame asynchronously (returns immediately)
-        sts = MFXVideoENCODE_EncodeFrameAsync(session,
-                                              NULL,
-                                              &encSurfaces[i],
-                                              &mfxBS,
-                                              &syncp);
+        sts = MFXVideoENCODE_EncodeFrameAsync(session, NULL, &encSurfaces[i], &mfxBS, &syncp);
     }
 
     MFXClose(session);
@@ -503,8 +497,7 @@ TEST(VPPInit, ValidParamsInReturnsErrNone) {
     // Output data
     mfxVPPParams.vpp.Out        = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.Out.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern      = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -532,8 +525,7 @@ TEST(VPPInit, InvalidParamsInReturnsInvalidVideoParam) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
@@ -579,8 +571,7 @@ TEST(VPPInit, DISABLED_DoubleInitReturnsUndefinedBehavior) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -866,8 +857,7 @@ TEST(VPPReset, ValidParamsInReturnsErrNone) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -898,14 +888,12 @@ TEST(VPPReset, InvalidParamsInReturnsInvalidVideoParam) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
 
     sts = MFXVideoVPP_Reset(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
@@ -951,8 +939,7 @@ TEST(VPPReset, DISABLED_UninitializedVPPReturnsErrNotInitialized) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Reset(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
@@ -1138,8 +1125,7 @@ TEST(VPPClose, InitializedVPPReturnsErrNone) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -1188,8 +1174,7 @@ TEST(VPPClose, DISABLED_DoubleCloseReturnsErrNotInitialized) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_BGRA;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);

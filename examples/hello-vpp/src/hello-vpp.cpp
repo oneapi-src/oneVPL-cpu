@@ -138,8 +138,7 @@ int main(int argc, char *argv[]) {
     vpp_params.vpp.Out.Width         = vpp_params.vpp.Out.CropW;
     vpp_params.vpp.Out.Height        = vpp_params.vpp.Out.CropH;
 
-    vpp_params.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    vpp_params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     // Query number of required surfaces for VPP
     mfxFrameAllocRequest vpp_request[2]; // [0] - in, [1] - out
@@ -177,11 +176,10 @@ int main(int argc, char *argv[]) {
     std::vector<mfxFrameSurface1> vpp_surfaces_in(num_surfaces_in);
     for (mfxI32 i = 0; i < num_surfaces_in; i++) {
         memset(&vpp_surfaces_in[i], 0, sizeof(mfxFrameSurface1));
-        vpp_surfaces_in[i].Info   = vpp_params.vpp.In;
-        vpp_surfaces_in[i].Data.Y = &buffers_in_data[surface_size * i];
-        vpp_surfaces_in[i].Data.U = vpp_surfaces_in[i].Data.Y + width * height;
-        vpp_surfaces_in[i].Data.V =
-            vpp_surfaces_in[i].Data.U + ((width / 2) * (height / 2));
+        vpp_surfaces_in[i].Info       = vpp_params.vpp.In;
+        vpp_surfaces_in[i].Data.Y     = &buffers_in_data[surface_size * i];
+        vpp_surfaces_in[i].Data.U     = vpp_surfaces_in[i].Data.Y + width * height;
+        vpp_surfaces_in[i].Data.V     = vpp_surfaces_in[i].Data.U + ((width / 2) * (height / 2));
         vpp_surfaces_in[i].Data.Pitch = width;
     }
 
@@ -207,12 +205,10 @@ int main(int argc, char *argv[]) {
     std::vector<mfxFrameSurface1> vpp_surfaces_out(num_surfaces_out);
     for (mfxI32 i = 0; i < num_surfaces_out; i++) {
         memset(&vpp_surfaces_out[i], 0, sizeof(mfxFrameSurface1));
-        vpp_surfaces_out[i].Info   = vpp_params.vpp.Out;
-        vpp_surfaces_out[i].Data.Y = &buffers_out_data[surface_size * i];
-        vpp_surfaces_out[i].Data.U =
-            vpp_surfaces_out[i].Data.Y + width * height;
-        vpp_surfaces_out[i].Data.V =
-            vpp_surfaces_out[i].Data.U + ((width / 2) * (height / 2));
+        vpp_surfaces_out[i].Info       = vpp_params.vpp.Out;
+        vpp_surfaces_out[i].Data.Y     = &buffers_out_data[surface_size * i];
+        vpp_surfaces_out[i].Data.U     = vpp_surfaces_out[i].Data.Y + width * height;
+        vpp_surfaces_out[i].Data.V     = vpp_surfaces_out[i].Data.U + ((width / 2) * (height / 2));
         vpp_surfaces_out[i].Data.Pitch = width;
     }
 
@@ -240,8 +236,7 @@ int main(int argc, char *argv[]) {
 
     // Stage 1: Main processing loop
     while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_DATA == sts) {
-        index_in =
-            GetFreeSurfaceIndex(vpp_surfaces_in); // Find free frame surface
+        index_in = GetFreeSurfaceIndex(vpp_surfaces_in); // Find free frame surface
         if (index_in == MFX_ERR_NOT_FOUND) {
             fclose(source);
             fclose(sink);
@@ -253,8 +248,7 @@ int main(int argc, char *argv[]) {
         if (sts != MFX_ERR_NONE)
             break;
 
-        index_out = GetFreeSurfaceIndex(
-            vpp_surfaces_out); // Find free output frame surface
+        index_out = GetFreeSurfaceIndex(vpp_surfaces_out); // Find free output frame surface
         if (index_out == MFX_ERR_NOT_FOUND) {
             fclose(source);
             fclose(sink);
@@ -284,10 +278,9 @@ int main(int argc, char *argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until a frame is ready
+            sts = MFXVideoCORE_SyncOperation(session,
+                                             syncp,
+                                             60000); // Synchronize. Wait until a frame is ready
             ++framenum;
             WriteRawFrame(&vpp_surfaces_out[index_out], sink);
             bitstream.DataLength = 0;
@@ -298,8 +291,7 @@ int main(int argc, char *argv[]) {
 
     // Stage 2: Retrieve the buffered processed frames
     while (MFX_ERR_NONE <= sts) {
-        index_out =
-            GetFreeSurfaceIndex(vpp_surfaces_out); // Find free frame surface
+        index_out = GetFreeSurfaceIndex(vpp_surfaces_out); // Find free frame surface
         if (index_out == MFX_ERR_NOT_FOUND) {
             fclose(source);
             fclose(sink);
@@ -325,10 +317,9 @@ int main(int argc, char *argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until a frame is ready
+            sts = MFXVideoCORE_SyncOperation(session,
+                                             syncp,
+                                             60000); // Synchronize. Wait until a frame is ready
             ++framenum;
             WriteRawFrame(&vpp_surfaces_out[index_out], sink);
             bitstream.DataLength = 0;
@@ -436,8 +427,7 @@ mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
 
     switch (fourcc) {
         case MFX_FOURCC_I420:
-            bytes = width * height + (width >> 1) * (height >> 1) +
-                    (width >> 1) * (height >> 1);
+            bytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             break;
         default:
             break;
@@ -448,11 +438,10 @@ mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
 
 // Return index of free surface in given pool
 mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &surface_pool) {
-    auto it = std::find_if(surface_pool.begin(),
-                           surface_pool.end(),
-                           [](const mfxFrameSurface1 &surface) {
-                               return 0 == surface.Data.Locked;
-                           });
+    auto it =
+        std::find_if(surface_pool.begin(), surface_pool.end(), [](const mfxFrameSurface1 &surface) {
+            return 0 == surface.Data.Locked;
+        });
 
     if (it == surface_pool.end())
         return MFX_ERR_NOT_FOUND;

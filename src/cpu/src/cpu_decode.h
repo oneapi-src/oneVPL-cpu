@@ -19,8 +19,7 @@ public:
     ~CpuDecode();
 
     static mfxStatus DecodeQuery(mfxVideoParam* in, mfxVideoParam* out);
-    static mfxStatus DecodeQueryIOSurf(mfxVideoParam* par,
-                                       mfxFrameAllocRequest* request);
+    static mfxStatus DecodeQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest* request);
 
     mfxStatus InitDecode(mfxVideoParam* par, mfxBitstream* bs);
     mfxStatus DecodeFrame(mfxBitstream* bs,
@@ -34,8 +33,7 @@ public:
 
 private:
     static mfxStatus ValidateDecodeParams(mfxVideoParam* par, bool canCorrect);
-    AVFrame* ConvertJPEGOutputColorSpace(AVFrame* avframe,
-                                         AVPixelFormat target_pixfmt);
+    AVFrame* ConvertJPEGOutputColorSpace(AVFrame* avframe, AVPixelFormat target_pixfmt);
     const AVCodec* m_avDecCodec;
     AVCodecContext* m_avDecContext;
     AVCodecParserContext* m_avDecParser;

@@ -33,11 +33,7 @@ namespace MFX {
 #endif
 
 #undef FUNCTION
-#define FUNCTION(return_value,      \
-                 func_name,         \
-                 formal_param_list, \
-                 actual_param_list) \
-    e##func_name,
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) e##func_name,
 
 enum Function {
     eMFXInit,
@@ -79,10 +75,7 @@ struct FunctionsTable2 {
     }
 
 #undef FUNCTION
-#define FUNCTION(return_value,      \
-                 func_name,         \
-                 formal_param_list, \
-                 actual_param_list) \
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list) \
     { e##func_name, #func_name, API_VERSION },
 
 static const FunctionsTable g_mfxFuncTable[] = {
@@ -97,15 +90,9 @@ static const FunctionsTable g_mfxFuncTable[] = {
 static const FunctionsTable2 g_mfxFuncTable2[] = {
     { eMFXQueryImplsDescription, "MFXQueryImplsDescription", VERSION(0, 2) },
     { eMFXReleaseImplDescription, "MFXReleaseImplDescription", VERSION(0, 2) },
-    { eMFXMemory_GetSurfaceForVPP,
-      "MFXMemory_GetSurfaceForVPP",
-      VERSION(0, 2) },
-    { eMFXMemory_GetSurfaceForEncode,
-      "MFXMemory_GetSurfaceForEncode",
-      VERSION(0, 2) },
-    { eMFXMemory_GetSurfaceForDecode,
-      "MFXMemory_GetSurfaceForDecode",
-      VERSION(0, 2) },
+    { eMFXMemory_GetSurfaceForVPP, "MFXMemory_GetSurfaceForVPP", VERSION(0, 2) },
+    { eMFXMemory_GetSurfaceForEncode, "MFXMemory_GetSurfaceForEncode", VERSION(0, 2) },
+    { eMFXMemory_GetSurfaceForDecode, "MFXMemory_GetSurfaceForDecode", VERSION(0, 2) },
     { eMFXInitialize, "MFXInitialize", VERSION(0, 2) },
 };
 
@@ -165,8 +152,7 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
         libs.emplace_back(LIBMFXSW);
         libs.emplace_back(MFX_MODULES_DIR "/" LIBMFXSW);
     }
-    else if (par.Implementation & MFX_IMPL_HARDWARE ||
-             par.Implementation & MFX_IMPL_HARDWARE_ANY) {
+    else if (par.Implementation & MFX_IMPL_HARDWARE || par.Implementation & MFX_IMPL_HARDWARE_ANY) {
         libs.emplace_back(LIBMFXHW);
         libs.emplace_back(MFX_MODULES_DIR "/" LIBMFXHW);
     }
@@ -181,8 +167,7 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
     mfxStatus mfx_res = MFX_ERR_UNSUPPORTED;
 
     for (auto& lib : libs) {
-        std::shared_ptr<void> hdl =
-            make_dlopen(lib.c_str(), RTLD_LOCAL | RTLD_NOW);
+        std::shared_ptr<void> hdl = make_dlopen(lib.c_str(), RTLD_LOCAL | RTLD_NOW);
         if (hdl) {
             do {
                 /* Loading functions table */
@@ -192,8 +177,7 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
                     m_table[i] = dlsym(hdl.get(), g_mfxFuncTable[i].name);
                     if (!m_table[i] &&
                         ((g_mfxFuncTable[i].version <= par.Version) ||
-                         (g_mfxFuncTable[i].version <=
-                          mfxVersion(VERSION(1, 14))))) {
+                         (g_mfxFuncTable[i].version <= mfxVersion(VERSION(1, 14))))) {
                         // this version of dispatcher requires MFXInitEx which appeared
                         // in Media SDK API 1.14
                         wrong_version = true;
@@ -232,15 +216,11 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
                     }
 
                     mfx_res =
-                        ((decltype(MFXInitialize)*)m_table2[eMFXInitialize])(
-                            initPar2,
-                            &m_session);
+                        ((decltype(MFXInitialize)*)m_table2[eMFXInitialize])(initPar2, &m_session);
                 }
                 else {
                     /* Initializing loaded library */
-                    mfx_res =
-                        ((decltype(MFXInitEx)*)m_table[eMFXInitEx])(par,
-                                                                    &m_session);
+                    mfx_res = ((decltype(MFXInitEx)*)m_table[eMFXInitEx])(par, &m_session);
                 }
 
                 if (MFX_ERR_NONE != mfx_res) {
@@ -250,9 +230,7 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
                 // Below we just get some data and double check that we got what we have expected
                 // to get. Some of these checks are done inside mediasdk init function
                 mfx_res =
-                    ((decltype(MFXQueryVersion)*)m_table[eMFXQueryVersion])(
-                        m_session,
-                        &m_version);
+                    ((decltype(MFXQueryVersion)*)m_table[eMFXQueryVersion])(m_session, &m_version);
                 if (MFX_ERR_NONE != mfx_res) {
                     break;
                 }
@@ -262,9 +240,8 @@ mfxStatus LoaderCtx::Init(mfxInitParam& par, char* dllName) {
                     break;
                 }
 
-                mfx_res = ((decltype(MFXQueryIMPL)*)m_table[eMFXQueryIMPL])(
-                    m_session,
-                    &m_implementation);
+                mfx_res =
+                    ((decltype(MFXQueryIMPL)*)m_table[eMFXQueryIMPL])(m_session, &m_implementation);
                 if (MFX_ERR_NONE != mfx_res) {
                     mfx_res = MFX_ERR_UNSUPPORTED;
                     break;
@@ -385,8 +362,7 @@ mfxStatus MFXClose(mfxSession session) {
 }
 
 // passthrough functions to implementation
-mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
-                                     mfxFrameSurface1** surface) {
+mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session, mfxFrameSurface1** surface) {
     if (!session)
         return MFX_ERR_INVALID_HANDLE;
     if (!surface)
@@ -403,8 +379,7 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
     return (*proc)(loader->getSession(), surface);
 }
 
-mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
-                                        mfxFrameSurface1** surface) {
+mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSurface1** surface) {
     if (!session)
         return MFX_ERR_INVALID_HANDLE;
     if (!surface)
@@ -421,8 +396,7 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
     return (*proc)(loader->getSession(), surface);
 }
 
-mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
-                                        mfxFrameSurface1** surface) {
+mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1** surface) {
     if (!session)
         return MFX_ERR_INVALID_HANDLE;
     if (!surface)
@@ -451,8 +425,7 @@ mfxStatus MFXJoinSession(mfxSession session, mfxSession child_session) {
         return MFX_ERR_INVALID_HANDLE;
     }
 
-    auto proc =
-        (decltype(MFXJoinSession)*)loader->getFunction(MFX::eMFXJoinSession);
+    auto proc = (decltype(MFXJoinSession)*)loader->getFunction(MFX::eMFXJoinSession);
     if (!proc) {
         return MFX_ERR_INVALID_HANDLE;
     }
@@ -484,26 +457,22 @@ mfxStatus MFXCloneSession(mfxSession session, mfxSession* clone) {
 }
 
 #undef FUNCTION
-#define FUNCTION(return_value,                                            \
-                 func_name,                                               \
-                 formal_param_list,                                       \
-                 actual_param_list)                                       \
-    return_value MFX_CDECL func_name formal_param_list {                  \
-        /* get the function's address and make a call */                  \
-        if (!session)                                                     \
-            return MFX_ERR_INVALID_HANDLE;                                \
-                                                                          \
-        MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;                \
-                                                                          \
-        auto proc =                                                       \
-            (decltype(func_name)*)loader->getFunction(MFX::e##func_name); \
-        if (!proc)                                                        \
-            return MFX_ERR_INVALID_HANDLE;                                \
-                                                                          \
-        /* get the real session pointer */                                \
-        session = loader->getSession();                                   \
-        /* pass down the call */                                          \
-        return (*proc)actual_param_list;                                  \
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list)   \
+    return_value MFX_CDECL func_name formal_param_list {                          \
+        /* get the function's address and make a call */                          \
+        if (!session)                                                             \
+            return MFX_ERR_INVALID_HANDLE;                                        \
+                                                                                  \
+        MFX::LoaderCtx* loader = (MFX::LoaderCtx*)session;                        \
+                                                                                  \
+        auto proc = (decltype(func_name)*)loader->getFunction(MFX::e##func_name); \
+        if (!proc)                                                                \
+            return MFX_ERR_INVALID_HANDLE;                                        \
+                                                                                  \
+        /* get the real session pointer */                                        \
+        session = loader->getSession();                                           \
+        /* pass down the call */                                                  \
+        return (*proc)actual_param_list;                                          \
     }
 
 #include "linux/mfxvideo_functions.h" // NOLINT(build/include)

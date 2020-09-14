@@ -61,9 +61,7 @@ TEST(Dispatcher_SetConfigFilterProperty, VPLImplInReturnsErrNone) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -81,9 +79,7 @@ TEST(Dispatcher_SetConfigFilterProperty, NullConfigReturnsErrNull) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(nullptr,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(nullptr, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
@@ -125,10 +121,7 @@ TEST(Dispatcher_SetConfigFilterProptery, UnknownParamReturnsNotFound) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts =
-        MFXSetConfigFilterProperty(cfg,
-                                   (const mfxU8 *)"mfxImplDescription.Unknown",
-                                   ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Unknown", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
@@ -136,8 +129,7 @@ TEST(Dispatcher_SetConfigFilterProptery, UnknownParamReturnsNotFound) {
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_SetConfigFilterProptery,
-     ValueTypeMismatchReturnsErrUnsupported) {
+TEST(Dispatcher_SetConfigFilterProptery, ValueTypeMismatchReturnsErrUnsupported) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -150,9 +142,7 @@ TEST(Dispatcher_SetConfigFilterProptery,
     ImplValue.Type     = MFX_VARIANT_TYPE_U8;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
 
@@ -174,9 +164,7 @@ TEST(Dispatcher_EnumImplementations, ValidInputsReturnValidDesc) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
@@ -211,9 +199,7 @@ TEST(Dispatcher_EnumImplementations, NullLoaderReturnsErrNull) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -241,16 +227,11 @@ TEST(Dispatcher_EnumImplementations, NullDescReturnsErrNull) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = MFXEnumImplementations(loader,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 nullptr);
+    sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
     //free internal resources
@@ -270,9 +251,7 @@ TEST(Dispatcher_EnumImplementations, IndexOutOfRangeReturnsNotFound) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -340,9 +319,7 @@ TEST(Dispatcher_CreateSession, RequestSWImplCreatesSession) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -372,9 +349,7 @@ TEST(Dispatcher_CreateSession, DoubleLoadersCreatesTwoSWSessions) {
     mfxVariant ImplValue1;
     ImplValue1.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue1.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
-    sts                 = MFXSetConfigFilterProperty(cfg1,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue1);
+    sts = MFXSetConfigFilterProperty(cfg1, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue1);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     mfxSession session1 = nullptr;
@@ -392,9 +367,7 @@ TEST(Dispatcher_CreateSession, DoubleLoadersCreatesTwoSWSessions) {
     mfxVariant ImplValue2;
     ImplValue2.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue2.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
-    sts                 = MFXSetConfigFilterProperty(cfg2,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue2);
+    sts = MFXSetConfigFilterProperty(cfg2, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue2);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     mfxSession session2 = nullptr;
@@ -427,8 +400,7 @@ TEST(Dispatcher_CreateSession, DoubleConfigObjsCreatesTwoSessions) {
     ImplValue1.Data.U32 = MFX_CODEC_AVC;
     sts                 = MFXSetConfigFilterProperty(
         cfg1,
-        (const mfxU8
-             *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
         ImplValue1);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -440,8 +412,7 @@ TEST(Dispatcher_CreateSession, DoubleConfigObjsCreatesTwoSessions) {
     ImplValue2.Data.U32 = MFX_CODEC_HEVC;
     sts                 = MFXSetConfigFilterProperty(
         cfg2,
-        (const mfxU8
-             *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
         ImplValue2);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -515,9 +486,7 @@ TEST(Dispatcher_DispReleaseImplDescription, ValidInputReturnsErrNone) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
 
-    sts = MFXSetConfigFilterProperty(cfg,
-                                     (const mfxU8 *)"mfxImplDescription.Impl",
-                                     ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
@@ -572,11 +541,10 @@ TEST(Dispatcher_DispReleaseImplDescription, NullDescReturnsErrNull) {
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
-    mfxStatus sts =
-        MFXEnumImplementations(loader,
-                               0,
-                               MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                               reinterpret_cast<mfxHDL *>(&implDesc));
+    mfxStatus sts = MFXEnumImplementations(loader,
+                                           0,
+                                           MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
+                                           reinterpret_cast<mfxHDL *>(&implDesc));
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXDispReleaseImplDescription(loader, nullptr);
@@ -586,8 +554,7 @@ TEST(Dispatcher_DispReleaseImplDescription, NullDescReturnsErrNull) {
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_DispReleaseImplDescription,
-     HandleMismatchReturnsInvalidHandle) {
+TEST(Dispatcher_DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) {
     // create 2 loaders
     mfxLoader loader1 = MFXLoad();
     EXPECT_FALSE(loader1 == nullptr);
@@ -597,11 +564,10 @@ TEST(Dispatcher_DispReleaseImplDescription,
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc1;
-    mfxStatus sts =
-        MFXEnumImplementations(loader1,
-                               0,
-                               MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                               reinterpret_cast<mfxHDL *>(&implDesc1));
+    mfxStatus sts = MFXEnumImplementations(loader1,
+                                           0,
+                                           MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
+                                           reinterpret_cast<mfxHDL *>(&implDesc1));
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass wrong loader for this handle

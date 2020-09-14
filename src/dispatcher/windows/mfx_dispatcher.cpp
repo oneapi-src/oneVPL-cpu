@@ -70,11 +70,10 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
     mfxStatus mfxRes = MFX_ERR_NONE;
 
     // check error(s)
-    if ((MFX_LIB_SOFTWARE != reqImplType) &&
-        (MFX_LIB_HARDWARE != reqImplType)) {
-        DISPATCHER_LOG_ERROR((
-            ("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"),
-            DispatcherLog_GetMFXImplString(reqImplType).c_str()));
+    if ((MFX_LIB_SOFTWARE != reqImplType) && (MFX_LIB_HARDWARE != reqImplType)) {
+        DISPATCHER_LOG_ERROR(
+            (("implType == %s, should be either MFX_LIB_SOFTWARE ot MFX_LIB_HARDWARE\n"),
+             DispatcherLog_GetMFXImplString(reqImplType).c_str()));
         loadStatus = MFX_ERR_ABORTED;
         return loadStatus;
     }
@@ -133,8 +132,7 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
             // load video functions: pointers to exposed functions
             for (i = 0; i < eVideoFuncTotal; i += 1) {
                 mfxFunctionPointer pProc =
-                    (mfxFunctionPointer)MFX::mfx_dll_get_addr(hModule,
-                                                              APIFunc[i].pName);
+                    (mfxFunctionPointer)MFX::mfx_dll_get_addr(hModule, APIFunc[i].pName);
                 if (pProc) {
                     // function exists in the library,
                     // save the pointer.
@@ -142,14 +140,12 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
                 }
                 else {
                     // The library doesn't contain the function
-                    DISPATCHER_LOG_WRN((("Can't find API function \"%s\"\n"),
-                                        APIFunc[i].pName));
+                    DISPATCHER_LOG_WRN((("Can't find API function \"%s\"\n"), APIFunc[i].pName));
                     if (apiVersion.Version >= APIFunc[i].apiVersion.Version) {
-                        DISPATCHER_LOG_ERROR(
-                            (("\"%s\" is required for API %u.%u\n"),
-                             APIFunc[i].pName,
-                             apiVersion.Major,
-                             apiVersion.Minor));
+                        DISPATCHER_LOG_ERROR((("\"%s\" is required for API %u.%u\n"),
+                                              APIFunc[i].pName,
+                                              apiVersion.Major,
+                                              apiVersion.Minor));
                         mfxRes = MFX_ERR_UNSUPPORTED;
                         break;
                     }
@@ -159,8 +155,8 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
             // if version >= 2.0, load these functions as well
             if (apiVersion.Major >= 2) {
                 for (i = 0; i < eVideoFunc2Total; i += 1) {
-                    mfxFunctionPointer pProc = (mfxFunctionPointer)
-                        MFX::mfx_dll_get_addr(hModule, APIVideoFunc2[i].pName);
+                    mfxFunctionPointer pProc =
+                        (mfxFunctionPointer)MFX::mfx_dll_get_addr(hModule, APIVideoFunc2[i].pName);
                     if (pProc) {
                         // function exists in the library,
                         // save the pointer.
@@ -168,11 +164,10 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
                     }
                     else {
                         // The library doesn't contain the function
-                        DISPATCHER_LOG_ERROR(
-                            (("\"%s\" is required for API %u.%u\n"),
-                             APIVideoFunc2[i].pName,
-                             apiVersion.Major,
-                             apiVersion.Minor));
+                        DISPATCHER_LOG_ERROR((("\"%s\" is required for API %u.%u\n"),
+                                              APIVideoFunc2[i].pName,
+                                              apiVersion.Major,
+                                              apiVersion.Minor));
                         mfxRes = MFX_ERR_UNSUPPORTED;
                         break;
                     }
@@ -180,8 +175,7 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
             }
         }
         else {
-            DISPATCHER_LOG_WRN(
-                (("can't find DLL: GetLastErr()=0x%x\n"), GetLastError()))
+            DISPATCHER_LOG_WRN((("can't find DLL: GetLastErr()=0x%x\n"), GetLastError()))
             mfxRes = MFX_ERR_UNSUPPORTED;
         }
     }
@@ -208,9 +202,8 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
                 initPar2.AccelerationMode = MFX_ACCEL_MODE_NA;
             }
 
-            mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxInitializationParam,
-                                              mfxSession*))pFunc)(initPar2,
-                                                                  &session);
+            mfxRes = (*(mfxStatus(MFX_CDECL*)(mfxInitializationParam, mfxSession*))pFunc)(initPar2,
+                                                                                          &session);
         }
         else {
             // only support MFXInitEx for 1.x
@@ -218,38 +211,32 @@ mfxStatus MFX_DISP_HANDLE::LoadSelectedDLL(const wchar_t* pPath,
             mfxFunctionPointer pFunc = callTable[tableIndex];
 
             {
-                DISPATCHER_LOG_BLOCK(
-                    ("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
-                     DispatcherLog_GetMFXImplString(impl | implInterface)
-                         .c_str(),
-                     apiVersion.Major,
-                     apiVersion.Minor,
-                     par.ExternalThreads,
-                     &session));
+                DISPATCHER_LOG_BLOCK(("MFXInitEx(%s,ver=%u.%u,ExtThreads=%d,session=0x%p)\n",
+                                      DispatcherLog_GetMFXImplString(impl | implInterface).c_str(),
+                                      apiVersion.Major,
+                                      apiVersion.Minor,
+                                      par.ExternalThreads,
+                                      &session));
 
                 mfxInitParam initPar = par;
                 // adjusting user parameters
                 initPar.Implementation = impl | implInterface;
                 initPar.Version        = version;
                 mfxRes =
-                    (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(
-                        initPar,
-                        &session);
+                    (*(mfxStatus(MFX_CDECL*)(mfxInitParam, mfxSession*))pFunc)(initPar, &session);
             }
         }
 
         if (MFX_ERR_NONE != mfxRes) {
-            DISPATCHER_LOG_WRN(
-                (("library can't be load. MFXInit returned %s \n"),
-                 DispatcherLog_GetMFXStatusString(mfxRes)))
+            DISPATCHER_LOG_WRN((("library can't be load. MFXInit returned %s \n"),
+                                DispatcherLog_GetMFXStatusString(mfxRes)))
         }
         else {
             mfxRes = MFXQueryVersion((mfxSession)this, &actualApiVersion);
 
             if (MFX_ERR_NONE != mfxRes) {
                 DISPATCHER_LOG_ERROR(
-                    (("MFXQueryVersion returned: %d, skiped this library\n"),
-                     mfxRes))
+                    (("MFXQueryVersion returned: %d, skiped this library\n"), mfxRes))
             }
             else {
                 DISPATCHER_LOG_INFO((("MFXQueryVersion returned API: %d.%d\n"),
@@ -282,8 +269,7 @@ mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void) {
             session = (mfxSession)0;
         }
 
-        DISPATCHER_LOG_INFO(
-            (("MFXClose(0x%x) returned %d\n"), session, mfxRes));
+        DISPATCHER_LOG_INFO((("MFXClose(0x%x) returned %d\n"), session, mfxRes));
         // actually, the return value is required to pass outside only.
     }
 
@@ -302,8 +288,7 @@ mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void) {
 } // mfxStatus MFX_DISP_HANDLE::UnLoadSelectedDLL(void)
 
 #if (defined(_WIN64) || defined(_WIN32)) && (MFX_VERSION >= 1031)
-static mfxStatus InitDummySession(mfxU32 adapter_n,
-                                  MFXVideoSession& dummy_session) {
+static mfxStatus InitDummySession(mfxU32 adapter_n, MFXVideoSession& dummy_session) {
     mfxInitParam initPar;
     memset(&initPar, 0, sizeof(initPar));
 
@@ -393,9 +378,7 @@ static mfxStatus PrepareAdaptersInfo(const mfxComponentInfo* info,
     return MFX_ERR_NONE;
 }
 
-static inline bool QueryAdapterInfo(mfxU32 adapter_n,
-                                    mfxU32& VendorID,
-                                    mfxU32& DeviceID) {
+static inline bool QueryAdapterInfo(mfxU32 adapter_n, mfxU32& VendorID, mfxU32& DeviceID) {
     MFX::DXVA2Device dxvaDevice;
 
     if (!dxvaDevice.InitD3D9(adapter_n) && !dxvaDevice.InitDXGI1(adapter_n))
@@ -419,7 +402,7 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
 
     mfxComponentInfo input_info;
     memset(&input_info, 0, sizeof(input_info));
-    input_info.Type = mfxComponentType::MFX_COMPONENT_DECODE;
+    input_info.Type                     = mfxComponentType::MFX_COMPONENT_DECODE;
     input_info.Requirements.mfx.CodecId = codec_id;
 
     for (;;) {
@@ -452,9 +435,7 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
             continue;
         }
 
-        sts = MFXVideoDECODE_Query(dummy_session.operator mfxSession(),
-                                   &stream_params,
-                                   &out);
+        sts = MFXVideoDECODE_Query(dummy_session.operator mfxSession(), &stream_params, &out);
 
         if (sts !=
             MFX_ERR_NONE) // skip MFX_ERR_UNSUPPORTED as well as MFX_WRN_INCOMPATIBLE_VIDEO_PARAM
@@ -462,8 +443,7 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
 
         mfxAdapterInfo info;
         memset(&info, 0, sizeof(info));
-        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(),
-                                         &info.Platform);
+        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(), &info.Platform);
 
         if (sts != MFX_ERR_NONE) {
             continue;
@@ -478,8 +458,7 @@ mfxStatus MFXQueryAdaptersDecode(mfxBitstream* bitstream,
     return PrepareAdaptersInfo(&input_info, obtained_info, *adapters);
 }
 
-mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info,
-                           mfxAdaptersInfo* adapters) {
+mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info, mfxAdaptersInfo* adapters) {
     if (!adapters)
         return MFX_ERR_NULL_PTR;
 
@@ -514,18 +493,16 @@ mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info,
                 case mfxComponentType::MFX_COMPONENT_ENCODE: {
                     out.mfx.CodecId = input_info->Requirements.mfx.CodecId;
 
-                    sts = MFXVideoENCODE_Query(
-                        dummy_session.operator mfxSession(),
-                        &input_info->Requirements,
-                        &out);
+                    sts = MFXVideoENCODE_Query(dummy_session.operator mfxSession(),
+                                               &input_info->Requirements,
+                                               &out);
                 } break;
                 case mfxComponentType::MFX_COMPONENT_DECODE: {
                     out.mfx.CodecId = input_info->Requirements.mfx.CodecId;
 
-                    sts = MFXVideoDECODE_Query(
-                        dummy_session.operator mfxSession(),
-                        &input_info->Requirements,
-                        &out);
+                    sts = MFXVideoDECODE_Query(dummy_session.operator mfxSession(),
+                                               &input_info->Requirements,
+                                               &out);
                 } break;
                 case mfxComponentType::MFX_COMPONENT_VPP: {
                     sts = MFXVideoVPP_Query(dummy_session.operator mfxSession(),
@@ -543,8 +520,7 @@ mfxStatus MFXQueryAdapters(mfxComponentInfo* input_info,
 
         mfxAdapterInfo info;
         memset(&info, 0, sizeof(info));
-        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(),
-                                         &info.Platform);
+        sts = MFXVideoCORE_QueryPlatform(dummy_session.operator mfxSession(), &info.Platform);
 
         if (sts != MFX_ERR_NONE) {
             continue;

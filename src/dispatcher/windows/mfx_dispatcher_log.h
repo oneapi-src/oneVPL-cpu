@@ -23,19 +23,17 @@ enum { DL_EVENT_START = 1, DL_EVENT_STOP, DL_EVENT_MSG };
 
 #define MFXFOURCCTYPE()      "%c%c%c%c"
 #define ZERO_OR_SPACE(value) ((0 == (value)) ? '0' : (value))
-#define MFXU32TOFOURCC(mfxu32)                        \
-    ZERO_OR_SPACE((char)(mfxu32 & 0xFF)),             \
-        ZERO_OR_SPACE((char)((mfxu32 >> 8) & 0xFF)),  \
-        ZERO_OR_SPACE((char)((mfxu32 >> 16) & 0xFF)), \
-        ZERO_OR_SPACE((char)((mfxu32 >> 24) & 0xFF))
+#define MFXU32TOFOURCC(mfxu32)                                                         \
+    ZERO_OR_SPACE((char)(mfxu32 & 0xFF)), ZERO_OR_SPACE((char)((mfxu32 >> 8) & 0xFF)), \
+        ZERO_OR_SPACE((char)((mfxu32 >> 16) & 0xFF)), ZERO_OR_SPACE((char)((mfxu32 >> 24) & 0xFF))
 
 #define MFXGUIDTYPE() "%X-%X-%X-%X-%X-%X-%X-%X-%X-%X-%X-%X-%X-%X-%X-%X"
 
-#define MFXGUIDTOHEX(guid)                                                    \
-    (guid)->Data[0], (guid)->Data[1], (guid)->Data[2], (guid)->Data[3],       \
-        (guid)->Data[4], (guid)->Data[5], (guid)->Data[6], (guid)->Data[7],   \
-        (guid)->Data[8], (guid)->Data[9], (guid)->Data[10], (guid)->Data[11], \
-        (guid)->Data[12], (guid)->Data[13], (guid)->Data[14], (guid)->Data[15]
+#define MFXGUIDTOHEX(guid)                                                                        \
+    (guid)->Data[0], (guid)->Data[1], (guid)->Data[2], (guid)->Data[3], (guid)->Data[4],          \
+        (guid)->Data[5], (guid)->Data[6], (guid)->Data[7], (guid)->Data[8], (guid)->Data[9],      \
+        (guid)->Data[10], (guid)->Data[11], (guid)->Data[12], (guid)->Data[13], (guid)->Data[14], \
+        (guid)->Data[15]
 
 #if defined(MFX_DISPATCHER_LOG)
 
@@ -67,10 +65,7 @@ enum { DL_EVENT_START = 1, DL_EVENT_STOP, DL_EVENT_MSG };
 class IMsgHandler {
 public:
     virtual ~IMsgHandler() {}
-    virtual void Write(int level,
-                       int opcode,
-                       const char *msg,
-                       va_list argptr) = 0;
+    virtual void Write(int level, int opcode, const char *msg, va_list argptr) = 0;
 };
 
     #if DISPATCHER_LOG_USE_FORMATING
@@ -160,9 +155,7 @@ protected:
 struct DispatcherLogBracketsHelper {
     int m_level;
     int m_opcode;
-    DispatcherLogBracketsHelper(int level, int opcode)
-            : m_level(level),
-              m_opcode(opcode) {}
+    DispatcherLogBracketsHelper(int level, int opcode) : m_level(level), m_opcode(opcode) {}
     void Write(const char *str, ...);
 };
 
@@ -223,11 +216,10 @@ const char *DispatcherLog_GetMFXStatusString(int sts);
 
 #endif // !defined(MFX_DISPATCHER_LOG)
 
-#define DISPATCHER_LOG_INFO(msg)  DISPATCHER_LOG(DL_INFO, DL_EVENT_MSG, msg)
-#define DISPATCHER_LOG_WRN(msg)   DISPATCHER_LOG(DL_WRN, DL_EVENT_MSG, msg)
-#define DISPATCHER_LOG_ERROR(msg) DISPATCHER_LOG(DL_ERROR, DL_EVENT_MSG, msg)
-#define DISPATCHER_LOG_LIBRARY(msg) \
-    DISPATCHER_LOG(DL_LOADED_LIBRARY, DL_EVENT_MSG, msg)
-#define DISPATCHER_LOG_BLOCK(msg) DISPATCHER_LOG_AUTO(DL_INFO, msg)
+#define DISPATCHER_LOG_INFO(msg)    DISPATCHER_LOG(DL_INFO, DL_EVENT_MSG, msg)
+#define DISPATCHER_LOG_WRN(msg)     DISPATCHER_LOG(DL_WRN, DL_EVENT_MSG, msg)
+#define DISPATCHER_LOG_ERROR(msg)   DISPATCHER_LOG(DL_ERROR, DL_EVENT_MSG, msg)
+#define DISPATCHER_LOG_LIBRARY(msg) DISPATCHER_LOG(DL_LOADED_LIBRARY, DL_EVENT_MSG, msg)
+#define DISPATCHER_LOG_BLOCK(msg)   DISPATCHER_LOG_AUTO(DL_INFO, msg)
 
 #endif // SRC_DISPATCHER_WINDOWS_MFX_DISPATCHER_LOG_H_

@@ -8,8 +8,7 @@
 #include "vpl/mfxvideo.h"
 
 // SetFrameAllocator not implemented in CPU reference implementation
-mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session,
-                                         mfxFrameAllocator *allocator) {
+mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session, mfxFrameAllocator *allocator) {
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
     return ws->SetFrameAllocator(allocator);
@@ -17,9 +16,7 @@ mfxStatus MFXVideoCORE_SetFrameAllocator(mfxSession session,
 
 // SetHandle accepts a handle.  This holds a void* which is
 // not used by the CPU reference implementation.
-mfxStatus MFXVideoCORE_SetHandle(mfxSession session,
-                                 mfxHandleType type,
-                                 mfxHDL hdl) {
+mfxStatus MFXVideoCORE_SetHandle(mfxSession session, mfxHandleType type, mfxHDL hdl) {
     if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
@@ -38,9 +35,7 @@ mfxStatus MFXVideoCORE_SetHandle(mfxSession session,
 }
 
 // Return handle set by SetHandle
-mfxStatus MFXVideoCORE_GetHandle(mfxSession session,
-                                 mfxHandleType type,
-                                 mfxHDL *hdl) {
+mfxStatus MFXVideoCORE_GetHandle(mfxSession session, mfxHandleType type, mfxHDL *hdl) {
     if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }
@@ -51,16 +46,13 @@ mfxStatus MFXVideoCORE_GetHandle(mfxSession session,
 }
 
 // QueryPlatform not implemented in CPU reference implementation
-mfxStatus MFXVideoCORE_QueryPlatform(mfxSession session,
-                                     mfxPlatform *platform) {
+mfxStatus MFXVideoCORE_QueryPlatform(mfxSession session, mfxPlatform *platform) {
     return MFX_ERR_NOT_IMPLEMENTED;
 }
 
 // Sync operation is implemented as a simple passthrough
 // until asynchronous operation is added
-mfxStatus MFXVideoCORE_SyncOperation(mfxSession session,
-                                     mfxSyncPoint syncp,
-                                     mfxU32 wait) {
+mfxStatus MFXVideoCORE_SyncOperation(mfxSession session, mfxSyncPoint syncp, mfxU32 wait) {
     if (0 == session) {
         return MFX_ERR_INVALID_HANDLE;
     }

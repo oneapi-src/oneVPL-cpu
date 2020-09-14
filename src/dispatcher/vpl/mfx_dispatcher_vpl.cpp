@@ -80,9 +80,7 @@ mfxConfig MFXCreateConfig(mfxLoader loader) {
 
 // set a config proprerty to use in enumerating implementations
 // each config context may have only one property
-mfxStatus MFXSetConfigFilterProperty(mfxConfig config,
-                                     const mfxU8* name,
-                                     mfxVariant value) {
+mfxStatus MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* name, mfxVariant value) {
     if (!config)
         return MFX_ERR_NULL_PTR;
 

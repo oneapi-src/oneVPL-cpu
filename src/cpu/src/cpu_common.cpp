@@ -86,23 +86,19 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
     info->CropH = frame->height;
 
     if (frame->format == AV_PIX_FMT_YUV420P10LE) {
-        RET_IF_FALSE(info->FourCC == MFX_FOURCC_I010,
-                     MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
+        RET_IF_FALSE(info->FourCC == MFX_FOURCC_I010, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 
         w = info->Width * 2;
         h = info->Height;
     }
-    else if (frame->format == AV_PIX_FMT_YUV420P ||
-             frame->format == AV_PIX_FMT_YUVJ420P) {
-        RET_IF_FALSE(info->FourCC == MFX_FOURCC_I420,
-                     MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
+    else if (frame->format == AV_PIX_FMT_YUV420P || frame->format == AV_PIX_FMT_YUVJ420P) {
+        RET_IF_FALSE(info->FourCC == MFX_FOURCC_I420, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 
         w = info->Width;
         h = info->Height;
     }
     else if (frame->format == AV_PIX_FMT_BGRA) {
-        RET_IF_FALSE(info->FourCC == MFX_FOURCC_RGB4,
-                     MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
+        RET_IF_FALSE(info->FourCC == MFX_FOURCC_RGB4, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 
         w = info->Width * 4;
         h = info->Height;
@@ -116,38 +112,26 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
     if (frame->format == AV_PIX_FMT_BGRA) {
         for (y = 0; y < h; y++) {
             offset = pitch * (y + info->CropY) + info->CropX;
-            memcpy_s(data->B + offset,
-                     w,
-                     frame->data[0] + y * frame->linesize[0],
-                     w);
+            memcpy_s(data->B + offset, w, frame->data[0] + y * frame->linesize[0], w);
         }
     }
     else {
         // copy Y plane
         for (y = 0; y < h; y++) {
             offset = pitch * (y + info->CropY) + info->CropX;
-            memcpy_s(data->Y + offset,
-                     w,
-                     frame->data[0] + y * frame->linesize[0],
-                     w);
+            memcpy_s(data->Y + offset, w, frame->data[0] + y * frame->linesize[0], w);
         }
 
         // copy U plane
         for (y = 0; y < h / 2; y++) {
             offset = pitch / 2 * (y + info->CropY) + info->CropX;
-            memcpy_s(data->U + offset,
-                     w / 2,
-                     frame->data[1] + y * frame->linesize[1],
-                     w / 2);
+            memcpy_s(data->U + offset, w / 2, frame->data[1] + y * frame->linesize[1], w / 2);
         }
 
         // copy V plane
         for (y = 0; y < h / 2; y++) {
             offset = pitch / 2 * (y + info->CropY) + info->CropX;
-            memcpy_s(data->V + offset,
-                     w / 2,
-                     frame->data[2] + y * frame->linesize[2],
-                     w / 2);
+            memcpy_s(data->V + offset, w / 2, frame->data[2] + y * frame->linesize[2], w / 2);
         }
     }
 
@@ -192,14 +176,13 @@ mfxStatus CheckFrameInfoCommon(mfxFrameInfo *info, mfxU32 codecId) {
     //    RET_IF_FALSE(info->Shift, MFX_ERR_INVALID_VIDEO_PARAM);
     //}
 
-    RET_IF_FALSE(info->ChromaFormat == MFX_CHROMAFORMAT_YUV420,
-                 MFX_ERR_INVALID_VIDEO_PARAM);
+    RET_IF_FALSE(info->ChromaFormat == MFX_CHROMAFORMAT_YUV420, MFX_ERR_INVALID_VIDEO_PARAM);
     RET_IF_FALSE((info->FrameRateExtN == 0 && info->FrameRateExtD == 0) ||
                      (info->FrameRateExtN != 0 && info->FrameRateExtD != 0),
                  MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
-    RET_IF_FALSE((!info->AspectRatioW && !info->AspectRatioH) ||
-                     (info->AspectRatioW && info->AspectRatioH),
-                 MFX_ERR_INVALID_VIDEO_PARAM);
+    RET_IF_FALSE(
+        (!info->AspectRatioW && !info->AspectRatioH) || (info->AspectRatioW && info->AspectRatioH),
+        MFX_ERR_INVALID_VIDEO_PARAM);
 
     return MFX_ERR_NONE;
 }
@@ -216,13 +199,11 @@ mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId) {
         case MFX_CODEC_AVC:
         case MFX_CODEC_HEVC:
         case MFX_CODEC_AV1:
-            if (info->FourCC != MFX_FOURCC_I420 &&
-                info->FourCC != MFX_FOURCC_I010)
+            if (info->FourCC != MFX_FOURCC_I420 && info->FourCC != MFX_FOURCC_I010)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
         default:
-            RET_IF_FALSE(info->FourCC == MFX_FOURCC_I420,
-                         MFX_ERR_INVALID_VIDEO_PARAM);
+            RET_IF_FALSE(info->FourCC == MFX_FOURCC_I420, MFX_ERR_INVALID_VIDEO_PARAM);
             break;
     }
 

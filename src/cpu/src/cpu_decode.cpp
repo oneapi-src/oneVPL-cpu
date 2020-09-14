@@ -53,12 +53,10 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
                 par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
             }
             else {
-                if (par->mfx.FrameInfo.BitDepthLuma &&
-                    (par->mfx.FrameInfo.BitDepthLuma != 8))
+                if (par->mfx.FrameInfo.BitDepthLuma && (par->mfx.FrameInfo.BitDepthLuma != 8))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
                 if (par->mfx.FrameInfo.ChromaFormat &&
-                    (par->mfx.FrameInfo.ChromaFormat !=
-                     MFX_CHROMAFORMAT_YUV420))
+                    (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
             break;
@@ -68,12 +66,10 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
                 par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
             }
             else {
-                if (par->mfx.FrameInfo.BitDepthLuma &&
-                    (par->mfx.FrameInfo.BitDepthLuma != 10))
+                if (par->mfx.FrameInfo.BitDepthLuma && (par->mfx.FrameInfo.BitDepthLuma != 10))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
                 if (par->mfx.FrameInfo.ChromaFormat &&
-                    (par->mfx.FrameInfo.ChromaFormat !=
-                     MFX_CHROMAFORMAT_YUV420))
+                    (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
             break;
@@ -90,10 +86,8 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
     mfxU32 MAX_HEIGHT = 2160;
 
     //width and height must be <= max
-    if (par->mfx.FrameInfo.Width > MAX_WIDTH ||
-        par->mfx.FrameInfo.Height > MAX_HEIGHT ||
-        par->mfx.FrameInfo.CropW > MAX_WIDTH ||
-        par->mfx.FrameInfo.CropH > MAX_HEIGHT) {
+    if (par->mfx.FrameInfo.Width > MAX_WIDTH || par->mfx.FrameInfo.Height > MAX_HEIGHT ||
+        par->mfx.FrameInfo.CropW > MAX_WIDTH || par->mfx.FrameInfo.CropH > MAX_HEIGHT) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
@@ -271,8 +265,7 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
     }
 
     bool complete_frame_mode = false;
-    if (bs && ((bs->DataFlag & MFX_BITSTREAM_COMPLETE_FRAME) ==
-               MFX_BITSTREAM_COMPLETE_FRAME)) {
+    if (bs && ((bs->DataFlag & MFX_BITSTREAM_COMPLETE_FRAME) == MFX_BITSTREAM_COMPLETE_FRAME)) {
         complete_frame_mode = true;
     }
 
@@ -331,8 +324,7 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
             // in case mjpeg, convert yuvj420p -> yuv420p
             if (m_avDecContext->codec_id == AV_CODEC_ID_MJPEG) {
                 if (m_avDecContext->pix_fmt != AV_PIX_FMT_YUV420P) {
-                    avframe = ConvertJPEGOutputColorSpace(avframe,
-                                                          AV_PIX_FMT_YUV420P);
+                    avframe = ConvertJPEGOutputColorSpace(avframe, AV_PIX_FMT_YUV420P);
                     if (avframe == nullptr)
                         return MFX_ERR_ABORTED;
                 }
@@ -356,10 +348,9 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
             if (surface_out) {
                 if (avframe == m_avDecFrameOut) { // copy image data
                     m_bFrameBuffered = true;
-                    RET_ERROR(AVFrame2mfxFrameSurface(
-                        surface_work,
-                        m_avDecFrameOut,
-                        m_session->GetFrameAllocator()));
+                    RET_ERROR(AVFrame2mfxFrameSurface(surface_work,
+                                                      m_avDecFrameOut,
+                                                      m_session->GetFrameAllocator()));
                     m_bFrameBuffered = false;
                 }
                 else {
@@ -376,8 +367,7 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 continue; // we have more input data
             }
             else {
-                if (bs &&
-                    ((bs->DataFlag & MFX_BITSTREAM_EOS) == MFX_BITSTREAM_EOS)) {
+                if (bs && ((bs->DataFlag & MFX_BITSTREAM_EOS) == MFX_BITSTREAM_EOS)) {
                     //send a null packet and continue
                     avcodec_send_packet(m_avDecContext, nullptr);
                     continue;
@@ -394,12 +384,10 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
     }
 }
 
-AVFrame *CpuDecode::ConvertJPEGOutputColorSpace(AVFrame *avframe,
-                                                AVPixelFormat target_pixfmt) {
+AVFrame *CpuDecode::ConvertJPEGOutputColorSpace(AVFrame *avframe, AVPixelFormat target_pixfmt) {
     static int prev_w, prev_h;
 
-    if (!m_swsContext ||
-        (prev_w != avframe->width || prev_h != avframe->height)) {
+    if (!m_swsContext || (prev_w != avframe->width || prev_h != avframe->height)) {
         if (m_swsContext)
             sws_freeContext(m_swsContext);
         m_swsContext = sws_getContext(m_avDecContext->width,
@@ -435,8 +423,7 @@ AVFrame *CpuDecode::ConvertJPEGOutputColorSpace(AVFrame *avframe,
     return avframe;
 }
 
-mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
-                                       mfxFrameAllocRequest *request) {
+mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest *request) {
     // may be null for internal use
     if (par)
         request->Info = par->mfx.FrameInfo;
@@ -445,7 +432,7 @@ mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par,
 
     request->NumFrameMin       = 1;
     request->NumFrameSuggested = 3;
-    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_DECODE;
+    request->Type              = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_DECODE;
 
     return MFX_ERR_NONE;
 }
@@ -506,14 +493,12 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     //but return current params
     if (!m_avDecContext->width && !m_avDecContext->height &&
         m_avDecContext->pix_fmt == AV_PIX_FMT_NONE) {
-        if (!par->mfx.FrameInfo.FrameRateExtD &&
-            !par->mfx.FrameInfo.FrameRateExtN) {
+        if (!par->mfx.FrameInfo.FrameRateExtD && !par->mfx.FrameInfo.FrameRateExtN) {
             par->mfx.FrameInfo.FrameRateExtN = 30;
             par->mfx.FrameInfo.FrameRateExtD = 1;
         }
 
-        if (!par->mfx.FrameInfo.AspectRatioH &&
-            !par->mfx.FrameInfo.AspectRatioW) {
+        if (!par->mfx.FrameInfo.AspectRatioH && !par->mfx.FrameInfo.AspectRatioW) {
             par->mfx.FrameInfo.AspectRatioH = 1;
             par->mfx.FrameInfo.AspectRatioW = 1;
         }
@@ -557,10 +542,8 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avDecContext->framerate.den;
 
     // Aspect ratio
-    par->mfx.FrameInfo.AspectRatioW =
-        (uint16_t)m_avDecContext->sample_aspect_ratio.num;
-    par->mfx.FrameInfo.AspectRatioH =
-        (uint16_t)m_avDecContext->sample_aspect_ratio.den;
+    par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avDecContext->sample_aspect_ratio.num;
+    par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avDecContext->sample_aspect_ratio.den;
 
     // Profile/Level
     int profile = m_avDecContext->profile;
@@ -630,8 +613,7 @@ mfxStatus CpuDecode::CheckVideoParamDecoders(mfxVideoParam *in) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuDecode::IsSameVideoParam(mfxVideoParam *newPar,
-                                      mfxVideoParam *oldPar) {
+mfxStatus CpuDecode::IsSameVideoParam(mfxVideoParam *newPar, mfxVideoParam *oldPar) {
     if ((newPar->IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY) !=
         (oldPar->IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY)) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -659,8 +641,7 @@ mfxStatus CpuDecode::IsSameVideoParam(mfxVideoParam *newPar,
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    if (newPar->mfx.FrameInfo.ChromaFormat !=
-        oldPar->mfx.FrameInfo.ChromaFormat) {
+    if (newPar->mfx.FrameInfo.ChromaFormat != oldPar->mfx.FrameInfo.ChromaFormat) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
@@ -675,8 +656,7 @@ mfxStatus CpuDecode::IsSameVideoParam(mfxVideoParam *newPar,
     if (mfxSts != MFX_ERR_NONE)
         return mfxSts;
 
-    if (requestNew.NumFrameMin > requestOld.NumFrameMin ||
-        requestNew.Type != requestOld.Type) {
+    if (requestNew.NumFrameMin > requestOld.NumFrameMin || requestNew.Type != requestOld.Type) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 

@@ -18,10 +18,7 @@ mfxStatus CpuFramePool::Init(mfxU32 nPoolSize) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuFramePool::Init(mfxU32 FourCC,
-                             mfxU32 width,
-                             mfxU32 height,
-                             mfxU32 nPoolSize) {
+mfxStatus CpuFramePool::Init(mfxU32 FourCC, mfxU32 width, mfxU32 height, mfxU32 nPoolSize) {
     for (mfxU32 i = 0; i < nPoolSize; i++) {
         auto cpu_frame = std::make_unique<CpuFrame>();
         RET_ERROR(cpu_frame->Allocate(FourCC, width, height));
@@ -55,8 +52,7 @@ mfxStatus CpuFramePool::GetFreeSurface(mfxFrameSurface1** surface) {
     auto cpu_frame = std::make_unique<CpuFrame>();
     RET_IF_FALSE(cpu_frame && cpu_frame->GetAVFrame(), MFX_ERR_MEMORY_ALLOC);
     if (m_info.FourCC) {
-        RET_ERROR(
-            cpu_frame->Allocate(m_info.FourCC, m_info.Width, m_info.Height));
+        RET_ERROR(cpu_frame->Allocate(m_info.FourCC, m_info.Width, m_info.Height));
     }
     *surface = cpu_frame.get();
     (*surface)->FrameInterface->AddRef(*surface);

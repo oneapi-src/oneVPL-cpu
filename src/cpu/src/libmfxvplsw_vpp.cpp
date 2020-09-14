@@ -8,9 +8,7 @@
 #include "vpl/mfxvideo.h"
 
 // stubs
-mfxStatus MFXVideoVPP_Query(mfxSession session,
-                            mfxVideoParam *in,
-                            mfxVideoParam *out) {
+mfxStatus MFXVideoVPP_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(out, MFX_ERR_NULL_PTR);

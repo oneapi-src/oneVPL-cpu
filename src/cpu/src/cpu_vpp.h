@@ -59,8 +59,7 @@ public:
     ~CpuVPP();
 
     static mfxStatus VPPQuery(mfxVideoParam* in, mfxVideoParam* out);
-    static mfxStatus VPPQueryIOSurf(mfxVideoParam* par,
-                                    mfxFrameAllocRequest* request);
+    static mfxStatus VPPQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest* request);
 
     mfxStatus InitVPP(mfxVideoParam* par);
     mfxStatus ProcessFrame(mfxFrameSurface1* surface_in,
@@ -92,22 +91,17 @@ private:
                                                      mfxU16* pInMemType,
                                                      mfxU16* pOutMemType);
     static bool IsConfigurable(mfxU32 filterId);
-    static bool IsFilterFound(const mfxU32* pList,
-                              mfxU32 len,
-                              mfxU32 filterName);
+    static bool IsFilterFound(const mfxU32* pList, mfxU32 len, mfxU32 filterName);
     static size_t GetConfigSize(mfxU32 filterId);
     static mfxStatus ExtendedQuery(mfxU32 filterName, mfxExtBuffer* pHint);
     static mfxU32 GetFilterIndex(mfxU32* pList, mfxU32 len, mfxU32 filterName);
     static bool CheckDoUseCompatibility(mfxU32 filterName);
 
     void GetDoUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen);
-    void GetConfigurableFilterList(mfxVideoParam* par,
-                                   mfxU32* pList,
-                                   mfxU32* pLen);
+    void GetConfigurableFilterList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen);
     double CalculateUMCFramerate(mfxU32 FrameRateExtN, mfxU32 FrameRateExtD);
     void ReorderPipelineListForQuality(std::vector<mfxU32>& pipelineList);
-    void ReorderPipelineListForSpeed(mfxVideoParam* videoParam,
-                                     std::vector<mfxU32>& pipelineList);
+    void ReorderPipelineListForSpeed(mfxVideoParam* videoParam, std::vector<mfxU32>& pipelineList);
     void ShowPipeline(std::vector<mfxU32> pipelineList);
     mfxStatus GetPipelineList(mfxVideoParam* videoParam,
                               std::vector<mfxU32>& pipelineList,
@@ -115,12 +109,8 @@ private:
     mfxStatus CheckIOPattern(mfxVideoParam* par);
     mfxStatus CheckFrameInfo(mfxFrameInfo* info, mfxU32 request);
     bool GetExtParamList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen);
-    mfxStatus GetFilterParam(mfxVideoParam* par,
-                             mfxU32 filterName,
-                             mfxExtBuffer** ppHint);
-    void GetDoNotUseFilterList(mfxVideoParam* par,
-                               mfxU32** ppList,
-                               mfxU32* pLen);
+    mfxStatus GetFilterParam(mfxVideoParam* par, mfxU32 filterName, mfxExtBuffer** ppHint);
+    void GetDoNotUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen);
     bool CheckFilterList(mfxU32* pList, mfxU32 count, bool bDoUseTable);
     mfxStatus CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count);
 

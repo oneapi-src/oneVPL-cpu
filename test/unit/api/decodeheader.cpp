@@ -35,9 +35,8 @@ TEST(DecodeHeader, EightBitInReturnsCorrectMetadata) {
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -64,9 +63,8 @@ TEST(DecodeHeader, TenBitInReturnsCorrectMetadata) {
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_10bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_10bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_10bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_10bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -94,7 +92,7 @@ TEST(DecodeHeader, NullBitstreamInReturnsErrNull) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxVideoParam mfxDecParams = { 0 };
-    sts = MFXVideoDECODE_DecodeHeader(session, nullptr, &mfxDecParams);
+    sts                        = MFXVideoDECODE_DecodeHeader(session, nullptr, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 
     sts = MFXClose(session);

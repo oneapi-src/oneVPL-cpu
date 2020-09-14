@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     memset(&decode_params, 0, sizeof(decode_params));
     decode_params.mfx.CodecId = codec_id;
     decode_params.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
-    sts = MFXVideoDECODE_DecodeHeader(session, &bitstream, &decode_params);
+    sts                       = MFXVideoDECODE_DecodeHeader(session, &bitstream, &decode_params);
     if (sts != MFX_ERR_NONE) {
         fclose(source);
         fclose(sink);
@@ -129,8 +129,7 @@ int main(int argc, char *argv[]) {
         puts("Surface size is wrong");
         return 1;
     }
-    size_t frame_pool_buffer_size =
-        static_cast<size_t>(surface_size) * num_decode_surfaces;
+    size_t frame_pool_buffer_size = static_cast<size_t>(surface_size) * num_decode_surfaces;
     std::vector<mfxU8> output_buffer;
     output_buffer.resize(frame_pool_buffer_size);
     mfxU8 *output_buffer_data = output_buffer.data();
@@ -145,10 +144,9 @@ int main(int argc, char *argv[]) {
         decode_surfaces_data[i].Info   = decode_params.mfx.FrameInfo;
         size_t buf_offset              = static_cast<size_t>(i) * surface_size;
         decode_surfaces_data[i].Data.Y = output_buffer_data + buf_offset;
-        decode_surfaces_data[i].Data.U =
-            output_buffer_data + buf_offset + (surface_w * surface_h);
-        decode_surfaces_data[i].Data.V = decode_surfaces_data[i].Data.U +
-                                         ((surface_w / 2) * (surface_h / 2));
+        decode_surfaces_data[i].Data.U = output_buffer_data + buf_offset + (surface_w * surface_h);
+        decode_surfaces_data[i].Data.V =
+            decode_surfaces_data[i].Data.U + ((surface_w / 2) * (surface_h / 2));
         decode_surfaces_data[i].Data.Pitch = surface_w;
     }
 
@@ -170,8 +168,7 @@ int main(int argc, char *argv[]) {
     printf("Decoding %s -> %s\n", in_filename, OUTPUT_FILE);
     for (;;) {
         bool stillgoing = true;
-        int index =
-            GetFreeSurfaceIndex(decode_surfaces_data, num_decode_surfaces);
+        int index       = GetFreeSurfaceIndex(decode_surfaces_data, num_decode_surfaces);
         while (stillgoing) {
             // submit async decode request
             sts = MFXVideoDECODE_DecodeFrameAsync(session,
@@ -188,8 +185,7 @@ int main(int argc, char *argv[]) {
                         stillgoing = false; // stop if end of file
                     break;
                 case MFX_ERR_MORE_SURFACE: // feed a fresh surface to decode
-                    index = GetFreeSurfaceIndex(decode_surfaces_data,
-                                                num_decode_surfaces);
+                    index = GetFreeSurfaceIndex(decode_surfaces_data, num_decode_surfaces);
                     break;
                 case MFX_ERR_NONE: // no more steps needed, exit loop
                     stillgoing = false;
@@ -220,9 +216,8 @@ int main(int argc, char *argv[]) {
 
     // retrieve the buffered decoded frames
     while (MFX_ERR_NONE <= sts || MFX_ERR_MORE_SURFACE == sts) {
-        int index =
-            GetFreeSurfaceIndex(decode_surfaces_data,
-                                num_decode_surfaces); // Find free frame surface
+        int index = GetFreeSurfaceIndex(decode_surfaces_data,
+                                        num_decode_surfaces); // Find free frame surface
 
         // Decode a frame asynchronously (returns immediately)
 
@@ -264,8 +259,8 @@ int main(int argc, char *argv[]) {
 mfxStatus ReadEncodedStream(mfxBitstream &bs, mfxU32 codecid, FILE *f) {
     memmove(bs.Data, bs.Data + bs.DataOffset, bs.DataLength);
     bs.DataOffset = 0;
-    bs.DataLength += static_cast<mfxU32>(
-        fread(bs.Data + bs.DataLength, 1, bs.MaxLength - bs.DataLength, f));
+    bs.DataLength +=
+        static_cast<mfxU32>(fread(bs.Data + bs.DataLength, 1, bs.MaxLength - bs.DataLength, f));
     return MFX_ERR_NONE;
 }
 
@@ -310,8 +305,7 @@ mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
     mfxU32 bytes = 0;
     switch (fourcc) {
         case MFX_FOURCC_I420:
-            bytes = width * height + (width >> 1) * (height >> 1) +
-                    (width >> 1) * (height >> 1);
+            bytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             break;
         default:
             break;

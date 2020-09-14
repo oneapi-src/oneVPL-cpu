@@ -15,9 +15,7 @@ class iterator_tmpl {
     friend class MFXVector;
     mfxU32 mIndex;
     T* mRecords;
-    iterator_tmpl(mfxU32 index, T* records)
-            : mIndex(index),
-              mRecords(records) {}
+    iterator_tmpl(mfxU32 index, T* records) : mIndex(index), mRecords(records) {}
 
 public:
     iterator_tmpl() : mIndex(), mRecords() {}

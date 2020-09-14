@@ -52,18 +52,10 @@ FUNCTION(mfxStatus,
          (session, in, out))
 FUNCTION(mfxStatus,
          MFXVideoENCODE_QueryIOSurf,
-         (mfxSession session,
-          mfxVideoParam *par,
-          mfxFrameAllocRequest *request),
+         (mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request),
          (session, par, request))
-FUNCTION(mfxStatus,
-         MFXVideoENCODE_Init,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoENCODE_Reset,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
+FUNCTION(mfxStatus, MFXVideoENCODE_Init, (mfxSession session, mfxVideoParam *par), (session, par))
+FUNCTION(mfxStatus, MFXVideoENCODE_Reset, (mfxSession session, mfxVideoParam *par), (session, par))
 FUNCTION(mfxStatus, MFXVideoENCODE_Close, (mfxSession session), (session))
 
 FUNCTION(mfxStatus,
@@ -94,18 +86,10 @@ FUNCTION(mfxStatus,
          (session, bs, par))
 FUNCTION(mfxStatus,
          MFXVideoDECODE_QueryIOSurf,
-         (mfxSession session,
-          mfxVideoParam *par,
-          mfxFrameAllocRequest *request),
+         (mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request),
          (session, par, request))
-FUNCTION(mfxStatus,
-         MFXVideoDECODE_Init,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoDECODE_Reset,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
+FUNCTION(mfxStatus, MFXVideoDECODE_Init, (mfxSession session, mfxVideoParam *par), (session, par))
+FUNCTION(mfxStatus, MFXVideoDECODE_Reset, (mfxSession session, mfxVideoParam *par), (session, par))
 FUNCTION(mfxStatus, MFXVideoDECODE_Close, (mfxSession session), (session))
 
 FUNCTION(mfxStatus,
@@ -140,28 +124,17 @@ FUNCTION(mfxStatus,
          (session, in, out))
 FUNCTION(mfxStatus,
          MFXVideoVPP_QueryIOSurf,
-         (mfxSession session,
-          mfxVideoParam *par,
-          mfxFrameAllocRequest *request),
+         (mfxSession session, mfxVideoParam *par, mfxFrameAllocRequest *request),
          (session, par, request))
-FUNCTION(mfxStatus,
-         MFXVideoVPP_Init,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoVPP_Reset,
-         (mfxSession session, mfxVideoParam *par),
-         (session, par))
+FUNCTION(mfxStatus, MFXVideoVPP_Init, (mfxSession session, mfxVideoParam *par), (session, par))
+FUNCTION(mfxStatus, MFXVideoVPP_Reset, (mfxSession session, mfxVideoParam *par), (session, par))
 FUNCTION(mfxStatus, MFXVideoVPP_Close, (mfxSession session), (session))
 
 FUNCTION(mfxStatus,
          MFXVideoVPP_GetVideoParam,
          (mfxSession session, mfxVideoParam *par),
          (session, par))
-FUNCTION(mfxStatus,
-         MFXVideoVPP_GetVPPStat,
-         (mfxSession session, mfxVPPStat *stat),
-         (session, stat))
+FUNCTION(mfxStatus, MFXVideoVPP_GetVPPStat, (mfxSession session, mfxVPPStat *stat), (session, stat))
 FUNCTION(mfxStatus,
          MFXVideoVPP_RunFrameVPPAsync,
          (mfxSession session,

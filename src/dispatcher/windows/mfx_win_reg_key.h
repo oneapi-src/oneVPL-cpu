@@ -52,10 +52,7 @@ public:
     bool QueryInfo(LPDWORD lpcSubkeys);
 
     bool QueryValueSize(const wchar_t *pValueName, DWORD type, LPDWORD pcbData);
-    bool Query(const wchar_t *pValueName,
-               DWORD type,
-               LPBYTE pData,
-               LPDWORD pcbData);
+    bool Query(const wchar_t *pValueName, DWORD type, LPBYTE pData, LPDWORD pcbData);
 
     bool Query(const wchar_t *pValueName, wchar_t *pData, mfxU32 &nData) {
         DWORD dw = (DWORD)nData;
@@ -67,10 +64,7 @@ public:
     }
 
     // Enumerate value names
-    bool EnumValue(DWORD index,
-                   wchar_t *pValueName,
-                   LPDWORD pcchValueName,
-                   LPDWORD pType);
+    bool EnumValue(DWORD index, wchar_t *pValueName, LPDWORD pcchValueName, LPDWORD pType);
     bool EnumKey(DWORD index, wchar_t *pValueName, LPDWORD pcchValueName);
 
 protected:
@@ -92,9 +86,7 @@ inline bool QueryKey(WinRegKey &key, const wchar_t *pValueName, T &data) {
 }
 
 template <>
-inline bool QueryKey<bool>(WinRegKey &key,
-                           const wchar_t *pValueName,
-                           bool &data) {
+inline bool QueryKey<bool>(WinRegKey &key, const wchar_t *pValueName, bool &data) {
     mfxU32 value = 0;
     bool bRes    = QueryKey(key, pValueName, value);
     data         = (1 == value);

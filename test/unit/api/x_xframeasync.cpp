@@ -52,19 +52,18 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
-    mfxU32 lumaSize =
-        mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
+    mfxU32 lumaSize    = mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
 
     mfxU8 *surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
     memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
 
     mfxFrameSurface1 *encSurfaces = new mfxFrameSurface1[nEncSurfNum];
     for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        encSurfaces[i]        = { 0 };
-        encSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        encSurfaces[i].Data.Y = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
-        encSurfaces[i].Data.U = encSurfaces[i].Data.Y + lumaSize;
-        encSurfaces[i].Data.V = encSurfaces[i].Data.U + lumaSize / 4;
+        encSurfaces[i]            = { 0 };
+        encSurfaces[i].Info       = mfxEncParams.mfx.FrameInfo;
+        encSurfaces[i].Data.Y     = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
+        encSurfaces[i].Data.U     = encSurfaces[i].Data.Y + lumaSize;
+        encSurfaces[i].Data.V     = encSurfaces[i].Data.U + lumaSize / 4;
         encSurfaces[i].Data.Pitch = mfxEncParams.mfx.FrameInfo.Width;
     }
 
@@ -124,19 +123,18 @@ TEST(EncodeFrameAsync, EncCtrlReturnsErrInvalidVideoParam) {
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
-    mfxU32 lumaSize =
-        mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
+    mfxU32 lumaSize    = mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
 
     mfxU8 *surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
     memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
 
     mfxFrameSurface1 *encSurfaces = new mfxFrameSurface1[nEncSurfNum];
     for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        encSurfaces[i]        = { 0 };
-        encSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        encSurfaces[i].Data.Y = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
-        encSurfaces[i].Data.U = encSurfaces[i].Data.Y + lumaSize;
-        encSurfaces[i].Data.V = encSurfaces[i].Data.U + lumaSize / 4;
+        encSurfaces[i]            = { 0 };
+        encSurfaces[i].Info       = mfxEncParams.mfx.FrameInfo;
+        encSurfaces[i].Data.Y     = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
+        encSurfaces[i].Data.U     = encSurfaces[i].Data.Y + lumaSize;
+        encSurfaces[i].Data.V     = encSurfaces[i].Data.U + lumaSize / 4;
         encSurfaces[i].Data.Pitch = mfxEncParams.mfx.FrameInfo.Width;
     }
 
@@ -158,11 +156,8 @@ TEST(EncodeFrameAsync, EncCtrlReturnsErrInvalidVideoParam) {
     ctrl.QP            = 1;
 
     // Encode a frame asynchronously (returns immediately)
-    sts = MFXVideoENCODE_EncodeFrameAsync(session,
-                                          &ctrl,
-                                          &encSurfaces[nEncSurfIdx],
-                                          &mfxBS,
-                                          &syncp);
+    sts =
+        MFXVideoENCODE_EncodeFrameAsync(session, &ctrl, &encSurfaces[nEncSurfIdx], &mfxBS, &syncp);
 
     ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
 
@@ -193,19 +188,18 @@ TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
-    mfxU32 lumaSize =
-        mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
+    mfxU32 lumaSize    = mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
 
     mfxU8 *surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
     memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
 
     mfxFrameSurface1 *encSurfaces = new mfxFrameSurface1[nEncSurfNum];
     for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        encSurfaces[i]        = { 0 };
-        encSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        encSurfaces[i].Data.Y = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
-        encSurfaces[i].Data.U = encSurfaces[i].Data.Y + lumaSize;
-        encSurfaces[i].Data.V = encSurfaces[i].Data.U + lumaSize / 4;
+        encSurfaces[i]            = { 0 };
+        encSurfaces[i].Info       = mfxEncParams.mfx.FrameInfo;
+        encSurfaces[i].Data.Y     = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
+        encSurfaces[i].Data.U     = encSurfaces[i].Data.Y + lumaSize;
+        encSurfaces[i].Data.V     = encSurfaces[i].Data.U + lumaSize / 4;
         encSurfaces[i].Data.Pitch = mfxEncParams.mfx.FrameInfo.Width;
     }
 
@@ -245,8 +239,7 @@ TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
 }
 
 TEST(EncodeFrameAsync, NullSessionReturnsInvalidHandle) {
-    mfxStatus sts =
-        MFXVideoENCODE_EncodeFrameAsync(0, nullptr, nullptr, nullptr, nullptr);
+    mfxStatus sts = MFXVideoENCODE_EncodeFrameAsync(0, nullptr, nullptr, nullptr, nullptr);
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
@@ -270,19 +263,18 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     mfxU16 nEncSurfNum = 16;
-    mfxU32 lumaSize =
-        mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
+    mfxU32 lumaSize    = mfxEncParams.mfx.FrameInfo.Width * mfxEncParams.mfx.FrameInfo.Height;
 
     mfxU8 *surfaceBuffers = new mfxU8[(mfxU32)(lumaSize * 1.5 * nEncSurfNum)];
     memset(surfaceBuffers, 0, (mfxU32)(lumaSize * 1.5 * nEncSurfNum));
 
     mfxFrameSurface1 *encSurfaces = new mfxFrameSurface1[nEncSurfNum];
     for (mfxI32 i = 0; i < nEncSurfNum; i++) {
-        encSurfaces[i]        = { 0 };
-        encSurfaces[i].Info   = mfxEncParams.mfx.FrameInfo;
-        encSurfaces[i].Data.Y = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
-        encSurfaces[i].Data.U = encSurfaces[i].Data.Y + lumaSize;
-        encSurfaces[i].Data.V = encSurfaces[i].Data.U + lumaSize / 4;
+        encSurfaces[i]            = { 0 };
+        encSurfaces[i].Info       = mfxEncParams.mfx.FrameInfo;
+        encSurfaces[i].Data.Y     = &surfaceBuffers[(mfxU32)(lumaSize * 1.5 * i)];
+        encSurfaces[i].Data.U     = encSurfaces[i].Data.Y + lumaSize;
+        encSurfaces[i].Data.V     = encSurfaces[i].Data.U + lumaSize / 4;
         encSurfaces[i].Data.Pitch = mfxEncParams.mfx.FrameInfo.Width;
     }
 
@@ -297,11 +289,8 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
     mfxSyncPoint syncp;
 
     // Encode a frame asynchronously (returns immediately)
-    sts = MFXVideoENCODE_EncodeFrameAsync(session,
-                                          NULL,
-                                          &encSurfaces[nEncSurfIdx],
-                                          nullptr,
-                                          &syncp);
+    sts =
+        MFXVideoENCODE_EncodeFrameAsync(session, NULL, &encSurfaces[nEncSurfIdx], nullptr, &syncp);
 
     ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 
@@ -323,11 +312,7 @@ TEST(EncodeFrameAsync, EncodeUninitializedReturnsNotInitialized) {
 
     mfxSyncPoint syncp;
 
-    sts = MFXVideoENCODE_EncodeFrameAsync(session,
-                                          NULL,
-                                          &encSurfaces,
-                                          &mfxBS,
-                                          &syncp);
+    sts = MFXVideoENCODE_EncodeFrameAsync(session, NULL, &encSurfaces, &mfxBS, &syncp);
 
     ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
@@ -358,9 +343,8 @@ TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {
     mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -373,13 +357,12 @@ TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -440,13 +423,12 @@ TEST(DecodeFrameAsync, CompleteFrameJPEGReturnsFrame) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -465,10 +447,9 @@ TEST(DecodeFrameAsync, CompleteFrameJPEGReturnsFrame) {
 
     int frame = 2; //use the 3rd frame in the bitstream
 
-    mfxBS.Data = test_bitstream_32x32_mjpeg::getdata() +
-                 test_bitstream_32x32_mjpeg::getpos(frame);
-    mfxBS.DataLength = test_bitstream_32x32_mjpeg::getpos(frame + 1) -
-                       test_bitstream_32x32_mjpeg::getpos(frame);
+    mfxBS.Data = test_bitstream_32x32_mjpeg::getdata() + test_bitstream_32x32_mjpeg::getpos(frame);
+    mfxBS.DataLength =
+        test_bitstream_32x32_mjpeg::getpos(frame + 1) - test_bitstream_32x32_mjpeg::getpos(frame);
     mfxBS.DataOffset = 0;
 
     sts = MFXVideoDECODE_DecodeFrameAsync(session,
@@ -498,9 +479,8 @@ TEST(DecodeFrameAsync, CompleteFrameHEVCReturnsFrame) {
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -513,13 +493,12 @@ TEST(DecodeFrameAsync, CompleteFrameHEVCReturnsFrame) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -573,9 +552,8 @@ TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
     mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -588,13 +566,12 @@ TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -642,9 +619,8 @@ TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -657,13 +633,12 @@ TEST(DecodeFrameAsync, InsufficientInBitstreamReturnsMoreData) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -697,8 +672,7 @@ TEST(DecodeFrameAsync, DISABLED_InsufficientSurfacesReturnsMoreSurface) {
 }
 
 TEST(DecodeFrameAsync, NullSessionReturnsInvalidHandle) {
-    mfxStatus sts =
-        MFXVideoDECODE_DecodeFrameAsync(0, nullptr, nullptr, nullptr, nullptr);
+    mfxStatus sts = MFXVideoDECODE_DecodeFrameAsync(0, nullptr, nullptr, nullptr, nullptr);
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
@@ -714,9 +688,8 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
     mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -729,13 +702,12 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -749,11 +721,7 @@ TEST(DecodeFrameAsync, DISABLED_NullSurfaceWorkReturnsErrNull) {
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;
     mfxFrameSurface1 *pmfxOutSurface = nullptr;
-    sts                              = MFXVideoDECODE_DecodeFrameAsync(session,
-                                          &mfxBS,
-                                          nullptr,
-                                          &pmfxOutSurface,
-                                          &syncp);
+    sts = MFXVideoDECODE_DecodeFrameAsync(session, &mfxBS, nullptr, &pmfxOutSurface, &syncp);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
     sts = MFXClose(session);
@@ -774,9 +742,8 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {
     mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -789,13 +756,12 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -809,7 +775,7 @@ TEST(DecodeFrameAsync, NullSurfaceOutReturnsErrNull) {
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     int nIndex                         = 0;
     mfxFrameSurface1 *pmfxOutSurface   = nullptr;
-    sts = MFXVideoDECODE_DecodeFrameAsync(session,
+    sts                                = MFXVideoDECODE_DecodeFrameAsync(session,
                                           &mfxBS,
                                           &decSurfaces[nIndex++],
                                           &pmfxOutSurface,
@@ -834,9 +800,8 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
     mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -849,13 +814,12 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -869,11 +833,7 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
     mfxBS.MaxLength = mfxBS.DataLength = 1;
     mfxSyncPoint syncp;
     int nIndex = 0;
-    sts        = MFXVideoDECODE_DecodeFrameAsync(session,
-                                          &mfxBS,
-                                          &decSurfaces[nIndex++],
-                                          nullptr,
-                                          &syncp);
+    sts = MFXVideoDECODE_DecodeFrameAsync(session, &mfxBS, &decSurfaces[nIndex++], nullptr, &syncp);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
     sts = MFXClose(session);
@@ -893,9 +853,8 @@ TEST(DecodeFrameAsync, DecodeUninitializedReturnsNotInitialized) {
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
 
     sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -908,13 +867,12 @@ TEST(DecodeFrameAsync, DecodeUninitializedReturnsNotInitialized) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNumDec * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNumDec; i++) {
-        decSurfaces[i]        = { 0 };
-        decSurfaces[i].Info   = mfxDecParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        decSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        decSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        decSurfaces[i].Data.V =
-            decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        decSurfaces[i]            = { 0 };
+        decSurfaces[i].Info       = mfxDecParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        decSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        decSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        decSurfaces[i].Data.V     = decSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         decSurfaces[i].Data.Pitch = surfW;
     }
 
@@ -969,8 +927,7 @@ TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {
     // Output data
     mfxVPPParams.vpp.Out = mfxVPPParams.vpp.In;
 
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -983,22 +940,17 @@ TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNum; i++) {
-        vppSurfaces[i]        = { 0 };
-        vppSurfaces[i].Info   = mfxVPPParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        vppSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        vppSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        vppSurfaces[i].Data.V =
-            vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        vppSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         vppSurfaces[i].Data.Pitch = surfW;
     }
 
     mfxSyncPoint syncp;
-    sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                       &vppSurfaces[0],
-                                       &vppSurfaces[1],
-                                       nullptr,
-                                       &syncp);
+    sts = MFXVideoVPP_RunFrameVPPAsync(session, &vppSurfaces[0], &vppSurfaces[1], nullptr, &syncp);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXClose(session);
@@ -1006,8 +958,7 @@ TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {
 }
 
 TEST(RunFrameVPPAsync, NullSessionReturnsInvalidHandle) {
-    mfxStatus sts =
-        MFXVideoVPP_RunFrameVPPAsync(0, nullptr, nullptr, nullptr, nullptr);
+    mfxStatus sts = MFXVideoVPP_RunFrameVPPAsync(0, nullptr, nullptr, nullptr, nullptr);
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
@@ -1031,8 +982,7 @@ TEST(RunFrameVPPAsync, NullSurfaceOutReturnsErrNull) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_I420;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -1045,22 +995,17 @@ TEST(RunFrameVPPAsync, NullSurfaceOutReturnsErrNull) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNum; i++) {
-        vppSurfaces[i]        = { 0 };
-        vppSurfaces[i].Info   = mfxVPPParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        vppSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        vppSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        vppSurfaces[i].Data.V =
-            vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        vppSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         vppSurfaces[i].Data.Pitch = surfW;
     }
 
     mfxSyncPoint syncp;
-    sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                       &vppSurfaces[0],
-                                       nullptr,
-                                       nullptr,
-                                       &syncp);
+    sts = MFXVideoVPP_RunFrameVPPAsync(session, &vppSurfaces[0], nullptr, nullptr, &syncp);
     ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 
     sts = MFXClose(session);
@@ -1087,8 +1032,7 @@ TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_I420;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     sts = MFXVideoVPP_Init(session, &mfxVPPParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -1101,21 +1045,16 @@ TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNum; i++) {
-        vppSurfaces[i]        = { 0 };
-        vppSurfaces[i].Info   = mfxVPPParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        vppSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        vppSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        vppSurfaces[i].Data.V =
-            vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        vppSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         vppSurfaces[i].Data.Pitch = surfW;
     }
 
-    sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                       &vppSurfaces[0],
-                                       &vppSurfaces[0],
-                                       nullptr,
-                                       nullptr);
+    sts = MFXVideoVPP_RunFrameVPPAsync(session, &vppSurfaces[0], &vppSurfaces[0], nullptr, nullptr);
     ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 
     sts = MFXClose(session);
@@ -1142,8 +1081,7 @@ TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
     // Output data
     mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
     mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_I420;
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxU32 nSurfNum               = 2;
     mfxFrameSurface1 *vppSurfaces = new mfxFrameSurface1[nSurfNum];
@@ -1153,22 +1091,17 @@ TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
     mfxU8 *DECoutbuf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
 
     for (mfxU32 i = 0; i < nSurfNum; i++) {
-        vppSurfaces[i]        = { 0 };
-        vppSurfaces[i].Info   = mfxVPPParams.mfx.FrameInfo;
-        int buf_offset        = i * surfW * surfH;
-        vppSurfaces[i].Data.Y = DECoutbuf + buf_offset;
-        vppSurfaces[i].Data.U = DECoutbuf + buf_offset + (surfW * surfH);
-        vppSurfaces[i].Data.V =
-            vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = DECoutbuf + buf_offset;
+        vppSurfaces[i].Data.U     = DECoutbuf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
         vppSurfaces[i].Data.Pitch = surfW;
     }
 
     mfxSyncPoint syncp;
-    sts = MFXVideoVPP_RunFrameVPPAsync(session,
-                                       &vppSurfaces[0],
-                                       &vppSurfaces[1],
-                                       nullptr,
-                                       &syncp);
+    sts = MFXVideoVPP_RunFrameVPPAsync(session, &vppSurfaces[0], &vppSurfaces[1], nullptr, &syncp);
     ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     sts = MFXClose(session);

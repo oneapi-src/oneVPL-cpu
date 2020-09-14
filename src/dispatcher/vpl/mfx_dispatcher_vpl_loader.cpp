@@ -180,8 +180,7 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     it = m_userSearchDirs.begin();
     while (it != m_userSearchDirs.end()) {
         STRING_TYPE nextDir = (*it);
-        sts =
-            SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_USER_DEFINED);
+        sts                 = SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_USER_DEFINED);
         it++;
     }
 
@@ -190,8 +189,7 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     it = m_packageSearchDirs.begin();
     while (it != m_packageSearchDirs.end()) {
         STRING_TYPE nextDir = (*it);
-        sts =
-            SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_VPL_PACKAGE);
+        sts                 = SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_VPL_PACKAGE);
         it++;
     }
 
@@ -200,15 +198,13 @@ mfxStatus LoaderCtxVPL::BuildListOfCandidateLibs() {
     it = m_pathSearchDirs.begin();
     while (it != m_pathSearchDirs.end()) {
         STRING_TYPE nextDir = (*it);
-        sts = SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_OS_PATH);
+        sts                 = SearchDirForLibs(nextDir, m_libInfoList, LIB_PRIORITY_OS_PATH);
         it++;
     }
 
     // fourth priority: default system folders (current location for now)
     m_vplPackageDir = MAKE_STRING("./");
-    sts             = SearchDirForLibs(m_vplPackageDir,
-                           m_libInfoList,
-                           LIB_PRIORITY_SYS_DEFAULT);
+    sts             = SearchDirForLibs(m_vplPackageDir, m_libInfoList, LIB_PRIORITY_SYS_DEFAULT);
 
     // fifth priority: standalone MSDK/driver installation
     sts = SearchDirForLibs(emptyPath, m_libInfoList, LIB_PRIORITY_MSDK_PACKAGE);
@@ -231,9 +227,9 @@ mfxU32 LoaderCtxVPL::CheckValidLibraries() {
         // load video functions: pointers to exposed functions
         if (libInfo->hModuleVPL) {
             for (i = 0; i < NumVPLFunctions; i += 1) {
-                VPLFunctionPtr pProc = (VPLFunctionPtr)MFX::mfx_dll_get_addr(
-                    libInfo->hModuleVPL,
-                    FunctionDesc2[i].pName);
+                VPLFunctionPtr pProc =
+                    (VPLFunctionPtr)MFX::mfx_dll_get_addr(libInfo->hModuleVPL,
+                                                          FunctionDesc2[i].pName);
                 if (pProc) {
                     libInfo->vplFuncTable[i] = pProc;
                 }
@@ -245,14 +241,12 @@ mfxU32 LoaderCtxVPL::CheckValidLibraries() {
         }
 #else
         // Linux
-        libInfo->hModuleVPL =
-            dlopen(libInfo->libNameFull.c_str(), RTLD_LOCAL | RTLD_NOW);
+        libInfo->hModuleVPL = dlopen(libInfo->libNameFull.c_str(), RTLD_LOCAL | RTLD_NOW);
 
         if (libInfo->hModuleVPL) {
             for (i = 0; i < NumVPLFunctions; i += 1) {
                 VPLFunctionPtr pProc =
-                    (VPLFunctionPtr)dlsym(libInfo->hModuleVPL,
-                                          FunctionDesc2[i].pName);
+                    (VPLFunctionPtr)dlsym(libInfo->hModuleVPL, FunctionDesc2[i].pName);
 
                 if (pProc) {
                     libInfo->vplFuncTable[i] = pProc;
@@ -320,8 +314,7 @@ mfxStatus LoaderCtxVPL::QueryLibraryCaps() {
         mfxU32 num_impls = 0;
         LibInfo* libInfo = (*it);
 
-        VPLFunctionPtr pFunc =
-            libInfo->vplFuncTable[IdxMFXQueryImplsDescription];
+        VPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXQueryImplsDescription];
 
         // call MFXQueryImplsDescription() for this implementation
         // return handle to description in requested format
@@ -345,8 +338,7 @@ mfxStatus LoaderCtxVPL::QueryLibraryCaps() {
 
             // fill out mfxInitParam struct for when we call MFXInitEx
             //   in CreateSession()
-            mfxImplDescription* implDesc =
-                reinterpret_cast<mfxImplDescription*>(hImpl[i]);
+            mfxImplDescription* implDesc = reinterpret_cast<mfxImplDescription*>(hImpl[i]);
 
             memset(&(implInfo->initPar), 0, sizeof(mfxInitParam));
             implInfo->initPar.Version        = implDesc->ApiVersion;
@@ -368,9 +360,7 @@ mfxStatus LoaderCtxVPL::QueryLibraryCaps() {
 }
 
 // query implementation i
-mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx,
-                                  mfxImplCapsDeliveryFormat format,
-                                  mfxHDL* idesc) {
+mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx, mfxImplCapsDeliveryFormat format, mfxHDL* idesc) {
     if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
         return MFX_ERR_UNSUPPORTED;
 
@@ -405,8 +395,7 @@ mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
         if (implInfo->implDesc == idesc) {
             LibInfo* libInfo = implInfo->libInfo;
 
-            VPLFunctionPtr pFunc =
-                libInfo->vplFuncTable[IdxMFXReleaseImplDescription];
+            VPLFunctionPtr pFunc = libInfo->vplFuncTable[IdxMFXReleaseImplDescription];
 
             // call MFXReleaseImplDescription() for this implementation
             sts = (*(mfxStatus(MFX_CDECL*)(mfxHDL))pFunc)(implInfo->implDesc);
@@ -434,9 +423,8 @@ mfxStatus LoaderCtxVPL::CreateSession(mfxU32 idx, mfxSession* session) {
             LibInfo* libInfo = implInfo->libInfo;
 
             // compare caps from this library vs. config filters
-            sts = ConfigCtxVPL::ValidateConfig(
-                (mfxImplDescription*)implInfo->implDesc,
-                m_configCtxList);
+            sts = ConfigCtxVPL::ValidateConfig((mfxImplDescription*)implInfo->implDesc,
+                                               m_configCtxList);
 
             if (sts == MFX_ERR_NONE) {
                 // initialize this library via MFXInitEx, or else fail

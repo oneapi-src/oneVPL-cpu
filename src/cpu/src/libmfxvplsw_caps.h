@@ -37,13 +37,11 @@ struct ImplDescriptionArray {
 // typedef child structures for easier reading
 typedef struct mfxDecoderDescription::decoder DecCodec;
 typedef struct mfxDecoderDescription::decoder::decprofile DecProfile;
-typedef struct mfxDecoderDescription::decoder::decprofile::decmemdesc
-    DecMemDesc;
+typedef struct mfxDecoderDescription::decoder::decprofile::decmemdesc DecMemDesc;
 
 typedef struct mfxEncoderDescription::encoder EncCodec;
 typedef struct mfxEncoderDescription::encoder::encprofile EncProfile;
-typedef struct mfxEncoderDescription::encoder::encprofile::encmemdesc
-    EncMemDesc;
+typedef struct mfxEncoderDescription::encoder::encprofile::encmemdesc EncMemDesc;
 
 typedef struct mfxVPPDescription::filter VPPFilter;
 typedef struct mfxVPPDescription::filter::memdesc VPPMemDesc;

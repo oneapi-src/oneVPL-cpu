@@ -15,8 +15,8 @@
 #if defined(MEDIASDK_UWP_DISPATCHER)
     #if defined(MFX_D3D9_ENABLED) && !defined(MFX_FORCE_D3D9_ENABLED)
         #undef MFX_D3D9_ENABLED
-        #pragma message("\n\nATTENTION:\nin file\n\t" __FILE__ " (" STRINGIFY( \
-            __LINE__) "):\nUsing of D3D9 disabled for UWP!\n\n")
+        #pragma message("\n\nATTENTION:\nin file\n\t" __FILE__ \
+                        " (" STRINGIFY(__LINE__) "):\nUsing of D3D9 disabled for UWP!\n\n")
     #endif
     #if defined(MFX_FORCE_D3D9_ENABLED)
         #define MFX_D3D9_ENABLED

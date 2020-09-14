@@ -12,26 +12,20 @@
 #include <windows.h>
 
 #if defined(_WIN64)
-const wchar_t *const defaultDLLName[2]      = { L"libmfxhw64.dll",
-                                           L"libvplswref64.dll" };
-const wchar_t *const defaultAudioDLLName[2] = { L"libmfxaudiosw64.dll",
-                                                L"libmfxaudiosw64.dll" };
+const wchar_t *const defaultDLLName[2]      = { L"libmfxhw64.dll", L"libvplswref64.dll" };
+const wchar_t *const defaultAudioDLLName[2] = { L"libmfxaudiosw64.dll", L"libmfxaudiosw64.dll" };
 
-const wchar_t *const defaultPluginDLLName[2] = { L"mfxplugin64_hw.dll",
-                                                 L"mfxplugin64_sw.dll" };
+const wchar_t *const defaultPluginDLLName[2] = { L"mfxplugin64_hw.dll", L"mfxplugin64_sw.dll" };
     #if defined(MEDIASDK_UWP_DISPATCHER)
 const wchar_t *const IntelGFXAPIDLLName = { L"intel_gfx_api-x64.dll" };
     #endif
 
 #elif defined(_WIN32)
-const wchar_t *const defaultDLLName[2] = { L"libmfxhw32.dll",
-                                           L"libvplswref32.dll" };
+const wchar_t *const defaultDLLName[2] = { L"libmfxhw32.dll", L"libvplswref32.dll" };
 
-const wchar_t *const defaultAudioDLLName[2] = { L"libmfxaudiosw32.dll",
-                                                L"libmfxaudiosw32.dll" };
+const wchar_t *const defaultAudioDLLName[2] = { L"libmfxaudiosw32.dll", L"libmfxaudiosw32.dll" };
 
-const wchar_t *const defaultPluginDLLName[2] = { L"mfxplugin32_hw.dll",
-                                                 L"mfxplugin32_sw.dll" };
+const wchar_t *const defaultPluginDLLName[2] = { L"mfxplugin32_hw.dll", L"mfxplugin32_sw.dll" };
 
     #if defined(MEDIASDK_UWP_DISPATCHER)
 const wchar_t *const IntelGFXAPIDLLName      = { L"intel_gfx_api-x86.dll" };
@@ -41,18 +35,15 @@ const wchar_t *const IntelGFXAPIDLLName      = { L"intel_gfx_api-x86.dll" };
 
 namespace MFX {
 
-mfxStatus mfx_get_default_dll_name(wchar_t *pPath,
-                                   size_t pathSize,
-                                   eMfxImplType implType) {
+mfxStatus mfx_get_default_dll_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType) {
     if (!pPath) {
         return MFX_ERR_NULL_PTR;
     }
 
     // there are only 2 implementation with default DLL names
 #if _MSC_VER >= 1400
-    return 0 == wcscpy_s(pPath, pathSize, defaultDLLName[implType & 1])
-               ? MFX_ERR_NONE
-               : MFX_ERR_UNKNOWN;
+    return 0 == wcscpy_s(pPath, pathSize, defaultDLLName[implType & 1]) ? MFX_ERR_NONE
+                                                                        : MFX_ERR_UNKNOWN;
 #else
     wcscpy(pPath, defaultDLLName[implType & 1]);
     return MFX_ERR_NONE;
@@ -60,15 +51,13 @@ mfxStatus mfx_get_default_dll_name(wchar_t *pPath,
 } // mfxStatus mfx_get_default_dll_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType)
 
 #if defined(MEDIASDK_UWP_DISPATCHER)
-mfxStatus mfx_get_default_intel_gfx_api_dll_name(wchar_t *pPath,
-                                                 size_t pathSize) {
+mfxStatus mfx_get_default_intel_gfx_api_dll_name(wchar_t *pPath, size_t pathSize) {
     if (!pPath) {
         return MFX_ERR_NULL_PTR;
     }
 
     #if _MSC_VER >= 1400
-    return 0 == wcscpy_s(pPath, pathSize, IntelGFXAPIDLLName) ? MFX_ERR_NONE
-                                                              : MFX_ERR_UNKNOWN;
+    return 0 == wcscpy_s(pPath, pathSize, IntelGFXAPIDLLName) ? MFX_ERR_NONE : MFX_ERR_UNKNOWN;
     #else
     wcscpy(pPath, IntelGFXAPIDLLName);
     return MFX_ERR_NONE;
@@ -76,36 +65,30 @@ mfxStatus mfx_get_default_intel_gfx_api_dll_name(wchar_t *pPath,
 } // mfx_get_default_intel_gfx_api_dll_name(wchar_t *pPath, size_t pathSize)
 #endif
 
-mfxStatus mfx_get_default_plugin_name(wchar_t *pPath,
-                                      size_t pathSize,
-                                      eMfxImplType implType) {
+mfxStatus mfx_get_default_plugin_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType) {
     if (!pPath) {
         return MFX_ERR_NULL_PTR;
     }
 
     // there are only 2 implementation with default DLL names
 #if _MSC_VER >= 1400
-    return 0 == wcscpy_s(pPath, pathSize, defaultPluginDLLName[implType & 1])
-               ? MFX_ERR_NONE
-               : MFX_ERR_UNKNOWN;
+    return 0 == wcscpy_s(pPath, pathSize, defaultPluginDLLName[implType & 1]) ? MFX_ERR_NONE
+                                                                              : MFX_ERR_UNKNOWN;
 #else
     wcscpy(pPath, defaultPluginDLLName[implType & 1]);
     return MFX_ERR_NONE;
 #endif
 }
 
-mfxStatus mfx_get_default_audio_dll_name(wchar_t *pPath,
-                                         size_t pathSize,
-                                         eMfxImplType implType) {
+mfxStatus mfx_get_default_audio_dll_name(wchar_t *pPath, size_t pathSize, eMfxImplType implType) {
     if (!pPath) {
         return MFX_ERR_NULL_PTR;
     }
 
     // there are only 2 implementation with default DLL names
 #if _MSC_VER >= 1400
-    return 0 == wcscpy_s(pPath, pathSize, defaultAudioDLLName[implType & 1])
-               ? MFX_ERR_NONE
-               : MFX_ERR_UNKNOWN;
+    return 0 == wcscpy_s(pPath, pathSize, defaultAudioDLLName[implType & 1]) ? MFX_ERR_NONE
+                                                                             : MFX_ERR_UNKNOWN;
 #else
     wcscpy(pPath, defaultAudioDLLName[implType & 1]);
     return MFX_ERR_NONE;
@@ -147,8 +130,7 @@ mfxModuleHandle mfx_dll_load(const wchar_t *pFileName) {
 
 } // mfxModuleHandle mfx_dll_load(const wchar_t *pFileName)
 
-mfxFunctionPointer mfx_dll_get_addr(mfxModuleHandle handle,
-                                    const char *pFunctionName) {
+mfxFunctionPointer mfx_dll_get_addr(mfxModuleHandle handle, const char *pFunctionName) {
     if (NULL == handle) {
         return NULL;
     }

@@ -29,9 +29,7 @@ namespace MFX {
 mfxU32 mfxInterlockedCas32(mfxCriticalSection *pCSection,
                            mfxU32 value_to_exchange,
                            mfxU32 value_to_compare) {
-    return _InterlockedCompareExchange(pCSection,
-                                       value_to_exchange,
-                                       value_to_compare);
+    return _InterlockedCompareExchange(pCSection, value_to_exchange, value_to_compare);
 }
 
 mfxU32 mfxInterlockedXchg32(mfxCriticalSection *pCSection, mfxU32 value) {
@@ -39,8 +37,7 @@ mfxU32 mfxInterlockedXchg32(mfxCriticalSection *pCSection, mfxU32 value) {
 }
 
 void mfxEnterCriticalSection(mfxCriticalSection *pCSection) {
-    while (MFX_SC_IS_TAKEN ==
-           mfxInterlockedCas32(pCSection, MFX_SC_IS_TAKEN, MFX_SC_IS_FREE)) {
+    while (MFX_SC_IS_TAKEN == mfxInterlockedCas32(pCSection, MFX_SC_IS_TAKEN, MFX_SC_IS_FREE)) {
         MFX_WAIT();
     }
 } // void mfxEnterCriticalSection(mfxCriticalSection *pCSection)

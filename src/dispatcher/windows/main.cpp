@@ -123,12 +123,10 @@ int HandleSort(const void *plhs, const void *prhs) {
     }
 
     // if versions are equal prefer library with HW
-    if (lhs->loadStatus == MFX_WRN_PARTIAL_ACCELERATION &&
-        rhs->loadStatus == MFX_ERR_NONE) {
+    if (lhs->loadStatus == MFX_WRN_PARTIAL_ACCELERATION && rhs->loadStatus == MFX_ERR_NONE) {
         return 1;
     }
-    if (lhs->loadStatus == MFX_ERR_NONE &&
-        rhs->loadStatus == MFX_WRN_PARTIAL_ACCELERATION) {
+    if (lhs->loadStatus == MFX_ERR_NONE && rhs->loadStatus == MFX_WRN_PARTIAL_ACCELERATION) {
         return -1;
     }
 
@@ -138,13 +136,12 @@ int HandleSort(const void *plhs, const void *prhs) {
 mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     MFX::MFXAutomaticCriticalSection guard(&dispGuard);
 
-    DISPATCHER_LOG_BLOCK(
-        ("MFXInitEx (impl=%s, pVer=%d.%d, ExternalThreads=%d session=0x%p\n",
-         DispatcherLog_GetMFXImplString(par.Implementation).c_str(),
-         par.Version.Major,
-         par.Version.Minor,
-         par.ExternalThreads,
-         session));
+    DISPATCHER_LOG_BLOCK(("MFXInitEx (impl=%s, pVer=%d.%d, ExternalThreads=%d session=0x%p\n",
+                          DispatcherLog_GetMFXImplString(par.Implementation).c_str(),
+                          par.Version.Major,
+                          par.Version.Minor,
+                          par.ExternalThreads,
+                          session));
 
     mfxStatus mfxRes = MFX_ERR_UNSUPPORTED;
     HandleVector allocatedHandle;
@@ -193,9 +190,8 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
         return MFX_ERR_MEMORY_ALLOC;
     }
 
-    DISPATCHER_LOG_INFO((("Required API version is %u.%u\n"),
-                         requiredVersion.Major,
-                         requiredVersion.Minor));
+    DISPATCHER_LOG_INFO(
+        (("Required API version is %u.%u\n"), requiredVersion.Major, requiredVersion.Minor));
     // particular implementation value
     mfxIMPL curImpl;
 
@@ -230,22 +226,18 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
                     eMfxImplType implType = implTypes[curImplIdx].implType;
 
                     // select a desired DLL
-                    mfxRes = libIterator.SelectDLLVersion(
-                        dllName,
-                        sizeof(dllName) / sizeof(dllName[0]),
-                        &implType,
-                        pHandle->apiVersion);
+                    mfxRes = libIterator.SelectDLLVersion(dllName,
+                                                          sizeof(dllName) / sizeof(dllName[0]),
+                                                          &implType,
+                                                          pHandle->apiVersion);
                     if (MFX_ERR_NONE != mfxRes) {
                         break;
                     }
                     DISPATCHER_LOG_INFO((("loading library %S\n"), dllName));
                     // try to load the selected DLL
                     curImpl = implTypes[curImplIdx].impl;
-                    mfxRes  = pHandle->LoadSelectedDLL(dllName,
-                                                      implType,
-                                                      curImpl,
-                                                      implInterface,
-                                                      par);
+                    mfxRes =
+                        pHandle->LoadSelectedDLL(dllName, implType, curImpl, implInterface, par);
                     // unload the failed DLL
                     if (MFX_ERR_NONE != mfxRes) {
                         pHandle->Close();
@@ -253,8 +245,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
                     else {
                         libIterator.GetSubKeyName(
                             pHandle->subkeyName,
-                            sizeof(pHandle->subkeyName) /
-                                sizeof(pHandle->subkeyName[0]));
+                            sizeof(pHandle->subkeyName) / sizeof(pHandle->subkeyName[0]));
                         pHandle->storageID = libIterator.GetStorageID();
                         allocatedHandle.push_back(pHandle);
                         pHandle = new MFX_DISP_HANDLE(requiredVersion);
@@ -266,8 +257,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
             // select another place for loading engine
             currentStorage += 1;
 
-        } while ((MFX_ERR_NONE != mfxRes) &&
-                 (MFX::MFX_STORAGE_ID_LAST >= currentStorage));
+        } while ((MFX_ERR_NONE != mfxRes) && (MFX::MFX_STORAGE_ID_LAST >= currentStorage));
 
     } while ((MFX_ERR_NONE != mfxRes) && (++curImplIdx <= maxImplIdx));
 
@@ -293,11 +283,10 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
                 eMfxImplType implType;
 
                 // select a desired DLL
-                mfxRes = libIterator.SelectDLLVersion(
-                    dllName,
-                    sizeof(dllName) / sizeof(dllName[0]),
-                    &implType,
-                    pHandle->apiVersion);
+                mfxRes = libIterator.SelectDLLVersion(dllName,
+                                                      sizeof(dllName) / sizeof(dllName[0]),
+                                                      &implType,
+                                                      pHandle->apiVersion);
                 if (MFX_ERR_NONE != mfxRes) {
                     break;
                 }
@@ -305,11 +294,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
 
                 // try to load the selected DLL
                 curImpl = implTypes[curImplIdx].impl;
-                mfxRes  = pHandle->LoadSelectedDLL(dllName,
-                                                  implType,
-                                                  curImpl,
-                                                  implInterface,
-                                                  par);
+                mfxRes  = pHandle->LoadSelectedDLL(dllName, implType, curImpl, implInterface, par);
                 // unload the failed DLL
                 if (MFX_ERR_NONE != mfxRes) {
                     pHandle->Close();
@@ -336,10 +321,9 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     do {
         implInterface = implInterfaceOrig;
 
-        mfxRes =
-            MFX::mfx_get_default_dll_name(dllName,
-                                          sizeof(dllName) / sizeof(dllName[0]),
-                                          implTypes[curImplIdx].implType);
+        mfxRes = MFX::mfx_get_default_dll_name(dllName,
+                                               sizeof(dllName) / sizeof(dllName[0]),
+                                               implTypes[curImplIdx].implType);
 
         if (MFX_ERR_NONE == mfxRes) {
             DISPATCHER_LOG_INFO((("loading default library %S\n"), dllName))
@@ -350,26 +334,23 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
                     implInterface = MFX_IMPL_VIA_ANY;
                 }
                 mfxU32 curVendorID = 0, curDeviceID = 0;
-                mfxRes = MFX::SelectImplementationType(
-                    implTypes[curImplIdx].adapterID,
-                    &implInterface,
-                    &curVendorID,
-                    &curDeviceID);
+                mfxRes = MFX::SelectImplementationType(implTypes[curImplIdx].adapterID,
+                                                       &implInterface,
+                                                       &curVendorID,
+                                                       &curDeviceID);
                 if (curVendorID != INTEL_VENDOR_ID)
                     mfxRes = MFX_ERR_UNKNOWN;
             }
             if (MFX_ERR_NONE == mfxRes) {
                 // try to load the selected DLL using default DLL search mechanism
-                mfxRes =
-                    pHandle->LoadSelectedDLL(dllName,
-                                             implTypes[curImplIdx].implType,
-                                             implTypes[curImplIdx].impl,
-                                             implInterface,
-                                             par);
+                mfxRes = pHandle->LoadSelectedDLL(dllName,
+                                                  implTypes[curImplIdx].implType,
+                                                  implTypes[curImplIdx].impl,
+                                                  implInterface,
+                                                  par);
             }
             // unload the failed DLL
-            if ((MFX_ERR_NONE != mfxRes) &&
-                (MFX_WRN_PARTIAL_ACCELERATION != mfxRes)) {
+            if ((MFX_ERR_NONE != mfxRes) && (MFX_WRN_PARTIAL_ACCELERATION != mfxRes)) {
                 pHandle->Close();
             }
             else {
@@ -386,9 +367,8 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
 
     { // sort candidate list
         bool NeedSort                = false;
-        HandleVector::iterator first = allocatedHandle.begin(),
-                               it    = allocatedHandle.begin(),
-                               et    = allocatedHandle.end();
+        HandleVector::iterator first = allocatedHandle.begin(), it = allocatedHandle.begin(),
+                               et = allocatedHandle.end();
         for (it++; it != et; ++it)
             if (HandleSort(&(*first), &(*it)) != 0)
                 NeedSort = true;
@@ -415,7 +395,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     }
 
     // everything is OK. Save pointers to the output variable
-    *candidate = 0; // keep this one safe from guard destructor
+    *candidate                     = 0; // keep this one safe from guard destructor
     *((MFX_DISP_HANDLE **)session) = pHandle;
 
     return pHandle->loadStatus;
@@ -433,8 +413,7 @@ mfxStatus MFXInitEx2(mfxInitParam par, mfxSession *session, wchar_t *dllName) {
     MFX_DISP_HANDLE *pHandle;
 
     eMfxImplType implType =
-        (par.Implementation == MFX_IMPL_SOFTWARE ? MFX_LIB_SOFTWARE
-                                                 : MFX_LIB_HARDWARE);
+        (par.Implementation == MFX_IMPL_SOFTWARE ? MFX_LIB_SOFTWARE : MFX_LIB_HARDWARE);
     mfxIMPL implInterface = par.Implementation & -MFX_IMPL_VIA_ANY;
 
     // check error(s)
@@ -458,15 +437,11 @@ mfxStatus MFXInitEx2(mfxInitParam par, mfxSession *session, wchar_t *dllName) {
 
         if (MFX_ERR_NONE == mfxRes) {
             // try to load the selected DLL using given DLL name
-            mfxRes = pHandle->LoadSelectedDLL(dllName,
-                                              implType,
-                                              par.Implementation,
-                                              implInterface,
-                                              par);
+            mfxRes =
+                pHandle->LoadSelectedDLL(dllName, implType, par.Implementation, implInterface, par);
         }
         // unload the failed DLL
-        if ((MFX_ERR_NONE != mfxRes) &&
-            (MFX_WRN_PARTIAL_ACCELERATION != mfxRes)) {
+        if ((MFX_ERR_NONE != mfxRes) && (MFX_WRN_PARTIAL_ACCELERATION != mfxRes)) {
             pHandle->Close();
             return MFX_ERR_UNSUPPORTED;
         }
@@ -524,8 +499,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     wchar_t IntelGFXAPIdllName[MFX_MAX_DLL_PATH] = { 0 };
 
     DriverStoreLoader dsLoader;
-    if (!dsLoader.GetDriverStorePath(IntelGFXAPIdllName,
-                                     sizeof(IntelGFXAPIdllName))) {
+    if (!dsLoader.GetDriverStorePath(IntelGFXAPIdllName, sizeof(IntelGFXAPIdllName))) {
         return MFX_ERR_UNSUPPORTED;
     }
 
@@ -544,14 +518,10 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     mfxFunctionPointer pFunc =
         (mfxFunctionPointer)mfx_dll_get_addr(hModule, "InitialiseMediaSession");
     if (!pFunc) {
-        DISPATCHER_LOG_ERROR(
-            "Can't find required API function: InitialiseMediaSession\n");
+        DISPATCHER_LOG_ERROR("Can't find required API function: InitialiseMediaSession\n");
         return MFX_ERR_UNSUPPORTED;
     }
-    hr = (*(HRESULT(APIENTRY *)(HANDLE *, LPVOID, LPVOID))pFunc)(
-        (HANDLE *)session,
-        &par,
-        NULL);
+    hr = (*(HRESULT(APIENTRY *)(HANDLE *, LPVOID, LPVOID))pFunc)((HANDLE *)session, &par, NULL);
     #endif
 
     return (hr == S_OK) ? MFX_ERR_NONE : (mfxStatus)hr;
@@ -571,11 +541,9 @@ mfxStatus MFXClose(mfxSession session) {
     #else
     if (hModule) {
         mfxFunctionPointer pFunc =
-            (mfxFunctionPointer)mfx_dll_get_addr(hModule,
-                                                 "DisposeMediaSession");
+            (mfxFunctionPointer)mfx_dll_get_addr(hModule, "DisposeMediaSession");
         if (!pFunc) {
-            DISPATCHER_LOG_ERROR(
-                "Can't find required API function: DisposeMediaSession\n");
+            DISPATCHER_LOG_ERROR("Can't find required API function: DisposeMediaSession\n");
             return MFX_ERR_INVALID_HANDLE;
         }
         hr = (*(HRESULT(APIENTRY *)(HANDLE))pFunc)((HANDLE)session);
@@ -589,40 +557,32 @@ mfxStatus MFXClose(mfxSession session) {
 }
 
     #undef FUNCTION
-    #define FUNCTION(return_value,                                             \
-                     func_name,                                                \
-                     formal_param_list,                                        \
-                     actual_param_list)                                        \
-        return_value func_name formal_param_list {                             \
-            mfxStatus mfxRes = MFX_ERR_INVALID_HANDLE;                         \
-                                                                               \
-            _mfxSession *pHandle = (_mfxSession *)session;                     \
-                                                                               \
-            /* get the function's address and make a call */                   \
-            if (pHandle) {                                                     \
-                mfxFunctionPointer pFunc =                                     \
-                    pHandle->callPlugInsTable[e##func_name];                   \
-                if (pFunc) {                                                   \
-                    /* pass down the call */                                   \
-                    mfxRes = (*(mfxStatus(MFX_CDECL *)                         \
-                                    formal_param_list)pFunc)actual_param_list; \
-                }                                                              \
-            }                                                                  \
-            return mfxRes;                                                     \
+    #define FUNCTION(return_value, func_name, formal_param_list, actual_param_list)               \
+        return_value func_name formal_param_list {                                                \
+            mfxStatus mfxRes = MFX_ERR_INVALID_HANDLE;                                            \
+                                                                                                  \
+            _mfxSession *pHandle = (_mfxSession *)session;                                        \
+                                                                                                  \
+            /* get the function's address and make a call */                                      \
+            if (pHandle) {                                                                        \
+                mfxFunctionPointer pFunc = pHandle->callPlugInsTable[e##func_name];               \
+                if (pFunc) {                                                                      \
+                    /* pass down the call */                                                      \
+                    mfxRes = (*(mfxStatus(MFX_CDECL *) formal_param_list)pFunc)actual_param_list; \
+                }                                                                                 \
+            }                                                                                     \
+            return mfxRes;                                                                        \
         }
 
 FUNCTION(mfxStatus,
          MFXVideoUSER_Load,
          (mfxSession session, const mfxPluginUID *uid, mfxU32 version),
          (session, uid, version))
-FUNCTION(mfxStatus,
-         MFXVideoUSER_LoadByPath,
-         (mfxSession session,
-          const mfxPluginUID *uid,
-          mfxU32 version,
-          const mfxChar *path,
-          mfxU32 len),
-         (session, uid, version, path, len))
+FUNCTION(
+    mfxStatus,
+    MFXVideoUSER_LoadByPath,
+    (mfxSession session, const mfxPluginUID *uid, mfxU32 version, const mfxChar *path, mfxU32 len),
+    (session, uid, version, path, len))
 FUNCTION(mfxStatus,
          MFXVideoUSER_UnLoad,
          (mfxSession session, const mfxPluginUID *uid),
@@ -644,8 +604,7 @@ mfxStatus MFXJoinSession(mfxSession session, mfxSession child_session) {
     MFX_DISP_HANDLE *pChildHandle = (MFX_DISP_HANDLE *)child_session;
 
     // get the function's address and make a call
-    if ((pHandle) && (pChildHandle) &&
-        (pHandle->apiVersion == pChildHandle->apiVersion)) {
+    if ((pHandle) && (pChildHandle) && (pHandle->apiVersion == pChildHandle->apiVersion)) {
         /* check whether it is audio session or video */
         int tableIndex = eMFXJoinSession;
         mfxFunctionPointer pFunc;
@@ -653,9 +612,9 @@ mfxStatus MFXJoinSession(mfxSession session, mfxSession child_session) {
 
         if (pFunc) {
             // pass down the call
-            mfxRes = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxSession))pFunc)(
-                pHandle->session,
-                pChildHandle->session);
+            mfxRes =
+                (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxSession))pFunc)(pHandle->session,
+                                                                         pChildHandle->session);
         }
     }
 
@@ -709,8 +668,7 @@ mfxStatus MFXInit(mfxIMPL impl, mfxVersion *pVer, mfxSession *session) {
 }
 
 // passthrough functions to implementation
-mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
-                                     mfxFrameSurface1 **surface) {
+mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session, mfxFrameSurface1 **surface) {
     mfxStatus sts = MFX_ERR_INVALID_HANDLE;
 
     if (!session)
@@ -724,16 +682,13 @@ mfxStatus MFXMemory_GetSurfaceForVPP(mfxSession session,
     pFunc = pHandle->callVideoTable2[eMFXMemory_GetSurfaceForVPP];
     if (pFunc) {
         session = pHandle->session;
-        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(
-            session,
-            surface);
+        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(session, surface);
     }
 
     return sts;
 }
 
-mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
-                                        mfxFrameSurface1 **surface) {
+mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session, mfxFrameSurface1 **surface) {
     mfxStatus sts = MFX_ERR_INVALID_HANDLE;
 
     if (!session)
@@ -747,16 +702,13 @@ mfxStatus MFXMemory_GetSurfaceForEncode(mfxSession session,
     pFunc = pHandle->callVideoTable2[eMFXMemory_GetSurfaceForEncode];
     if (pFunc) {
         session = pHandle->session;
-        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(
-            session,
-            surface);
+        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(session, surface);
     }
 
     return sts;
 }
 
-mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
-                                        mfxFrameSurface1 **surface) {
+mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1 **surface) {
     mfxStatus sts = MFX_ERR_INVALID_HANDLE;
 
     if (!session)
@@ -770,9 +722,7 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
     pFunc = pHandle->callVideoTable2[eMFXMemory_GetSurfaceForDecode];
     if (pFunc) {
         session = pHandle->session;
-        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(
-            session,
-            surface);
+        sts = (*(mfxStatus(MFX_CDECL *)(mfxSession, mfxFrameSurface1 **))pFunc)(session, surface);
     }
 
     return sts;
@@ -786,72 +736,55 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session,
 
 // define for common functions (from mfxsession.h)
 #undef FUNCTION
-#define FUNCTION(return_value,                                             \
-                 func_name,                                                \
-                 formal_param_list,                                        \
-                 actual_param_list)                                        \
-    return_value func_name formal_param_list {                             \
-        mfxStatus mfxRes     = MFX_ERR_INVALID_HANDLE;                     \
-        _mfxSession *pHandle = (_mfxSession *)session;                     \
-        /* get the function's address and make a call */                   \
-        if (pHandle) {                                                     \
-            /* check whether it is audio session or video */               \
-            int tableIndex = e##func_name;                                 \
-            mfxFunctionPointer pFunc;                                      \
-            pFunc = pHandle->callTable[tableIndex];                        \
-            if (pFunc) {                                                   \
-                /* get the real session pointer */                         \
-                session = pHandle->session;                                \
-                /* pass down the call */                                   \
-                mfxRes = (*(mfxStatus(MFX_CDECL *)                         \
-                                formal_param_list)pFunc)actual_param_list; \
-            }                                                              \
-        }                                                                  \
-        return mfxRes;                                                     \
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list)               \
+    return_value func_name formal_param_list {                                                \
+        mfxStatus mfxRes     = MFX_ERR_INVALID_HANDLE;                                        \
+        _mfxSession *pHandle = (_mfxSession *)session;                                        \
+        /* get the function's address and make a call */                                      \
+        if (pHandle) {                                                                        \
+            /* check whether it is audio session or video */                                  \
+            int tableIndex = e##func_name;                                                    \
+            mfxFunctionPointer pFunc;                                                         \
+            pFunc = pHandle->callTable[tableIndex];                                           \
+            if (pFunc) {                                                                      \
+                /* get the real session pointer */                                            \
+                session = pHandle->session;                                                   \
+                /* pass down the call */                                                      \
+                mfxRes = (*(mfxStatus(MFX_CDECL *) formal_param_list)pFunc)actual_param_list; \
+            }                                                                                 \
+        }                                                                                     \
+        return mfxRes;                                                                        \
     }
 
-FUNCTION(mfxStatus,
-         MFXQueryIMPL,
-         (mfxSession session, mfxIMPL *impl),
-         (session, impl))
-FUNCTION(mfxStatus,
-         MFXQueryVersion,
-         (mfxSession session, mfxVersion *version),
-         (session, version))
+FUNCTION(mfxStatus, MFXQueryIMPL, (mfxSession session, mfxIMPL *impl), (session, impl))
+FUNCTION(mfxStatus, MFXQueryVersion, (mfxSession session, mfxVersion *version), (session, version))
 
 // these functions are not necessary in LOADER part of dispatcher and
 // need to be included only in in SOLID dispatcher or PROCTABLE part of dispatcher
 
 FUNCTION(mfxStatus, MFXDisjoinSession, (mfxSession session), (session))
-FUNCTION(mfxStatus,
-         MFXSetPriority,
-         (mfxSession session, mfxPriority priority),
-         (session, priority))
+FUNCTION(mfxStatus, MFXSetPriority, (mfxSession session, mfxPriority priority), (session, priority))
 FUNCTION(mfxStatus,
          MFXGetPriority,
          (mfxSession session, mfxPriority *priority),
          (session, priority))
 
 #undef FUNCTION
-#define FUNCTION(return_value,                                             \
-                 func_name,                                                \
-                 formal_param_list,                                        \
-                 actual_param_list)                                        \
-    return_value func_name formal_param_list {                             \
-        mfxStatus mfxRes     = MFX_ERR_INVALID_HANDLE;                     \
-        _mfxSession *pHandle = (_mfxSession *)session;                     \
-        /* get the function's address and make a call */                   \
-        if (pHandle) {                                                     \
-            mfxFunctionPointer pFunc = pHandle->callTable[e##func_name];   \
-            if (pFunc) {                                                   \
-                /* get the real session pointer */                         \
-                session = pHandle->session;                                \
-                /* pass down the call */                                   \
-                mfxRes = (*(mfxStatus(MFX_CDECL *)                         \
-                                formal_param_list)pFunc)actual_param_list; \
-            }                                                              \
-        }                                                                  \
-        return mfxRes;                                                     \
+#define FUNCTION(return_value, func_name, formal_param_list, actual_param_list)               \
+    return_value func_name formal_param_list {                                                \
+        mfxStatus mfxRes     = MFX_ERR_INVALID_HANDLE;                                        \
+        _mfxSession *pHandle = (_mfxSession *)session;                                        \
+        /* get the function's address and make a call */                                      \
+        if (pHandle) {                                                                        \
+            mfxFunctionPointer pFunc = pHandle->callTable[e##func_name];                      \
+            if (pFunc) {                                                                      \
+                /* get the real session pointer */                                            \
+                session = pHandle->session;                                                   \
+                /* pass down the call */                                                      \
+                mfxRes = (*(mfxStatus(MFX_CDECL *) formal_param_list)pFunc)actual_param_list; \
+            }                                                                                 \
+        }                                                                                     \
+        return mfxRes;                                                                        \
     }
 
 #include "windows/mfx_exposed_functions_list.h"

@@ -138,12 +138,7 @@ struct LibInfo {
     VPLFunctionPtr vplFuncTable[NumVPLFunctions]; // NOLINT
 
     // avoid warnings
-    LibInfo()
-            : libNameFull(),
-              libNameBase(),
-              libPriority(0),
-              hModuleVPL(nullptr),
-              vplFuncTable() {}
+    LibInfo() : libNameFull(), libNameBase(), libPriority(0), hModuleVPL(nullptr), vplFuncTable() {}
 };
 
 struct ImplInfo {
@@ -164,12 +159,7 @@ struct ImplInfo {
     mfxU32 vplImplIdx;
 
     // avoid warnings
-    ImplInfo()
-            : libInfo(nullptr),
-              implDesc(nullptr),
-              initPar(),
-              libImplIdx(0),
-              vplImplIdx(0) {}
+    ImplInfo() : libInfo(nullptr), implDesc(nullptr), initPar(), libImplIdx(0), vplImplIdx(0) {}
 };
 
 // loader class implementation
@@ -185,9 +175,7 @@ public:
     mfxStatus UnloadAllLibraries();
 
     // query capabilities of each implementation
-    mfxStatus QueryImpl(mfxU32 idx,
-                        mfxImplCapsDeliveryFormat format,
-                        mfxHDL* idesc);
+    mfxStatus QueryImpl(mfxU32 idx, mfxImplCapsDeliveryFormat format, mfxHDL* idesc);
     mfxStatus ReleaseImpl(mfxHDL idesc);
 
     // create mfxSession
@@ -199,8 +187,7 @@ public:
 
 private:
     // helper functions
-    mfxU32 ParseEnvSearchPaths(const CHAR_TYPE* envVarName,
-                               std::list<STRING_TYPE>& searchDirs);
+    mfxU32 ParseEnvSearchPaths(const CHAR_TYPE* envVarName, std::list<STRING_TYPE>& searchDirs);
     mfxStatus SearchDirForLibs(STRING_TYPE searchDir,
                                std::list<LibInfo*>& libInfoList,
                                mfxU32 priority);

@@ -118,8 +118,7 @@ int main(int argc, char *argv[]) {
     encode_params.mfx.FrameInfo.CropW         = input_width;
     encode_params.mfx.FrameInfo.CropH         = input_height;
     // Width must be a multiple of 16
-    encode_params.mfx.FrameInfo.Width =
-        (((input_width + 15) >> 4) << 4); // 16 bytes alignment
+    encode_params.mfx.FrameInfo.Width = (((input_width + 15) >> 4) << 4); // 16 bytes alignment
     // Height must be a multiple of 16 in case of frame picture and a multiple
     // of 32 in case of field picture
     encode_params.mfx.FrameInfo.Height = (((input_height + 15) >> 4) << 4);
@@ -162,10 +161,9 @@ int main(int argc, char *argv[]) {
         encode_surfaces[i].Info   = encode_params.mfx.FrameInfo;
         encode_surfaces[i].Data.Y = &surface_buffers_data[surface_size * i];
 
-        encode_surfaces[i].Data.U =
-            encode_surfaces[i].Data.Y + input_width * input_height;
-        encode_surfaces[i].Data.V = encode_surfaces[i].Data.U +
-                                    ((input_width / 2) * (input_height / 2));
+        encode_surfaces[i].Data.U = encode_surfaces[i].Data.Y + input_width * input_height;
+        encode_surfaces[i].Data.V =
+            encode_surfaces[i].Data.U + ((input_width / 2) * (input_height / 2));
         encode_surfaces[i].Data.Pitch = input_width;
     }
 
@@ -227,10 +225,10 @@ int main(int argc, char *argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+            sts =
+                MFXVideoCORE_SyncOperation(session,
+                                           syncp,
+                                           60000); // Synchronize. Wait until encoded frame is ready
             ++framenum;
             WriteEncodedStream(bitstream.Data + bitstream.DataOffset,
                                bitstream.DataLength,
@@ -246,11 +244,7 @@ int main(int argc, char *argv[]) {
     while (MFX_ERR_NONE <= sts) {
         for (;;) {
             // Encode a frame asynchronously (returns immediately)
-            sts = MFXVideoENCODE_EncodeFrameAsync(session,
-                                                  NULL,
-                                                  NULL,
-                                                  &bitstream,
-                                                  &syncp);
+            sts = MFXVideoENCODE_EncodeFrameAsync(session, NULL, NULL, &bitstream, &syncp);
             if (MFX_ERR_NONE < sts && syncp) {
                 sts = MFX_ERR_NONE; // Ignore warnings if output is available
                 break;
@@ -261,10 +255,10 @@ int main(int argc, char *argv[]) {
         }
 
         if (MFX_ERR_NONE == sts) {
-            sts = MFXVideoCORE_SyncOperation(
-                session,
-                syncp,
-                60000); // Synchronize. Wait until encoded frame is ready
+            sts =
+                MFXVideoCORE_SyncOperation(session,
+                                           syncp,
+                                           60000); // Synchronize. Wait until encoded frame is ready
 
             ++framenum;
             WriteEncodedStream(bitstream.Data + bitstream.DataOffset,
@@ -346,8 +340,7 @@ mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
 
     switch (fourcc) {
         case MFX_FOURCC_I420:
-            nbytes = width * height + (width >> 1) * (height >> 1) +
-                     (width >> 1) * (height >> 1);
+            nbytes = width * height + (width >> 1) * (height >> 1) + (width >> 1) * (height >> 1);
             break;
         default:
             break;
@@ -358,11 +351,10 @@ mfxU32 GetSurfaceSize(mfxU32 fourcc, mfxU32 width, mfxU32 height) {
 
 // Return index of free surface in given pool
 mfxI32 GetFreeSurfaceIndex(const std::vector<mfxFrameSurface1> &surface_pool) {
-    auto it = std::find_if(surface_pool.begin(),
-                           surface_pool.end(),
-                           [](const mfxFrameSurface1 &surface) {
-                               return 0 == surface.Data.Locked;
-                           });
+    auto it =
+        std::find_if(surface_pool.begin(), surface_pool.end(), [](const mfxFrameSurface1 &surface) {
+            return 0 == surface.Data.Locked;
+        });
 
     if (it == surface_pool.end())
         return MFX_ERR_NOT_FOUND;

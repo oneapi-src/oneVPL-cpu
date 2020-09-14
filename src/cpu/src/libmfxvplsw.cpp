@@ -33,8 +33,7 @@ mfxStatus MFXInitEx(mfxInitParam par, mfxSession *session) {
     else {
         // check the library version
         if ((MFX_VERSION_MAJOR < par.Version.Major) ||
-            (MFX_VERSION_MAJOR == par.Version.Major &&
-             MFX_VERSION_MINOR < par.Version.Minor)) {
+            (MFX_VERSION_MAJOR == par.Version.Major && MFX_VERSION_MINOR < par.Version.Minor)) {
             return MFX_ERR_UNSUPPORTED;
         }
     }

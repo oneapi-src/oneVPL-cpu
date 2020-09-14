@@ -100,8 +100,7 @@ static mfxStatus InitVPPBasic(mfxSession* session) {
     // init VPP
     mfxVideoParam mfxVPPParams;
     memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
-    mfxVPPParams.IOPattern =
-        MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
     mfxVPPParams.vpp.In.Width         = 352;
@@ -122,8 +121,7 @@ static mfxStatus InitVPPBasic(mfxSession* session) {
     return sts;
 }
 
-static mfxStatus GetFrameDecodeBasic(mfxSession* session,
-                                     mfxFrameSurface1** decSurfaceIn) {
+static mfxStatus GetFrameDecodeBasic(mfxSession* session, mfxFrameSurface1** decSurfaceIn) {
     mfxStatus sts;
 
     // init decode
@@ -151,7 +149,7 @@ TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
 
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
@@ -186,7 +184,7 @@ TEST(Memory_GetSurfaceForVPP, NullSessionReturnsInvalidHandle) {
 
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForVPP(nullptr, &vppSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForVPP(nullptr, &vppSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
     //free internal resources
@@ -205,7 +203,7 @@ TEST(Memory_GetSurfaceForVPP, UninitializedVPPReturnsNotInitialized) {
 
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     //free internal resources
@@ -224,7 +222,7 @@ TEST(Memory_GetSurfaceForEncode, InitializedEncodeReturnsSurface) {
 
     // get internally allocated frame
     mfxFrameSurface1* encSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForEncode(session, &encSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForEncode(session, &encSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
@@ -259,7 +257,7 @@ TEST(Memory_GetSurfaceForEncode, NullSessionReturnsInvalidHandle) {
 
     // get internally allocated frame
     mfxFrameSurface1* encSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForEncode(nullptr, &encSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForEncode(nullptr, &encSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
     //free internal resources
@@ -278,7 +276,7 @@ TEST(Memory_GetSurfaceForEncode, UninitializedEncodeReturnsNotInitialized) {
 
     // get internally allocated frame
     mfxFrameSurface1* encSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForEncode(session, &encSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForEncode(session, &encSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     //free internal resources
@@ -297,7 +295,7 @@ TEST(Memory_GetSurfaceForDecode, InitializedDecodeReturnsSurface) {
 
     // get internally allocated frame
     mfxFrameSurface1* decSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
@@ -333,7 +331,7 @@ TEST(Memory_GetSurfaceForDecode, NullSessionReturnsInvalidHandle) {
 
     // get internally allocated frame
     mfxFrameSurface1* decSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForDecode(nullptr, &decSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForDecode(nullptr, &decSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
     //free internal resources
@@ -351,7 +349,7 @@ TEST(Memory_GetSurfaceForDecode, UninitializedDecodeReturnsNotInitialized) {
 
     // get internally allocated frame
     mfxFrameSurface1* decSurfaceIn = nullptr;
-    sts = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
@@ -372,10 +370,9 @@ TEST(Memory_FrameInterface, NoDecodeHeaderCanDecode) {
     mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = mfxBS.DataLength =
-        test_bitstream_96x64_8bit_hevc::getlen();
-    mfxBS.Data    = test_bitstream_96x64_8bit_hevc::getdata();
-    mfxBS.CodecId = MFX_CODEC_HEVC;
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
+    mfxBS.CodecId                      = MFX_CODEC_HEVC;
 
     mfxFrameSurface1* pmfxOutSurface = nullptr;
     mfxSyncPoint syncp               = { 0 };
@@ -383,11 +380,7 @@ TEST(Memory_FrameInterface, NoDecodeHeaderCanDecode) {
     mfxBitstream* bsPtr = &mfxBS;
     mfxU32 nFrames      = 0;
     while (1) {
-        sts = MFXVideoDECODE_DecodeFrameAsync(session,
-                                              bsPtr,
-                                              nullptr,
-                                              &pmfxOutSurface,
-                                              &syncp);
+        sts = MFXVideoDECODE_DecodeFrameAsync(session, bsPtr, nullptr, &pmfxOutSurface, &syncp);
 
         if (sts == MFX_ERR_NONE)
             nFrames++;
@@ -510,8 +503,7 @@ TEST(Memory_FrameInterfaceGetRefCounter, ValidInputReturnsErrNone) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     mfxU32 counter = 0;
-    sts = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface,
-                                                         &counter);
+    sts            = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface, &counter);
     EXPECT_EQ(sts, MFX_ERR_NONE);
     EXPECT_EQ(counter, 1);
 }
@@ -525,8 +517,7 @@ TEST(Memory_FrameInterfaceGetRefCounter, NullSurfaceReturnsErrNull) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     mfxU32 counter = 0;
-    sts = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface,
-                                                         nullptr);
+    sts            = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -540,8 +531,7 @@ TEST(Memory_FrameInterfaceGetRefCounter, NullHandleReturnsInvalidHandle) {
 
     pmfxWorkSurface->FrameInterface->Context = nullptr;
     mfxU32 counter                           = 0;
-    sts = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface,
-                                                         &counter);
+    sts = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface, &counter);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
@@ -618,8 +608,7 @@ TEST(Memory_FrameInterfaceMap, WriteToReadWriteFlagSurfaceReturnsErrLock) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     pmfxWorkSurface->Data.Locked = 1;
-    sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface,
-                                               MFX_MAP_READ_WRITE);
+    sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_READ_WRITE);
     EXPECT_EQ(sts, MFX_ERR_LOCK_MEMORY);
 }
 
@@ -700,9 +689,7 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullSurfaceReturnsErrNull) {
     sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(nullptr,
-                                                           &resource,
-                                                           &resource_type);
+    sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(nullptr, &resource, &resource_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -715,9 +702,8 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceReturnsErrNull) {
     sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(pmfxWorkSurface,
-                                                           nullptr,
-                                                           &resource_type);
+    sts =
+        pmfxWorkSurface->FrameInterface->GetNativeHandle(pmfxWorkSurface, nullptr, &resource_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -730,9 +716,7 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceTypeReturnsErrNull) {
     sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(pmfxWorkSurface,
-                                                           &resource,
-                                                           nullptr);
+    sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(pmfxWorkSurface, &resource, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -775,18 +759,15 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullSurfaceReturnsInvalidHandle) {
 
 TEST(Memory_FrameInterfaceGetNativeHandle, ValidInputReturnsErrNone) {}
 
-TEST(Memory_FrameInterfaceGetNativeHandle,
-     DISABLED_NullSurfaceReturnsInvalidHandle) {
+TEST(Memory_FrameInterfaceGetNativeHandle, DISABLED_NullSurfaceReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
-TEST(Memory_FrameInterfaceGetNativeHandle,
-     DISABLED_NullResourceReturnsInvalidHandle) {
+TEST(Memory_FrameInterfaceGetNativeHandle, DISABLED_NullResourceReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
-TEST(Memory_FrameInterfaceGetNativeHandle,
-     DISABLED_NullResourceTypeReturnsInvalidHandle) {
+TEST(Memory_FrameInterfaceGetNativeHandle, DISABLED_NullResourceTypeReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
@@ -803,9 +784,7 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullSurfaceReturnsErrNull) {
     sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(nullptr,
-                                                           &device_handle,
-                                                           &device_type);
+    sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(nullptr, &device_handle, &device_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -818,9 +797,7 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullHandleReturnsErrNull) {
     sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(pmfxWorkSurface,
-                                                           nullptr,
-                                                           &device_type);
+    sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(pmfxWorkSurface, nullptr, &device_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -833,9 +810,8 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullDeviceTypeReturnsErrNull) {
     sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(pmfxWorkSurface,
-                                                           &device_handle,
-                                                           nullptr);
+    sts =
+        pmfxWorkSurface->FrameInterface->GetDeviceHandle(pmfxWorkSurface, &device_handle, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 }
 
@@ -863,23 +839,19 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_ValidInputReturnsErrNone) {
     FAIL() << "Test not implemented";
 }
 
-TEST(Memory_FrameInterfaceGetDeviceHandle,
-     DISABLED_InvalidSurfaceReturnsInvalidHandle) {
+TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_InvalidSurfaceReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
-TEST(Memory_FrameInterfaceGetDeviceHandle,
-     DISABLED_InvalidHandleReturnsInvalidHandle) {
+TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_InvalidHandleReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
-TEST(Memory_FrameInterfaceGetDeviceHandle,
-     DISABLED_InvalidDeviceTypeReturnsInvalidHandle) {
+TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_InvalidDeviceTypeReturnsInvalidHandle) {
     FAIL() << "Test not implemented";
 }
 
-TEST(Memory_FrameInterfaceGetDeviceHandle,
-     DISABLED_AsyncDependencyReturnsAborted) {
+TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_AsyncDependencyReturnsAborted) {
     FAIL() << "Test not implemented";
 }
 #endif

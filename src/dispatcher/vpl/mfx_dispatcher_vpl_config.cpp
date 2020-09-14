@@ -10,11 +10,7 @@
 // each loader instance can have one or more configs
 //   associated with it - used for filtering implementations
 //   based on what they support (codec types, etc.)
-ConfigCtxVPL::ConfigCtxVPL()
-        : m_propName(),
-          m_propValue(),
-          m_propIdx(),
-          m_propParsedString() {
+ConfigCtxVPL::ConfigCtxVPL() : m_propName(), m_propValue(), m_propIdx(), m_propParsedString() {
     m_propValue.Version.Version = MFX_VARIANT_VERSION;
     m_propValue.Type            = MFX_VARIANT_TYPE_UNSET;
 
@@ -308,16 +304,13 @@ CfgPropState ConfigCtxVPL::CheckProp(mfxI32 propIdx,
     mfxVPPDescription *VPP     = &(libImplDesc->VPP);
 
     // first check if requested operation is supported at all
-    if (propIdx >= ePropDec_CodecID && propIdx <= ePropDec_ColorFormats &&
-        !Dec->NumCodecs)
+    if (propIdx >= ePropDec_CodecID && propIdx <= ePropDec_ColorFormats && !Dec->NumCodecs)
         return CFG_PROP_STATE_UNSUPPORTED;
 
-    if (propIdx >= ePropEnc_CodecID && propIdx <= ePropEnc_ColorFormats &&
-        !Enc->NumCodecs)
+    if (propIdx >= ePropEnc_CodecID && propIdx <= ePropEnc_ColorFormats && !Enc->NumCodecs)
         return CFG_PROP_STATE_UNSUPPORTED;
 
-    if (propIdx >= ePropVPP_FilterFourCC && propIdx <= ePropVPP_OutFormats &&
-        !VPP->NumFilters)
+    if (propIdx >= ePropVPP_FilterFourCC && propIdx <= ePropVPP_OutFormats && !VPP->NumFilters)
         return CFG_PROP_STATE_UNSUPPORTED;
 
     bool propMatch = false;
@@ -348,13 +341,10 @@ CfgPropState ConfigCtxVPL::CheckProp(mfxI32 propIdx,
             propMatch = (Dec->Codecs[0].Profiles[0].Profile == value.Data.U32);
             break;
         case ePropDec_MemHandleType:
-            propMatch = (Dec->Codecs[0].Profiles[0].MemDesc[0].MemHandleType ==
-                         value.Data.I32);
+            propMatch = (Dec->Codecs[0].Profiles[0].MemDesc[0].MemHandleType == value.Data.I32);
             break;
         case ePropDec_ColorFormats:
-            propMatch =
-                (Dec->Codecs[0].Profiles[0].MemDesc[0].ColorFormats[0] ==
-                 value.Data.U32);
+            propMatch = (Dec->Codecs[0].Profiles[0].MemDesc[0].ColorFormats[0] == value.Data.U32);
             break;
 
         // encoder properties
@@ -368,13 +358,10 @@ CfgPropState ConfigCtxVPL::CheckProp(mfxI32 propIdx,
             propMatch = (Enc->Codecs[0].Profiles[0].Profile == value.Data.U32);
             break;
         case ePropEnc_MemHandleType:
-            propMatch = (Enc->Codecs[0].Profiles[0].MemDesc[0].MemHandleType ==
-                         value.Data.I32);
+            propMatch = (Enc->Codecs[0].Profiles[0].MemDesc[0].MemHandleType == value.Data.I32);
             break;
         case ePropEnc_ColorFormats:
-            propMatch =
-                (Enc->Codecs[0].Profiles[0].MemDesc[0].ColorFormats[0] ==
-                 value.Data.U32);
+            propMatch = (Enc->Codecs[0].Profiles[0].MemDesc[0].ColorFormats[0] == value.Data.U32);
             break;
 
         // VPP properties
@@ -385,12 +372,10 @@ CfgPropState ConfigCtxVPL::CheckProp(mfxI32 propIdx,
             propMatch = (VPP->Filters[0].MaxDelayInFrames == value.Data.U16);
             break;
         case ePropVPP_MemHandleType:
-            propMatch =
-                (VPP->Filters[0].MemDesc[0].MemHandleType == value.Data.I32);
+            propMatch = (VPP->Filters[0].MemDesc[0].MemHandleType == value.Data.I32);
             break;
         case ePropVPP_OutFormats:
-            propMatch = (VPP->Filters[0].MemDesc[0].Formats[0].OutFormats[0] ==
-                         value.Data.U32);
+            propMatch = (VPP->Filters[0].MemDesc[0].Formats[0].OutFormats[0] == value.Data.U32);
             break;
     }
 
@@ -400,9 +385,8 @@ CfgPropState ConfigCtxVPL::CheckProp(mfxI32 propIdx,
         return CFG_PROP_STATE_UNSUPPORTED;
 }
 
-mfxStatus ConfigCtxVPL::ValidateConfig(
-    mfxImplDescription *libImplDesc,
-    std::list<ConfigCtxVPL *> m_configCtxList) {
+mfxStatus ConfigCtxVPL::ValidateConfig(mfxImplDescription *libImplDesc,
+                                       std::list<ConfigCtxVPL *> m_configCtxList) {
     // initially all properties are unset
     CfgPropState cfgPropState[eProp_TotalProps]; // NOLINT
     mfxI32 idx;

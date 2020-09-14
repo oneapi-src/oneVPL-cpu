@@ -15,9 +15,7 @@
 // - may be called at any time before or after initialization
 // - should search for sequence header and move mfxBitstream to first byte
 // - optionally returns header in mfxExtCodingOptionSPSPPS struct
-mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session,
-                                      mfxBitstream *bs,
-                                      mfxVideoParam *par) {
+mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session, mfxBitstream *bs, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(bs, MFX_ERR_NULL_PTR);
@@ -39,9 +37,7 @@ mfxStatus MFXVideoDECODE_DecodeHeader(mfxSession session,
 // - not all parameters filled out
 // - in == null mode not implemented (mark supported params only)
 // - extended buffers not copied/queried
-mfxStatus MFXVideoDECODE_Query(mfxSession session,
-                               mfxVideoParam *in,
-                               mfxVideoParam *out) {
+mfxStatus MFXVideoDECODE_Query(mfxSession session, mfxVideoParam *in, mfxVideoParam *out) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(out, MFX_ERR_NULL_PTR);
@@ -188,8 +184,7 @@ mfxStatus MFXVideoDECODE_Reset(mfxSession session, mfxVideoParam *par) {
 }
 
 // stubs
-mfxStatus MFXVideoDECODE_GetDecodeStat(mfxSession session,
-                                       mfxDecodeStat *stat) {
+mfxStatus MFXVideoDECODE_GetDecodeStat(mfxSession session, mfxDecodeStat *stat) {
     VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }
@@ -197,9 +192,7 @@ mfxStatus MFXVideoDECODE_SetSkipMode(mfxSession session, mfxSkipMode mode) {
     VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }
-mfxStatus MFXVideoDECODE_GetPayload(mfxSession session,
-                                    mfxU64 *ts,
-                                    mfxPayload *payload) {
+mfxStatus MFXVideoDECODE_GetPayload(mfxSession session, mfxU64 *ts, mfxPayload *payload) {
     VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }
