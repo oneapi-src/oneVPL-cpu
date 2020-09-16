@@ -301,6 +301,9 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
 
         // send packet
         if (m_avDecPacket->size) {
+            if (bs && bs->TimeStamp)
+                m_avDecPacket->pts = bs->TimeStamp;
+
             auto av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
             if (av_ret < 0) {
                 return MFX_ERR_ABORTED;

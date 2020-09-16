@@ -557,6 +557,10 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
         dst_frame->Update();
     }
 
+    if (surface_in->Data.TimeStamp) {
+        surface_out->Data.TimeStamp = surface_in->Data.TimeStamp;
+        surface_out->Data.DataFlag  = MFX_FRAMEDATA_ORIGINAL_TIMESTAMP;
+    }
     return MFX_ERR_NONE;
 }
 

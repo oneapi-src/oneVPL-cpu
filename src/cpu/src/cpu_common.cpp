@@ -135,6 +135,11 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
         }
     }
 
+    if (frame->pts) {
+        surface->Data.TimeStamp = frame->pts;
+        surface->Data.DataFlag  = MFX_FRAMEDATA_ORIGINAL_TIMESTAMP;
+    }
+
     return MFX_ERR_NONE;
 }
 

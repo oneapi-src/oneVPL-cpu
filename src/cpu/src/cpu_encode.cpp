@@ -1042,8 +1042,8 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
             // must be set for every frame
             av_frame->quality = m_avEncContext->global_quality;
         }
-
-        err = avcodec_send_frame(m_avEncContext, av_frame);
+        av_frame->pts = surface->Data.TimeStamp;
+        err           = avcodec_send_frame(m_avEncContext, av_frame);
         m_input_locker.Unlock();
         RET_IF_FALSE(err >= 0, MFX_ERR_ABORTED);
     }
@@ -1079,6 +1079,8 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
         }
         memcpy_s(bs->Data + bs->DataOffset, nBytesAvail, m_avEncPacket->data, nBytesOut);
         bs->DataLength += nBytesOut;
+        bs->TimeStamp       = m_avEncPacket->pts;
+        bs->DecodeTimeStamp = m_avEncPacket->dts;
     }
 
     av_packet_unref(m_avEncPacket);
