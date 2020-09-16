@@ -258,6 +258,29 @@ TEST(EncodeInit, DISABLED_AV1CloseCrashes) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
+TEST(EncodeInit, BadAV1GopSizeReturnsInvalidParam) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams              = { 0 };
+    mfxEncParams.mfx.CodecId                = MFX_CODEC_AV1;
+    mfxEncParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
+    mfxEncParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+    mfxEncParams.mfx.FrameInfo.CropW        = 128;
+    mfxEncParams.mfx.FrameInfo.CropH        = 96;
+    mfxEncParams.mfx.FrameInfo.Width        = 128;
+    mfxEncParams.mfx.FrameInfo.Height       = 96;
+    mfxEncParams.mfx.GopPicSize             = 121;
+
+    sts = MFXVideoENCODE_Init(session, &mfxEncParams);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
 TEST(EncodeInit, DISABLED_EncodeParamsInReturnsInitializedAV1Context) {
     mfxVersion ver = {};
     mfxSession session;

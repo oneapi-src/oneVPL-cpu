@@ -219,6 +219,15 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
                 if (par->mfx.QPI > 63 || par->mfx.QPP > 63 || par->mfx.QPB > 63)
                     return MFX_ERR_INVALID_VIDEO_PARAM;
 
+            if (par->mfx.GopPicSize > 120) {
+                if (canCorrect) {
+                    par->mfx.GopPicSize = 120;
+                }
+                else {
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                }
+            }
+
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
