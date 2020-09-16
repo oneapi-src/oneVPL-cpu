@@ -508,7 +508,7 @@ mfxStatus ConfigCtxVPL::CheckPropsGeneral(mfxVariant cfgPropsAll[],
     if (isCompatible == true)
         return MFX_ERR_NONE;
 
-    return MFX_ERR_INVALID_VIDEO_PARAM;
+    return MFX_ERR_UNSUPPORTED;
 }
 
 mfxStatus ConfigCtxVPL::CheckPropsDec(mfxVariant cfgPropsAll[],
@@ -552,7 +552,7 @@ mfxStatus ConfigCtxVPL::CheckPropsDec(mfxVariant cfgPropsAll[],
         it++;
     }
 
-    return MFX_ERR_INVALID_VIDEO_PARAM;
+    return MFX_ERR_UNSUPPORTED;
 }
 
 mfxStatus ConfigCtxVPL::CheckPropsEnc(mfxVariant cfgPropsAll[],
@@ -597,7 +597,7 @@ mfxStatus ConfigCtxVPL::CheckPropsEnc(mfxVariant cfgPropsAll[],
         it++;
     }
 
-    return MFX_ERR_INVALID_VIDEO_PARAM;
+    return MFX_ERR_UNSUPPORTED;
 }
 
 mfxStatus ConfigCtxVPL::CheckPropsVPP(mfxVariant cfgPropsAll[],
@@ -641,7 +641,7 @@ mfxStatus ConfigCtxVPL::CheckPropsVPP(mfxVariant cfgPropsAll[],
         it++;
     }
 
-    return MFX_ERR_INVALID_VIDEO_PARAM;
+    return MFX_ERR_UNSUPPORTED;
 }
 
 mfxStatus ConfigCtxVPL::ValidateConfig(mfxImplDescription *libImplDesc,

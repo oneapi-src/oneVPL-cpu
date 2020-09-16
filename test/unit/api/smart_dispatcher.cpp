@@ -472,6 +472,239 @@ TEST(Dispatcher_CreateSession, InvalidIndexReturnsErrNotFound) {
     MFXUnload(loader);
 }
 
+TEST(Dispatcher_CreateSession, RequestAV1DecCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_AV1;
+
+    sts = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_NE(session, nullptr);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestAV1EncCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_AV1;
+
+    sts = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID",
+        ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_NE(session, nullptr);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestI010toI420VPPCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_FOURCC_I010;
+    sts                = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.InFormat",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxConfig cfg2     = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_FOURCC_I420;
+    sts                = MFXSetConfigFilterProperty(
+        cfg2,
+        (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormat",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_NE(session, nullptr);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestVP9DecReturnsErrUnsupported) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_VP9;
+
+    sts = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestVP9EncReturnsErrUnsupported) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_VP9;
+
+    sts = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID",
+        ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestAV1AndHEVCDecReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_AV1;
+    sts                = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxConfig cfg2     = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_HEVC;
+    sts                = MFXSetConfigFilterProperty(
+        cfg2,
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrUnsupported) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_AV1;
+    sts                = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxConfig cfg2     = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_CODEC_VP9;
+    sts                = MFXSetConfigFilterProperty(
+        cfg2,
+        (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 //MFXDispReleaseImplDescription
 TEST(Dispatcher_DispReleaseImplDescription, ValidInputReturnsErrNone) {
     mfxLoader loader = MFXLoad();
