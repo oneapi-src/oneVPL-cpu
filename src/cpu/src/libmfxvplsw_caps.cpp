@@ -186,7 +186,7 @@ mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec) {
     // add codec type JPEG
     Profiles = AddDecoderCodec(Codecs, 3, MFX_CODEC_JPEG, MFX_LEVEL_UNKNOWN, 1);
 
-    // profile[0] - MFX_PROFILE_AVC_HIGH
+    // profile[0] - MFX_PROFILE_JPEG_BASELINE
     MemDesc = AddDecoderProfile(Profiles, 0, MFX_PROFILE_JPEG_BASELINE, 1);
     ColorFormats =
         AddDecoderMemDesc(MemDesc, 0, MFX_RESOURCE_SYSTEM_SURFACE, DefaultRange, DefaultRange, 1);

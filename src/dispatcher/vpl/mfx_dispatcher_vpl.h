@@ -91,6 +91,53 @@ enum CfgPropState {
     CFG_PROP_STATE_UNSUPPORTED,
 };
 
+// typedef child structures for easier reading
+typedef struct mfxDecoderDescription::decoder DecCodec;
+typedef struct mfxDecoderDescription::decoder::decprofile DecProfile;
+typedef struct mfxDecoderDescription::decoder::decprofile::decmemdesc DecMemDesc;
+
+typedef struct mfxEncoderDescription::encoder EncCodec;
+typedef struct mfxEncoderDescription::encoder::encprofile EncProfile;
+typedef struct mfxEncoderDescription::encoder::encprofile::encmemdesc EncMemDesc;
+
+typedef struct mfxVPPDescription::filter VPPFilter;
+typedef struct mfxVPPDescription::filter::memdesc VPPMemDesc;
+typedef struct mfxVPPDescription::filter::memdesc::format VPPFormat;
+
+// flattened version of single enc/dec/vpp configs
+// each struct contains all _settable_ props
+//   i.e. not implied values like NumCodecs
+struct DecConfig {
+    mfxU32 CodecID;
+    mfxU16 MaxcodecLevel;
+    mfxU32 Profile;
+    mfxResourceType MemHandleType;
+    mfxRange32U Width;
+    mfxRange32U Height;
+    mfxU32 ColorFormat;
+};
+
+struct EncConfig {
+    mfxU32 CodecID;
+    mfxU16 MaxcodecLevel;
+    mfxU16 BiDirectionalPrediction;
+    mfxU32 Profile;
+    mfxResourceType MemHandleType;
+    mfxRange32U Width;
+    mfxRange32U Height;
+    mfxU32 ColorFormat;
+};
+
+struct VPPConfig {
+    mfxU32 FilterFourCC;
+    mfxU16 MaxDelayInFrames;
+    mfxResourceType MemHandleType;
+    mfxRange32U Width;
+    mfxRange32U Height;
+    mfxU32 InFormat;
+    mfxU32 OutFormat;
+};
+
 // config class implementation
 class ConfigCtxVPL {
 public:
@@ -102,10 +149,7 @@ public:
 
     // compare library caps vs. set of configuration filters
     static mfxStatus ValidateConfig(mfxImplDescription* libImplDesc,
-                                    std::list<ConfigCtxVPL*> m_configCtxList);
-    static CfgPropState CheckProp(mfxI32 propIdx,
-                                  mfxVariant value,
-                                  mfxImplDescription* libImplDesc);
+                                    std::list<ConfigCtxVPL*> configCtxList);
 
 private:
     __inline std::string GetNextProp(std::list<std::string>* s) {
@@ -119,10 +163,31 @@ private:
     mfxStatus SetFilterPropertyEnc(mfxVariant value);
     mfxStatus SetFilterPropertyVPP(mfxVariant value);
 
+    static mfxStatus GetFlatDescriptionsDec(mfxImplDescription* libImplDesc,
+                                            std::list<DecConfig>& decConfigList);
+
+    static mfxStatus GetFlatDescriptionsEnc(mfxImplDescription* libImplDesc,
+                                            std::list<EncConfig>& encConfigList);
+
+    static mfxStatus GetFlatDescriptionsVPP(mfxImplDescription* libImplDesc,
+                                            std::list<VPPConfig>& vppConfigList);
+
+    static mfxStatus CheckPropsGeneral(mfxVariant cfgPropsAll[], mfxImplDescription* libImplDesc);
+
+    static mfxStatus CheckPropsDec(mfxVariant cfgPropsAll[], std::list<DecConfig> decConfigList);
+
+    static mfxStatus CheckPropsEnc(mfxVariant cfgPropsAll[], std::list<EncConfig> encConfigList);
+
+    static mfxStatus CheckPropsVPP(mfxVariant cfgPropsAll[], std::list<VPPConfig> vppConfigList);
+
     std::string m_propName;
     mfxVariant m_propValue;
     mfxI32 m_propIdx;
     std::list<std::string> m_propParsedString;
+
+    // special containers for properties which are passed by pointer
+    //   (save a copy of the whole object based on m_propName)
+    mfxRange32U m_propRange32U;
 };
 
 struct LibInfo {

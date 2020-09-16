@@ -94,10 +94,64 @@ mfxStatus InitNewDispatcher(WSType wsType, Params *params, mfxSession *session) 
     mfxConfig cfg;
 
     // basic filtering - test for SW implementation
+    sts                = MFX_ERR_NONE;
     cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
-    MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
+
+    sts = MFX_ERR_NONE;
+    if (wsType == WSTYPE_DECODE) {
+        mfxConfig cfg2     = MFXCreateConfig(loader);
+        ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+        ImplValue.Data.U32 = params->srcFourCC;
+        sts                = MFXSetConfigFilterProperty(
+            cfg2,
+            (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
+            ImplValue);
+        if (sts) {
+            printf("Error - MFXSetConfigFilterProperty() failed\n");
+            return sts;
+        }
+    }
+    else if (wsType == WSTYPE_ENCODE) {
+        mfxConfig cfg2     = MFXCreateConfig(loader);
+        ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+        ImplValue.Data.U32 = params->dstFourCC;
+        sts                = MFXSetConfigFilterProperty(
+            cfg2,
+            (const mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID",
+            ImplValue);
+        if (sts) {
+            printf("Error - MFXSetConfigFilterProperty() failed\n");
+            return sts;
+        }
+    }
+    else if (wsType == WSTYPE_VPP) {
+        mfxConfig cfg2     = MFXCreateConfig(loader);
+        ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+        ImplValue.Data.U32 = params->srcFourCC;
+        sts                = MFXSetConfigFilterProperty(
+            cfg2,
+            (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.InFormat",
+            ImplValue);
+        if (sts) {
+            printf("Error - MFXSetConfigFilterProperty() failed\n");
+            return sts;
+        }
+
+        mfxConfig cfg3     = MFXCreateConfig(loader);
+        ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+        ImplValue.Data.U32 = params->dstFourCC;
+        sts                = MFXSetConfigFilterProperty(
+            cfg3,
+            (const mfxU8 *)"mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormat",
+            ImplValue);
+        if (sts) {
+            printf("Error - MFXSetConfigFilterProperty() failed\n");
+            return sts;
+        }
+    }
 
     mfxU32 implIdx = 0;
     while (1) {
