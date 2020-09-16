@@ -9,16 +9,36 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 proj_dir="$( dirname "${script_dir}" )"
 cd ${proj_dir}
 set -o errexit
+
+## Read options -----------------------------------------------------------
+export USE_GPL="no"
+export BUILD_MODE= "Release"
+
+while [ "$1" != "" ]; do
+    case $1 in
+        gpl )
+            export USE_GPL="yes"
+            ;;
+        debug )
+            export BUILD_MODE="Debug"
+            ;;
+        * )
+            echo "usage: build [gpl] [debug]"
+            exit 1
+    esac
+    shift
+done
+
 ## start of commands -----------------------------------------------------------
 CMAKE_BINARY_DIR=_build
 
 mkdir -p ${CMAKE_BINARY_DIR}
 cd ${CMAKE_BINARY_DIR}
 
-if [ "$1" == "gpl" ]; then
- cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_GPL_X264=ON ..
+if [ "${USE_GPL}" == "yes" ]; then
+ cmake -DCMAKE_BUILD_TYPE=${BUILD_MODE} -DBUILD_GPL_X264=ON ..
 else
- cmake -DCMAKE_BUILD_TYPE=Release ..
+ cmake -DCMAKE_BUILD_TYPE=${BUILD_MODE} ..
 fi
 
 make -j $(nproc)

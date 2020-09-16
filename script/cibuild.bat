@@ -4,13 +4,30 @@
 :: SPDX-License-Identifier: MIT
 ::------------------------------------------------------------------------------
 :: start of boilerplate to switch to project root ------------------------------
-@echo off
+@echo on
 SETLOCAL
 :: switch cd to repo root
 FOR /D %%i IN ("%~dp0\..") DO (
 	set PROJ_DIR=%%~fi
 )
 cd %PROJ_DIR%
+
+:: Read options -----------------------------------------------------------
+SET USE_GPL=no
+SET BUILD_MODE=Release
+
+:Loop
+IF "%~1"=="" GOTO Continue
+  IF "%~1"=="gpl" (
+    SET USE_GPL=yes
+  )
+  IF "%~1"=="debug" (
+    SET BUILD_MODE=Debug
+  )
+SHIFT
+GOTO Loop
+:Continue
+
 :: start of commands -----------------------------------------------------------
 :: capture ci errors that should not block the rest of the chain
 set ci_error=0
@@ -22,7 +39,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 if not defined VPL_BUILD_DEPENDENCIES (
-   if "%~1"=="gpl" (
+   if "%USE_GPL%"=="yes" (
      call "script/bootstrap.bat" gpl
    ) else (
      call "script/bootstrap.bat"
@@ -32,10 +49,18 @@ if not defined VPL_BUILD_DEPENDENCIES (
       exit /b 1
    )
 )
-if "%~1"=="gpl" (
-  call "script/package.bat" gpl
+if "%USE_GPL%"=="yes" (
+   if "%BUILD_MODE%"=="Debug" (
+      call "script/package.bat" gpl debug
+   ) else (
+      call "script/package.bat" gpl 
+   )
 ) else (
-  call "script/package.bat"
+   if "%BUILD_MODE%"=="Debug" (
+      call "script/package.bat" debug
+   ) else (
+      call "script/package.bat"
+   )
 )
 if %ERRORLEVEL% NEQ 0 (
    echo "--- Packaging FAILED ---"
