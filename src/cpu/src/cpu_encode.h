@@ -49,6 +49,7 @@ private:
     FrameLock m_input_locker;
 
     mfxVideoParam m_param;
+    bool m_bFrameEncoded;
 
     CpuWorkstream* m_session;
 

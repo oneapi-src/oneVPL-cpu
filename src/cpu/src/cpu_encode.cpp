@@ -17,7 +17,32 @@ CpuEncode::CpuEncode(CpuWorkstream *session)
           m_avEncContext(nullptr),
           m_avEncPacket(nullptr),
           m_param({}),
-          m_encSurfaces() {}
+          m_encSurfaces(),
+          m_bFrameEncoded(false) {}
+
+CpuEncode::~CpuEncode() {
+    if (m_bFrameEncoded) {
+        // drain encoder - workaround for SVT encoder hang on avcodec_close
+        mfxBitstream bs{};
+        mfxStatus sts;
+        do {
+            sts = EncodeFrame(nullptr, nullptr, &bs);
+        } while (sts == MFX_ERR_NOT_ENOUGH_BUFFER || sts == MFX_ERR_NONE);
+
+        m_bFrameEncoded = false;
+    }
+
+    if (m_avEncContext) {
+        avcodec_close(m_avEncContext);
+        avcodec_free_context(&m_avEncContext);
+        m_avEncContext = nullptr;
+    }
+
+    if (m_avEncPacket) {
+        av_packet_free(&m_avEncPacket);
+        m_avEncPacket = nullptr;
+    }
+}
 
 mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     if (par->mfx.FrameInfo.FourCC) {
@@ -1007,19 +1032,6 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
-CpuEncode::~CpuEncode() {
-    if (m_avEncContext) {
-        avcodec_close(m_avEncContext);
-        avcodec_free_context(&m_avEncContext);
-        m_avEncContext = nullptr;
-    }
-
-    if (m_avEncPacket) {
-        av_packet_free(&m_avEncPacket);
-        m_avEncPacket = nullptr;
-    }
-}
-
 mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl, mfxBitstream *bs) {
     RET_IF_FALSE(m_avEncContext, MFX_ERR_NOT_INITIALIZED);
     int err;
@@ -1078,6 +1090,9 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
         RET_ERROR(MFX_ERR_UNDEFINED_BEHAVIOR);
     }
     else {
+        if (!m_bFrameEncoded)
+            m_bFrameEncoded = true;
+
         // copy encoded data to output buffer
         nBytesOut   = m_avEncPacket->size;
         nBytesAvail = bs->MaxLength - (bs->DataLength + bs->DataOffset);
