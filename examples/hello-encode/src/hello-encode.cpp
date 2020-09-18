@@ -38,15 +38,16 @@ void WriteEncodedStream(mfxBitstream &bs, FILE *f);
 char *ValidateFileName(char *in);
 mfxU16 ValidateSize(char *in, mfxU16 max);
 
-// Print usage message
 void Usage(void) {
-    printf("Usage: hello-encode SOURCE width height\n\n"
-           "Encode SOURCE i420 raw frames "
-           "to HEVC/H265 elementary stream in %s\n\n"
-           "To view:\n"
-           " ffplay %s\n",
-           OUTPUT_FILE,
-           OUTPUT_FILE);
+    printf("\n");
+    printf("   Usage  :  hello-encode InputI420File width height\n\n");
+    printf("             InputI420File    ... input file name (I420 raw frames)\n");
+    printf("             width            ... input width\n");
+    printf("             height           ... input height\n\n");
+    printf("   Example:  hello-encode in.i420 128 96\n");
+    printf("   To view:  ffplay %s\n\n", OUTPUT_FILE);
+    printf(" * Encode I420 raw frames to HEVC/H265 elementary stream in %s\n\n", OUTPUT_FILE);
+    return;
 }
 
 int main(int argc, char *argv[]) {
@@ -58,21 +59,20 @@ int main(int argc, char *argv[]) {
     char *in_filename                = NULL;
     FILE *source                     = NULL;
     FILE *sink                       = NULL;
+    mfxStatus sts                    = MFX_ERR_NONE;
     mfxLoader loader                 = NULL;
     mfxConfig cfg                    = NULL;
-    mfxVariant ImplValue             = { 0 };
+    mfxVariant impl_value            = { 0 };
     mfxSession session               = NULL;
-    mfxStatus sts                    = MFX_ERR_NONE;
-    mfxBitstream bitstream           = { 0 };
-    mfxVideoParam encode_params      = { 0 };
-    int framenum                     = 0;
-    mfxSyncPoint syncp               = { 0 };
-    mfxFrameSurface1 *pmfxOutSurface = NULL;
-    bool isdraining                  = false;
-    bool stillgoing                  = true;
-    mfxU32 codec_id                  = MFX_CODEC_HEVC;
     mfxU16 input_width               = 0;
     mfxU16 input_height              = 0;
+    mfxBitstream bitstream           = { 0 };
+    mfxVideoParam encode_params      = { 0 };
+    mfxFrameSurface1 *enc_surface_in = NULL;
+    mfxSyncPoint syncp               = { 0 };
+    mfxU32 framenum                  = 0;
+    bool is_draining                 = false;
+    bool is_stillgoing               = true;
 
     // Setup input and output files
     in_filename = ValidateFileName(argv[1]);
@@ -90,23 +90,23 @@ int main(int argc, char *argv[]) {
     input_height = ValidateSize(argv[3], MAX_HEIGHT);
     VERIFY(input_height, "Input height is not valid");
 
-    // Initialize VPL session for any implementation of HEVC encode
+    // Initialize VPL session for any implementation of HEVC/H265 encode
     loader = MFXLoad();
     VERIFY(NULL != loader, "MFXLoad failed");
 
     cfg = MFXCreateConfig(loader);
     VERIFY(NULL != cfg, "MFXCreateConfig failed")
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_CODEC_HEVC;
-    sts                = MFXSetConfigFilterProperty(
+    impl_value.Type     = MFX_VARIANT_TYPE_U32;
+    impl_value.Data.U32 = MFX_CODEC_HEVC;
+    sts                 = MFXSetConfigFilterProperty(
         cfg,
         (mfxU8 *)"mfxImplDescription.mfxEncoderDescription.encoder.CodecID",
-        ImplValue);
+        impl_value);
     VERIFY(MFX_ERR_NONE == sts, "MFXSetConfigFilterProperty failed");
 
     sts = MFXCreateSession(loader, 0, &session);
-    VERIFY(MFX_ERR_NONE == sts, "Not able to create VPL session supporting HEVC encode");
+    VERIFY(MFX_ERR_NONE == sts, "Not able to create VPL session supporting HEVC/H265 encode");
 
     // Initialize encode parameters
     encode_params.mfx.CodecId                 = MFX_CODEC_HEVC;
@@ -125,48 +125,49 @@ int main(int argc, char *argv[]) {
     encode_params.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     // Initialize the encoder
-    VERIFY(MFX_ERR_NONE == MFXVideoENCODE_Init(session, &encode_params), "Encode init failed");
+    sts = MFXVideoENCODE_Init(session, &encode_params);
+    VERIFY(MFX_ERR_NONE == sts, "Encode init failed");
 
-    // Prepare output bitstream
+    // Prepare output bitstream and start encoding
     bitstream.MaxLength = BITSTREAM_BUFFER_SIZE;
     bitstream.Data      = (mfxU8 *)malloc(bitstream.MaxLength * sizeof(mfxU8));
 
     printf("Encoding %s -> %s\n", in_filename, OUTPUT_FILE);
-    while (stillgoing) {
+
+    while (is_stillgoing == true) {
         // Load a new frame if not draining
-        if (!isdraining) {
-            VERIFY(MFX_ERR_NONE == MFXMemory_GetSurfaceForEncode(session, &pmfxOutSurface),
-                   "Could not get encode surface");
+        if (is_draining == false) {
+            sts = MFXMemory_GetSurfaceForEncode(session, &enc_surface_in);
+            VERIFY(MFX_ERR_NONE == sts, "Could not get encode surface");
 
             // Map makes surface writable by CPU for all implementations
-            sts = pmfxOutSurface->FrameInterface->Map(pmfxOutSurface, MFX_MAP_WRITE);
+            sts = enc_surface_in->FrameInterface->Map(enc_surface_in, MFX_MAP_WRITE);
             VERIFY(MFX_ERR_NONE == sts, "mfxFrameSurfaceInterface->Map failed");
 
-            sts = LoadRawFrame(pmfxOutSurface, source);
+            sts = LoadRawFrame(enc_surface_in, source);
             if (sts != MFX_ERR_NONE)
-                isdraining = true;
+                is_draining = true;
 
             // Unmap/release returns local device access for all implementations
-            sts = pmfxOutSurface->FrameInterface->Unmap(pmfxOutSurface);
+            sts = enc_surface_in->FrameInterface->Unmap(enc_surface_in);
             VERIFY(MFX_ERR_NONE == sts, "mfxFrameSurfaceInterface->Unmap failed");
 
-            pmfxOutSurface->FrameInterface->Release(pmfxOutSurface);
+            enc_surface_in->FrameInterface->Release(enc_surface_in);
             VERIFY(MFX_ERR_NONE == sts, "mfxFrameSurfaceInterface->Release failed");
         }
 
         sts = MFXVideoENCODE_EncodeFrameAsync(session,
                                               NULL,
-                                              (isdraining ? NULL : pmfxOutSurface),
+                                              (is_draining == true) ? NULL : enc_surface_in,
                                               &bitstream,
                                               &syncp);
 
         switch (sts) {
             case MFX_ERR_NONE:
-                // ERR_NONE and syncp indicate output is available
+                // MFX_ERR_NONE and syncp indicate output is available
                 if (syncp) {
-                    // encode output is not available on CPU until
-                    // sync operation completes
-                    sts = MFXVideoCORE_SyncOperation(session, syncp, 60000);
+                    // Encode output is not available on CPU until sync operation completes
+                    sts = MFXVideoCORE_SyncOperation(session, syncp, WAIT_100_MILLSECONDS);
                     VERIFY(MFX_ERR_NONE == sts, "MFXVideoCORE_SyncOperation error");
 
                     WriteEncodedStream(bitstream, sink);
@@ -174,30 +175,31 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case MFX_ERR_NOT_ENOUGH_BUFFER:
-                // This example deliberatly uses a large output buffer with
-                // immediate write to disk for simplicity.
+                // This example deliberatly uses a large output buffer with immediate write to disk
+                // for simplicity.
                 // Handle when frame size exceeds available buffer here
                 break;
             case MFX_ERR_MORE_DATA:
-                if (isdraining)
-                    stillgoing = false;
+                // The function requires more data to generate any output
+                if (is_draining == true)
+                    is_stillgoing = false;
                 break;
             case MFX_ERR_DEVICE_LOST:
-                // For non-CPU implementations
+                // For non-CPU implementations,
                 // Cleanup if device is lost
                 break;
             case MFX_WRN_DEVICE_BUSY:
-                // For non-CPU implementations
+                // For non-CPU implementations,
                 // Wait a few milliseconds then try again
                 break;
             case MFX_ERR_INCOMPATIBLE_VIDEO_PARAM:
-                // The CPU reference implementation does not include
-                // mfxEncodeCtrl, but for other implementations issues
-                // with mfxEncodeCtrl parameters can be handled here
+                // The CPU reference implementation does not include mfxEncodeCtrl, but for
+                // other implementations issues with mfxEncodeCtrl parameters can be handled here
                 break;
             default:
                 printf("unknown status %d\n", sts);
-                stillgoing = false;
+                is_stillgoing = false;
+                break;
         }
     }
 
@@ -207,7 +209,6 @@ end:
     // Clean up resources - It is recommended to close components first, before
     // releasing allocated surfaces, since some surfaces may still be locked by
     // internal resources.
-
     if (loader)
         MFXUnload(loader);
 
@@ -223,12 +224,14 @@ end:
     return 0;
 }
 
+// Write encoded stream to file
 void WriteEncodedStream(mfxBitstream &bs, FILE *f) {
     fwrite(bs.Data + bs.DataOffset, 1, bs.DataLength, f);
     bs.DataLength = 0;
     return;
 }
 
+// Load raw I420 frame to mfxFrameSurface
 mfxStatus LoadRawFrame(mfxFrameSurface1 *surface, FILE *f) {
     mfxU16 w, h, i, pitch;
     mfxU32 bytes;
@@ -286,7 +289,7 @@ char *ValidateFileName(char *in) {
 }
 
 mfxU16 ValidateSize(char *in, mfxU16 max) {
-    mfxI32 isize = strtol(in, NULL, 10);
+    mfxU16 isize = (mfxU16)strtol(in, NULL, 10);
     if (isize <= 0 || isize > max) {
         return 0;
     }
