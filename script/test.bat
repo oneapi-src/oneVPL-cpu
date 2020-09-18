@@ -21,6 +21,13 @@ if defined VPL_BUILD_DEPENDENCIES (
 )
 set "PATH=%ffmpeg_dir%;%PATH%"
 
+if defined VPL_INSTALL_DIR (
+   if not defined VPL_ROOT (
+      call "%VPL_INSTALL_DIR%\env\vars.bat" || exit /b 1
+   )
+)
+
+
 cd _build\Release
 set /A result_all = 0
 

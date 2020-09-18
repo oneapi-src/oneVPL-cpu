@@ -14,15 +14,6 @@ add_subdirectory(googletest)
 
 set(TARGET vpl-utest)
 
-if(DEFINED VPL_UTEST_LINK_RUNTIME)
-  message(STATUS "Linking vpl-utest against vplswref64")
-  add_definitions(-DVPL_UTEST_LINK_RUNTIME)
-  set(DEPENDENT_LIBS gtest vplswref64)
-else()
-  message(STATUS "Linking vpl-utest against dispatcher")
-  set(DEPENDENT_LIBS gtest mfx)
-endif()
-
 set(SOURCE_FILES
     main.cpp
     api/test_bitstream_96x64_8bit_hevc.cpp
@@ -43,6 +34,20 @@ set(SOURCE_FILES
 
 add_executable(${TARGET} ${SOURCE_FILES})
 set_property(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
-target_link_libraries(${TARGET} ${DEPENDENT_LIBS})
+if(DEFINED VPL_UTEST_LINK_RUNTIME)
+  message(STATUS "Linking vpl-utest against vplswref64")
+  add_definitions(-DVPL_UTEST_LINK_RUNTIME)
+  set(DEPENDENT_LIBS vplswref64)
+else()
+  message(STATUS "Linking vpl-utest against dispatcher")
+  if(POLICY CMP0074)
+    # ignore warning of VPL_ROOT in find_package search path
+    cmake_policy(SET CMP0074 OLD)
+  endif()
+  find_package(VPL REQUIRED)
+  target_link_libraries(${TARGET} VPL::dispatcher)
+endif()
+
+target_link_libraries(${TARGET} gtest)
 target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/test/unit)
 gtest_discover_tests(${TARGET})

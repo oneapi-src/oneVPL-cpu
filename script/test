@@ -19,8 +19,14 @@ else
 fi
 export PATH=${ffmpeg_dir}:${PATH}
 
+if [ -n "$VPL_INSTALL_DIR" ]; then
+  if [ -z "$VPL_ROOT" ]; then
+    source "$VPL_INSTALL_DIR/env/vars.sh"
+  fi
+fi
+
 cd _build
-export LD_LIBRARY_PATH=$PWD
+export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
 result_all=0
 
 echo --- Running Unit Tests ---
@@ -34,7 +40,7 @@ else
 fi
 
 echo --- Running Decode Smoke Test ---
-./sample_decode h265 -i ${proj_dir}/test/content/cars_128x96.h265 \
+sample_decode h265 -i ${proj_dir}/test/content/cars_128x96.h265 \
                 -o out_vpl_h265.i420 -vpl
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
                                    -i ${proj_dir}/test/content/cars_128x96.h265\
@@ -58,8 +64,8 @@ else
 fi
 
 echo --- Running Encode Smoke Test ---
-./sample_encode h265 -i out_ref_h265.i420 -o out_vpl.h265 -w 128 -h 96 -vpl
-./sample_decode h265 -i out_vpl.h265 -o out_vpl_dec_h265.i420 -vpl
+sample_encode h265 -i out_ref_h265.i420 -o out_vpl.h265 -w 128 -h 96 -vpl
+sample_decode h265 -i out_vpl.h265 -o out_vpl_dec_h265.i420 -vpl
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
                                    -r 30 -video_size 128x96 -pixel_format yuv420p \
                                    -f rawvideo -i out_ref_h265.i420 \
@@ -78,7 +84,7 @@ else
 fi
 
 echo --- Running VPP Smoke Test ---
-./sample_vpp -sw 128 -sh 96 -scrX 0 -scrY 0 -scrW 96 -scrH 48 -scc i420 \
+sample_vpp -sw 128 -sh 96 -scrX 0 -scrY 0 -scrW 96 -scrH 48 -scc i420 \
              -dw 352 -dh 288 -dcrX 50 -dcrY 50 -dcrW 100 -dcrH 100 -dcc i010 \
              -i out_ref_h265.i420 \
              -o out_vpl_vpp.i010 \
@@ -113,7 +119,7 @@ else
 fi
 
 echo --- Running Pipeline \(Decode + VPP\) Smoke Test --- 
-./vpl-decvpp ${proj_dir}/test/content/cars_128x96.h265
+vpl-decvpp ${proj_dir}/test/content/cars_128x96.h265
 
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
             -i ${proj_dir}/test/content/cars_128x96.h265\
@@ -133,7 +139,7 @@ else
 fi
 
 echo --- Running Pipeline \(VPP + Encode\) Smoke Test ---
-./vpl-vppenc out_ref_h265.i420 128 96
+vpl-vppenc out_ref_h265.i420 128 96
 
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
             -f rawvideo -pixel_format yuv420p -video_size 128x96 \
@@ -154,7 +160,7 @@ else
 fi
 
 echo --- Running Pipeline \(Decode + Encode\) Smoke Test ---
-./vpl-decenc ${proj_dir}/test/content/cars_128x96.h265
+vpl-decenc ${proj_dir}/test/content/cars_128x96.h265
 
 $VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
             -i ${proj_dir}/test/content/cars_128x96.h265\
