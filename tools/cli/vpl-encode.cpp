@@ -219,7 +219,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize the Media SDK encoder
-    sts = MFXVideoENCODE_Init(session, &mfxEncParams);
+    mfxVideoParam mfxEncParams2 = { 0 };
+    MFXVideoENCODE_Query(session, &mfxEncParams, &mfxEncParams2);
+    sts = MFXVideoENCODE_Init(session, &mfxEncParams2);
     if (sts != MFX_ERR_NONE) {
         fclose(fSource);
         fclose(fSink);
