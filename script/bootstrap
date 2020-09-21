@@ -9,6 +9,25 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 proj_dir="$( dirname "${script_dir}" )"
 cd ${proj_dir}
 
+## Read options -----------------------------------------------------------
+export USE_GPL="no"
+export BUILD_MODE= "Release"
+
+while [ "$1" != "" ]; do
+    case $1 in
+        gpl )
+            export USE_GPL="yes"
+            ;;
+        debug )
+            export BUILD_MODE="Debug"
+            ;;
+        * )
+            echo "usage: build [gpl] [debug]"
+            exit 1
+    esac
+    shift
+done
+
 ## start of commands -----------------------------------------------------------
 build_dir=${proj_dir}/_extbuild
 DEFAULT_VPL_BUILD_DEPENDENCIES=${proj_dir}/_deps
@@ -40,7 +59,7 @@ git clone --depth=1 --single-branch -b v1.4.3 https://github.com/OpenVisualCloud
 sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' \
       ./Source/Lib/Codec/EbDefinitions.h
 mkdir release && cd release
-cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=${BUILD_MODE} \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
 make -j $(nproc) && make install
 
@@ -52,11 +71,11 @@ git config advice.detachedHead false
 ## ffmpeg build and svt app build will fail without this fix in windows and with static lib.
 git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 mkdir release && cd release
-cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release \
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=${BUILD_MODE} \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
 make -j $(nproc) && make install
 
-if [ "$1" == "gpl" ]; then
+if [ "$USE_GPL" == "yes" ]; then
   ## build x264
   cd ${build_dir}
   git clone --depth 1 --single-branch -b stable https://code.videolan.org/videolan/x264.git && cd x264
@@ -88,7 +107,7 @@ sed -i 's/OBJS-$(CONFIG_TESTSRC2_FILTER)               += vsrc_testsrc.o/OBJS-$(
 export PKG_CONFIG_PATH=${install_dir}/lib/pkgconfig:${install_dir}/lib64/pkgconfig:${PKG_CONFIG_PATH}
 echo PKG_CONFIG_PATH:${PKG_CONFIG_PATH}
 
-if [ "$1" == "gpl" ]; then
+if [ "$USE_GPL" == "yes" ]; then
   enable_x264options='--enable-gpl --enable-libx264 --enable-encoder=libx264'
 else
   enable_x264options=''

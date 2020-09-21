@@ -10,6 +10,22 @@ FOR /D %%i IN ("%~dp0\..") DO (
 	set PROJ_DIR=%%~fi
 )
 cd %PROJ_DIR%
+:: Read options -----------------------------------------------------------
+SET USE_GPL=no
+SET BUILD_MODE=Release
+
+:Loop
+IF "%~1"=="" GOTO Continue
+  IF "%~1"=="gpl" (
+    SET USE_GPL=yes
+  )
+  IF "%~1"=="debug" (
+    SET BUILD_MODE=Debug
+  )
+SHIFT
+GOTO Loop
+:Continue
+
 :: start of commands -----------------------------------------------------------
 set build_dir=%PROJ_DIR%\_extbuild
 set DEFAULT_MSYS_ROOT=C:\tools\msys64
@@ -57,7 +73,7 @@ git config advice.detachedHead false
 :: windows and with static lib.
 git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
 
-if "%~1"=="gpl" (
+if "%USE_GPL%"=="yes" (
   :: checkout x264
   cd %build_dir%
   git clone --depth 1 --single-branch -b stable https://code.videolan.org/videolan/x264.git && cd x264
@@ -76,7 +92,7 @@ cd %build_dir%\SVT-HEVC
 sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' ^
 Source\Lib\Codec\EbDefinitions.h
 mkdir release && cd release
-cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_MODE% ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
 if ERRORLEVEL 1 exit /b 1
 cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
@@ -85,13 +101,13 @@ cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
 :: -DSVT_LOG_QUIET=1 is for turning off logs
 cd %build_dir%\SVT-AV1
 mkdir release && cd release
-cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ^
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_MODE% ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off ^
 -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
 if ERRORLEVEL 1 exit /b 1
 cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
 
-if "%~1"=="gpl" (
+if "%USE_GPL%"=="yes" (
   :: x264 build and install
   cd %build_dir%\x264
   bash -c './configure --prefix=${install_dir} --enable-static --enable-pic'
@@ -121,7 +137,7 @@ set patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1-with-svt-hevc.patch
 git am %build_dir%\SVT-AV1\ffmpeg_plugin\%patch%
 if ERRORLEVEL 1 exit /b 1
 
-if "%~1"=="gpl" (
+if "%USE_GPL%"=="yes" (
   set enable_x264options=--enable-gpl --enable-libx264 --enable-encoder=libx264
 ) else (
   set enable_x264options=
