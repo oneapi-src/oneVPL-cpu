@@ -294,7 +294,6 @@ int main(int argc, char *argv[]) {
         printf("\n  NumExtParam: %d\n", idesc->NumExtParam);
 
         MFXDispReleaseImplDescription(loader, idesc);
-        i++;
     }
 
     MFXUnload(loader);
