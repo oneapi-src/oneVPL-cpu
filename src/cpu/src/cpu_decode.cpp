@@ -32,28 +32,57 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    if (!par->IOPattern && canCorrect)
+    // General params
+    if (canCorrect) {
+        if (par->AsyncDepth > 16)
+            par->AsyncDepth = 16;
+
+        if (!par->AsyncDepth)
+            par->AsyncDepth = 1;
+
+        if (par->Protected)
+            par->Protected = 0;
+
+        if (par->NumExtParam)
+            par->NumExtParam = 0;
+
         par->IOPattern = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
-    if (!par->AsyncDepth && canCorrect)
-        par->AsyncDepth = 1;
+        if (!par->mfx.FrameInfo.FourCC)
+            par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
 
-    //only system memory allowed
-    if (par->IOPattern != MFX_IOPATTERN_OUT_SYSTEM_MEMORY)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (par->mfx.NumThread)
+            par->mfx.NumThread = 0; //not supported
+    }
+    else {
+        if (par->AsyncDepth > 16) {
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
 
-    if (!par->mfx.FrameInfo.FourCC && canCorrect)
-        par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+        if (par->Protected)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (par->NumExtParam)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->IOPattern != MFX_IOPATTERN_OUT_SYSTEM_MEMORY)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->mfx.NumThread)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
 
     //only I420 and I010 colorspaces allowed
     switch (par->mfx.FrameInfo.FourCC) {
         case MFX_FOURCC_I420:
             if (canCorrect) {
-                par->mfx.FrameInfo.BitDepthLuma = 8;
-                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+                par->mfx.FrameInfo.BitDepthLuma   = 8;
+                par->mfx.FrameInfo.BitDepthChroma = 8;
+                par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
             }
             else {
                 if (par->mfx.FrameInfo.BitDepthLuma && (par->mfx.FrameInfo.BitDepthLuma != 8))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.BitDepthChroma && (par->mfx.FrameInfo.BitDepthChroma != 8))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
                 if (par->mfx.FrameInfo.ChromaFormat &&
                     (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
@@ -62,11 +91,14 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
             break;
         case MFX_FOURCC_I010:
             if (canCorrect) {
-                par->mfx.FrameInfo.BitDepthLuma = 10;
-                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+                par->mfx.FrameInfo.BitDepthLuma   = 10;
+                par->mfx.FrameInfo.BitDepthChroma = 10;
+                par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
             }
             else {
                 if (par->mfx.FrameInfo.BitDepthLuma && (par->mfx.FrameInfo.BitDepthLuma != 10))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.BitDepthChroma && (par->mfx.FrameInfo.BitDepthChroma != 10))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
                 if (par->mfx.FrameInfo.ChromaFormat &&
                     (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
@@ -91,53 +123,14 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    //BitDepthLuma can only be 8 or 10
-    switch (par->mfx.FrameInfo.BitDepthLuma) {
-        case 8:
-        case 10:
-        case 0:
-            break;
-        default:
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
-    //BitDepthChroma can only be 8 or 10
-    switch (par->mfx.FrameInfo.BitDepthChroma) {
-        case 8:
-        case 10:
-        case 0:
-            break;
-        default:
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
     if (par->mfx.CodecProfile > 0x1FF)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (par->mfx.CodecLevel > 0x1FF)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    switch (par->mfx.FrameInfo.ChromaFormat) {
-        case MFX_CHROMAFORMAT_YUV420:
-            break;
-        default:
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
-    if (par->mfx.FrameInfo.AspectRatioW == 0 && canCorrect)
-        par->mfx.FrameInfo.AspectRatioW = 1;
-
-    if (par->mfx.FrameInfo.AspectRatioH == 0 && canCorrect)
-        par->mfx.FrameInfo.AspectRatioH = 1;
-
-    if (par->mfx.FrameInfo.FrameRateExtN == 0 && canCorrect)
-        par->mfx.FrameInfo.FrameRateExtN = 30;
-
     if (par->mfx.FrameInfo.FrameRateExtN > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
-
-    if (par->mfx.FrameInfo.FrameRateExtD == 0 && canCorrect)
-        par->mfx.FrameInfo.FrameRateExtD = 1;
 
     if (par->mfx.FrameInfo.FrameRateExtD > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;

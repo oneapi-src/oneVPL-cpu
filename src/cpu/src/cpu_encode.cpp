@@ -45,6 +45,121 @@ CpuEncode::~CpuEncode() {
 }
 
 mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
+    //Check if params given are settable.
+    //If not return INVALID_VIDEO_PARAM or fix depending on canCorrect
+
+    // General params
+    if (canCorrect) {
+        if (par->AsyncDepth > 16) {
+            par->AsyncDepth = 16;
+        }
+
+        if (par->Protected)
+            par->Protected = 0;
+        if (par->NumExtParam)
+            par->NumExtParam = 0;
+        if (par->IOPattern != MFX_IOPATTERN_IN_SYSTEM_MEMORY)
+            par->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
+    }
+    else {
+        if (par->AsyncDepth > 16) {
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+
+        if (par->Protected)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (par->NumExtParam)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->IOPattern != MFX_IOPATTERN_IN_SYSTEM_MEMORY)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    // mfx params
+    if (canCorrect) {
+        if (par->mfx.LowPower)
+            par->mfx.LowPower = 0; //not supported
+        if (par->mfx.BRCParamMultiplier)
+            par->mfx.BRCParamMultiplier = 0; //not supported
+        if (par->mfx.NumThread)
+            par->mfx.NumThread = 0; //not supported
+        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 || par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+            par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+
+        //GopPicSize and GopRefDist need no corrections
+
+        // if GopOptFlag is set it can only be the GOP_CLOSED flag
+        if (par->mfx.GopOptFlag && par->mfx.GopOptFlag != MFX_GOP_CLOSED)
+            par->mfx.GopOptFlag = MFX_GOP_CLOSED;
+
+        if (par->mfx.IdrInterval)
+            par->mfx.IdrInterval = 0; //not supported
+
+        //ratecontrolmethod codec specific
+        if (!par->mfx.TargetKbps)
+            par->mfx.TargetKbps = 4000; //required
+        //maxkbps needs no correction
+
+        if (!par->mfx.NumSlice)
+            par->mfx.NumSlice = 1;
+        if (par->mfx.NumRefFrame > 16)
+            par->mfx.NumRefFrame = 16;
+        if (par->mfx.EncodedOrder)
+            par->mfx.EncodedOrder = 0; //not supported
+    }
+    else {
+        if (par->mfx.LowPower)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (par->mfx.BRCParamMultiplier)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        if (par->mfx.NumThread)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        //only GOP_CLOSED flag is supported in the CPU reference implementation
+        if (par->mfx.GopOptFlag != 0 && par->mfx.GopOptFlag != MFX_GOP_CLOSED)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->mfx.IdrInterval)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        //ratecontrolmethod codec specific
+
+        //TargetKbps (or QP) is codec specific
+
+        //maxkbps needs no correction
+
+        //max ref frames is 16 for any codec
+        if (par->mfx.NumRefFrame > 16)
+            MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->mfx.EncodedOrder)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    // mfx.FrameInfo params
+
+    if (par->mfx.FrameInfo.Shift)
+        if (canCorrect)
+            par->mfx.FrameInfo.Shift = 0;
+        else
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.BitDepthChroma) {
+        if (par->mfx.FrameInfo.BitDepthChroma != 8 && par->mfx.FrameInfo.BitDepthChroma != 10)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else if (canCorrect) {
+        par->mfx.FrameInfo.BitDepthChroma = 8;
+    }
+
+    if (par->mfx.FrameInfo.BitDepthLuma) {
+        if (par->mfx.FrameInfo.BitDepthLuma != 8 && par->mfx.FrameInfo.BitDepthLuma != 10)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+    else if (canCorrect) {
+        par->mfx.FrameInfo.BitDepthLuma = 8;
+    }
+
     if (par->mfx.FrameInfo.FourCC) {
         if (par->mfx.FrameInfo.FourCC != MFX_FOURCC_I420 &&
             par->mfx.FrameInfo.FourCC != MFX_FOURCC_I010)
@@ -60,6 +175,12 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     if (!par->mfx.FrameInfo.CropH && canCorrect)
         par->mfx.FrameInfo.CropH = par->mfx.FrameInfo.Height;
 
+    if (par->mfx.NumSlice > par->mfx.FrameInfo.CropH)
+        if (canCorrect)
+            par->mfx.NumSlice = par->mfx.FrameInfo.CropH;
+        else
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
     if (!par->mfx.FrameInfo.CropW || !par->mfx.FrameInfo.CropH)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -73,15 +194,57 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
     }
 
-    // validate fields in the input param struct
-    if (par->mfx.CodecId != MFX_CODEC_HEVC && par->mfx.CodecId != MFX_CODEC_AVC &&
-        par->mfx.CodecId != MFX_CODEC_JPEG && par->mfx.CodecId != MFX_CODEC_AV1)
+    if (par->mfx.FrameInfo.FrameRateExtN == 0 && canCorrect)
+        par->mfx.FrameInfo.FrameRateExtN = 30;
+
+    if (par->mfx.FrameInfo.FrameRateExtN > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.FrameRateExtD == 0 && canCorrect)
+        par->mfx.FrameInfo.FrameRateExtD = 1;
+
+    if (par->mfx.FrameInfo.FrameRateExtD > 65535)
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    if (par->mfx.FrameInfo.AspectRatioW == 0 && canCorrect)
+        par->mfx.FrameInfo.AspectRatioW = 1;
+
+    if (par->mfx.FrameInfo.AspectRatioH == 0 && canCorrect)
+        par->mfx.FrameInfo.AspectRatioH = 1;
+
+    if (par->mfx.FrameInfo.PicStruct == MFX_PICSTRUCT_UNKNOWN && canCorrect) {
+        par->mfx.FrameInfo.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+    }
+
+    if (par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_PROGRESSIVE &&
+        par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_UNKNOWN) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    switch (par->mfx.FrameInfo.ChromaFormat) {
+        case MFX_CHROMAFORMAT_YUV420:
+            break;
+        default:
+            if (canCorrect) {
+                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+                break;
+            }
+            else
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    //codec specific checks
 
     // check codec id and the values
     switch (par->mfx.CodecId) {
-        case MFX_CODEC_AVC: // leave this for later
-        {
+        case MFX_CODEC_AVC: {
+            if (!par->mfx.TargetUsage)
+                par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+
+            if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 ||
+                par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
             if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 4096)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -147,7 +310,14 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
 
         break;
         case MFX_CODEC_HEVC:
-            // default: vbr, profile main, level 3.1
+
+            if (!par->mfx.TargetUsage)
+                par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+
+            if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 ||
+                par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
             if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 8192)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -223,6 +393,14 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
 
             break;
         case MFX_CODEC_AV1:
+
+            if (!par->mfx.TargetUsage)
+                par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+
+            if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 ||
+                par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
             // default: VBR
             if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 4096)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -256,81 +434,6 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
-    if (par->mfx.TargetKbps == 0 && canCorrect)
-        par->mfx.TargetKbps = 4000;
-
-    if (par->mfx.FrameInfo.FrameRateExtN == 0 && canCorrect)
-        par->mfx.FrameInfo.FrameRateExtN = 30;
-
-    if (par->mfx.FrameInfo.FrameRateExtN > 65535)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-
-    if (par->mfx.FrameInfo.FrameRateExtD == 0 && canCorrect)
-        par->mfx.FrameInfo.FrameRateExtD = 1;
-
-    if (par->mfx.FrameInfo.FrameRateExtD > 65535)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-
-    if (par->mfx.FrameInfo.AspectRatioW == 0 && canCorrect)
-        par->mfx.FrameInfo.AspectRatioW = 1;
-
-    if (par->mfx.FrameInfo.AspectRatioH == 0 && canCorrect)
-        par->mfx.FrameInfo.AspectRatioH = 1;
-
-    if (par->mfx.GopOptFlag != 0 && par->mfx.GopOptFlag != MFX_GOP_CLOSED)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-
-    if (par->mfx.FrameInfo.BitDepthChroma) {
-        if (par->mfx.FrameInfo.BitDepthChroma != 8 && par->mfx.FrameInfo.BitDepthChroma != 10)
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-    else if (canCorrect) {
-        par->mfx.FrameInfo.BitDepthChroma = 8;
-    }
-
-    if (par->mfx.FrameInfo.BitDepthLuma) {
-        if (par->mfx.FrameInfo.BitDepthLuma != 8 && par->mfx.FrameInfo.BitDepthLuma != 10)
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-    else if (canCorrect) {
-        par->mfx.FrameInfo.BitDepthLuma = 8;
-    }
-
-    if (par->mfx.TargetUsage) {
-        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 || par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-    else if (canCorrect) {
-        par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
-    }
-
-    if (par->mfx.NumSlice == 0 && canCorrect)
-        par->mfx.NumSlice = 1;
-
-    if (par->mfx.NumSlice > 1)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-
-    if (par->mfx.FrameInfo.PicStruct == MFX_PICSTRUCT_UNKNOWN && canCorrect) {
-        par->mfx.FrameInfo.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
-    }
-
-    if (par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_PROGRESSIVE &&
-        par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_UNKNOWN) {
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
-    switch (par->mfx.FrameInfo.ChromaFormat) {
-        case MFX_CHROMAFORMAT_YUV420:
-            break;
-        default:
-            if (canCorrect) {
-                par->mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-                break;
-            }
-            else
-                return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
     return MFX_ERR_NONE;
@@ -493,37 +596,9 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
         // 0-10 for 1082-4k
         // and 0-11 for >=4K
         // however, in the most common cases we don't know the resolution yet
-        int encMode = 0;
-        switch (par->mfx.TargetUsage) {
-            case 1:
-                encMode = 0;
-                break;
-            case 2:
-                encMode = 1;
-                break;
-            case 3:
-                encMode = 3;
-                break;
-            case 4:
-                encMode = 5;
-                break;
-            case 5:
-                encMode = 7;
-                break;
-            case 6:
-                encMode = 8;
-                break;
-            case 7:
-            default:
-                encMode = 9;
-                break;
-        }
-        std::stringstream tuss;
-        tuss << encMode;
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "preset",
-                         tuss.str().c_str(),
-                         AV_OPT_SEARCH_CHILDREN);
+        int hevc_tu = convertTargetUsageVal(par->mfx.TargetUsage, 1, 7, 0, 9);
+
+        ret = av_opt_set_int(m_avEncContext->priv_data, "preset", hevc_tu, AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -955,37 +1030,9 @@ mfxStatus CpuEncode::InitAV1Params(mfxVideoParam *par) {
     // set targetUsage
     // note, AV1 encode can be 0-8
     if (par->mfx.TargetUsage) {
-        int encMode = 0;
-        switch (par->mfx.TargetUsage) {
-            case 1:
-                encMode = 0;
-                break;
-            case 2:
-                encMode = 1;
-                break;
-            case 3:
-                encMode = 3;
-                break;
-            case 4:
-                encMode = 5;
-                break;
-            case 5:
-                encMode = 6;
-                break;
-            case 6:
-                encMode = 7;
-                break;
-            case 7:
-            default:
-                encMode = 8;
-                break;
-        }
-        std::stringstream tuss;
-        tuss << encMode;
-        ret = av_opt_set(m_avEncContext->priv_data,
-                         "preset",
-                         tuss.str().c_str(),
-                         AV_OPT_SEARCH_CHILDREN);
+        int av1_tu = convertTargetUsageVal(par->mfx.TargetUsage, 1, 7, 0, 8);
+
+        ret = av_opt_set_int(m_avEncContext->priv_data, "preset", av1_tu, AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
