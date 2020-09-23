@@ -70,6 +70,8 @@ mfxU32 LoaderCtxVPL::ParseEnvSearchPaths(const CHAR_TYPE* envVarName,
     return (mfxU32)searchDirs.size();
 }
 
+#define NUM_LIB_PREFIXES 2
+
 mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
                                          std::list<LibInfo*>& libInfoList,
                                          mfxU32 priority) {
@@ -81,40 +83,47 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
     HANDLE hTestFile = nullptr;
     WIN32_FIND_DATAW testFileData;
     DWORD err;
-    STRING_TYPE testFileName = searchDir + MAKE_STRING("/*.dll");
+    STRING_TYPE testFileName[NUM_LIB_PREFIXES] = { searchDir + MAKE_STRING("/libvpl*.dll"),
+                                                   searchDir + MAKE_STRING("/libmfx*.dll") };
 
     CHAR_TYPE currDir[MAX_VPL_SEARCH_PATH] = L"";
     if (GetCurrentDirectoryW(MAX_VPL_SEARCH_PATH, currDir))
         SetCurrentDirectoryW(searchDir.c_str());
 
     // iterate over all candidate files in directory
-    hTestFile = FindFirstFileW(testFileName.c_str(), &testFileData);
-    if (hTestFile != INVALID_HANDLE_VALUE) {
-        do {
-            wchar_t libNameFull[MAX_VPL_SEARCH_PATH];
-            wchar_t* libNameBase;
+    for (mfxU32 i = 0; i < NUM_LIB_PREFIXES; i++) {
+        hTestFile = FindFirstFileW(testFileName[i].c_str(), &testFileData);
+        if (hTestFile != INVALID_HANDLE_VALUE) {
+            do {
+                wchar_t libNameFull[MAX_VPL_SEARCH_PATH];
+                wchar_t* libNameBase;
 
-            LibInfo* libInfo = new LibInfo;
-            if (!libInfo)
-                return MFX_ERR_MEMORY_ALLOC;
+                // special case: libmfx*.dll filter includes dispatcher itself (libmfx.dll)
+                if (wcsstr(testFileData.cFileName, L"libmfx.dll"))
+                    continue;
 
-            err = GetFullPathNameW(testFileData.cFileName,
-                                   MAX_VPL_SEARCH_PATH,
-                                   libNameFull,
-                                   &libNameBase);
-            if (!err) {
-                // unknown error - skip it and move on to next file
-                delete libInfo;
-                continue;
-            }
-            libInfo->libNameFull = libNameFull;
-            libInfo->libPriority = priority;
+                LibInfo* libInfo = new LibInfo;
+                if (!libInfo)
+                    return MFX_ERR_MEMORY_ALLOC;
 
-            // add to list
-            libInfoList.push_back(libInfo);
-        } while (FindNextFileW(hTestFile, &testFileData));
+                err = GetFullPathNameW(testFileData.cFileName,
+                                       MAX_VPL_SEARCH_PATH,
+                                       libNameFull,
+                                       &libNameBase);
+                if (!err) {
+                    // unknown error - skip it and move on to next file
+                    delete libInfo;
+                    continue;
+                }
+                libInfo->libNameFull = libNameFull;
+                libInfo->libPriority = priority;
 
-        FindClose(hTestFile);
+                // add to list
+                libInfoList.push_back(libInfo);
+            } while (FindNextFileW(hTestFile, &testFileData));
+
+            FindClose(hTestFile);
+        }
     }
 
     // restore current directory
@@ -134,6 +143,15 @@ mfxStatus LoaderCtxVPL::SearchDirForLibs(STRING_TYPE searchDir,
 
             // save files with ".so" (including .so.1, etc.)
             if (strstr(currFile->d_name, ".so")) {
+                // library names must begin with "libvpl*" or "libmfx*"
+                if ((strstr(currFile->d_name, "libvpl") != currFile->d_name) &&
+                    (strstr(currFile->d_name, "libmfx") != currFile->d_name))
+                    continue;
+
+                // special case: libmfx* filter includes dispatcher itself (libmfx.so)
+                if (strstr(currFile->d_name, "libmfx.so"))
+                    continue;
+
                 char filePathC[MAX_VPL_SEARCH_PATH];
 
                 LibInfo* libInfo = new LibInfo;
