@@ -1,9 +1,8 @@
-# Configuring the Build Environment
+# Configuring the build environment
 
-This section describes the steps to configure the environment. It extends the
-high level build information in the README.
+This section describes the steps to configure the build environment. It extends the high-level build information described in the README.
 
-The basic sequence is
+The basic steps are:
 
 1. Configure the environment
 
@@ -11,15 +10,16 @@ The basic sequence is
 
 3. Build the code using the script/build 
 
-After you have configured the environment you can continue with the basic build
-steps in the README. Note that if dependencies are not modified bootstrapping
+After you have configured the environment you can follow the basic build
+steps in the README. Note that if dependencies are not modified, bootstrapping
 only needs to be done once. The build script will look in the location specified
 by the `VPL_BUILD_DEPENDENCIES` environment variable.
 
 
-## Configuring the Windows Environment
+## Configure the Windows Environment
 
 Install common developer tools
+Note: If behind a proxy, make sure your shell is configured to allow external downloads and git clones.  For more information please see the documentation for your local network environment.
 
 * [Microsoft Visual Studio](https://visualstudio.microsoft.com/) Visual Studio 2017 or newer
 
@@ -32,11 +32,10 @@ Install common developer tools
 
 ### Install MSYS2 based tools
 
-MSYS2 setup can be done many ways but this guide is based on 
-[chocolatey](http://chocolatey.org). Some of the paths to mingw may be
-different if another method to install MSYS2 is used.
+This guide provides a MSYS2 setup based on 
+[chocolatey](http://chocolatey.org). Some of the paths to mingw may be different if another method to install MSYS2 is used.
 
-From a cmd or powershell with admin permissions
+Install MSYS2 from a cmd or powershell with admin permissions using the following command:
 
 ```bash
        choco install msys2
@@ -48,7 +47,7 @@ Start a mingw64 shell from cmd or powershell with regular permissions.
        c:\tools\msys64\msys2.exe
 ```
 
-Please note: this path is from choco install.  If another install method is used
+Note: This path is from choco install.  If another install method is used
 the path to the shell may be different.
 
 Get packages required by build
@@ -57,12 +56,12 @@ Get packages required by build
        pacman -Syu
        pacman --needed -Sy mingw-w64-x86_64-toolchain base-devel yasm nasm mingw-w64-x86_64-cmake git python-pip mingw-w64-x86_64-meson mingw-w64-x86_64-ninja
 ```
-Note: while the msys2 shell is used for this step in initial setup it is
+Note: While the msys2 shell is used for this step in initial setup it is
 not otherwise supported as a build or run environment.
 
 ## Configuring the Ubuntu Environment
 
-From a shell as root:
+From a shell as root, enter the following:
 
 ```bash
        apt update
