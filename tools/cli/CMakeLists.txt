@@ -20,6 +20,9 @@ target_link_libraries(vpl-vppenc mfx)
 add_executable(vpl-decenc vpl-decenc.cpp vpl-new-dispatcher.cpp)
 target_link_libraries(vpl-decenc mfx)
 
+add_executable(vpl-decvpp vpl-decvpp.cpp vpl-new-dispatcher.cpp)
+target_link_libraries(vpl-decvpp mfx)
+
 add_executable(vpl-inspect vpl-inspect.cpp)
 target_link_libraries(vpl-inspect mfx)
 
