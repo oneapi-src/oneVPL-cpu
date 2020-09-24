@@ -101,10 +101,33 @@ echo.
 if %errorlevel%==0 goto test_vpp_passed
 echo *** VPP Smoke Test FAILED ***
 set /A result_all = 1
-goto test_end
+goto test_pipeline_vpp_enc
 
 :test_vpp_passed
 echo *** VPP Smoke Test PASSED ***
+
+:test_pipeline_vpp_enc
+echo *** Running Pipeline (VPP + Encode) Smoke Test***
+call vpl-vppenc.exe out_ref_h265.i420 128 96
+
+call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
+     -f rawvideo -pixel_format yuv420p -video_size 128x96 ^
+     -i out_ref_h265.i420 ^
+     -filter_complex "scale=640:480" ^
+     -c:v libsvt_hevc ^
+     -g 30 -rc 1 -preset 5 -b:v 4000*1000 ^
+     out_ref.h265
+call py -3 %PYTHONPATH%\check_content\check_smoke_output.py ^
+     out.h265 out_ref.h265 H265 640x480@30
+
+echo.
+if %errorlevel%==0 goto test_pipeline_vpp_enc_passed
+echo *** Pipeline (VPP + Encode) Smoke Test FAILED ***
+set /A result_all = 1
+goto test_end
+
+:test_pipeline_vpp_enc_passed
+echo *** Pipeline (VPP + Encode) Smoke Test PASSED ***
 
 :test_end
 exit /B %result_all%

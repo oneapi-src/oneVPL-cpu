@@ -112,4 +112,25 @@ else
     echo --- VPP Smoke Test PASSED ---
 fi
 
+echo --- Running Pipeline \(VPP + Encode\) Smoke Test ---
+./vpl-vppenc out_ref_h265.i420 128 96
+
+$VPL_BUILD_DEPENDENCIES/bin/ffmpeg -y \
+            -f rawvideo -pixel_format yuv420p -video_size 128x96 \
+            -i out_ref_h265.i420 \
+            -filter_complex "scale=640:480" \
+            -c:v libsvt_hevc \
+            -g 30 -rc 1 -preset 5 -b:v 4000*1000 \
+            out_ref.h265
+python3 $PYTHONPATH/check_content/check_smoke_output.py \
+        out.h265 out_ref.h265 H265 640x480@30
+
+ret=$?
+if [ $ret -ne 0 ]; then
+    echo --- Pipeline \(VPP + Encode\) Smoke Test FAILED ---
+    let result_all++
+else
+    echo --- Pipeline \(VPP + Encode\) Smoke Test PASSED ---
+fi
+
 exit $result_all
