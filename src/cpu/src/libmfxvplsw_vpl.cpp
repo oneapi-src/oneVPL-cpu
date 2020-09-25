@@ -10,6 +10,12 @@
 #include "./cpu_workstream.h"
 #include "./libmfxvplsw_caps.h"
 
+// the auto-generated capabilities structs
+// only include one time in this library
+#include "./libmfxvplsw_caps_dec.h"
+#include "./libmfxvplsw_caps_enc.h"
+#include "./libmfxvplsw_caps_vpp.h"
+
 // preferred entrypoint for 2.0 implementations (instead of MFXInitEx)
 mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {
     if (par.AccelerationMode != MFX_ACCEL_MODE_NA)
@@ -30,6 +36,11 @@ mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {
 
     return MFX_ERR_NONE;
 }
+
+static const mfxChar strImplName[MFX_IMPL_NAME_LEN] = "oneAPI VPL CPU Reference Impl";
+static const mfxChar strLicense[MFX_STRFIELD_LEN]   = "";
+static const mfxChar strKeywords[MFX_STRFIELD_LEN]  = "";
+static const mfxChar strDeviceID[MFX_STRFIELD_LEN]  = "CPU";
 
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
@@ -67,7 +78,7 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_i
     implDescArray->currImpl = 0;
     implDescArray->numImpl  = *num_impls;
 
-    // clear everything, only allocate new structures as needed
+    // clear everything first, then fill in fields with read-only caps data
     mfxImplDescription *implDesc = &(implDescArray->implDesc);
     memset(implDesc, 0, sizeof(mfxImplDescription));
     hImpls[0] = &(implDescArray[0]);
@@ -80,30 +91,28 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_i
     implDesc->ApiVersion.Major = MFX_VERSION_MAJOR;
     implDesc->ApiVersion.Minor = MFX_VERSION_MINOR;
 
-    strncpy_s((char *)implDesc->ImplName,
-              sizeof(implDesc->ImplName),
-              "oneAPI VPL CPU Reference Impl",
-              sizeof(implDesc->ImplName) - 1);
-    strncpy_s((char *)implDesc->License,
-              sizeof(implDesc->License),
-              "",
-              sizeof(implDesc->ImplName) - 1);
-    strncpy_s((char *)implDesc->Keywords,
-              sizeof(implDesc->Keywords),
-              "",
-              sizeof(implDesc->ImplName) - 1);
+    strncpy_s(implDesc->ImplName, sizeof(implDesc->ImplName), strImplName, sizeof(strImplName));
+    strncpy_s(implDesc->License, sizeof(implDesc->License), strLicense, sizeof(strLicense));
+    strncpy_s(implDesc->Keywords, sizeof(implDesc->Keywords), strKeywords, sizeof(strKeywords));
 
     implDesc->VendorID     = 0x8086;
     implDesc->VendorImplID = 0;
     implDesc->NumExtParam  = 0;
 
-    InitDeviceDescription(&(implDesc->Dev));
+    // initialize mfxDeviceDescription
+    mfxDeviceDescription *Dev = &(implDesc->Dev);
+    memset(Dev, 0, sizeof(mfxDeviceDescription)); // initially empty
 
-    InitDecoderCaps(&(implDesc->Dec));
+    Dev->Version.Version = MFX_DEVICEDESCRIPTION_VERSION;
+    strncpy_s(Dev->DeviceID, sizeof(Dev->DeviceID), strDeviceID, sizeof(strDeviceID));
+    Dev->NumSubDevices = 0; // CPU should report 0
 
-    InitEncoderCaps(&(implDesc->Enc));
-
-    InitVPPCaps(&(implDesc->VPP));
+    // dec, enc, and vpp caps are auto-generated from description files
+    // at runtime we just need to copy the top-level structure into
+    //   the mfxImplDescription object passed back to the dispatcher
+    memcpy(&(implDesc->Dec), &decoderDesc, sizeof(mfxDecoderDescription));
+    memcpy(&(implDesc->Enc), &encoderDesc, sizeof(mfxEncoderDescription));
+    memcpy(&(implDesc->VPP), &vppDesc, sizeof(mfxVPPDescription));
 
     return hImpls;
 }
@@ -120,11 +129,6 @@ mfxStatus MFXReleaseImplDescription(mfxHDL hdl) {
     if (!implDesc) {
         return MFX_ERR_NULL_PTR;
     }
-
-    FreeDeviceDescription(&(implDesc->Dev));
-    FreeDecoderCaps(&(implDesc->Dec));
-    FreeEncoderCaps(&(implDesc->Enc));
-    FreeVPPCaps(&(implDesc->VPP));
 
     memset(implDesc, 0, sizeof(mfxImplDescription));
 

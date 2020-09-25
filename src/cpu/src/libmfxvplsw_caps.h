@@ -47,14 +47,9 @@ typedef struct mfxVPPDescription::filter VPPFilter;
 typedef struct mfxVPPDescription::filter::memdesc VPPMemDesc;
 typedef struct mfxVPPDescription::filter::memdesc::format VPPFormat;
 
-mfxStatus InitDeviceDescription(mfxDeviceDescription *Dev);
-mfxStatus InitDecoderCaps(mfxDecoderDescription *Dec);
-mfxStatus InitEncoderCaps(mfxEncoderDescription *Enc);
-mfxStatus InitVPPCaps(mfxVPPDescription *VPP);
-
-void FreeDeviceDescription(mfxDeviceDescription *Dev);
-void FreeDecoderCaps(mfxDecoderDescription *Dec);
-void FreeEncoderCaps(mfxEncoderDescription *Enc);
-void FreeVPPCaps(mfxVPPDescription *VPP);
+// top-level structures for auto-generated caps
+extern const mfxDecoderDescription decoderDesc;
+extern const mfxEncoderDescription encoderDesc;
+extern const mfxVPPDescription vppDesc;
 
 #endif // SRC_CPU_SRC_LIBMFXVPLSW_CAPS_H_
