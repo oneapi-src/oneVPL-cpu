@@ -142,11 +142,9 @@ int main(int argc, char* argv[]) {
         mfxEncParams.mfx.FrameInfo.Shift          = 1;
         if (params.dstFourCC == MFX_CODEC_HEVC) {
             mfxEncParams.mfx.CodecProfile = MFX_PROFILE_HEVC_MAIN10;
-            mfxEncParams.mfx.CodecLevel   = MFX_LEVEL_HEVC_51;
         }
         else if (params.dstFourCC == MFX_CODEC_AVC) {
             mfxEncParams.mfx.CodecProfile = MFX_PROFILE_AVC_HIGH10;
-            mfxEncParams.mfx.CodecLevel   = MFX_LEVEL_AVC_1;
         }
     }
 
