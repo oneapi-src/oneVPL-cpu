@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
                     return 1;
                 }
 
-                pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_READ);
+                pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_WRITE);
             }
 
             if (pmfxWorkSurface)

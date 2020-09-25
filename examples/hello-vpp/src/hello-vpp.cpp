@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
             VERIFY(MFX_ERR_NONE == sts, "Unknown error in MFXMemory_GetSurfaceForVPP");
 
             // Map makes surface writable by CPU for all implementations
-            sts = vpp_surfaces_in->FrameInterface->Map(vpp_surfaces_in, MFX_MAP_READ);
+            sts = vpp_surfaces_in->FrameInterface->Map(vpp_surfaces_in, MFX_MAP_WRITE);
             VERIFY(MFX_ERR_NONE == sts, "mfxFrameSurfaceInterface->Map failed");
 
             sts = LoadRawFrame(vpp_surfaces_in, source);

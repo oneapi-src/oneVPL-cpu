@@ -264,7 +264,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
 
-            vppSurfaceIn->FrameInterface->Map(vppSurfaceIn, MFX_MAP_READ);
+            vppSurfaceIn->FrameInterface->Map(vppSurfaceIn, MFX_MAP_WRITE);
         }
 
         if (vppSurfaceIn) {
