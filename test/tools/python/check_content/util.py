@@ -96,12 +96,12 @@ class Runner:
             ]
 
             # Set up writer threads
-            self.write_threads = [
-                threading.Thread(target=_write_output,
-                                 args=(self.stderr_q.get, sys.stderr)),
-                threading.Thread(target=_write_output,
-                                 args=(self.stdout_q.get, sys.stdout))
-            ]
+            # self.write_threads = [
+            #    threading.Thread(target=_write_output,
+            #                     args=(self.stderr_q.get, sys.stderr)),
+            #    threading.Thread(target=_write_output,
+            #                     args=(self.stdout_q.get, sys.stdout))
+            # ]
 
             # Start threads
             for thread in self.capture_threads:

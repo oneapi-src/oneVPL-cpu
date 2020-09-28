@@ -30,3 +30,7 @@ The scripts are designed around the model described by
 
 - `cibuild` - Run CI steps. CI calls this script when it is triggered on
   a merge request.
+
+- `stress` - Run stress tests.
+
+  -  stress `n` : run `n` time(s) of stress test 

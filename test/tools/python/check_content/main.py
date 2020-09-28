@@ -37,6 +37,7 @@ if TOOLPATH is not None:
 CODEC_MAP = {
     "H264": "h264",
     "H265": "hevc",
+    "AV1": "av1",
     "MPEG2": "mpeg2video",
     "MJPEG": "mjpeg",
     "BGRA": "bgra",
@@ -50,6 +51,7 @@ ENCODED = [
     None,
     "H264",
     "H265",
+    "AV1",
     "MPEG2",
     "MJPEG",
 ]
