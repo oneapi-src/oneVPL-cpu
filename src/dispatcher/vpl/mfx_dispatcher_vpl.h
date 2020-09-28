@@ -41,13 +41,10 @@ typedef char CHAR_TYPE;
 
 // OS-specific environment variables for implementation
 //   search paths as defined by spec
-// TO DO - clarify expected behavior for searching Windows "PATH"
-//   (not feasible to query every DLL in every directory in PATH
-//    to determine which might be an implementation library)
 #if defined(_WIN32) || defined(_WIN64)
     #define ENV_ONEVPL_SEARCH_PATH  L"ONEVPL_SEARCH_PATH"
     #define ENV_ONEVPL_PACKAGE_PATH L"VPL_BIN"
-    #define ENV_OS_PATH             L"" // skip for now (see comment above)
+    #define ENV_OS_PATH             L"PATH"
 #else
     #define ENV_ONEVPL_SEARCH_PATH  "ONEVPL_SEARCH_PATH"
     #define ENV_ONEVPL_PACKAGE_PATH "VPL_BIN"
@@ -151,6 +148,11 @@ public:
     static mfxStatus ValidateConfig(mfxImplDescription* libImplDesc,
                                     std::list<ConfigCtxVPL*> configCtxList);
 
+    // loader object this config is associated with - needed to
+    //   rebuild valid implementation list after each calling
+    //   MFXSetConfigFilterProperty()
+    class LoaderCtxVPL* m_parentLoader;
+
 private:
     __inline std::string GetNextProp(std::list<std::string>* s) {
         std::string t = s->front();
@@ -219,12 +221,20 @@ struct ImplInfo {
     // local index for libraries with more than one implementation
     mfxU32 libImplIdx;
 
-    // unique index assigned after querying implementation
-    // this is the value used in QueryImpl and CreateSession
+    // globally unique index assigned after querying implementation
     mfxU32 vplImplIdx;
 
+    // index of valid libraries - updates with every call to MFXSetConfigFilterProperty()
+    mfxI32 validImplIdx;
+
     // avoid warnings
-    ImplInfo() : libInfo(nullptr), implDesc(nullptr), initPar(), libImplIdx(0), vplImplIdx(0) {}
+    ImplInfo()
+            : libInfo(nullptr),
+              implDesc(nullptr),
+              initPar(),
+              libImplIdx(0),
+              vplImplIdx(0),
+              validImplIdx(-1) {}
 };
 
 // loader class implementation
@@ -242,6 +252,9 @@ public:
     // query capabilities of each implementation
     mfxStatus QueryImpl(mfxU32 idx, mfxImplCapsDeliveryFormat format, mfxHDL* idesc);
     mfxStatus ReleaseImpl(mfxHDL idesc);
+
+    // update list of valid implementations based on current filter props
+    mfxStatus UpdateValidImplList(void);
 
     // create mfxSession
     mfxStatus CreateSession(mfxU32 idx, mfxSession* session);

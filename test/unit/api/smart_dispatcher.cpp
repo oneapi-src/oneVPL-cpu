@@ -577,7 +577,7 @@ TEST(Dispatcher_CreateSession, RequestI010toI420VPPCreatesSession) {
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_CreateSession, RequestVP9DecReturnsErrUnsupported) {
+TEST(Dispatcher_CreateSession, RequestVP9DecReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -600,13 +600,13 @@ TEST(Dispatcher_CreateSession, RequestVP9DecReturnsErrUnsupported) {
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
-    EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
     //free internal resources
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_CreateSession, RequestVP9EncReturnsErrUnsupported) {
+TEST(Dispatcher_CreateSession, RequestVP9EncReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -629,7 +629,7 @@ TEST(Dispatcher_CreateSession, RequestVP9EncReturnsErrUnsupported) {
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
-    EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
     //free internal resources
     MFXUnload(loader);
@@ -670,7 +670,7 @@ TEST(Dispatcher_CreateSession, RequestAV1AndHEVCDecReturnsErrNone) {
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrUnsupported) {
+TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -699,7 +699,7 @@ TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrUnsupported) {
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
-    EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
     //free internal resources
     MFXUnload(loader);

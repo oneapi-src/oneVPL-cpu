@@ -368,6 +368,13 @@ mfxStatus LoaderCtxVPL::QueryLibraryCaps() {
             // assign unique index to each implementation
             implInfo->vplImplIdx = m_implIdxNext++;
 
+            // initially all libraries have a valid, sequential value (>= 0)
+            // list of valid libraries is updated with every call to MFXSetConfigFilterProperty()
+            //   (see UpdateValidImplList)
+            // libraries that do not support all the required props get a value of -1, and
+            //   indexing of the valid libs is recalculated from 0,1,...
+            implInfo->validImplIdx = implInfo->vplImplIdx;
+
             // add implementation to overall list
             m_implInfoList.push_back(implInfo);
         }
@@ -386,7 +393,7 @@ mfxStatus LoaderCtxVPL::QueryImpl(mfxU32 idx, mfxImplCapsDeliveryFormat format, 
     while (it != m_implInfoList.end()) {
         ImplInfo* implInfo = (*it);
 
-        if (implInfo->vplImplIdx == idx) {
+        if (implInfo->validImplIdx == idx) {
             *idesc = implInfo->implDesc;
             return MFX_ERR_NONE;
         }
@@ -429,20 +436,50 @@ mfxStatus LoaderCtxVPL::ReleaseImpl(mfxHDL idesc) {
     return MFX_ERR_INVALID_HANDLE;
 }
 
+mfxStatus LoaderCtxVPL::UpdateValidImplList(void) {
+    mfxStatus sts = MFX_ERR_NONE;
+
+    mfxI32 validImplIdx = 0;
+
+    // iterate over all libraries and update list of those that
+    //   meet current current set of config props
+    std::list<ImplInfo*>::iterator it = m_implInfoList.begin();
+    while (it != m_implInfoList.end()) {
+        ImplInfo* implInfo = (*it);
+        LibInfo* libInfo   = implInfo->libInfo;
+
+        // compare caps from this library vs. config filters
+        sts =
+            ConfigCtxVPL::ValidateConfig((mfxImplDescription*)implInfo->implDesc, m_configCtxList);
+
+        if (sts == MFX_ERR_NONE) {
+            // library supports all required properties
+            implInfo->validImplIdx = validImplIdx++;
+        }
+        else {
+            // library does not support required props, do not include in list for
+            //   MFXEnumImplementations() or MFXCreateSession()
+            implInfo->validImplIdx = -1;
+        }
+
+        it++;
+    }
+
+    return MFX_ERR_NONE;
+}
+
 mfxStatus LoaderCtxVPL::CreateSession(mfxU32 idx, mfxSession* session) {
     mfxStatus sts = MFX_ERR_NONE;
 
     // find library with given implementation index
+    // list of valid implementations (and associated indices) is updated
+    //   every time a filter property is added/modified
     std::list<ImplInfo*>::iterator it = m_implInfoList.begin();
     while (it != m_implInfoList.end()) {
         ImplInfo* implInfo = (*it);
 
-        if (implInfo->vplImplIdx == idx) {
+        if (implInfo->validImplIdx == idx) {
             LibInfo* libInfo = implInfo->libInfo;
-
-            // compare caps from this library vs. config filters
-            sts = ConfigCtxVPL::ValidateConfig((mfxImplDescription*)implInfo->implDesc,
-                                               m_configCtxList);
 
             if (sts == MFX_ERR_NONE) {
                 // initialize this library via MFXInitEx, or else fail
@@ -472,7 +509,8 @@ ConfigCtxVPL* LoaderCtxVPL::AddConfigFilter() {
         return nullptr;
     }
 
-    ConfigCtxVPL* config = (ConfigCtxVPL*)(configCtx.release());
+    ConfigCtxVPL* config   = (ConfigCtxVPL*)(configCtx.release());
+    config->m_parentLoader = this;
 
     m_configCtxList.push_back(config);
 

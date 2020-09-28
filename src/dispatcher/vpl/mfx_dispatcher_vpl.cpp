@@ -88,6 +88,11 @@ mfxStatus MFXSetConfigFilterProperty(mfxConfig config, const mfxU8* name, mfxVar
 
     mfxStatus sts = configCtx->SetFilterProperty(name, value);
 
+    // update list of valid libraries based on updated set of
+    //   mfxConfig properties
+    LoaderCtxVPL* loaderCtx = configCtx->m_parentLoader;
+    loaderCtx->UpdateValidImplList();
+
     return sts;
 }
 
