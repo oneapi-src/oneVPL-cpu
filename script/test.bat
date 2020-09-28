@@ -124,10 +124,53 @@ echo.
 if %errorlevel%==0 goto test_pipeline_vpp_enc_passed
 echo *** Pipeline (VPP + Encode) Smoke Test FAILED ***
 set /A result_all = 1
-goto test_end
+goto test_pipeline_dec_vpp
 
 :test_pipeline_vpp_enc_passed
 echo *** Pipeline (VPP + Encode) Smoke Test PASSED ***
 
+:test_pipeline_dec_vpp
+echo *** Running Pipeline (Decode + VPP) Smoke Test***
+call vpl-decvpp.exe %PROJ_DIR%\test\content\cars_128x96.h265
+
+call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
+     -i %PROJ_DIR%\test\content\cars_128x96.h265 ^
+     -filter_complex "scale=640:480" ^
+     -f rawvideo -pixel_format yuv420p -video_size 640x480 ^
+     out_ref.i420
+call py -3 %PYTHONPATH%\check_content\check_smoke_output.py ^
+     out.i420 out_ref.i420 I420 640x480@30
+
+echo.
+if %errorlevel%==0 goto test_pipeline_dec_vpp_passed
+echo *** Pipeline (Decode + VPP) Smoke Test FAILED ***
+set /A result_all = 1
+goto test_pipeline_dec_enc
+
+:test_pipeline_dec_vpp_passed
+echo *** Pipeline (Decode + VPP) Smoke Test PASSED ***
+
+:test_pipeline_dec_enc
+echo *** Running Pipeline (Decode + Encode) Smoke Test***
+call vpl-decenc.exe %PROJ_DIR%\test\content\cars_128x96.h265
+
+call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
+     -i %PROJ_DIR%\test\content\cars_128x96.h265 ^
+     -c:v libsvt_hevc ^
+     -g 30 -rc 1 -preset 5 -b:v 4000*1000 ^
+     out_ref.h265
+call py -3 %PYTHONPATH%\check_content\check_smoke_output.py ^
+     out.h265 out_ref.h265 H265 128x96@30
+
+echo.
+if %errorlevel%==0 goto test_pipeline_dec_enc_passed
+echo *** Pipeline (Decode + Encode) Smoke Test FAILED ***
+set /A result_all = 1
+goto test_end
+
+:test_pipeline_dec_enc_passed
+echo *** Pipeline (Decode + Encode) Smoke Test PASSED ***
+
 :test_end
 exit /B %result_all%
+
