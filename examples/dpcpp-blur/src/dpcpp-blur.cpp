@@ -9,44 +9,44 @@
 ///
 /// @file
 
-#include "CL/sycl.hpp"
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <exception>
+#include <vector>
 
-#if defined(__SYCL_COMPILER_VERSION)
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
+#ifdef BUILD_DPCPP
+    #include "CL/sycl.hpp"
+#endif
 
-    #include <algorithm>
-    #include <cstdio>
-    #include <cstdlib>
-    #include <cstring>
-    #include <exception>
-    #include <vector>
+#include "vpl/mfxdispatcher.h"
+#include "vpl/mfxvideo.h"
 
-    #include "vpl/mfxdispatcher.h"
-    #include "vpl/mfxvideo.h"
+#define MAX_PATH             260
+#define MAX_WIDTH            3840
+#define MAX_HEIGHT           2160
+#define OUTPUT_WIDTH         640
+#define OUTPUT_HEIGHT        480
+#define FRAMERATE            30
+#define OUTPUT_FILE          "out.bgra"
+#define WAIT_100_MILLSECONDS 100
 
-    #define MAX_PATH             260
-    #define MAX_WIDTH            3840
-    #define MAX_HEIGHT           2160
-    #define OUTPUT_WIDTH         640
-    #define OUTPUT_HEIGHT        480
-    #define FRAMERATE            30
-    #define OUTPUT_FILE          "out.bgra"
-    #define WAIT_100_MILLSECONDS 100
+#define VERIFY(x, y)       \
+    if (!(x)) {            \
+        printf("%s\n", y); \
+        goto end;          \
+    }
 
-    #define VERIFY(x, y)       \
-        if (!(x)) {            \
-            printf("%s\n", y); \
-            goto end;          \
-        }
+#define ALIGN16(value) (((value + 15) >> 4) << 4)
 
-    #define ALIGN16(value) (((value + 15) >> 4) << 4)
-
+#ifdef __SYCL_COMPILER_VERSION
     #define BLUR_RADIUS 5
     #define BLUR_SIZE   (float)((BLUR_RADIUS << 1) + 1)
 
 void BlurFrame(sycl::queue q, mfxFrameSurface1 *in_surface, mfxFrameSurface1 *blurred_surface);
+#endif
+
 mfxStatus LoadRawFrame(mfxFrameSurface1 *surface, FILE *f);
 void WriteRawFrame(mfxFrameSurface1 *surface, FILE *f);
 mfxI8 *ValidateFileName(mfxI8 *in);
@@ -56,6 +56,11 @@ mfxU16 GetFreeSurfaceIndex(mfxFrameSurface1 **surface_pool, mfxU16 pool_size);
 
 void Usage(void) {
     printf("\n");
+#ifdef __SYCL_COMPILER_VERSION
+    printf(" ! Blur feature enabled by using DPCPP\n\n");
+#else
+    printf(" ! Blur feature disabled\n\n");
+#endif
     printf("   Usage  :  dpcpp-blur InputI420File width height\n\n");
     printf("             InputI420File    ... input file name (i420 raw frames)\n");
     printf("             width            ... input width\n");
@@ -65,16 +70,20 @@ void Usage(void) {
            OUTPUT_WIDTH,
            OUTPUT_HEIGHT,
            OUTPUT_FILE);
-    printf(" * Resize I420 raw frames to %dx%d size, and convert color space from I420 to BGRA\n\n",
+    printf(" * Resize I420 raw frames to %dx%d size, and convert color space from I420 to BGRA\n",
            OUTPUT_WIDTH,
            OUTPUT_HEIGHT);
-    printf("   Blur VPP output by using DPCPP kernel (default kernel size is [%d]x[%d]) in %s\n\n",
+#ifdef __SYCL_COMPILER_VERSION
+    printf("   Blur VPP output by using DPCPP kernel (default kernel size is [%d]x[%d]) in %s\n",
            2 * BLUR_RADIUS + 1,
            2 * BLUR_RADIUS + 1,
            OUTPUT_FILE);
+#endif
+    printf("\n");
     return;
 }
 
+#ifdef __SYCL_COMPILER_VERSION
 // Few useful acronyms.
 constexpr auto sycl_read  = sycl::access::mode::read;
 constexpr auto sycl_write = sycl::access::mode::write;
@@ -117,6 +126,7 @@ public:
         return -1;
     }
 };
+#endif
 
 int main(int argc, char *argv[]) {
     if (argc != 4) {
@@ -151,6 +161,7 @@ int main(int argc, char *argv[]) {
     bool is_stillgoing                  = true;
     mfxU16 i;
 
+#ifdef __SYCL_COMPILER_VERSION
     printf("\n! DPCPP blur feature enabled\n\n");
 
     // Initialize DPC++
@@ -165,6 +176,9 @@ int main(int argc, char *argv[]) {
     // CPU is preferrable for this time.
     std::cout << "  Running on " << q.get_device().get_info<sycl::info::device::name>() << std::endl
               << std::endl;
+#else
+    printf("\n! DPCPP blur feature not enabled\n\n");
+#endif
 
     // Setup input and output files
     in_filename = ValidateFileName(argv[1]);
@@ -255,6 +269,7 @@ int main(int argc, char *argv[]) {
         vpp_surfaces_out[i]->Data.Pitch = out_width * 4;
     }
 
+#ifdef __SYCL_COMPILER_VERSION
     // Initialize surface for blurred frame
     blur_data_out.resize(surface_size);
 
@@ -265,6 +280,7 @@ int main(int argc, char *argv[]) {
     blurred_surface.Data.R     = blurred_surface.Data.G + 1;
     blurred_surface.Data.A     = blurred_surface.Data.R + 1;
     blurred_surface.Data.Pitch = out_width * 4;
+#endif
 
     // Initialize VPP and start processing
     sts = MFXVideoVPP_Init(session, &vpp_params);
@@ -315,9 +331,13 @@ int main(int argc, char *argv[]) {
                     sts = MFXVideoCORE_SyncOperation(session, syncp, WAIT_100_MILLSECONDS);
                     VERIFY(MFX_ERR_NONE == sts, "MFXVideoCORE_SyncOperation error");
 
+#ifdef __SYCL_COMPILER_VERSION
                     // Blur and store processed frame
                     BlurFrame(q, vpp_surfaces_out[available_surface_index], &blurred_surface);
                     WriteRawFrame(&blurred_surface, sink);
+#else
+                    WriteRawFrame(vpp_surfaces_out[available_surface_index], sink);
+#endif
                     framenum++;
                 }
                 break;
@@ -372,6 +392,7 @@ end:
     return 0;
 }
 
+#ifdef __SYCL_COMPILER_VERSION
 // SYCL kernel scheduler
 // Blur frame by using SYCL kernel
 void BlurFrame(sycl::queue q, mfxFrameSurface1 *in_surface, mfxFrameSurface1 *blurred_surface) {
@@ -465,6 +486,7 @@ void BlurFrame(sycl::queue q, mfxFrameSurface1 *in_surface, mfxFrameSurface1 *bl
     }
     return;
 }
+#endif
 
 // Load raw I420 frames to mfxFrameSurface
 mfxStatus LoadRawFrame(mfxFrameSurface1 *surface, FILE *f) {
@@ -580,4 +602,3 @@ mfxU16 ValidateSize(mfxI8 *in, mfxU16 max) {
 
     return isize;
 }
-#endif
