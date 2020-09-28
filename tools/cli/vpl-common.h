@@ -46,8 +46,16 @@ enum WSType {
     WSTYPE_COUNT
 };
 
+enum FrameMode {
+    FRAME_MODE_ONE = 0,
+    FRAME_MODE_ALL,
+
+    FRAME_MODE_COUNT
+};
+
 extern const char* MemoryModeString[MEM_MODE_COUNT];
 extern const char* DispatcherModeString[DISPATCHER_MODE_COUNT];
+extern const char* FrameModeString[FRAME_MODE_COUNT];
 
 typedef struct _Params {
     char* infileName;
@@ -103,6 +111,7 @@ typedef struct _Params {
 
     MemoryMode memoryMode;
     DispatcherMode dispatcherMode;
+    FrameMode frameMode;
 
     mfxU32 outWidth;
     mfxU32 outHeight;
