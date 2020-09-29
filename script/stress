@@ -326,20 +326,21 @@ while true; do
      echo --- VPP CROP,CSC Stress Test PASSED ---
      fi
 
+     echo
+     echo \[ Done ${cur_iter} \/ ${NUM_ITERATION} time\(s\) \]
+     echo
+
      if [ "${result_all}" == 0 ]; then
           echo --- Stress Test PASSED ---
      else
           echo --- Stress Test FAILED ---
           exit $result_all
      fi
-     
-     if [ "${cur_iter}" -gt "${NUM_ITERATION}" ]; then
+
+     if [ "${cur_iter}" -eq "${NUM_ITERATION}" ]; then
           break;
      else
-          echo
-          echo \[ Done ${cur_iter} \/ ${NUM_ITERATION} time\(s\) \]
-          echo
-          cur_iter=$((cur_iter + 1))
+         cur_iter=$((cur_iter + 1))
      fi
 done
 exit $result_all
