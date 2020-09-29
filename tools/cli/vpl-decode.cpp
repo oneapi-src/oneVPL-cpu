@@ -14,12 +14,13 @@
 #define DEFAULT_BS_BUFFER_SIZE 2 * 1024 * 21024
 
 #define IS_ARG_EQ(a, b) (!strcmp((a), (b)))
+mfxU32 repeatCount = 0;
 
 mfxStatus AllocateExternalMemorySurface(std::vector<mfxU8>* dec_buf,
                                         mfxFrameSurface1* surfpool,
                                         mfxFrameInfo* frame_info,
                                         mfxU16 surfnum);
-mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f);
+mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f, mfxU32 repeat);
 void WriteRawFrame(mfxFrameSurface1* pSurface, FILE* f);
 mfxU32 GetSurfaceSize(mfxU32 FourCC, mfxU32 width, mfxU32 height);
 int GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool, mfxU16 nPoolSize);
@@ -110,7 +111,7 @@ int main(int argc, char* argv[]) {
     input_buffer.resize(mfxBS.MaxLength);
     mfxBS.Data = input_buffer.data();
 
-    ReadEncodedStream(mfxBS, params.srcFourCC, fSource);
+    ReadEncodedStream(mfxBS, params.srcFourCC, fSource, params.repeat);
 
     // initialize decode parameters from stream header
     mfxVideoParam mfxDecParams;
@@ -256,7 +257,7 @@ int main(int argc, char* argv[]) {
             // next step actions provided by application
             switch (sts) {
                 case MFX_ERR_MORE_DATA: // more data is needed to decode
-                    ReadEncodedStream(mfxBS, params.srcFourCC, fSource);
+                    ReadEncodedStream(mfxBS, params.srcFourCC, fSource, params.repeat);
                     if (mfxBS.DataLength == 0)
                         if (isdraining == true) {
                             stillgoing = false; // stop if end of file and all drained
@@ -434,7 +435,7 @@ int GetFreeSurfaceIndex(mfxFrameSurface1* SurfacesPool, mfxU16 nPoolSize) {
     return MFX_ERR_NOT_FOUND;
 }
 
-mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f) {
+mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f, mfxU32 repeat) {
     memmove(bs.Data, bs.Data + bs.DataOffset, bs.DataLength);
     bs.DataOffset = 0;
 
@@ -476,6 +477,7 @@ mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f) {
                 fseek(f, -4, SEEK_CUR);
                 break;
             }
+
             nBytesRead = (mfxU32)fread(&nTimeStamp, 1, 8, f);
             if (nBytesRead == 0)
                 return MFX_ERR_MORE_DATA;
@@ -490,6 +492,17 @@ mfxStatus ReadEncodedStream(mfxBitstream& bs, mfxU32 codecid, FILE* f) {
     else {
         bs.DataLength +=
             static_cast<mfxU32>(fread(bs.Data + bs.DataLength, 1, bs.MaxLength - bs.DataLength, f));
+
+        while (feof(f) && repeat > 0 && repeatCount <= repeat) {
+            if (repeatCount == repeat)
+                return MFX_ERR_NONE;
+
+            // The end-of-file and error internal indicators associated to the stream are cleared after a successful call to this function,
+            // and all effects from previous calls to ungetc on this stream are dropped.
+            rewind(f);
+
+            repeatCount++;
+        }
     }
     return MFX_ERR_NONE;
 }
@@ -763,6 +776,14 @@ bool ParseArgsAndValidate(int argc, char* argv[], Params* params) {
         }
         else if (IS_ARG_EQ(s, "gs")) {
             params->gopSize = atoi(argv[idx++]);
+        }
+        else if (IS_ARG_EQ(s, "repeat")) {
+            if (atoi(argv[idx]) < 0) {
+                printf("ERROR - invalid argument: value for -repeat switch cannot be negative\n");
+                return false;
+            }
+
+            params->repeat = atoi(argv[idx++]);
         }
         else if (IS_ARG_EQ(s, "kd")) {
             params->keyFrameDist = atoi(argv[idx++]);

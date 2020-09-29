@@ -92,6 +92,9 @@ typedef struct _Params {
     mfxU32 keyFrameDist;
     mfxU32 qp;
 
+    // loop counter
+    mfxU32 repeat;
+
     // jpeg encoder specific
     mfxU32 quality;
 
