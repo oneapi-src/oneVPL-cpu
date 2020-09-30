@@ -22,7 +22,7 @@ CpuEncode::CpuEncode(CpuWorkstream *session)
 
 CpuEncode::~CpuEncode() {
     if (m_bFrameEncoded) {
-        // drain encoder - workaround for SVT encoder hang on avcodec_close
+        // drain encoder - workaround for encoder hang on avcodec_close
         mfxBitstream bs{};
         mfxStatus sts;
         do {
@@ -502,7 +502,7 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     switch (m_param.mfx.CodecId) {
         case MFX_CODEC_HEVC:
             if (m_avEncCodec->name != std::string("libx265")) {
-                RET_ERROR(InitHEVCParams(par)); // SVT specific params
+                RET_ERROR(InitHEVCParams(par)); // SVT-HEVC specific params
             }
             break;
         case MFX_CODEC_AV1:
