@@ -215,9 +215,8 @@ void CpuVPP::CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in) {
 }
 
 mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
-    int ret           = 0;
-    mfxStatus sts     = MFX_ERR_INVALID_VIDEO_PARAM;
-    mfxStatus sts_wrn = MFX_ERR_NONE;
+    int ret       = 0;
+    mfxStatus sts = MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (0 == par->IOPattern) // IOPattern is mandatory parameter
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -356,9 +355,11 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
         dst_frame->Update();
     }
 
-    if (surface_in->Data.TimeStamp) {
-        surface_out->Data.TimeStamp = surface_in->Data.TimeStamp;
-        surface_out->Data.DataFlag  = MFX_FRAMEDATA_ORIGINAL_TIMESTAMP;
+    if (surface_in) {
+        if (surface_in->Data.TimeStamp) {
+            surface_out->Data.TimeStamp = surface_in->Data.TimeStamp;
+            surface_out->Data.DataFlag  = MFX_FRAMEDATA_ORIGINAL_TIMESTAMP;
+        }
     }
     return MFX_ERR_NONE;
 }

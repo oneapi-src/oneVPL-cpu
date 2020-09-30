@@ -590,7 +590,6 @@ TEST(DecodeFrameAsync, BSTimestampReturnsFrameTimestamp) {
 
     mfxFrameSurface1 *pmfxOutSurface = nullptr;
     mfxSyncPoint syncp               = {};
-    int nIndex                       = 0;
 
     mfxBS.DataFlag = MFX_BITSTREAM_COMPLETE_FRAME;
 

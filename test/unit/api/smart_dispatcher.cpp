@@ -36,7 +36,7 @@ TEST(Dispatcher_CreateConfig, InitializedLoaderReturnsConfig) {
     EXPECT_NE(loader, nullptr);
 
     mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_NE(loader, nullptr);
+    EXPECT_NE(cfg, nullptr);
 
     //free internal resources
     MFXUnload(loader);
@@ -452,8 +452,7 @@ TEST(Dispatcher_CreateSession, NullSessionReturnsErrNull) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxSession session = nullptr;
-    mfxStatus sts      = MFXCreateSession(loader, 0, nullptr);
+    mfxStatus sts = MFXCreateSession(loader, 0, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
     //free internal resources
