@@ -4,14 +4,28 @@ The oneAPI Video Processing Library (oneVPL) provides a single video processing
 API for encode, decode, and video processing that works across a wide range of
 accelerators.
 
-This repository contains the API, dispatcher, and a CPU reference implementation
-of the specification.
+This repository contains the CPU reference implementation of the specification,
+which includes the following features:
+
+- H.265/HEVC, H.264/AVC, and MJPEG decode (using libavcodec)
+- AV1 decode (using libdav1d and libavcodec)
+- MJPEG encode (using libavcodec)
+- H.265/HEVC and AV1 encode (using SVT-HEVC, SVT-AV1, and libavcodec)
+- H.264/AVC encode (using x264 and libavcodec)
+- VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
+
+This project is part of the larger [oneAPI](https://www.oneapi.com/) project.
+
+See the [oneAPI Specification](https://spec.oneapi.com) and
+[oneVPL Specification](https://spec.oneapi.com/versions/latest/elements/oneVPL/source/index.html)
+for more information.
+
 
 ## Building
 
 ### Configure the build environment
 
-See [BUILD.md](BUILD.md) for instructions on installing build prerequisites
+See [BUILD.md](BUILD.md) for instructions on installing build prerequisites.
 
 
 ### Build dependencies and oneVPL (default, no GPL)
@@ -30,7 +44,7 @@ script\bootstrap
 script\build
 ```
 
-Note: while msys2 shell is installed for initial configuration it is not
+Note: While msys2 shell is installed for initial configuration, it is not
 supported for this step.
 
 You can find the build output in `_build\Release`.
@@ -61,7 +75,7 @@ _build\Release\hello-decode test\content\cars_128x96.h265
 _build\Release\hello-encode test\content\cars_128x96.i420 128 96
 _build\Release\hello-vpp test\content\cars_128x96.i420 128 96
 ```
-Note: while msys2 shell is installed for initial configuration it is not
+Note: While msys2 shell is installed for initial configuration, it is not
 supported for this step.
 
 ### Other builds
