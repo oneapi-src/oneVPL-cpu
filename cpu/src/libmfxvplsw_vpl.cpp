@@ -110,9 +110,9 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_i
     // dec, enc, and vpp caps are auto-generated from description files
     // at runtime we just need to copy the top-level structure into
     //   the mfxImplDescription object passed back to the dispatcher
-    memcpy(&(implDesc->Dec), &decoderDesc, sizeof(mfxDecoderDescription));
-    memcpy(&(implDesc->Enc), &encoderDesc, sizeof(mfxEncoderDescription));
-    memcpy(&(implDesc->VPP), &vppDesc, sizeof(mfxVPPDescription));
+    memcpy_s(&(implDesc->Dec), sizeof(implDesc->Dec), &decoderDesc, sizeof(mfxDecoderDescription));
+    memcpy_s(&(implDesc->Enc), sizeof(implDesc->Enc), &encoderDesc, sizeof(mfxEncoderDescription));
+    memcpy_s(&(implDesc->VPP), sizeof(implDesc->VPP), &vppDesc, sizeof(mfxVPPDescription));
 
     return hImpls;
 }
