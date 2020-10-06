@@ -108,7 +108,7 @@ TEST(Dispatcher_SetConfigFilterProperty, NullNameReturnsErrNull) {
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_SetConfigFilterProptery, UnknownParamReturnsNotFound) {
+TEST(Dispatcher_SetConfigFilterProperty, UnknownParamReturnsNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -129,7 +129,7 @@ TEST(Dispatcher_SetConfigFilterProptery, UnknownParamReturnsNotFound) {
     MFXUnload(loader);
 }
 
-TEST(Dispatcher_SetConfigFilterProptery, ValueTypeMismatchReturnsErrUnsupported) {
+TEST(Dispatcher_SetConfigFilterProperty, ValueTypeMismatchReturnsErrUnsupported) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -145,6 +145,24 @@ TEST(Dispatcher_SetConfigFilterProptery, ValueTypeMismatchReturnsErrUnsupported)
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_SetConfigFilterProperty, PartialFilterReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = 0;
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
     //free internal resources
     MFXUnload(loader);
