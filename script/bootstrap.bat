@@ -61,27 +61,21 @@ md %build_dir% 2>NUL
 
 :: checkout SVT-HEVC
 cd %build_dir%
-git clone --depth=1 --single-branch -b v1.4.3 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
+git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 
 :: checkout SVT-AV1
 cd %build_dir%
-git clone https://github.com/OpenVisualCloud/SVT-AV1.git && cd SVT-AV1
-git config advice.detachedHead false
-:: tip of master at 06112020
-:: this includes the fix related to link failure by common symbols (#1295)
-:: ffmpeg build and SvtHevcEncApp build will fail without this fix in
-:: windows and with static lib.
-git checkout c40ee249286f182f29bab717686c300e2912adfe -b 06112020
+git clone --depth=1 -b v0.8.4 https://github.com/AOMediaCodec/SVT-AV1 && cd SVT-AV1
 
 if "%USE_GPL%"=="yes" (
   :: checkout x264
   cd %build_dir%
-  git clone --depth 1 --single-branch -b stable https://code.videolan.org/videolan/x264.git && cd x264
+  git clone --depth 1 -b stable https://code.videolan.org/videolan/x264.git && cd x264
 )
 
 :: checkout dav1d
 cd %build_dir%
-git clone --depth=1 --single-branch -b 0.7.0 https://code.videolan.org/videolan/dav1d.git && cd dav1d
+git clone --depth=1 -b 0.7.0 https://code.videolan.org/videolan/dav1d.git && cd dav1d
 
 :: set path for build
 set PATH=%MINGWPATH%
@@ -125,7 +119,7 @@ cd %build_dir%
 set PATH=%GITPATH%
 
 :: checkout ffmpeg
-git clone --depth=1 --single-branch -b release/4.2 https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
+git clone --depth=1 -b n4.3.1 https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
 
 :: patch of SVT-HEVC and SVT-AV1 ffmpeg plugin
 git config user.email "bootstrap@localhost"
@@ -133,7 +127,7 @@ git config user.name "bootstrap"
 set patch=0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch
 git am %build_dir%\SVT-HEVC\ffmpeg_plugin\%patch%
 if ERRORLEVEL 1 exit /b 1
-set patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1-with-svt-hevc.patch
+set patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch
 git am %build_dir%\SVT-AV1\ffmpeg_plugin\%patch%
 if ERRORLEVEL 1 exit /b 1
 
