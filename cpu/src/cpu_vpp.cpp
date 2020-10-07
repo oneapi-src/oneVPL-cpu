@@ -94,15 +94,27 @@ bool CpuVPP::InitFilters(void) {
         // no need background
         if (m_vpp_base.dst_width == m_vpp_base.dst_rc.w &&
             m_vpp_base.dst_height == m_vpp_base.dst_rc.h) {
-            snprintf(m_vpp_filter_desc,
-                     sizeof(m_vpp_filter_desc),
-                     "crop=%d:%d:%d:%d,scale=%d:%d",
-                     m_vpp_base.src_rc.w,
-                     m_vpp_base.src_rc.h,
-                     m_vpp_base.src_rc.x,
-                     m_vpp_base.src_rc.y,
-                     m_vpp_base.dst_rc.w,
-                     m_vpp_base.dst_rc.h);
+            if (m_vpp_base.src_rc.w == m_vpp_base.dst_rc.w &&
+                m_vpp_base.src_rc.h == m_vpp_base.dst_rc.h) {
+                snprintf(m_vpp_filter_desc,
+                         sizeof(m_vpp_filter_desc),
+                         "crop=%d:%d:%d:%d",
+                         m_vpp_base.src_rc.w,
+                         m_vpp_base.src_rc.h,
+                         m_vpp_base.src_rc.x,
+                         m_vpp_base.src_rc.y);
+            }
+            else {
+                snprintf(m_vpp_filter_desc,
+                         sizeof(m_vpp_filter_desc),
+                         "crop=%d:%d:%d:%d,scale=%d:%d",
+                         m_vpp_base.src_rc.w,
+                         m_vpp_base.src_rc.h,
+                         m_vpp_base.src_rc.x,
+                         m_vpp_base.src_rc.y,
+                         m_vpp_base.dst_rc.w,
+                         m_vpp_base.dst_rc.h);
+            }
         }
         else {
             std::string f_split     = "split=2[bg][main];";
@@ -110,12 +122,23 @@ bool CpuVPP::InitFilters(void) {
                                       std::to_string(m_vpp_base.dst_height) + ",";
             std::string f_bg = "drawbox=x=0:y=0:w=" + std::to_string(m_vpp_base.dst_width) +
                                ":h=" + std::to_string(m_vpp_base.dst_height) + ":t=fill[bg2];";
-            std::string f_crop_src = "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
-                                     std::to_string(m_vpp_base.src_rc.h) + ":" +
-                                     std::to_string(m_vpp_base.src_rc.x) + ":" +
-                                     std::to_string(m_vpp_base.src_rc.y) +
-                                     ",scale=" + std::to_string(m_vpp_base.dst_rc.w) + ":" +
-                                     std::to_string(m_vpp_base.dst_rc.h) + "[ovr];";
+
+            std::string f_crop_src;
+            if (m_vpp_base.src_rc.w == m_vpp_base.dst_rc.w &&
+                m_vpp_base.src_rc.h == m_vpp_base.dst_rc.h) {
+                f_crop_src = "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
+                             std::to_string(m_vpp_base.src_rc.h) + ":" +
+                             std::to_string(m_vpp_base.src_rc.x) + ":" +
+                             std::to_string(m_vpp_base.src_rc.y) + "[ovr];";
+            }
+            else {
+                f_crop_src = "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
+                             std::to_string(m_vpp_base.src_rc.h) + ":" +
+                             std::to_string(m_vpp_base.src_rc.x) + ":" +
+                             std::to_string(m_vpp_base.src_rc.y) +
+                             ",scale=" + std::to_string(m_vpp_base.dst_rc.w) + ":" +
+                             std::to_string(m_vpp_base.dst_rc.h) + "[ovr];";
+            }
             std::string f_ovr = "[bg2][ovr]overlay=" + std::to_string(m_vpp_base.dst_rc.x) + ":" +
                                 std::to_string(m_vpp_base.dst_rc.y);
 

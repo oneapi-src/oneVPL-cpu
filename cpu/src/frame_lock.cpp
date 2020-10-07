@@ -81,6 +81,15 @@ AVFrame *FrameLock::GetAVFrame(mfxFrameSurface1 *surface,
     if (dst_frame) {
         AVFrame *avframe = dst_frame->GetAVFrame();
         if (avframe) {
+            if (surface->Info.FourCC == MFX_FOURCC_RGB4) {
+                avframe->data[0] = surface->Data.B;
+            }
+            else {
+                avframe->data[0] = surface->Data.Y;
+                avframe->data[1] = surface->Data.U;
+                avframe->data[2] = surface->Data.V;
+                avframe->data[3] = surface->Data.A;
+            }
             return avframe;
         }
     }
