@@ -1056,8 +1056,11 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
             // must be set for every frame
             av_frame->quality = m_avEncContext->global_quality;
         }
-        av_frame->pts = surface->Data.TimeStamp;
-        err           = avcodec_send_frame(m_avEncContext, av_frame);
+
+        if (surface->Data.TimeStamp)
+            av_frame->pts = surface->Data.TimeStamp;
+
+        err = avcodec_send_frame(m_avEncContext, av_frame);
         m_input_locker.Unlock();
         RET_IF_FALSE(err >= 0, MFX_ERR_ABORTED);
     }
