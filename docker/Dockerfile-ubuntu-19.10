@@ -7,7 +7,7 @@
 ARG VPL_INSTALL_PREFIX=/opt/intel/onevpl
 
 # Stage 1
-FROM ubuntu:20.04 AS vpl_base
+FROM ubuntu:19.10 AS vpl_base
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Moscow
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -33,7 +33,7 @@ RUN bash -c "source /oneVPL/script/bootstrap"
 
 # Stage 3
 FROM vpl_base AS vpl_build
-COPY --from=vpl:ubuntu20.04 /opt/intel/onevpl /opt/intel/onevpl
+COPY --from=vpl:ubuntu19.10 /opt/intel/onevpl /opt/intel/onevpl
 COPY --from=vpl_bootstrap /oneVPL/_deps /oneVPL/_deps
 ENV VPL_INSTALL_DIR=/opt/intel/onevpl
 ENV VPL_BIN=/opt/intel/onevpl/bin
@@ -53,8 +53,8 @@ RUN cd /oneVPL && \
 
 
 # Runtime image build
-FROM ubuntu:20.04 
-LABEL Description="This is the Ubuntu 20.04 CPU reference implementation image for the oneAPI Video Processing Library API"
+FROM ubuntu:19.10 
+LABEL Description="This is the Ubuntu 19.10 CPU reference implementation image for the oneAPI Video Processing Library API"
 LABEL Vendor="Intel Corporation"
 ARG VPL_INSTALL_PREFIX
 ENV LD_LIBRARY_PATH=${VPL_INSTALL_PREFIX}/lib:${VPL_INSTALL_PREFIX}/lib64
