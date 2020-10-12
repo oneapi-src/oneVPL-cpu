@@ -373,6 +373,7 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
     if (dst_avframe == m_avVppFrameOut) { // copy image data
         RET_ERROR(
             AVFrame2mfxFrameSurface(surface_out, m_avVppFrameOut, m_session->GetFrameAllocator()));
+        av_frame_unref(m_avVppFrameOut);
     }
     else if (dst_frame) { // update MFXFrameSurface from AVFrame
         dst_frame->Update();
