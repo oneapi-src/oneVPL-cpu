@@ -47,6 +47,8 @@ private:
 
     CpuWorkstream* m_session;
 
+    mfxU32 m_frameOrder;
+
     /* copy not allowed */
     CpuDecode(const CpuDecode&);
     CpuDecode& operator=(const CpuDecode&);

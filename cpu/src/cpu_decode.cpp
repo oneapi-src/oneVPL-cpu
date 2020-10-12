@@ -19,6 +19,7 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_swsContext(nullptr),
           m_param(),
           m_decSurfaces(),
+          m_frameOrder(0),
           m_bFrameBuffered(false) {}
 
 mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
@@ -238,8 +239,9 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                                               m_avDecFrameOut,
                                               m_session->GetFrameAllocator()));
 
-            *surface_out     = surface_work;
-            m_bFrameBuffered = false;
+            surface_work->Data.FrameOrder = m_frameOrder++;
+            *surface_out                  = surface_work;
+            m_bFrameBuffered              = false;
             return MFX_ERR_NONE;
         }
         else {
@@ -354,7 +356,8 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                         cpu_frame->Update();
                     }
                 }
-                *surface_out = surface_work;
+                surface_work->Data.FrameOrder = m_frameOrder++;
+                *surface_out                  = surface_work;
             }
             return MFX_ERR_NONE;
         }

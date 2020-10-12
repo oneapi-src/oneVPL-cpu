@@ -462,6 +462,15 @@ TEST(DecodeFrameAsync, ValidInputsReturnsErrNone) {
                                           &decSurfaces[nIndex++],
                                           &pmfxOutSurface,
                                           &syncp);
+    ASSERT_EQ(pmfxOutSurface->Data.FrameOrder, 0);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXVideoDECODE_DecodeFrameAsync(session,
+                                          nullptr,
+                                          &decSurfaces[nIndex++],
+                                          &pmfxOutSurface,
+                                          &syncp);
+    ASSERT_EQ(pmfxOutSurface->Data.FrameOrder, 1);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXClose(session);
