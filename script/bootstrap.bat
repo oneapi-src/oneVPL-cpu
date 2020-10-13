@@ -62,6 +62,9 @@ md %build_dir% 2>NUL
 :: checkout SVT-HEVC
 cd %build_dir%
 git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
+if "%BUILD_MODE%"=="Debug" (
+  sed -i 's/#define DEBUG_MEMORY_USAGE/#undef DEBUG_MEMORY_USAGE/' Source\Lib\Common\EbMalloc.h
+)
 
 :: checkout SVT-AV1
 cd %build_dir%

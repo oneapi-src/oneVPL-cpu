@@ -352,15 +352,6 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     if (!m_avVppFrameOut)
         return MFX_ERR_NOT_INITIALIZED;
 
-    int ret = av_image_alloc(m_avVppFrameOut->data,
-                             m_avVppFrameOut->linesize,
-                             m_param.vpp.Out.Width,
-                             m_param.vpp.Out.Height,
-                             MFXFourCC2AVPixelFormat(m_param.vpp.Out.FourCC),
-                             16);
-    if (ret < 0)
-        return MFX_ERR_NOT_INITIALIZED;
-
     m_vppInFormat = m_param.vpp.In.FourCC;
     m_vppWidth    = m_param.vpp.In.Width;
     m_vppHeight   = m_param.vpp.In.Height;
@@ -369,6 +360,10 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
 }
 
 CpuVPP::~CpuVPP() {
+    if (m_avVppFrameOut) {
+        av_frame_free(&m_avVppFrameOut);
+    }
+
     if (m_vpp_graph) {
         avfilter_graph_free(&m_vpp_graph);
         m_vpp_graph = nullptr;

@@ -32,7 +32,7 @@ public:
 
     ~CpuFrame() {
         if (m_avframe) {
-            av_frame_unref(m_avframe);
+            av_frame_free(&m_avframe);
         }
     }
 

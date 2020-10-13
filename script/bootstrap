@@ -58,6 +58,10 @@ cd ${build_dir}
 git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' \
       ./Source/Lib/Codec/EbDefinitions.h
+if [ "$BUILD_MODE" == "Debug" ]; then
+  sed -i 's/#define DEBUG_MEMORY_USAGE/#undef DEBUG_MEMORY_USAGE/' \
+        ./Source/Lib/Codec/EbMalloc.h
+fi
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=${BUILD_MODE} \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
