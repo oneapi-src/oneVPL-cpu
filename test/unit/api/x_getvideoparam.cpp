@@ -111,12 +111,63 @@ TEST(DecodeGetVideoParam, NullParamsOutReturnsErrNull) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(VPPGetVideoParam, DISABLED_InitializedVPPReturnsParams) {
-    FAIL() << "Test not implemented";
+TEST(VPPGetVideoParam, InitializedVPPReturnsParams) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxVPPParams = { 0 };
+
+    mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPParams.vpp.In.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    mfxVPPParams.vpp.In.FrameRateExtN = 30;
+    mfxVPPParams.vpp.In.FrameRateExtD = 1;
+    mfxVPPParams.vpp.In.CropW         = 128;
+    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.Width         = 128;
+    mfxVPPParams.vpp.In.Height        = 96;
+
+    mfxVPPParams.vpp.Out.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.Out.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPParams.vpp.Out.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    mfxVPPParams.vpp.Out.FrameRateExtN = 30;
+    mfxVPPParams.vpp.Out.FrameRateExtD = 1;
+    mfxVPPParams.vpp.Out.CropW         = 320;
+    mfxVPPParams.vpp.Out.CropH         = 240;
+    mfxVPPParams.vpp.Out.Width         = 320;
+    mfxVPPParams.vpp.Out.Height        = 240;
+
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    sts = MFXVideoVPP_Init(session, &mfxVPPParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam par;
+    sts = MFXVideoVPP_GetVideoParam(session, &par);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(128, par.vpp.In.Width);
+    ASSERT_EQ(96, par.vpp.In.Height);
+    ASSERT_EQ(320, par.vpp.Out.Width);
+    ASSERT_EQ(240, par.vpp.Out.Height);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(VPPGetVideoParam, DISABLED_VPPUninitializedReturnsNotInitialized) {
-    FAIL() << "Test not implemented";
+TEST(VPPGetVideoParam, VPPUninitializedReturnsNotInitialized) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam par;
+    sts = MFXVideoVPP_GetVideoParam(session, &par);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(VPPGetVideoParam, NullSessionReturnsInvalidHandle) {

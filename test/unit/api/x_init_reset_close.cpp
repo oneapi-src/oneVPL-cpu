@@ -609,7 +609,7 @@ TEST(VPPInit, NullSessionInReturnsInvalidHandle) {
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-TEST(VPPInit, DISABLED_DoubleInitReturnsUndefinedBehavior) {
+TEST(VPPInit, DoubleInitReturnsUndefinedBehavior) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -955,7 +955,7 @@ TEST(VPPReset, InvalidParamsInReturnsInvalidVideoParam) {
     mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
 
     sts = MFXVideoVPP_Reset(session, &mfxVPPParams);
-    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+    ASSERT_EQ(sts, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);

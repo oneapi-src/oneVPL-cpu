@@ -33,14 +33,19 @@ mfxStatus MFXVideoVPP_Init(mfxSession session, mfxVideoParam *par) {
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    if (ws->GetVPP())
+        return MFX_ERR_UNDEFINED_BEHAVIOR;
 
     std::unique_ptr<CpuVPP> vpp(new CpuVPP(ws));
     RET_IF_FALSE(vpp, MFX_ERR_MEMORY_ALLOC);
-    RET_ERROR(vpp->InitVPP(par));
+    mfxStatus sts = vpp->InitVPP(par);
 
-    ws->SetVPP(vpp.release());
+    if (sts < MFX_ERR_NONE)
+        return sts;
+    else
+        ws->SetVPP(vpp.release());
 
-    return MFX_ERR_NONE;
+    return sts;
 }
 
 mfxStatus MFXVideoVPP_Close(mfxSession session) {
@@ -87,7 +92,16 @@ mfxStatus MFXVideoVPP_Reset(mfxSession session, mfxVideoParam *par) {
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
-    MFXVideoVPP_Close(session);
+
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    CpuVPP *vpp       = ws->GetVPP();
+    RET_IF_FALSE(vpp, MFX_ERR_NOT_INITIALIZED);
+
+    mfxVideoParam oldParam = { 0 };
+    vpp->GetVideoParam(&oldParam);
+    RET_ERROR(vpp->IsSameVideoParam(par, &oldParam));
+
+    RET_ERROR(MFXVideoVPP_Close(session));
     return MFXVideoVPP_Init(session, par);
 }
 

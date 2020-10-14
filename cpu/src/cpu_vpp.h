@@ -65,14 +65,11 @@ public:
     mfxStatus ProcessFrame(mfxFrameSurface1* surface_in,
                            mfxFrameSurface1* surface_out,
                            mfxExtVppAuxData* aux);
-    mfxStatus GetVideoParam(mfxVideoParam* par) {
-        return MFX_ERR_NOT_IMPLEMENTED;
-    }
-
+    mfxStatus GetVideoParam(mfxVideoParam* par);
     mfxStatus GetVPPSurface(mfxFrameSurface1** surface);
+    mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
 
 private:
-    VPPBaseConfig m_vpp_base;
     char m_vpp_filter_desc[1024];
     AVFilterGraph* m_vpp_graph;
     AVFilterContext* m_buffersrc_ctx;
@@ -83,6 +80,9 @@ private:
     mfxU32 m_vppInFormat;
     mfxU32 m_vppWidth;
     mfxU32 m_vppHeight;
+
+    mfxU32 m_vppFunc;
+    mfxVideoParam m_param;
     std::unique_ptr<CpuFramePool> m_vppSurfaces;
 
     bool InitFilters(void);
@@ -90,6 +90,9 @@ private:
     static mfxStatus CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
                                                      mfxU16* pInMemType,
                                                      mfxU16* pOutMemType);
+    static mfxStatus ValidateVPPParams(mfxVideoParam* par, bool canCorrect);
+    static mfxStatus CheckFrameInfo(mfxFrameInfo* info, mfxU32 request);
+
     static bool IsConfigurable(mfxU32 filterId);
     static bool IsFilterFound(const mfxU32* pList, mfxU32 len, mfxU32 filterName);
     static size_t GetConfigSize(mfxU32 filterId);
@@ -107,7 +110,6 @@ private:
                               std::vector<mfxU32>& pipelineList,
                               bool bExtended);
     mfxStatus CheckIOPattern(mfxVideoParam* par);
-    mfxStatus CheckFrameInfo(mfxFrameInfo* info, mfxU32 request);
     bool GetExtParamList(mfxVideoParam* par, mfxU32* pList, mfxU32* pLen);
     mfxStatus GetFilterParam(mfxVideoParam* par, mfxU32 filterName, mfxExtBuffer** ppHint);
     void GetDoNotUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen);

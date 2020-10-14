@@ -23,9 +23,9 @@ CpuVPP::CpuVPP(CpuWorkstream* session)
           m_vppInFormat(MFX_FOURCC_I420),
           m_vppWidth(0),
           m_vppHeight(0),
+          m_vppFunc(0),
+          m_param(),
           m_vppSurfaces() {
-    m_vpp_base = { 0 };
-    memset(&m_vpp_base, 0, sizeof(m_vpp_base));
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
 }
 
@@ -49,11 +49,11 @@ bool CpuVPP::InitFilters(void) {
     snprintf(buffersrc_fmt,
              sizeof(buffersrc_fmt),
              "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d", //:pixel_aspect=1/1",
-             m_vpp_base.src_width,
-             m_vpp_base.src_height,
-             m_vpp_base.src_pixel_format,
-             m_vpp_base.src_fr_num,
-             m_vpp_base.src_fr_den);
+             m_param.vpp.In.Width,
+             m_param.vpp.In.Height,
+             MFXFourCC2AVPixelFormat(m_param.vpp.In.FourCC),
+             m_param.vpp.In.FrameRateExtN,
+             m_param.vpp.In.FrameRateExtD);
 
     ret = avfilter_graph_create_filter(&m_buffersrc_ctx,
                                        buffersrc,
@@ -81,66 +81,66 @@ bool CpuVPP::InitFilters(void) {
     }
 
     // scale
-    if (m_vpp_base.vpp_func & VPL_VPP_SCALE) {
+    if (m_vppFunc & VPL_VPP_SCALE) {
         snprintf(m_vpp_filter_desc,
                  sizeof(m_vpp_filter_desc),
                  "scale=%d:%d",
-                 m_vpp_base.dst_width,
-                 m_vpp_base.dst_height);
+                 m_param.vpp.Out.Width,
+                 m_param.vpp.Out.Height);
     }
 
     // crop - do crop and scale to match msdk feature
-    if (m_vpp_base.vpp_func & VPL_VPP_CROP) {
+    if (m_vppFunc & VPL_VPP_CROP) {
         // no need background
-        if (m_vpp_base.dst_width == m_vpp_base.dst_rc.w &&
-            m_vpp_base.dst_height == m_vpp_base.dst_rc.h) {
-            if (m_vpp_base.src_rc.w == m_vpp_base.dst_rc.w &&
-                m_vpp_base.src_rc.h == m_vpp_base.dst_rc.h) {
+        if (m_param.vpp.Out.Width == m_param.vpp.Out.CropW &&
+            m_param.vpp.Out.Height == m_param.vpp.Out.CropH) {
+            if (m_param.vpp.In.CropW == m_param.vpp.Out.CropW &&
+                m_param.vpp.In.CropH == m_param.vpp.Out.CropH) {
                 snprintf(m_vpp_filter_desc,
                          sizeof(m_vpp_filter_desc),
                          "crop=%d:%d:%d:%d",
-                         m_vpp_base.src_rc.w,
-                         m_vpp_base.src_rc.h,
-                         m_vpp_base.src_rc.x,
-                         m_vpp_base.src_rc.y);
+                         m_param.vpp.In.CropW,
+                         m_param.vpp.In.CropH,
+                         m_param.vpp.In.CropX,
+                         m_param.vpp.In.CropY);
             }
             else {
                 snprintf(m_vpp_filter_desc,
                          sizeof(m_vpp_filter_desc),
                          "crop=%d:%d:%d:%d,scale=%d:%d",
-                         m_vpp_base.src_rc.w,
-                         m_vpp_base.src_rc.h,
-                         m_vpp_base.src_rc.x,
-                         m_vpp_base.src_rc.y,
-                         m_vpp_base.dst_rc.w,
-                         m_vpp_base.dst_rc.h);
+                         m_param.vpp.In.CropW,
+                         m_param.vpp.In.CropH,
+                         m_param.vpp.In.CropX,
+                         m_param.vpp.In.CropY,
+                         m_param.vpp.Out.CropW,
+                         m_param.vpp.Out.CropH);
             }
         }
         else {
             std::string f_split     = "split=2[bg][main];";
-            std::string f_scale_dst = "[bg]scale=" + std::to_string(m_vpp_base.dst_width) + ":" +
-                                      std::to_string(m_vpp_base.dst_height) + ",";
-            std::string f_bg = "drawbox=x=0:y=0:w=" + std::to_string(m_vpp_base.dst_width) +
-                               ":h=" + std::to_string(m_vpp_base.dst_height) + ":t=fill[bg2];";
+            std::string f_scale_dst = "[bg]scale=" + std::to_string(m_param.vpp.Out.Width) + ":" +
+                                      std::to_string(m_param.vpp.Out.Height) + ",";
+            std::string f_bg = "drawbox=x=0:y=0:w=" + std::to_string(m_param.vpp.Out.Width) +
+                               ":h=" + std::to_string(m_param.vpp.Out.Height) + ":t=fill[bg2];";
 
             std::string f_crop_src;
-            if (m_vpp_base.src_rc.w == m_vpp_base.dst_rc.w &&
-                m_vpp_base.src_rc.h == m_vpp_base.dst_rc.h) {
-                f_crop_src = "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
-                             std::to_string(m_vpp_base.src_rc.h) + ":" +
-                             std::to_string(m_vpp_base.src_rc.x) + ":" +
-                             std::to_string(m_vpp_base.src_rc.y) + "[ovr];";
+            if (m_param.vpp.In.CropW == m_param.vpp.Out.CropW &&
+                m_param.vpp.In.CropH == m_param.vpp.Out.CropH) {
+                f_crop_src = "[main]crop=" + std::to_string(m_param.vpp.In.CropW) + ":" +
+                             std::to_string(m_param.vpp.In.CropH) + ":" +
+                             std::to_string(m_param.vpp.In.CropX) + ":" +
+                             std::to_string(m_param.vpp.In.CropY) + "[ovr];";
             }
             else {
-                f_crop_src = "[main]crop=" + std::to_string(m_vpp_base.src_rc.w) + ":" +
-                             std::to_string(m_vpp_base.src_rc.h) + ":" +
-                             std::to_string(m_vpp_base.src_rc.x) + ":" +
-                             std::to_string(m_vpp_base.src_rc.y) +
-                             ",scale=" + std::to_string(m_vpp_base.dst_rc.w) + ":" +
-                             std::to_string(m_vpp_base.dst_rc.h) + "[ovr];";
+                f_crop_src = "[main]crop=" + std::to_string(m_param.vpp.In.CropW) + ":" +
+                             std::to_string(m_param.vpp.In.CropH) + ":" +
+                             std::to_string(m_param.vpp.In.CropX) + ":" +
+                             std::to_string(m_param.vpp.In.CropY) +
+                             ",scale=" + std::to_string(m_param.vpp.Out.CropW) + ":" +
+                             std::to_string(m_param.vpp.Out.CropH) + "[ovr];";
             }
-            std::string f_ovr = "[bg2][ovr]overlay=" + std::to_string(m_vpp_base.dst_rc.x) + ":" +
-                                std::to_string(m_vpp_base.dst_rc.y);
+            std::string f_ovr = "[bg2][ovr]overlay=" + std::to_string(m_param.vpp.Out.CropX) + ":" +
+                                std::to_string(m_param.vpp.Out.CropY);
 
             snprintf(m_vpp_filter_desc,
                      sizeof(m_vpp_filter_desc),
@@ -152,12 +152,12 @@ bool CpuVPP::InitFilters(void) {
                      f_ovr.c_str());
         }
 
-        m_vpp_base.vpp_func |= VPL_VPP_CSC;
+        m_vppFunc |= VPL_VPP_CSC;
     }
 
     // csc - set pixel format of buffersink
-    if (m_vpp_base.vpp_func & VPL_VPP_CSC) {
-        AVPixelFormat csc_dst_fmt     = m_vpp_base.dst_pixel_format;
+    if (m_vppFunc & VPL_VPP_CSC) {
+        AVPixelFormat csc_dst_fmt     = MFXFourCC2AVPixelFormat(m_param.vpp.Out.FourCC);
         enum AVPixelFormat pix_fmts[] = { csc_dst_fmt, AV_PIX_FMT_NONE };
 
         ret = av_opt_set_int_list(m_buffersink_ctx,
@@ -179,7 +179,7 @@ bool CpuVPP::InitFilters(void) {
         else if (csc_dst_fmt == AV_PIX_FMT_BGRA)
             snprintf(pixel_format, sizeof(pixel_format), "format=pix_fmts=bgra");
 
-        if (m_vpp_base.vpp_func == VPL_VPP_CSC) // there's no filter assigned
+        if (m_vppFunc == VPL_VPP_CSC) // there's no filter assigned
             snprintf(m_vpp_filter_desc, sizeof(m_vpp_filter_desc), "%s", pixel_format);
         else {
             std::string curr_desc = m_vpp_filter_desc;
@@ -237,9 +237,41 @@ void CpuVPP::CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in) {
     return;
 }
 
-mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
-    int ret       = 0;
-    mfxStatus sts = MFX_ERR_INVALID_VIDEO_PARAM;
+mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
+    if (canCorrect == true) {
+        if (par->AsyncDepth > 16)
+            par->AsyncDepth = 16;
+
+        if (!par->AsyncDepth)
+            par->AsyncDepth = 1;
+
+        if (par->Protected)
+            par->Protected = 0;
+
+        if (par->NumExtParam)
+            par->NumExtParam = 0;
+
+        if (!par->vpp.Out.Width)
+            par->vpp.Out.Width = par->vpp.In.Width;
+
+        if (!par->vpp.Out.Height)
+            par->vpp.Out.Height = par->vpp.In.Height;
+
+        if (!par->vpp.In.FourCC)
+            par->vpp.In.FourCC = MFX_FOURCC_I420;
+
+        if (!par->vpp.Out.FourCC)
+            par->vpp.Out.FourCC = par->vpp.In.FourCC;
+
+        if (par->Protected)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->mfx.FrameInfo.PicStruct == MFX_PICSTRUCT_UNKNOWN) {
+            par->mfx.FrameInfo.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+        }
+
+        par->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    }
 
     if (0 == par->IOPattern) // IOPattern is mandatory parameter
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -254,59 +286,63 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
 
     if (par->Protected)
         return MFX_ERR_INVALID_VIDEO_PARAM;
+
     if (par->NumExtParam)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
     if (par->mfx.NumThread)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    sts = CheckFrameInfo(&(par->vpp.In), VPP_IN);
+    if (par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_PROGRESSIVE &&
+        par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_UNKNOWN) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    mfxStatus sts = CheckFrameInfo(&(par->vpp.In), VPP_IN);
     RET_ERROR(sts);
 
     sts = CheckFrameInfo(&(par->vpp.Out), VPP_OUT);
     RET_ERROR(sts);
 
-    m_vpp_base.src_pixel_format = MFXFourCC2AVPixelFormat(par->vpp.In.FourCC);
-    m_vpp_base.src_shift        = par->vpp.In.Shift;
-    m_vpp_base.src_fr_num       = par->vpp.In.FrameRateExtN;
-    m_vpp_base.src_fr_den       = par->vpp.In.FrameRateExtD;
-    m_vpp_base.src_rc.x         = par->vpp.In.CropX;
-    m_vpp_base.src_rc.y         = par->vpp.In.CropY;
-    m_vpp_base.src_rc.w         = par->vpp.In.CropW;
-    m_vpp_base.src_rc.h         = par->vpp.In.CropH;
-    m_vpp_base.src_width        = par->vpp.In.Width;
-    m_vpp_base.src_height       = par->vpp.In.Height;
+    return MFX_ERR_NONE;
+}
 
-    m_vpp_base.dst_rc.x         = par->vpp.Out.CropX;
-    m_vpp_base.dst_rc.y         = par->vpp.Out.CropY;
-    m_vpp_base.dst_rc.w         = par->vpp.Out.CropW;
-    m_vpp_base.dst_rc.h         = par->vpp.Out.CropH;
-    m_vpp_base.dst_pixel_format = MFXFourCC2AVPixelFormat(par->vpp.Out.FourCC);
-    m_vpp_base.dst_shift        = par->vpp.Out.Shift;
-    m_vpp_base.dst_fr_num       = par->vpp.Out.FrameRateExtN;
-    m_vpp_base.dst_fr_den       = par->vpp.Out.FrameRateExtD;
-    m_vpp_base.dst_width        = par->vpp.Out.Width;
-    m_vpp_base.dst_height       = par->vpp.Out.Height;
+mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
+    mfxStatus sts = ValidateVPPParams(par, false);
+    if (sts != MFX_ERR_NONE)
+        return sts;
 
-    if (m_vpp_base.src_pixel_format != m_vpp_base.dst_pixel_format) {
-        m_vpp_base.vpp_func |= VPL_VPP_CSC;
+    m_param = *par;
+
+    m_param.vpp.In.CropW =
+        (m_param.vpp.In.CropW > m_param.vpp.In.Width) ? m_param.vpp.In.Width : m_param.vpp.In.CropW;
+    m_param.vpp.In.CropH = (m_param.vpp.In.CropH > m_param.vpp.In.Height) ? m_param.vpp.In.Height
+                                                                          : m_param.vpp.In.CropH;
+    m_param.vpp.Out.CropW = (m_param.vpp.Out.CropW > m_param.vpp.Out.Width) ? m_param.vpp.Out.Width
+                                                                            : m_param.vpp.Out.CropW;
+    m_param.vpp.Out.CropH = (m_param.vpp.Out.CropH > m_param.vpp.Out.Height)
+                                ? m_param.vpp.Out.Height
+                                : m_param.vpp.Out.CropH;
+
+    if (m_param.vpp.In.FourCC != m_param.vpp.Out.FourCC) {
+        m_vppFunc |= VPL_VPP_CSC;
     }
 
-    if (m_vpp_base.src_rc.x != 0 || m_vpp_base.src_rc.y != 0 || m_vpp_base.dst_rc.x != 0 ||
-        m_vpp_base.dst_rc.y != 0) {
-        m_vpp_base.vpp_func |= VPL_VPP_CROP;
+    if (m_param.vpp.In.CropX != 0 || m_param.vpp.In.CropY != 0 || m_param.vpp.Out.CropX != 0 ||
+        m_param.vpp.Out.CropY != 0) {
+        m_vppFunc |= VPL_VPP_CROP;
     }
 
-    if (!(m_vpp_base.vpp_func & VPL_VPP_CROP) && (m_vpp_base.src_rc.w != m_vpp_base.src_width ||
-                                                  m_vpp_base.src_rc.h != m_vpp_base.src_height ||
-                                                  m_vpp_base.dst_rc.w != m_vpp_base.dst_width ||
-                                                  m_vpp_base.dst_rc.h != m_vpp_base.dst_height)) {
-        m_vpp_base.vpp_func |= VPL_VPP_CROP;
+    if (!(m_vppFunc & VPL_VPP_CROP) && (m_param.vpp.In.CropW != m_param.vpp.In.Width ||
+                                        m_param.vpp.In.CropH != m_param.vpp.In.Height ||
+                                        m_param.vpp.Out.CropW != m_param.vpp.Out.Width ||
+                                        m_param.vpp.Out.CropH != m_param.vpp.Out.Height)) {
+        m_vppFunc |= VPL_VPP_CROP;
     }
 
-    if (!(m_vpp_base.vpp_func & VPL_VPP_CROP) && (m_vpp_base.src_width != m_vpp_base.dst_width ||
-                                                  m_vpp_base.src_height != m_vpp_base.dst_height)) {
-        m_vpp_base.vpp_func |= VPL_VPP_SCALE;
+    if (!(m_vppFunc & VPL_VPP_CROP) && (m_param.vpp.In.Width != m_param.vpp.Out.Width ||
+                                        m_param.vpp.In.Height != m_param.vpp.Out.Height)) {
+        m_vppFunc |= VPL_VPP_SCALE;
     }
 
     if (InitFilters() == false)
@@ -316,18 +352,18 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     if (!m_avVppFrameOut)
         return MFX_ERR_NOT_INITIALIZED;
 
-    ret = av_image_alloc(m_avVppFrameOut->data,
-                         m_avVppFrameOut->linesize,
-                         m_vpp_base.dst_width,
-                         m_vpp_base.dst_height,
-                         m_vpp_base.dst_pixel_format,
-                         16);
+    int ret = av_image_alloc(m_avVppFrameOut->data,
+                             m_avVppFrameOut->linesize,
+                             m_param.vpp.Out.Width,
+                             m_param.vpp.Out.Height,
+                             MFXFourCC2AVPixelFormat(m_param.vpp.Out.FourCC),
+                             16);
     if (ret < 0)
         return MFX_ERR_NOT_INITIALIZED;
 
-    m_vppInFormat = par->vpp.In.FourCC;
-    m_vppWidth    = par->vpp.In.Width;
-    m_vppHeight   = par->vpp.In.Height;
+    m_vppInFormat = m_param.vpp.In.FourCC;
+    m_vppWidth    = m_param.vpp.In.Width;
+    m_vppHeight   = m_param.vpp.In.Height;
 
     return MFX_ERR_NONE;
 }
@@ -429,21 +465,7 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
     else {
         *out = *in;
 
-        if (!out->vpp.Out.Width)
-            out->vpp.Out.Width = out->vpp.In.Width;
-
-        if (!out->vpp.Out.Height)
-            out->vpp.Out.Height = out->vpp.In.Height;
-
-        if (!out->vpp.Out.FourCC)
-            out->vpp.Out.FourCC = out->vpp.In.FourCC;
-
-        if (out->Protected) {
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-        }
-
-        //query, always correct
-        out->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+        return ValidateVPPParams(out, true);
     }
 
     return MFX_ERR_NONE;
@@ -514,10 +536,6 @@ mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
         case MFX_FOURCC_I420:
         case MFX_FOURCC_I010:
             break;
-        case MFX_FOURCC_P010:
-            if (info->Shift == 0)
-                return MFX_ERR_INVALID_VIDEO_PARAM;
-            break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -527,12 +545,13 @@ mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    /* Frame Rate */
-    if (0 == info->FrameRateExtN || 0 == info->FrameRateExtD) {
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
     return mfxSts;
+}
+
+mfxStatus CpuVPP::GetVideoParam(mfxVideoParam* par) {
+    *par = m_param;
+
+    return MFX_ERR_NONE;
 }
 
 mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
@@ -547,4 +566,61 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
     }
 
     return m_vppSurfaces->GetFreeSurface(surface);
+}
+
+mfxStatus CpuVPP::IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar) {
+    if (!(newPar->IOPattern & MFX_IOPATTERN_IN_SYSTEM_MEMORY) ||
+        !(newPar->IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY)) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->AsyncDepth > oldPar->AsyncDepth) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.Width > oldPar->mfx.FrameInfo.Width) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.Height > oldPar->mfx.FrameInfo.Height) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->vpp.In.Width > oldPar->vpp.In.Width) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->vpp.Out.Height > oldPar->vpp.Out.Height) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.FourCC != oldPar->mfx.FrameInfo.FourCC) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.ChromaFormat != oldPar->mfx.FrameInfo.ChromaFormat) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    mfxFrameAllocRequest requestOld[2] = { 0 };
+    mfxStatus mfxSts                   = VPPQueryIOSurf(oldPar, requestOld);
+    if (mfxSts != MFX_ERR_NONE)
+        return mfxSts;
+
+    mfxFrameAllocRequest requestNew[2] = { 0 };
+    mfxSts                             = VPPQueryIOSurf(newPar, requestNew);
+    if (mfxSts != MFX_ERR_NONE)
+        return mfxSts;
+
+    if (requestNew[0].NumFrameMin > requestOld[0].NumFrameMin ||
+        requestNew[0].Type != requestOld[0].Type) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (requestNew[1].NumFrameMin > requestOld[1].NumFrameMin ||
+        requestNew[1].Type != requestOld[1].Type) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
 }
