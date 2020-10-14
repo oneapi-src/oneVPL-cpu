@@ -66,6 +66,9 @@ git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git &&
 :: checkout SVT-AV1
 cd %build_dir%
 git clone --depth=1 -b v0.8.4 https://github.com/AOMediaCodec/SVT-AV1 && cd SVT-AV1
+if "%BUILD_MODE%"=="Debug" (
+  sed -i 's/#define DEBUG_MEMORY_USAGE/#undef DEBUG_MEMORY_USAGE/' Source\Lib\Common\Codec\EbMalloc.h
+)
 
 if "%USE_GPL%"=="yes" (
   :: checkout x264

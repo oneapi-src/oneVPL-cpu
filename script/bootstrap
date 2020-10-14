@@ -65,6 +65,10 @@ make -j $(nproc) && make install
 
 cd ${build_dir}
 git clone --depth=1 -b v0.8.4 https://github.com/AOMediaCodec/SVT-AV1 && cd SVT-AV1
+if [ "$BUILD_MODE" == "Debug" ]; then
+  sed -i 's/#define DEBUG_MEMORY_USAGE/#undef DEBUG_MEMORY_USAGE/' \
+        ./Source/Lib/Common/Codec/EbMalloc.h
+fi
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=${BUILD_MODE} \
       -DCMAKE_INSTALL_PREFIX=${install_dir}/ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off -DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
