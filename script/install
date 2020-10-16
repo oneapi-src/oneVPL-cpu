@@ -19,7 +19,7 @@ while [ "$1" != "" ]; do
             export BUILD_MODE="Debug"
             ;;
         * )
-            echo "usage: build [debug]"
+            echo "usage: install [debug]"
             exit 1
     esac
     shift
