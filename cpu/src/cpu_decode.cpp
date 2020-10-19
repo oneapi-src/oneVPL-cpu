@@ -541,8 +541,15 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avDecContext->framerate.den;
 
     // Aspect ratio
-    par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avDecContext->sample_aspect_ratio.num;
-    par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avDecContext->sample_aspect_ratio.den;
+    if (m_avDecContext->sample_aspect_ratio.num == 0 &&
+        m_avDecContext->sample_aspect_ratio.den == 1) {
+        par->mfx.FrameInfo.AspectRatioW = 1;
+        par->mfx.FrameInfo.AspectRatioH = 1;
+    }
+    else {
+        par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avDecContext->sample_aspect_ratio.num;
+        par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avDecContext->sample_aspect_ratio.den;
+    }
 
     // Profile/Level
     int profile = m_avDecContext->profile;
