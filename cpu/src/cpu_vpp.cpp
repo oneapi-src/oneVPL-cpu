@@ -48,12 +48,12 @@ bool CpuVPP::InitFilters(void) {
 
     snprintf(buffersrc_fmt,
              sizeof(buffersrc_fmt),
-             "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d", //:pixel_aspect=1/1",
-             m_param.vpp.In.Width,
-             m_param.vpp.In.Height,
-             MFXFourCC2AVPixelFormat(m_param.vpp.In.FourCC),
-             m_param.vpp.In.FrameRateExtN,
-             m_param.vpp.In.FrameRateExtD);
+             "video_size=%ux%u:pix_fmt=%d:time_base=%u/%u", //:pixel_aspect=1/1",
+             (unsigned int)m_param.vpp.In.Width,
+             (unsigned int)m_param.vpp.In.Height,
+             (int)MFXFourCC2AVPixelFormat(m_param.vpp.In.FourCC),
+             (unsigned int)m_param.vpp.In.FrameRateExtN,
+             (unsigned int)m_param.vpp.In.FrameRateExtD);
 
     ret = avfilter_graph_create_filter(&m_buffersrc_ctx,
                                        buffersrc,
