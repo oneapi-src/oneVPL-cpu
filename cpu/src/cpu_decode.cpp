@@ -448,9 +448,10 @@ mfxStatus CpuDecode::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
         *out = *in;
 
         // validate fields in the input param struct
+        // Query() returns MFX_ERR_UNSUPPORTED for uncorrectable parameter combination
         sts = ValidateDecodeParams(out, true);
-        if (sts != MFX_ERR_NONE)
-            return sts;
+        if (sts < 0)
+            return MFX_ERR_UNSUPPORTED;
     }
     else {
         // set output struct to zero for unsupported params, non-zero for supported params

@@ -81,7 +81,7 @@ TEST(EncodeQuery, PopulatedParamsInReturnsCorrected) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(EncodeQuery, InvalidParamsReturnsInvalid) {
+TEST(EncodeQuery, InvalidParamsReturnsUnsupported) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -92,7 +92,7 @@ TEST(EncodeQuery, InvalidParamsReturnsInvalid) {
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     sts = MFXVideoENCODE_Query(session, &mfxEncParams, &par);
-    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+    ASSERT_EQ(sts, MFX_ERR_UNSUPPORTED);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -168,7 +168,7 @@ TEST(DecodeQuery, PopulatedParamsInReturnsCorrected) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeQuery, InvalidParamsReturnsInvalid) {
+TEST(DecodeQuery, InvalidParamsReturnsUnsupported) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -180,7 +180,7 @@ TEST(DecodeQuery, InvalidParamsReturnsInvalid) {
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     sts = MFXVideoDECODE_Query(session, &mfxDecParams, &par);
-    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+    ASSERT_EQ(sts, MFX_ERR_UNSUPPORTED);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -255,7 +255,7 @@ TEST(VPPQuery, PopulatedParamsInReturnsCorrected) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(VPPQuery, DISABLED_InvalidParamsReturnsInvalid) {
+TEST(VPPQuery, InvalidParamsReturnsUnsupported) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -267,7 +267,7 @@ TEST(VPPQuery, DISABLED_InvalidParamsReturnsInvalid) {
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     sts = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
-    ASSERT_EQ(sts, MFX_ERR_INVALID_VIDEO_PARAM);
+    ASSERT_EQ(sts, MFX_ERR_UNSUPPORTED);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);

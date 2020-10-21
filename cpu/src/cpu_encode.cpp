@@ -1099,8 +1099,27 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
         }
         memcpy_s(bs->Data + bs->DataOffset, nBytesAvail, m_avEncPacket->data, nBytesOut);
         bs->DataLength += nBytesOut;
+        // TO DO - convert to 90khz timestamps (read m_avEncPacket->pts, ->dts)
+        // Note dts may start at < 0, should +=1 each frame
         bs->TimeStamp       = m_avEncPacket->pts;
-        bs->DecodeTimeStamp = m_avEncPacket->dts;
+        bs->DecodeTimeStamp = MFX_TIMESTAMP_UNKNOWN;
+        bs->CodecId         = m_param.mfx.CodecId;
+        bs->PicStruct       = MFX_PICSTRUCT_PROGRESSIVE;
+
+        // TO DO - verify logic across codecs - may require parsing
+        //   output packets to get correct mapping of frame types
+        bs->FrameType = MFX_FRAMETYPE_UNKNOWN;
+        if (m_avEncPacket->flags & AV_PKT_FLAG_KEY) {
+            bs->FrameType = MFX_FRAMETYPE_I;
+            bs->FrameType |= MFX_FRAMETYPE_REF;
+        }
+        else if (m_avEncPacket->flags & AV_PKT_FLAG_DISPOSABLE) {
+            bs->FrameType = MFX_FRAMETYPE_B;
+        }
+        else {
+            bs->FrameType = MFX_FRAMETYPE_P;
+            bs->FrameType |= MFX_FRAMETYPE_REF;
+        }
     }
 
     av_packet_unref(m_avEncPacket);
@@ -1134,7 +1153,11 @@ mfxStatus CpuEncode::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
         *out = *in;
 
         // validate fields in the input param struct
-        sts            = ValidateEncodeParams(out, true);
+        // Query() returns MFX_ERR_UNSUPPORTED for uncorrectable parameter combination
+        sts = ValidateEncodeParams(out, true);
+        if (sts < 0)
+            return MFX_ERR_UNSUPPORTED;
+
         out->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
     }
     else {

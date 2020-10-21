@@ -462,9 +462,13 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
         return MFX_ERR_NONE;
     }
     else {
-        *out = *in;
+        mfxStatus sts = MFX_ERR_NONE;
+        *out          = *in;
 
-        return ValidateVPPParams(out, true);
+        // Query() returns MFX_ERR_UNSUPPORTED for uncorrectable parameter combination
+        sts = ValidateVPPParams(out, true);
+        if (sts < 0)
+            return MFX_ERR_UNSUPPORTED;
     }
 
     return MFX_ERR_NONE;
