@@ -455,16 +455,23 @@ mfxStatus CpuDecode::DecodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
     else {
         // set output struct to zero for unsupported params, non-zero for supported params
         *out                              = { 0 };
-        out->mfx.CodecId                  = 0xFFFFFFFF;
-        out->mfx.FrameInfo.BitDepthChroma = 0xFFFF;
-        out->mfx.FrameInfo.Width          = 0xFFFF;
-        out->mfx.FrameInfo.Height         = 0xFFFF;
-        out->mfx.FrameInfo.CropW          = 0xFFFF;
-        out->mfx.FrameInfo.CropH          = 0xFFFF;
-        out->mfx.FrameInfo.FourCC         = 0xFFFFFFFF;
-        out->mfx.CodecProfile             = 0xFFFF;
-        out->mfx.CodecLevel               = 0xFFFF;
-        out->IOPattern                    = 0xFFFF;
+        out->mfx.CodecId                  = 1;
+        out->mfx.FrameInfo.BitDepthChroma = 1;
+        out->mfx.FrameInfo.BitDepthLuma   = 1;
+        out->mfx.FrameInfo.PicStruct      = 1;
+        out->mfx.FrameInfo.Width          = 1;
+        out->mfx.FrameInfo.Height         = 1;
+        out->mfx.FrameInfo.CropW          = 1;
+        out->mfx.FrameInfo.CropH          = 1;
+        out->mfx.FrameInfo.FourCC         = 1;
+        out->mfx.FrameInfo.ChromaFormat   = 1;
+        out->mfx.FrameInfo.FrameRateExtN  = 1;
+        out->mfx.FrameInfo.FrameRateExtD  = 1;
+        out->mfx.FrameInfo.AspectRatioW   = 1;
+        out->mfx.FrameInfo.AspectRatioH   = 1;
+        out->mfx.CodecProfile             = 1;
+        out->mfx.CodecLevel               = 1;
+        out->IOPattern                    = 1;
     }
 
     return sts;
@@ -481,7 +488,10 @@ mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
         m_decSurfaces = std::move(pool);
     }
 
-    return m_decSurfaces->GetFreeSurface(surface);
+    mfxStatus sts = m_decSurfaces->GetFreeSurface(surface);
+    (*surface)->Data.MemType |=
+        MFX_MEMTYPE_FROM_DECODE | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+    return sts;
 }
 
 mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {

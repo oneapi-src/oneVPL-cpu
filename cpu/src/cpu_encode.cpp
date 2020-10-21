@@ -1139,16 +1139,36 @@ mfxStatus CpuEncode::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
     }
     else {
         *out                              = { 0 };
-        out->mfx.CodecId                  = 0xFFFFFFFF;
-        out->mfx.FrameInfo.BitDepthChroma = 0xFFFF;
-        out->mfx.FrameInfo.Width          = 0xFFFF;
-        out->mfx.FrameInfo.Height         = 0xFFFF;
-        out->mfx.FrameInfo.CropW          = 0xFFFF;
-        out->mfx.FrameInfo.CropH          = 0xFFFF;
-        out->mfx.FrameInfo.FourCC         = 0xFFFFFFFF;
-        out->mfx.CodecProfile             = 0xFFFF;
-        out->mfx.CodecLevel               = 0xFFFF;
-        out->IOPattern                    = 0xFFFF;
+        out->mfx.CodecId                  = 1;
+        out->mfx.TargetUsage              = 1;
+        out->mfx.GopOptFlag               = 1;
+        out->mfx.GopPicSize               = 1;
+        out->mfx.GopRefDist               = 1;
+        out->mfx.BufferSizeInKB           = 1;
+        out->mfx.InitialDelayInKB         = 1;
+        out->mfx.MaxKbps                  = 1;
+        out->mfx.TargetKbps               = 1;
+        out->mfx.NumRefFrame              = 1;
+        out->mfx.NumSlice                 = 1;
+        out->mfx.RateControlMethod        = 1;
+        out->mfx.QPI                      = 1;
+        out->mfx.Quality                  = 1;
+        out->mfx.FrameInfo.PicStruct      = 1;
+        out->mfx.FrameInfo.BitDepthChroma = 1;
+        out->mfx.FrameInfo.BitDepthLuma   = 1;
+        out->mfx.FrameInfo.Width          = 1;
+        out->mfx.FrameInfo.Height         = 1;
+        out->mfx.FrameInfo.CropW          = 1;
+        out->mfx.FrameInfo.CropH          = 1;
+        out->mfx.FrameInfo.FourCC         = 1;
+        out->mfx.FrameInfo.ChromaFormat   = 1;
+        out->mfx.FrameInfo.FrameRateExtN  = 1;
+        out->mfx.FrameInfo.FrameRateExtD  = 1;
+        out->mfx.FrameInfo.AspectRatioW   = 1;
+        out->mfx.FrameInfo.AspectRatioH   = 1;
+        out->mfx.CodecProfile             = 1;
+        out->mfx.CodecLevel               = 1;
+        out->IOPattern                    = 1;
     }
 
     return sts;
@@ -1167,7 +1187,10 @@ mfxStatus CpuEncode::GetEncodeSurface(mfxFrameSurface1 **surface) {
         m_encSurfaces = std::move(pool);
     }
 
-    return m_encSurfaces->GetFreeSurface(surface);
+    mfxStatus sts = m_encSurfaces->GetFreeSurface(surface);
+    (*surface)->Data.MemType |=
+        MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+    return sts;
 }
 
 mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {

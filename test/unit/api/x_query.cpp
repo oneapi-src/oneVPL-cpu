@@ -49,7 +49,7 @@ TEST(EncodeQuery, NullParamsInReturnsConfigurable) {
 
     sts = MFXVideoENCODE_Query(session, nullptr, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(0xFFFFFFFF, par.mfx.FrameInfo.FourCC);
+    ASSERT_EQ(1, par.mfx.FrameInfo.FourCC);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -138,7 +138,7 @@ TEST(DecodeQuery, NullParamsInReturnsConfigurable) {
     memset(&par, 0, sizeof(par));
     sts = MFXVideoDECODE_Query(session, nullptr, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(0xFFFFFFFF, par.mfx.FrameInfo.FourCC);
+    ASSERT_EQ(1, par.mfx.FrameInfo.FourCC);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -226,7 +226,7 @@ TEST(VPPQuery, NullParamsInReturnsConfigurable) {
     memset(&par, 0, sizeof(par));
     sts = MFXVideoVPP_Query(session, nullptr, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(0xFFFFFFFF, par.mfx.FrameInfo.FourCC);
+    ASSERT_EQ(1, par.mfx.FrameInfo.FourCC);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);

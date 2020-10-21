@@ -434,26 +434,30 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
         // pass requirements of CheckPlatformLimitation for frame interpolation
 
         /* vppIn */
-        out->vpp.In.FourCC        = 0xFFFFFFFF;
-        out->vpp.In.Height        = 0xFFFF;
-        out->vpp.In.Width         = 0xFFFF;
-        out->vpp.In.CropH         = 0xFFFF;
-        out->vpp.In.CropW         = 0xFFFF;
-        out->vpp.In.PicStruct     = 0xFFFF;
-        out->vpp.In.FrameRateExtN = 0xFFFFFFFF;
-        out->vpp.In.FrameRateExtD = 0xFFFFFFFF;
+        out->vpp.In.FourCC        = 1;
+        out->vpp.In.Height        = 1;
+        out->vpp.In.Width         = 1;
+        out->vpp.In.CropX         = 1;
+        out->vpp.In.CropY         = 1;
+        out->vpp.In.CropH         = 1;
+        out->vpp.In.CropW         = 1;
+        out->vpp.In.PicStruct     = 1;
+        out->vpp.In.FrameRateExtN = 1;
+        out->vpp.In.FrameRateExtD = 1;
 
         /* vppOut */
-        out->vpp.Out.FourCC        = 0xFFFFFFFF;
-        out->vpp.Out.Height        = 0xFFFF;
-        out->vpp.Out.Width         = 0xFFFF;
-        out->vpp.Out.CropH         = 0xFFFF;
-        out->vpp.Out.CropW         = 0xFFFF;
-        out->vpp.Out.PicStruct     = 0xFFFF;
-        out->vpp.Out.FrameRateExtN = 0xFFFFFFFF;
-        out->vpp.Out.FrameRateExtD = 0xFFFFFFFF;
+        out->vpp.Out.FourCC        = 1;
+        out->vpp.Out.Height        = 1;
+        out->vpp.Out.CropX         = 1;
+        out->vpp.Out.CropY         = 1;
+        out->vpp.Out.Width         = 1;
+        out->vpp.Out.CropH         = 1;
+        out->vpp.Out.CropW         = 1;
+        out->vpp.Out.PicStruct     = 1;
+        out->vpp.Out.FrameRateExtN = 1;
+        out->vpp.Out.FrameRateExtD = 1;
 
-        out->IOPattern = 0xFFFF;
+        out->IOPattern = 1;
 
         return MFX_ERR_NONE;
     }
@@ -560,7 +564,11 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
         m_vppSurfaces = std::move(pool);
     }
 
-    return m_vppSurfaces->GetFreeSurface(surface);
+    mfxStatus sts = m_vppSurfaces->GetFreeSurface(surface);
+    (*surface)->Data.MemType |=
+        MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+
+    return sts;
 }
 
 mfxStatus CpuVPP::IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar) {

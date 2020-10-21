@@ -150,7 +150,9 @@ TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
     sts                            = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(vppSurfaceIn->Data.MemType,
+              MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
 
     //free internal resources
     sts = MFXClose(session);
@@ -223,7 +225,9 @@ TEST(Memory_GetSurfaceForEncode, InitializedEncodeReturnsSurface) {
     // get internally allocated frame
     mfxFrameSurface1* encSurfaceIn = nullptr;
     sts                            = MFXMemory_GetSurfaceForEncode(session, &encSurfaceIn);
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(encSurfaceIn->Data.MemType,
+              MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
 
     //free internal resources
     sts = MFXClose(session);
@@ -296,7 +300,9 @@ TEST(Memory_GetSurfaceForDecode, InitializedDecodeReturnsSurface) {
     // get internally allocated frame
     mfxFrameSurface1* decSurfaceIn = nullptr;
     sts                            = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(decSurfaceIn->Data.MemType,
+              MFX_MEMTYPE_FROM_DECODE | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
 
     //free internal resources
     sts = MFXClose(session);
