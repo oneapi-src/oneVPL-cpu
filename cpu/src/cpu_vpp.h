@@ -91,7 +91,7 @@ private:
                                                      mfxU16* pInMemType,
                                                      mfxU16* pOutMemType);
     static mfxStatus ValidateVPPParams(mfxVideoParam* par, bool canCorrect);
-    static mfxStatus CheckFrameInfo(mfxFrameInfo* info, mfxU32 request);
+    static mfxStatus CheckFrameInfo(mfxFrameInfo* info);
 
     static bool IsConfigurable(mfxU32 filterId);
     static bool IsFilterFound(const mfxU32* pList, mfxU32 len, mfxU32 filterName);

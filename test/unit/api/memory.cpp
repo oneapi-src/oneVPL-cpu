@@ -103,6 +103,7 @@ static mfxStatus InitVPPBasic(mfxSession* session) {
     mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.In.Width         = 352;
     mfxVPPParams.vpp.In.Height        = 288;
     mfxVPPParams.vpp.In.CropH         = mfxVPPParams.vpp.In.Height;

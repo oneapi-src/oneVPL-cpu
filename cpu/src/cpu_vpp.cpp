@@ -257,11 +257,23 @@ mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
         if (!par->vpp.Out.Height)
             par->vpp.Out.Height = par->vpp.In.Height;
 
-        if (!par->vpp.In.FourCC)
+        if (!par->vpp.In.FourCC) {
             par->vpp.In.FourCC = MFX_FOURCC_I420;
+        }
+
+        if (!par->vpp.In.ChromaFormat) {
+            if (par->vpp.In.FourCC == MFX_FOURCC_BGRA)
+                par->vpp.In.ChromaFormat = MFX_CHROMAFORMAT_YUV444;
+            else
+                par->vpp.In.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+        }
 
         if (!par->vpp.Out.FourCC)
             par->vpp.Out.FourCC = par->vpp.In.FourCC;
+
+        if (!par->vpp.Out.ChromaFormat) {
+            par->vpp.Out.ChromaFormat = par->vpp.In.ChromaFormat;
+        }
 
         if (par->Protected)
             return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -293,18 +305,13 @@ mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
     if (par->mfx.NumThread)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    if (par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_PROGRESSIVE &&
-        par->mfx.FrameInfo.PicStruct != MFX_PICSTRUCT_UNKNOWN) {
-        return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-
-    mfxStatus sts = CheckFrameInfo(&(par->vpp.In), VPP_IN);
+    mfxStatus sts = CheckFrameInfo(&par->vpp.In);
     RET_ERROR(sts);
 
-    sts = CheckFrameInfo(&(par->vpp.Out), VPP_OUT);
+    sts = CheckFrameInfo(&par->vpp.Out);
     RET_ERROR(sts);
 
-    return MFX_ERR_NONE;
+    return sts;
 }
 
 mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
@@ -526,16 +533,10 @@ mfxStatus CpuVPP::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
 }
 
 // check each field of FrameInfo excluding PicStruct
-mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
-    mfxStatus mfxSts = MFX_ERR_NONE;
-
+mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info) {
     /* FourCC */
     switch (info->FourCC) {
-        case MFX_FOURCC_NV12:
-        case MFX_FOURCC_RGB4:
-        case MFX_FOURCC_P210:
-        case MFX_FOURCC_NV16:
-        case MFX_FOURCC_YUY2:
+        case MFX_FOURCC_BGRA:
         case MFX_FOURCC_I420:
         case MFX_FOURCC_I010:
             break;
@@ -548,7 +549,24 @@ mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info, mfxU32 request) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    return mfxSts;
+    /* Picture structure */
+    if (info->PicStruct != MFX_PICSTRUCT_PROGRESSIVE && info->PicStruct != MFX_PICSTRUCT_UNKNOWN) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    /* ChromaFormat */
+    switch (info->ChromaFormat) {
+        case MFX_CHROMAFORMAT_YUV420:
+            break;
+        case MFX_CHROMAFORMAT_YUV444:
+            if (info->FourCC != MFX_FOURCC_BGRA)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+            break;
+        default:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
 }
 
 mfxStatus CpuVPP::GetVideoParam(mfxVideoParam* par) {

@@ -518,6 +518,7 @@ TEST(VPPInit, ValidParamsInReturnsErrNone) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.In.CropW         = 128;
     mfxVPPParams.vpp.In.CropH         = 96;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
@@ -619,6 +620,7 @@ TEST(VPPInit, DoubleInitReturnsUndefinedBehavior) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.In.CropW         = 128;
     mfxVPPParams.vpp.In.CropH         = 96;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
@@ -907,6 +909,7 @@ TEST(VPPReset, ValidParamsInReturnsErrNone) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.In.CropW         = 128;
     mfxVPPParams.vpp.In.CropH         = 96;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
@@ -938,6 +941,7 @@ TEST(VPPReset, InvalidParamsInReturnsInvalidVideoParam) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.In.CropW         = 128;
     mfxVPPParams.vpp.In.CropH         = 96;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
@@ -1175,6 +1179,7 @@ TEST(VPPClose, InitializedVPPReturnsErrNone) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.In.CropW         = 128;
     mfxVPPParams.vpp.In.CropH         = 96;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
