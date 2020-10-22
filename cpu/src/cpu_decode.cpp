@@ -547,8 +547,8 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
     }
 
     // Frame rate
-    par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avDecContext->framerate.num;
-    par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avDecContext->framerate.den;
+    par->mfx.FrameInfo.FrameRateExtN = (uint16_t)m_avDecContext->framerate.num;
+    par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avDecContext->framerate.den;
 
     // Aspect ratio
     if (m_avDecContext->sample_aspect_ratio.num == 0 &&
