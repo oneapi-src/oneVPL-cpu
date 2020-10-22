@@ -84,9 +84,9 @@ bool CpuVPP::InitFilters(void) {
     if (m_vppFunc & VPL_VPP_SCALE) {
         snprintf(m_vpp_filter_desc,
                  sizeof(m_vpp_filter_desc),
-                 "scale=%d:%d",
-                 m_param.vpp.Out.Width,
-                 m_param.vpp.Out.Height);
+                 "scale=%u:%u",
+                 (unsigned int)m_param.vpp.Out.Width,
+                 (unsigned int)m_param.vpp.Out.Height);
     }
 
     // crop - do crop and scale to match msdk feature
@@ -98,22 +98,22 @@ bool CpuVPP::InitFilters(void) {
                 m_param.vpp.In.CropH == m_param.vpp.Out.CropH) {
                 snprintf(m_vpp_filter_desc,
                          sizeof(m_vpp_filter_desc),
-                         "crop=%d:%d:%d:%d",
-                         m_param.vpp.In.CropW,
-                         m_param.vpp.In.CropH,
-                         m_param.vpp.In.CropX,
-                         m_param.vpp.In.CropY);
+                         "crop=%u:%u:%u:%u",
+                         (unsigned int)m_param.vpp.In.CropW,
+                         (unsigned int)m_param.vpp.In.CropH,
+                         (unsigned int)m_param.vpp.In.CropX,
+                         (unsigned int)m_param.vpp.In.CropY);
             }
             else {
                 snprintf(m_vpp_filter_desc,
                          sizeof(m_vpp_filter_desc),
-                         "crop=%d:%d:%d:%d,scale=%d:%d",
-                         m_param.vpp.In.CropW,
-                         m_param.vpp.In.CropH,
-                         m_param.vpp.In.CropX,
-                         m_param.vpp.In.CropY,
-                         m_param.vpp.Out.CropW,
-                         m_param.vpp.Out.CropH);
+                         "crop=%u:%u:%u:%u,scale=%u:%u",
+                         (unsigned int)m_param.vpp.In.CropW,
+                         (unsigned int)m_param.vpp.In.CropH,
+                         (unsigned int)m_param.vpp.In.CropX,
+                         (unsigned int)m_param.vpp.In.CropY,
+                         (unsigned int)m_param.vpp.Out.CropW,
+                         (unsigned int)m_param.vpp.Out.CropH);
             }
         }
         else {
@@ -587,6 +587,12 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
     }
 
     mfxStatus sts = m_vppSurfaces->GetFreeSurface(surface);
+    if (sts != MFX_ERR_NONE) {
+        return sts;
+    }
+    if (surface == nullptr) {
+        return MFX_ERR_NOT_ENOUGH_BUFFER;
+    }
     (*surface)->Data.MemType |=
         MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
 

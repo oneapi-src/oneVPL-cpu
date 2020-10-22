@@ -488,6 +488,12 @@ mfxStatus CpuDecode::GetDecodeSurface(mfxFrameSurface1 **surface) {
     }
 
     mfxStatus sts = m_decSurfaces->GetFreeSurface(surface);
+    if (sts != MFX_ERR_NONE) {
+        return sts;
+    }
+    if (surface == nullptr) {
+        return MFX_ERR_NOT_ENOUGH_BUFFER;
+    }
     (*surface)->Data.MemType |=
         MFX_MEMTYPE_FROM_DECODE | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
     return sts;
