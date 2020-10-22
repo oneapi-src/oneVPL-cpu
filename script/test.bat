@@ -115,7 +115,7 @@ echo *** VPP Smoke Test PASSED ***
 
 :test_pipeline_vpp_enc
 echo *** Running Pipeline (VPP + Encode) Smoke Test***
-call vpl-vppenc.exe out_ref_h265.i420 128 96
+call vpl-vppenc.exe -i out_ref_h265.i420 -if i420 -o out.h265 -of h265 -sw 128 -sh 96 -dw 640 -dh 480
 
 call %VPL_BUILD_DEPENDENCIES%\bin\ffmpeg.exe -y ^
      -f rawvideo -pixel_format yuv420p -video_size 128x96 ^
