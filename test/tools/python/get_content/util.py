@@ -8,7 +8,8 @@ Utility functions
 """
 
 import sys
-import subprocess
+# This is a test support tool intened to simplify running command lines
+import subprocess  # nosec
 import queue
 import datetime
 import threading
@@ -50,12 +51,15 @@ class Runner:
     def run(self, cmd, timeout=None):
         """run a command"""
         timeout_exceeded = False
-        proc = subprocess.Popen(cmd,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                universal_newlines=True,
-                                close_fds=(sys.platform != 'win32'),
-                                bufsize=1)
+        # The following runs the provided command. The command is an explicit
+        # parameter from the caller who is responsible for checking it.
+        proc = subprocess.Popen(
+            cmd,  # nosec
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            close_fds=(sys.platform != 'win32'),
+            bufsize=1)
         self._start_threads(proc)
         # Wait for process to complete
         busy = True

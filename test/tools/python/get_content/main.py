@@ -198,8 +198,9 @@ def set_jpeg_opts(config):
 
 def genterate_content(uri, dest_folder):
     """create content"""
-    # the following has is used to ensure uniqueness
-    unique = hashlib.sha1(uri.encode('utf-8')).hexdigest()
+    # the following has is used to ensure uniqueness in case the same filename
+    # is pulled from multiple sources, not for security.
+    unique = hashlib.sha1(uri.encode('utf-8')).hexdigest()  # nosec
 
     config = parse_content_uri(uri)
     if 'frames' in config.kwopts:
@@ -258,13 +259,16 @@ def download_content(url, dest_folder):
         dest_folder = ''
     fields = urllib.parse.urlparse(url)
     # the following has is used to ensure uniqueness in case the same filename
-    # is pulled from multiple sources.
-    unique = hashlib.sha1(url.encode('utf-8')).hexdigest()
+    # is pulled from multiple sources, not for security.
+    unique = hashlib.sha1(url.encode('utf-8')).hexdigest()  # nosec
     name, ext = posixpath.splitext(posixpath.basename(fields.path))
     dest_path = os.path.join(dest_folder, name + "_" + unique + ext)
     if not os.path.exists(dest_path):
-        with urllib.request.urlopen(url) as response, open(dest_path,
-                                                           'wb') as dest_file:
+        # any scheme that can get files is supported. the
+        # url is provided as a command line parameter.
+        with urllib.request.urlopen(url) as response, open(
+                dest_path,  # nosec
+                'wb') as dest_file:
             shutil.copyfileobj(response, dest_file)
     return dest_path
 
