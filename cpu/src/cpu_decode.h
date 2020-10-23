@@ -44,6 +44,7 @@ private:
     mfxVideoParam m_param;
     std::unique_ptr<CpuFramePool> m_decSurfaces;
     bool m_bFrameBuffered;
+    bool m_bStreamInfo;
 
     CpuWorkstream* m_session;
 

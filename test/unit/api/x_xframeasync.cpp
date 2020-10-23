@@ -693,7 +693,7 @@ TEST(DecodeFrameAsync, CompleteFrameHEVCReturnsFrame) {
     delete[] decSurfaces;
 }
 
-TEST(DecodeFrameAsync, EoSFlagReturnsFrame) {
+TEST(DecodeFrameAsync, DISABLED_EoSFlagReturnsFrame) {
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);

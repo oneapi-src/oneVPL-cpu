@@ -20,6 +20,7 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_param(),
           m_decSurfaces(),
           m_frameOrder(0),
+          m_bStreamInfo(false),
           m_bFrameBuffered(false) {}
 
 mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
@@ -195,6 +196,7 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
         // decode a frame
         mfxBitstream bs2 = *bs;
         bs2.DataFlag     = MFX_BITSTREAM_EOS;
+        m_bStreamInfo    = true;
         DecodeFrame(&bs2, nullptr, nullptr);
         GetVideoParam(par);
     }
@@ -309,12 +311,6 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
             // null bitstream indicates drain, send EOF packet
             avcodec_send_packet(m_avDecContext, nullptr);
         }
-        else {
-            // send EOF packet if EOS flag is set
-            if ((bs->DataFlag & MFX_BITSTREAM_EOS) == MFX_BITSTREAM_EOS) {
-                avcodec_send_packet(m_avDecContext, nullptr);
-            }
-        }
 
         // receive frame
         auto av_ret = avcodec_receive_frame(m_avDecContext, avframe);
@@ -366,9 +362,11 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 continue; // we have more input data
             }
             else {
-                if (bs && ((bs->DataFlag & MFX_BITSTREAM_EOS) == MFX_BITSTREAM_EOS)) {
+                if (m_bStreamInfo && bs &&
+                    ((bs->DataFlag & MFX_BITSTREAM_EOS) == MFX_BITSTREAM_EOS)) {
                     //send a null packet and continue
                     avcodec_send_packet(m_avDecContext, nullptr);
+                    m_bStreamInfo = false;
                     continue;
                 }
                 else {
