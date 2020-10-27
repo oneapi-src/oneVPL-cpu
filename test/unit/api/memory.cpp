@@ -139,6 +139,11 @@ static mfxStatus GetFrameDecodeBasic(mfxSession* session, mfxFrameSurface1** dec
     return sts;
 }
 
+static void CloseDecodeBasic(mfxSession session) {
+    MFXVideoDECODE_Close(session);
+    MFXClose(session);
+}
+
 //GetSurfaceForVPP
 TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
     mfxStatus sts;
@@ -418,6 +423,9 @@ TEST(Memory_FrameInterfaceAddRef, ValidInputReturnsErrNone) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->AddRef(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceAddRef, NullSurfaceReturnsErrNull) {
@@ -432,6 +440,9 @@ TEST(Memory_FrameInterfaceAddRef, NullSurfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->AddRef(nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceAddRef, NullHandleReturnsInvalidHandle) {
@@ -446,6 +457,9 @@ TEST(Memory_FrameInterfaceAddRef, NullHandleReturnsInvalidHandle) {
     pmfxWorkSurface->FrameInterface->Context = nullptr;
     sts = pmfxWorkSurface->FrameInterface->AddRef(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 //Release
@@ -460,6 +474,9 @@ TEST(Memory_FrameInterfaceRelease, ValidInputReturnsErrNone) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Release(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceRelease, NullSurfaceReturnsErrNull) {
@@ -474,6 +491,9 @@ TEST(Memory_FrameInterfaceRelease, NullSurfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Release(nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceRelease, NullHandleReturnsInvalidHandle) {
@@ -488,6 +508,9 @@ TEST(Memory_FrameInterfaceRelease, NullHandleReturnsInvalidHandle) {
     pmfxWorkSurface->FrameInterface->Context = nullptr;
     sts = pmfxWorkSurface->FrameInterface->Release(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceRelease, ZeroRefcountReturnsErrUndefinedBehavior) {
@@ -505,6 +528,9 @@ TEST(Memory_FrameInterfaceRelease, ZeroRefcountReturnsErrUndefinedBehavior) {
     // try to release again
     sts = pmfxWorkSurface->FrameInterface->Release(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_UNDEFINED_BEHAVIOR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 //GetRefCounter
@@ -521,6 +547,9 @@ TEST(Memory_FrameInterfaceGetRefCounter, ValidInputReturnsErrNone) {
     sts            = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface, &counter);
     EXPECT_EQ(sts, MFX_ERR_NONE);
     EXPECT_EQ(counter, 1);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetRefCounter, NullSurfaceReturnsErrNull) {
@@ -535,6 +564,9 @@ TEST(Memory_FrameInterfaceGetRefCounter, NullSurfaceReturnsErrNull) {
 
     sts = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetRefCounter, NullHandleReturnsInvalidHandle) {
@@ -550,6 +582,9 @@ TEST(Memory_FrameInterfaceGetRefCounter, NullHandleReturnsInvalidHandle) {
     mfxU32 counter                           = 0;
     sts = pmfxWorkSurface->FrameInterface->GetRefCounter(pmfxWorkSurface, &counter);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 //Map
@@ -564,6 +599,9 @@ TEST(Memory_FrameInterfaceMap, ValidInputReturnsErrNone) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_READ);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceMap, NullSurfaceReturnsErrNull) {
@@ -578,6 +616,9 @@ TEST(Memory_FrameInterfaceMap, NullSurfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Map(nullptr, MFX_MAP_READ);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceMap, NullHandleReturnsInvalidHandle) {
@@ -592,6 +633,9 @@ TEST(Memory_FrameInterfaceMap, NullHandleReturnsInvalidHandle) {
     pmfxWorkSurface->FrameInterface->Context = nullptr;
     sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_READ);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceMap, InvalidFlagValReturnsUnsupported) {
@@ -605,6 +649,9 @@ TEST(Memory_FrameInterfaceMap, InvalidFlagValReturnsUnsupported) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, 0xffff);
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceMap, WriteToWriteFlagSurfaceReturnsErrLock) {
@@ -619,6 +666,9 @@ TEST(Memory_FrameInterfaceMap, WriteToWriteFlagSurfaceReturnsErrLock) {
     pmfxWorkSurface->Data.Locked = 1;
     sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_WRITE);
     EXPECT_EQ(sts, MFX_ERR_LOCK_MEMORY);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceMap, WriteToReadWriteFlagSurfaceReturnsErrLock) {
@@ -633,6 +683,9 @@ TEST(Memory_FrameInterfaceMap, WriteToReadWriteFlagSurfaceReturnsErrLock) {
     pmfxWorkSurface->Data.Locked = 1;
     sts = pmfxWorkSurface->FrameInterface->Map(pmfxWorkSurface, MFX_MAP_READ_WRITE);
     EXPECT_EQ(sts, MFX_ERR_LOCK_MEMORY);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 //Unmap
@@ -650,6 +703,9 @@ TEST(Memory_FrameInterfaceUnmap, ValidInputReturnsErrNone) {
 
     sts = pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceUnmap, NullSurfaceReturnsErrNull) {
@@ -666,6 +722,9 @@ TEST(Memory_FrameInterfaceUnmap, NullSurfaceReturnsErrNull) {
 
     sts = pmfxWorkSurface->FrameInterface->Unmap(nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceUnmap, NullHandleReturnsInvalidHandle) {
@@ -683,6 +742,9 @@ TEST(Memory_FrameInterfaceUnmap, NullHandleReturnsInvalidHandle) {
     pmfxWorkSurface->FrameInterface->Context = nullptr;
     sts = pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceUnmap, AlreadyUnmappedReturnsUnsupported) {
@@ -703,6 +765,9 @@ TEST(Memory_FrameInterfaceUnmap, AlreadyUnmappedReturnsUnsupported) {
     // try to unmap again
     sts = pmfxWorkSurface->FrameInterface->Unmap(pmfxWorkSurface);
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 //GetNativeHandle
@@ -719,6 +784,9 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullSurfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(nullptr, &resource, &resource_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceReturnsErrNull) {
@@ -734,6 +802,9 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceReturnsErrNull) {
     sts =
         pmfxWorkSurface->FrameInterface->GetNativeHandle(pmfxWorkSurface, nullptr, &resource_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceTypeReturnsErrNull) {
@@ -748,6 +819,9 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceTypeReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->GetNativeHandle(pmfxWorkSurface, &resource, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 #ifdef VPL_UTEST_MEMORY_TYPE_SYSTEM
@@ -767,6 +841,9 @@ TEST(Memory_FrameInterfaceGetNativeHandle, SystemMemoryReturnsUnsupported) {
                                                            &resource,
                                                            &resource_type);
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetNativeHandle, NullSurfaceReturnsInvalidHandle) {
@@ -785,6 +862,9 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullSurfaceReturnsInvalidHandle) {
                                                            &resource,
                                                            &resource_type);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 #else
@@ -819,6 +899,9 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullSurfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(nullptr, &device_handle, &device_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetDeviceHandle, NullHandleReturnsErrNull) {
@@ -833,6 +916,9 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullHandleReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->GetDeviceHandle(pmfxWorkSurface, nullptr, &device_type);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceGetDeviceHandle, NullDeviceTypeReturnsErrNull) {
@@ -848,6 +934,9 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullDeviceTypeReturnsErrNull) {
     sts =
         pmfxWorkSurface->FrameInterface->GetDeviceHandle(pmfxWorkSurface, &device_handle, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 #ifdef VPL_UTEST_MEMORY_TYPE_SYSTEM
@@ -867,6 +956,9 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, SystemMemoryReturnsUnsupported) {
                                                            &device_handle,
                                                            &device_type);
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 #else
@@ -904,6 +996,9 @@ TEST(Memory_FrameInterfaceSynchronize, ValidInputReturnsErrNone) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Synchronize(pmfxWorkSurface, 1000);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceSynchronize, NullSurfaceReturnsErrNull) {
@@ -917,6 +1012,9 @@ TEST(Memory_FrameInterfaceSynchronize, NullSurfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->Synchronize(nullptr, 1000);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }
 
 TEST(Memory_FrameInterfaceSynchronize, InvalidSurfaceReturnsInvalidHandle) {
@@ -931,4 +1029,7 @@ TEST(Memory_FrameInterfaceSynchronize, InvalidSurfaceReturnsInvalidHandle) {
     pmfxWorkSurface->FrameInterface->Context = nullptr;
     sts = pmfxWorkSurface->FrameInterface->Synchronize(pmfxWorkSurface, 1000);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
 }

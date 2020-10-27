@@ -1111,6 +1111,9 @@ TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] DECoutbuf;
 }
 
 TEST(RunFrameVPPAsync, NullSessionReturnsInvalidHandle) {
@@ -1167,6 +1170,9 @@ TEST(RunFrameVPPAsync, NullSurfaceOutReturnsErrNull) {
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] DECoutbuf;
 }
 
 TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
@@ -1217,6 +1223,9 @@ TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] DECoutbuf;
 }
 
 TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
@@ -1264,4 +1273,7 @@ TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] DECoutbuf;
 }

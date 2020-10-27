@@ -684,6 +684,7 @@ TEST(Dispatcher_CreateSession, RequestAV1AndHEVCDecReturnsErrNone) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
+    MFXClose(session);
     MFXUnload(loader);
 }
 
