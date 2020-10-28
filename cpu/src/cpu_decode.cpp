@@ -448,9 +448,9 @@ mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest 
     else
         request->Info = { 0 };
 
-    mfxStatus sts = ValidateDecodeParams(par, false);
-    if (sts < 0)
-        return MFX_ERR_INVALID_VIDEO_PARAM;
+    if (par)
+        if (ValidateDecodeParams(par, false) < 0)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
 
     request->NumFrameMin       = 1;
     request->NumFrameSuggested = 3;

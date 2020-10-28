@@ -358,24 +358,28 @@ TEST(EncodeFrameAsync, NullSyncpReturnsNullPtr) {
             delete[] encSurfaces;
         ASSERT_EQ(sts, MFX_ERR_NONE);
     }
+    else {
+        mfxBitstream mfxBS = { 0 };
+        mfxBS.MaxLength    = 20;
+        mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
 
-    mfxBitstream mfxBS = { 0 };
-    mfxBS.MaxLength    = 20;
-    mfxBS.Data         = new mfxU8[mfxBS.MaxLength];
+        mfxI32 nEncSurfIdx = 0;
 
-    mfxI32 nEncSurfIdx = 0;
+        // Encode a frame asynchronously (returns immediately)
+        sts = MFXVideoENCODE_EncodeFrameAsync(session,
+                                              NULL,
+                                              &encSurfaces[nEncSurfIdx],
+                                              &mfxBS,
+                                              nullptr);
 
-    // Encode a frame asynchronously (returns immediately)
-    sts =
-        MFXVideoENCODE_EncodeFrameAsync(session, NULL, &encSurfaces[nEncSurfIdx], &mfxBS, nullptr);
+        ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
+        MFXClose(session);
 
-    MFXClose(session);
-
-    delete[] surfaceBuffers;
-    delete[] encSurfaces;
-    delete[] mfxBS.Data;
+        delete[] surfaceBuffers;
+        delete[] encSurfaces;
+        delete[] mfxBS.Data;
+    }
 }
 
 TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
@@ -994,21 +998,22 @@ TEST(DecodeFrameAsync, NullSyncpReturnsErrNull) {
             delete[] decSurfaces;
         ASSERT_EQ(sts, MFX_ERR_NONE);
     }
+    else {
+        mfxFrameSurface1 *pmfxOutSurface = nullptr;
+        mfxBS.MaxLength = mfxBS.DataLength = 1;
+        int nIndex                         = 0;
+        sts                                = MFXVideoDECODE_DecodeFrameAsync(session,
+                                              &mfxBS,
+                                              &decSurfaces[nIndex++],
+                                              &pmfxOutSurface,
+                                              nullptr);
+        EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    mfxFrameSurface1 *pmfxOutSurface = nullptr;
-    mfxBS.MaxLength = mfxBS.DataLength = 1;
-    int nIndex                         = 0;
-    sts                                = MFXVideoDECODE_DecodeFrameAsync(session,
-                                          &mfxBS,
-                                          &decSurfaces[nIndex++],
-                                          &pmfxOutSurface,
-                                          nullptr);
-    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+        sts = MFXClose(session);
 
-    sts = MFXClose(session);
-
-    delete[] DECoutbuf;
-    delete[] decSurfaces;
+        delete[] DECoutbuf;
+        delete[] decSurfaces;
+    }
 }
 
 TEST(DecodeFrameAsync, NullSurfaceWorkReturnsErrMoreData) {
