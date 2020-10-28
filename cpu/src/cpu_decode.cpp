@@ -362,11 +362,15 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                     RET_ERROR(AVFrame2mfxFrameSurface(surface_work,
                                                       m_avDecFrameOut,
                                                       m_session->GetFrameAllocator()));
-                    m_bFrameBuffered = false;
+                    surface_work->Info.FrameRateExtN = (uint16_t)m_avDecContext->framerate.num;
+                    surface_work->Info.FrameRateExtD = (uint16_t)m_avDecContext->framerate.den;
+                    m_bFrameBuffered                 = false;
                 }
                 else {
                     if (cpu_frame) { // update MFXFrameSurface from AVFrame
                         cpu_frame->Update();
+                        surface_work->Info.FrameRateExtN = (uint16_t)m_avDecContext->framerate.num;
+                        surface_work->Info.FrameRateExtD = (uint16_t)m_avDecContext->framerate.den;
                     }
                 }
                 surface_work->Data.FrameOrder = m_frameOrder++;
