@@ -238,7 +238,9 @@ void CpuVPP::CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in) {
 }
 
 mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
-    if (canCorrect == true) {
+    bool fixedIncompatible = false;
+
+    if (canCorrect) {
         if (par->AsyncDepth > 16)
             par->AsyncDepth = 16;
 
@@ -278,11 +280,93 @@ mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
         if (par->Protected)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
-        if (par->mfx.FrameInfo.PicStruct == MFX_PICSTRUCT_UNKNOWN) {
-            par->mfx.FrameInfo.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+        if (par->vpp.In.PicStruct == MFX_PICSTRUCT_UNKNOWN) {
+            par->vpp.In.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+        }
+
+        if (par->vpp.Out.PicStruct == MFX_PICSTRUCT_UNKNOWN) {
+            par->vpp.Out.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+        }
+
+        if ((par->vpp.In.BitDepthLuma == 8) && (par->vpp.In.BitDepthChroma == 10)) {
+            if (canCorrect)
+                fixedIncompatible = true;
+            if (par->vpp.In.FourCC == MFX_FOURCC_I420)
+                par->vpp.In.BitDepthChroma = 8;
+            else
+                par->vpp.In.BitDepthChroma = 10;
+        }
+
+        if ((par->vpp.In.BitDepthLuma == 10) && (par->vpp.In.BitDepthChroma == 8)) {
+            if (canCorrect)
+                fixedIncompatible = true;
+            if (par->vpp.In.FourCC == MFX_FOURCC_I420)
+                par->vpp.In.BitDepthLuma = 8;
+            else
+                par->vpp.In.BitDepthLuma = 10;
+        }
+
+        if ((par->vpp.Out.BitDepthLuma == 8) && (par->vpp.Out.BitDepthChroma == 10)) {
+            if (canCorrect)
+                fixedIncompatible = true;
+            if (par->vpp.Out.FourCC == MFX_FOURCC_I420)
+                par->vpp.Out.BitDepthChroma = 8;
+            else
+                par->vpp.Out.BitDepthChroma = 10;
+        }
+
+        if ((par->vpp.Out.BitDepthLuma == 10) && (par->vpp.Out.BitDepthChroma == 8)) {
+            if (canCorrect)
+                fixedIncompatible = true;
+            if (par->vpp.In.FourCC == MFX_FOURCC_I420)
+                par->vpp.Out.BitDepthLuma = 8;
+            else
+                par->vpp.Out.BitDepthLuma = 10;
         }
 
         par->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    }
+    else {
+        if (par->AsyncDepth > 16)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->Protected)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->NumExtParam)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (!par->vpp.Out.Width)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (!par->vpp.Out.Height)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (!par->vpp.In.FourCC) {
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+
+        switch (par->vpp.In.ChromaFormat) {
+            case MFX_CHROMAFORMAT_YUV444:
+            case MFX_CHROMAFORMAT_YUV420:
+                break;
+            default:
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+
+        switch (par->vpp.Out.ChromaFormat) {
+            case MFX_CHROMAFORMAT_YUV444:
+            case MFX_CHROMAFORMAT_YUV420:
+                break;
+            default:
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+
+        if (!par->vpp.Out.FourCC)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if (par->Protected)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
     if (0 == par->IOPattern) // IOPattern is mandatory parameter
@@ -311,7 +395,9 @@ mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
     sts = CheckFrameInfo(&par->vpp.Out);
     RET_ERROR(sts);
 
-    return sts;
+    if (fixedIncompatible)
+        return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+    return MFX_ERR_NONE;
 }
 
 mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
@@ -363,7 +449,7 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     m_vppWidth    = m_param.vpp.In.Width;
     m_vppHeight   = m_param.vpp.In.Height;
 
-    return MFX_ERR_NONE;
+    return sts;
 }
 
 CpuVPP::~CpuVPP() {
@@ -427,6 +513,8 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
 }
 
 mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
+    mfxStatus sts = MFX_ERR_NONE;
+
     if (out == 0)
         return MFX_ERR_NULL_PTR;
 
@@ -469,8 +557,7 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
         return MFX_ERR_NONE;
     }
     else {
-        mfxStatus sts = MFX_ERR_NONE;
-        *out          = *in;
+        *out = *in;
 
         // Query() returns MFX_ERR_UNSUPPORTED for uncorrectable parameter combination
         sts = ValidateVPPParams(out, true);
@@ -478,7 +565,7 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
             return MFX_ERR_UNSUPPORTED;
     }
 
-    return MFX_ERR_NONE;
+    return sts;
 }
 
 mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest request[2]) {

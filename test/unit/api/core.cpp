@@ -26,6 +26,15 @@ TEST(SetFrameAllocator, SetFrameAllocatorReturnsErrNone) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
+TEST(SetFrameAllocator, NullSessionReturnsInvalidHandle) {
+    mfxFrameAllocator allocator{};
+    allocator.pthis                              = reinterpret_cast<void*>(1);
+    *reinterpret_cast<void**>(&allocator.Lock)   = reinterpret_cast<void*>(2);
+    *reinterpret_cast<void**>(&allocator.Unlock) = reinterpret_cast<void*>(3);
+    mfxStatus sts                                = MFXVideoCORE_SetFrameAllocator(NULL, &allocator);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+}
+
 //SetHandle
 TEST(SetHandle, HandleInReturnsErrNone) {
     // Initialize the session.

@@ -45,6 +45,7 @@ CpuEncode::~CpuEncode() {
 }
 
 mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
+    bool fixedIncompatible = false;
     //Check if params given are settable.
     //If not return INVALID_VIDEO_PARAM or fix depending on canCorrect
 
@@ -83,8 +84,9 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             par->mfx.BRCParamMultiplier = 0; //not supported
         if (par->mfx.NumThread)
             par->mfx.NumThread = 0; //not supported
-        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 || par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
+        if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 || par->mfx.TargetUsage > MFX_TARGETUSAGE_7) {
             par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
+        }
 
         //GopPicSize and GopRefDist need no corrections
 
@@ -189,7 +191,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I420 ||
         par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010) {
         if (par->mfx.FrameInfo.CropW % 2 || par->mfx.FrameInfo.CropH % 2)
-            return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+            return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
     if (par->mfx.FrameInfo.FrameRateExtN == 0 && canCorrect)
@@ -223,6 +225,24 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             }
             else
                 return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if ((par->mfx.FrameInfo.BitDepthLuma == 8) && (par->mfx.FrameInfo.BitDepthChroma == 10)) {
+        if (canCorrect)
+            fixedIncompatible = true;
+        if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I420)
+            par->mfx.FrameInfo.BitDepthChroma = 8;
+        else
+            par->mfx.FrameInfo.BitDepthChroma = 10;
+    }
+
+    if ((par->mfx.FrameInfo.BitDepthLuma == 10) && (par->mfx.FrameInfo.BitDepthChroma == 8)) {
+        if (canCorrect)
+            fixedIncompatible = true;
+        if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I420)
+            par->mfx.FrameInfo.BitDepthLuma = 8;
+        else
+            par->mfx.FrameInfo.BitDepthLuma = 10;
     }
 
     //codec specific checks
@@ -271,8 +291,9 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
                 }
             }
             else if (canCorrect) {
-                if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010)
+                if (par->mfx.FrameInfo.FourCC == MFX_FOURCC_I010) {
                     par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH10;
+                }
                 else
                     par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
             }
@@ -425,7 +446,10 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    return MFX_ERR_NONE;
+    if (fixedIncompatible)
+        return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+    else
+        return MFX_ERR_NONE;
 }
 
 mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
@@ -1134,6 +1158,13 @@ mfxStatus CpuEncode::EncodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest 
     else
         memset(&request->Info, 0, sizeof(mfxFrameInfo));
 
+    //GetEncodeSurface calls EncodeQUeryIOSurf without params
+    //avoid calling ValidateEncodeParams in this case
+    //if (par) {
+    //  mfxStatus sts = ValidateEncodeParams(par,false);
+    //  if (sts < 0) return MFX_ERR_INVALID_VIDEO_PARAM;
+    //}
+
     request->NumFrameMin       = 3; // TO DO - calculate correctly from libav
     request->NumFrameSuggested = 3;
     request->Type              = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
@@ -1295,6 +1326,22 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
+    }
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuEncode::IsSameVideoParam(mfxVideoParam *newPar, mfxVideoParam *oldPar) {
+    if (newPar->AsyncDepth > oldPar->AsyncDepth) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.Width > oldPar->mfx.FrameInfo.Width) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
+    }
+
+    if (newPar->mfx.FrameInfo.Height > oldPar->mfx.FrameInfo.Height) {
+        return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
     }
 
     return MFX_ERR_NONE;

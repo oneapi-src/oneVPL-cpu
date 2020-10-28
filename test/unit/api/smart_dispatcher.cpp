@@ -24,12 +24,6 @@ TEST(Dispatcher_Load, CallReturnsLoader) {
     MFXUnload(loader);
 }
 
-// TO DO: modify test environment such that no valid DLL's
-//   will be found in dispatcher search paths (see spec)
-TEST(Dispatcher_Load, DISABLED_NoImplementationDllsReturnsNullLoader) {
-    FAIL() << "Test not implemented";
-}
-
 //MFXCreateConfig
 TEST(Dispatcher_CreateConfig, InitializedLoaderReturnsConfig) {
     mfxLoader loader = MFXLoad();
@@ -163,6 +157,27 @@ TEST(Dispatcher_SetConfigFilterProperty, PartialFilterReturnsErrNotFound) {
     ImplValue.Data.U32 = 0;
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription", ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_SetConfigFilterProperty, OutOfRangeValueReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = 9999;
+
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
+
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     //free internal resources
     MFXUnload(loader);
@@ -472,6 +487,34 @@ TEST(Dispatcher_CreateSession, NullSessionReturnsErrNull) {
 
     mfxStatus sts = MFXCreateSession(loader, 0, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, FilterNoMatchReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant impl_value;
+
+    impl_value.Type     = MFX_VARIANT_TYPE_U32;
+    impl_value.Data.U32 = MFX_CODEC_MPEG2;
+    sts                 = MFXSetConfigFilterProperty(
+        cfg,
+        reinterpret_cast<const mfxU8 *>("mfxImplDescription.mfxDecoderDescription.decoder.CodecID"),
+        impl_value);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    ASSERT_EQ(sts, MFX_ERR_NOT_FOUND);
 
     //free internal resources
     MFXUnload(loader);
