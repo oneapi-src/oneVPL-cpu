@@ -750,18 +750,54 @@ mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
 
 mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
     int ret;
-    if (par->mfx.RateControlMethod == MFX_RATECONTROL_CQP) {
-        std::stringstream qpss;
-        qpss << par->mfx.QPI;
-        ret =
-            av_opt_set(m_avEncContext->priv_data, "qp", qpss.str().c_str(), AV_OPT_SEARCH_CHILDREN);
-        if (ret)
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-    }
-    else {
-        // default to VBR
-        m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
-        ret = av_opt_set(m_avEncContext->priv_data, "tune", "zerolatency", AV_OPT_SEARCH_CHILDREN);
+    std::stringstream value;
+    switch (par->mfx.RateControlMethod) {
+        case MFX_RATECONTROL_CQP: // constant quantization parameter
+            // -qp <quantization parameter>
+            value << par->mfx.QPI; // 1 ~ 51
+            ret = av_opt_set(m_avEncContext->priv_data,
+                             "qp",
+                             value.str().c_str(),
+                             AV_OPT_SEARCH_CHILDREN);
+            if (ret < 0)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            break;
+
+        case MFX_RATECONTROL_VBR:
+        default:
+            par->mfx.NumSlice    = par->mfx.NumSlice ? par->mfx.NumSlice : 1;
+            par->mfx.NumRefFrame = par->mfx.NumRefFrame ? par->mfx.NumRefFrame : 1;
+
+            m_avEncContext->slices = par->mfx.NumSlice;
+            m_avEncContext->refs   = par->mfx.NumRefFrame;
+
+            m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
+            ret                      = av_opt_set(m_avEncContext->priv_data,
+                             "tune",
+                             "zerolatency",
+                             AV_OPT_SEARCH_CHILDREN);
+
+            // -nal-hrd 1 (vbr)
+            // -b:v <bitrate>
+            // -maxrate <bitrate>
+            // -bufsize <n sec * bitrate for buffer>
+            ret = av_opt_set_int(m_avEncContext->priv_data, "nal-hrd", 1, AV_OPT_SEARCH_CHILDREN);
+            if (ret < 0)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
+
+            if (par->mfx.MaxKbps)
+                m_avEncContext->rc_max_rate = par->mfx.MaxKbps * 1000;
+            else
+                m_avEncContext->rc_max_rate = (m_avEncContext->bit_rate * 3) / 2;
+
+            if (par->mfx.BufferSizeInKB)
+                m_avEncContext->rc_buffer_size = par->mfx.BufferSizeInKB * 1000;
+            else
+                m_avEncContext->rc_buffer_size = par->mfx.TargetKbps * 1000;
+            break;
     }
 
     if (par->mfx.TargetUsage) {
