@@ -61,27 +61,31 @@ md %build_dir% 2>NUL
 
 :: checkout SVT-HEVC
 cd %build_dir%
-git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
+git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git || exit /b
+cd SVT-HEVC
 if "%BUILD_MODE%"=="Debug" (
-  powershell -Command "(gc Source\Lib\Codec\EbMalloc.h) -replace '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE' | Out-File -encoding utf8 Source\Lib\Codec\EbMalloc.h"
+  powershell -Command "(gc Source\Lib\Codec\EbMalloc.h) -replace '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE' | Out-File -encoding utf8 Source\Lib\Codec\EbMalloc.h" || exit /b
 )
 
 :: checkout SVT-AV1
 cd %build_dir%
-git clone --depth=1 -b v0.8.4 https://github.com/AOMediaCodec/SVT-AV1 && cd SVT-AV1
+git clone --depth=1 -b v0.8.4 https://github.com/AOMediaCodec/SVT-AV1 || exit /b
+cd SVT-AV1
 if "%BUILD_MODE%"=="Debug" (
-  powershell -Command "(gc Source\Lib\Common\Codec\EbMalloc.h) -replace '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE' | Out-File -encoding utf8 Source\Lib\Common\Codec\EbMalloc.h"
+  powershell -Command "(gc Source\Lib\Common\Codec\EbMalloc.h) -replace '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE' | Out-File -encoding utf8 Source\Lib\Common\Codec\EbMalloc.h" || exit /b
 )
 
 if "%USE_GPL%"=="yes" (
   :: checkout x264
   cd %build_dir%
-  git clone --depth 1 -b stable https://code.videolan.org/videolan/x264.git && cd x264
+  git clone --depth 1 -b stable https://code.videolan.org/videolan/x264.git || exit /b
+  cd x264
 )
 
 :: checkout dav1d
 cd %build_dir%
-git clone --depth=1 -b 0.7.0 https://code.videolan.org/videolan/dav1d.git && cd dav1d
+git clone --depth=1 -b 0.7.0 https://code.videolan.org/videolan/dav1d.git || exit /b
+cd dav1d
 
 :: set path for build
 set PATH=%MINGWPATH%
@@ -92,9 +96,8 @@ cd %build_dir%\SVT-HEVC
 echo powershell -Command "(gc Source\Lib\Codec\EbDefinitions.h) -replace '#define LIB_PRINTF_ENABLE                1', '#define LIB_PRINTF_ENABLE                0' | Out-File -encoding utf8 Source\Lib\Codec\EbDefinitions.h"
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_MODE% ^
--DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off
-if ERRORLEVEL 1 exit /b 1
-cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
+-DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off || exit /b
+cmake --build . --target install -j %NUMBER_OF_PROCESSORS% || exit /b
 
 :: SVT-AV1 build and install
 :: -DSVT_LOG_QUIET=1 is for turning off logs
@@ -102,39 +105,39 @@ cd %build_dir%\SVT-AV1
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_MODE% ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APPS=off ^
--DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1"
-if ERRORLEVEL 1 exit /b 1
-cmake --build . --target install -j %NUMBER_OF_PROCESSORS%
+-DCMAKE_C_FLAGS="$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1" || exit /b
+cmake --build . --target install -j %NUMBER_OF_PROCESSORS% || exit /b
 
 if "%USE_GPL%"=="yes" (
   :: x264 build and install
   cd %build_dir%\x264
   bash -c './configure --prefix=${install_dir} --enable-static --enable-pic'
-  make -j %NUMBER_OF_PROCESSORS% && make install
+  if ERRORLEVEL 1 exit /b 1
+  make -j %NUMBER_OF_PROCESSORS% && make install || exit /b
 )
 
 :: dav1d build and install
 cd %build_dir%\dav1d
-meson build --prefix %install_dir%\ --libdir %install_dir%\lib --buildtype release --default-library=static -Denable_avx512=false
-ninja -C build && cd build
-ninja install
+meson build --prefix %install_dir%\ --libdir %install_dir%\lib --buildtype release --default-library=static -Denable_avx512=false || exit /b
+ninja -C build || exit /b
+cd build
+ninja install || exit /b
 
 cd %build_dir%
 :: set path for git
 set PATH=%GITPATH%
 
 :: checkout ffmpeg
-git clone --depth=1 -b n4.3.1 https://github.com/FFmpeg/FFmpeg ffmpeg && cd ffmpeg
+git clone --depth=1 -b n4.3.1 https://github.com/FFmpeg/FFmpeg ffmpeg || exit /b
+cd ffmpeg
 
 :: patch of SVT-HEVC and SVT-AV1 ffmpeg plugin
 git config user.email "bootstrap@localhost"
 git config user.name "bootstrap"
 set patch=0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch
-git am %build_dir%\SVT-HEVC\ffmpeg_plugin\%patch%
-if ERRORLEVEL 1 exit /b 1
+git am %build_dir%\SVT-HEVC\ffmpeg_plugin\%patch% || exit /b
 set patch=0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch
-git am %build_dir%\SVT-AV1\ffmpeg_plugin\%patch%
-if ERRORLEVEL 1 exit /b 1
+git am %build_dir%\SVT-AV1\ffmpeg_plugin\%patch% || exit /b
 
 if "%USE_GPL%"=="yes" (
   set enable_x264options=--enable-gpl --enable-libx264 --enable-encoder=libx264
@@ -233,8 +236,9 @@ ${enable_x264options}  ^
 --enable-encoder=libsvt_av1 ^
 --enable-libdav1d ^
 --enable-decoder=libdav1d'
-
-make -j %NUMBER_OF_PROCESSORS% && make install
+if ERRORLEVEL 1 exit /b 1
+make -j %NUMBER_OF_PROCESSORS% || exit /b
+make install || exit /b
 
 :: export build dependency environment
 (
