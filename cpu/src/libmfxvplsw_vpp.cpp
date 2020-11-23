@@ -110,3 +110,10 @@ mfxStatus MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat) {
     VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
 }
+
+mfxStatus MFXVideoVPP_ProcessFrameAsync(mfxSession session,
+                                        mfxFrameSurface1 *in,
+                                        mfxFrameSurface1 **out) {
+    VPL_TRACE_FUNC;
+    return MFX_ERR_NOT_IMPLEMENTED;
+}

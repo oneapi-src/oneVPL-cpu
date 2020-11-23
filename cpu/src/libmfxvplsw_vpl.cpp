@@ -190,3 +190,8 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1 **s
 
     return decoder->GetDecodeSurface(surface);
 }
+
+mfxStatus MFXMemory_GetSurfaceForVPPOut(mfxSession session, mfxFrameSurface1 **surface) {
+    VPL_TRACE_FUNC;
+    return MFX_ERR_NOT_IMPLEMENTED;
+}

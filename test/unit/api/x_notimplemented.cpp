@@ -161,3 +161,103 @@ TEST(DecodeGetPayload, AlwaysReturnsNotImplemented) {
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
+
+// API 2.1
+TEST(MFXMemory_GetSurfaceForVPPOut, AlwaysReturnsNotImplemented) {
+    mfxVersion ver = { 1, 2 };
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameSurface1 *vppSurfaceOut = nullptr;
+    sts                             = MFXMemory_GetSurfaceForVPPOut(session, &vppSurfaceOut);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(MFXVideoDECODE_VPP_Init, AlwaysReturnsNotImplemented) {
+    mfxVersion ver = { 1, 2 };
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam decode_par               = {};
+    mfxVideoChannelParam *vpp_par_array[1] = {};
+
+    sts = MFXVideoDECODE_VPP_Init(session, &decode_par, vpp_par_array, 1);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(MFXVideoDECODE_VPP_DecodeFrameAsync, AlwaysReturnsNotImplemented) {
+    mfxVersion ver = { 1, 2 };
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxBitstream bs                 = {};
+    mfxSurfaceArray *surf_array_out = nullptr;
+
+    sts = MFXVideoDECODE_VPP_DecodeFrameAsync(session, &bs, nullptr, 0, &surf_array_out);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(MFXVideoDECODE_VPP_Reset, AlwaysReturnsNotImplemented) {
+    mfxVersion ver = { 1, 2 };
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam decode_par               = {};
+    mfxVideoChannelParam *vpp_par_array[1] = {};
+
+    sts = MFXVideoDECODE_VPP_Reset(session, &decode_par, vpp_par_array, 1);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(MFXVideoDECODE_VPP_GetChannelParam, AlwaysReturnsNotImplemented) {
+    mfxVersion ver = { 1, 2 };
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoChannelParam par = {};
+
+    sts = MFXVideoDECODE_VPP_GetChannelParam(session, &par, 0);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(MFXVideoVPP_ProcessFrameAsync, AlwaysReturnsNotImplemented) {
+    mfxVersion ver = { 1, 2 };
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameSurface1 in   = {};
+    mfxFrameSurface1 *out = nullptr;
+
+    sts = MFXVideoVPP_ProcessFrameAsync(session, &in, &out);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
