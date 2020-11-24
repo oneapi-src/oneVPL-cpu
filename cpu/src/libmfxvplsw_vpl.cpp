@@ -13,8 +13,13 @@
 // the auto-generated capabilities structs
 // only include one time in this library
 #include "./libmfxvplsw_caps_dec.h"
-#include "./libmfxvplsw_caps_enc.h"
 #include "./libmfxvplsw_caps_vpp.h"
+
+#ifdef ENABLE_ENCODER_H264
+    #include "./libmfxvplsw_caps_enc_h264.h"
+#else
+    #include "./libmfxvplsw_caps_enc.h"
+#endif
 
 // preferred entrypoint for 2.0 implementations (instead of MFXInitEx)
 mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {

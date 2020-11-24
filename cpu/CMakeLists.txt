@@ -39,6 +39,10 @@ endif()
 find_package(VPL REQUIRED COMPONENTS api)
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
+if(BUILD_GPL_X264)
+  add_definitions("-DENABLE_ENCODER_H264")
+endif(BUILD_GPL_X264)
+
 add_subdirectory(ext/ffmpeg-svt)
 
 target_link_libraries(${TARGET} PRIVATE ffmpeg-svt)
