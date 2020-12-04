@@ -26,7 +26,7 @@ const DecMemDesc decMemDesc_c00_p00[] = {
 
 const DecProfile decProfile_c00[] = {
     {
-        MFX_PROFILE_UNKNOWN,
+        MFX_PROFILE_AV1_MAIN,
         {},
         1,
         (DecMemDesc *)decMemDesc_c00_p00,
@@ -130,14 +130,14 @@ const DecCodec decCodec[] = {
     {
         MFX_CODEC_AV1,
         {},
-        MFX_LEVEL_UNKNOWN,
+        MFX_LEVEL_AV1_53,
         1,
         (DecProfile *)decProfile_c00,
     },
     {
         MFX_CODEC_AVC,
         {},
-        MFX_LEVEL_UNKNOWN,
+        MFX_LEVEL_AVC_52,
         1,
         (DecProfile *)decProfile_c01,
     },

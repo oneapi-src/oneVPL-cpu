@@ -1,24 +1,13 @@
 FilterFourCC                        MaxDelayInFrames    MemHandleType                    W-Min  W-Max   W-Step   H-Min  H-Max  H-Step   InFormat           OutFormat
-MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420,   MFX_FOURCC_I420
 MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420,   MFX_FOURCC_I010
 MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420,   MFX_FOURCC_RGB4
 
 MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010,   MFX_FOURCC_I420
-MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010,   MFX_FOURCC_I010
 MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010,   MFX_FOURCC_RGB4
 
 MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_RGB4,   MFX_FOURCC_I420
 MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_RGB4,   MFX_FOURCC_I010
-MFX_EXTBUFF_VPP_COLOR_CONVERSION,   1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_RGB4,   MFX_FOURCC_RGB4
 
 MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420,   MFX_FOURCC_I420
-MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420,   MFX_FOURCC_I010
-MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I420,   MFX_FOURCC_RGB4
-
-MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010,   MFX_FOURCC_I420
 MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010,   MFX_FOURCC_I010
-MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_I010,   MFX_FOURCC_RGB4
-
-MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_RGB4,   MFX_FOURCC_I420
-MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_RGB4,   MFX_FOURCC_I010
 MFX_EXTBUFF_VPP_SCALING,            1,                  MFX_RESOURCE_SYSTEM_SURFACE,     64,    4096,   8,       64,    4096,  8,       MFX_FOURCC_RGB4,   MFX_FOURCC_RGB4

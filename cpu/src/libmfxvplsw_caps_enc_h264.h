@@ -26,7 +26,7 @@ const EncMemDesc encMemDesc_c00_p00[] = {
 
 const EncProfile encProfile_c00[] = {
     {
-        MFX_PROFILE_UNKNOWN,
+        MFX_PROFILE_AV1_MAIN,
         {},
         1,
         (EncMemDesc *)encMemDesc_c00_p00,
@@ -150,7 +150,7 @@ const EncProfile encProfile_c03[] = {
 const EncCodec encCodec[] = {
     {
         MFX_CODEC_AV1,
-        MFX_LEVEL_UNKNOWN,
+        MFX_LEVEL_AV1_53,
         1,
         {},
         1,
@@ -158,7 +158,7 @@ const EncCodec encCodec[] = {
     },
     {
         MFX_CODEC_AVC,
-        MFX_LEVEL_UNKNOWN,
+        MFX_LEVEL_AVC_52,
         1,
         {},
         2,

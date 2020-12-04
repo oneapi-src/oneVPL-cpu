@@ -10,12 +10,10 @@
 
 const mfxU32 vppFormatOut_f00_m00_i00[] = {
     MFX_FOURCC_I420,
-    MFX_FOURCC_I010,
     MFX_FOURCC_RGB4,
 };
 
 const mfxU32 vppFormatOut_f00_m00_i01[] = {
-    MFX_FOURCC_I420,
     MFX_FOURCC_I010,
     MFX_FOURCC_RGB4,
 };
@@ -23,26 +21,25 @@ const mfxU32 vppFormatOut_f00_m00_i01[] = {
 const mfxU32 vppFormatOut_f00_m00_i02[] = {
     MFX_FOURCC_I420,
     MFX_FOURCC_I010,
-    MFX_FOURCC_RGB4,
 };
 
 const VPPFormat vppFormatIn_f00_m00[] = {
     {
         MFX_FOURCC_I010,
         {},
-        3,
+        2,
         (mfxU32 *)vppFormatOut_f00_m00_i00,
     },
     {
         MFX_FOURCC_I420,
         {},
-        3,
+        2,
         (mfxU32 *)vppFormatOut_f00_m00_i01,
     },
     {
         MFX_FOURCC_RGB4,
         {},
-        3,
+        2,
         (mfxU32 *)vppFormatOut_f00_m00_i02,
     },
 };
@@ -59,20 +56,14 @@ const VPPMemDesc vppMemDesc_f00[] = {
 };
 
 const mfxU32 vppFormatOut_f01_m00_i00[] = {
-    MFX_FOURCC_I420,
     MFX_FOURCC_I010,
-    MFX_FOURCC_RGB4,
 };
 
 const mfxU32 vppFormatOut_f01_m00_i01[] = {
     MFX_FOURCC_I420,
-    MFX_FOURCC_I010,
-    MFX_FOURCC_RGB4,
 };
 
 const mfxU32 vppFormatOut_f01_m00_i02[] = {
-    MFX_FOURCC_I420,
-    MFX_FOURCC_I010,
     MFX_FOURCC_RGB4,
 };
 
@@ -80,19 +71,19 @@ const VPPFormat vppFormatIn_f01_m00[] = {
     {
         MFX_FOURCC_I010,
         {},
-        3,
+        1,
         (mfxU32 *)vppFormatOut_f01_m00_i00,
     },
     {
         MFX_FOURCC_I420,
         {},
-        3,
+        1,
         (mfxU32 *)vppFormatOut_f01_m00_i01,
     },
     {
         MFX_FOURCC_RGB4,
         {},
-        3,
+        1,
         (mfxU32 *)vppFormatOut_f01_m00_i02,
     },
 };
