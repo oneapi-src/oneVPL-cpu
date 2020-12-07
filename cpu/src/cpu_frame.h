@@ -28,6 +28,7 @@ public:
         m_interface.GetNativeHandle = GetNativeHandle;
         m_interface.GetDeviceHandle = GetDeviceHandle;
         m_interface.Synchronize     = Synchronize;
+        m_interface.OnComplete      = OnComplete;
     }
 
     ~CpuFrame() {
@@ -141,6 +142,7 @@ private:
                                      mfxHDL* device_handle,
                                      mfxHandleType* device_type);
     static mfxStatus Synchronize(mfxFrameSurface1* surface, mfxU32 wait);
+    static void OnComplete(mfxStatus sts);
 };
 
 #endif // CPU_SRC_CPU_FRAME_H_

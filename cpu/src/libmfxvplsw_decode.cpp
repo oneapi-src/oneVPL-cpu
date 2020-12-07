@@ -142,6 +142,10 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
 
     mfxStatus sts = decoder->DecodeFrame(bs, surface_work, surface_out);
 
+    if (surface_work->FrameInterface) {
+        surface_work->FrameInterface->OnComplete(sts);
+    }
+
     // application will not know to release surface (e.g. if we
     //   need more data) so need to release it here
     if (bInternalMem && sts != MFX_ERR_NONE) {

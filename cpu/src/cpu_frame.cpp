@@ -140,3 +140,7 @@ mfxStatus CpuFrame::Synchronize(mfxFrameSurface1* surface, mfxU32 wait) {
 
     return MFX_ERR_NONE;
 }
+
+void CpuFrame::OnComplete(mfxStatus sts) {
+    return;
+}
