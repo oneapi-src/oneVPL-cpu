@@ -49,6 +49,9 @@ TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {
     ASSERT_EQ(96, par.mfx.FrameInfo.Height);
     ASSERT_EQ(MFX_RATECONTROL_VBR, par.mfx.RateControlMethod);
 
+    sts = MFXVideoENCODE_Close(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
@@ -85,12 +88,47 @@ TEST(EncodeGetVideoParam, NullParamsOutReturnsErrNull) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeGetVideoParam, DISABLED_InitializedDecodeReturnsParams) {
-    FAIL() << "Test not implemented";
+TEST(DecodeGetVideoParam, InitializedDecodeReturnsParams) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxDecParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
+    mfxDecParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+    mfxDecParams.mfx.FrameInfo.CropW        = 128;
+    mfxDecParams.mfx.FrameInfo.CropH        = 96;
+    mfxDecParams.mfx.FrameInfo.Width        = 128;
+    mfxDecParams.mfx.FrameInfo.Height       = 96;
+
+    sts = MFXVideoDECODE_Init(session, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam testparam = { 0 };
+    sts                     = MFXVideoDECODE_GetVideoParam(session, &testparam);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(testparam.IOPattern, MFX_IOPATTERN_OUT_SYSTEM_MEMORY);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeGetVideoParam, DISABLED_DecodeUninitializedReturnsNotInitialized) {
-    FAIL() << "Test not implemented";
+TEST(DecodeGetVideoParam, DecodeUninitializedReturnsNotInitialized) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam testparam = { 0 };
+    sts                     = MFXVideoDECODE_GetVideoParam(session, &testparam);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(DecodeGetVideoParam, NullSessionReturnsInvalidHandle) {

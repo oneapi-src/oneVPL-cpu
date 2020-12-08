@@ -98,8 +98,29 @@ TEST(EncodeQuery, InvalidParamsReturnsUnsupported) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(EncodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
-    FAIL() << "Test not implemented";
+TEST(EncodeQuery, IncompatibleParamsReturnIncompatibleVideoParam) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxEncParams;
+    memset(&mfxEncParams, 0, sizeof(mfxEncParams));
+
+    mfxEncParams.mfx.CodecId                  = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.FrameInfo.Width          = 128;
+    mfxEncParams.mfx.FrameInfo.Height         = 96;
+    mfxEncParams.mfx.FrameInfo.BitDepthLuma   = 8;
+    mfxEncParams.mfx.FrameInfo.BitDepthChroma = 10;
+
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
+    sts = MFXVideoENCODE_Query(session, &mfxEncParams, &par);
+    ASSERT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+    ASSERT_EQ(8, par.mfx.FrameInfo.BitDepthChroma);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(EncodeQuery, NullSessionReturnsInvalidHandle) {
@@ -186,8 +207,28 @@ TEST(DecodeQuery, InvalidParamsReturnsUnsupported) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(DecodeQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
-    FAIL() << "Test not implemented";
+TEST(DecodeQuery, IncompatibleParamsReturnIncompatibleVideoParam) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId                  = MFX_CODEC_HEVC;
+    mfxDecParams.mfx.FrameInfo.Width          = 128;
+    mfxDecParams.mfx.FrameInfo.Height         = 96;
+    mfxDecParams.mfx.FrameInfo.BitDepthLuma   = 8;
+    mfxDecParams.mfx.FrameInfo.BitDepthChroma = 10;
+
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
+    sts = MFXVideoDECODE_Query(session, &mfxDecParams, &par);
+    ASSERT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+    ASSERT_EQ(8, par.mfx.FrameInfo.BitDepthChroma);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(DecodeQuery, NullSessionReturnsInvalidHandle) {
@@ -273,8 +314,27 @@ TEST(VPPQuery, InvalidParamsReturnsUnsupported) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(VPPQuery, DISABLED_IncompatibleParamsReturnIncompatibleVideoParam) {
-    FAIL() << "Test not implemented";
+TEST(VPPQuery, IncompatibleParamsReturnIncompatibleVideoParam) {
+    mfxVersion ver = {};
+    mfxSession session;
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
+    mfxVPPParams.vpp.In.Width          = 128;
+    mfxVPPParams.vpp.In.Height         = 96;
+    mfxVPPParams.vpp.In.BitDepthLuma   = 8;
+    mfxVPPParams.vpp.In.BitDepthChroma = 10;
+
+    mfxVideoParam par;
+    memset(&par, 0, sizeof(par));
+    sts = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
+    ASSERT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+    ASSERT_EQ(8, par.mfx.FrameInfo.BitDepthChroma);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
 TEST(VPPQuery, NullSessionReturnsInvalidHandle) {

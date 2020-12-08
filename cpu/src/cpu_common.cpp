@@ -84,7 +84,41 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
     info->CropY = 0;
     info->CropW = frame->width;
     info->CropH = frame->height;
-
+    switch (frame->format) {
+        case AV_PIX_FMT_YUV420P10LE:
+            info->FourCC         = MFX_FOURCC_I010;
+            info->BitDepthLuma   = 10;
+            info->BitDepthChroma = 10;
+            info->ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+            break;
+        case AV_PIX_FMT_YUV420P:
+        case AV_PIX_FMT_YUVJ420P:
+            info->FourCC         = MFX_FOURCC_IYUV;
+            info->BitDepthLuma   = 8;
+            info->BitDepthChroma = 8;
+            info->ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+            break;
+        case AV_PIX_FMT_BGRA:
+            info->FourCC         = MFX_FOURCC_BGRA;
+            info->BitDepthLuma   = 8;
+            info->BitDepthChroma = 8;
+            info->ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+            break;
+        default:
+            info->FourCC         = 0;
+            info->BitDepthLuma   = 0;
+            info->BitDepthChroma = 0;
+            break;
+    }
+    info->PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+    if (frame->sample_aspect_ratio.num == 0 && frame->sample_aspect_ratio.den == 1) {
+        info->AspectRatioW = 1;
+        info->AspectRatioH = 1;
+    }
+    else {
+        info->AspectRatioW = frame->sample_aspect_ratio.num;
+        info->AspectRatioH = frame->sample_aspect_ratio.den;
+    }
     if (frame->format == AV_PIX_FMT_YUV420P10LE) {
         RET_IF_FALSE(info->FourCC == MFX_FOURCC_I010, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 

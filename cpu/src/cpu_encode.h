@@ -28,6 +28,7 @@ public:
     mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxEncodeCtrl* ctrl, mfxBitstream* bs);
     mfxStatus GetVideoParam(mfxVideoParam* par);
     mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
+    mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
 
 private:
     static mfxStatus ValidateEncodeParams(mfxVideoParam* par, bool canCorrect);

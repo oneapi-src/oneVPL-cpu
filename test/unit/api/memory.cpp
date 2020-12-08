@@ -16,8 +16,6 @@
    MFX_ERR_NOT_INITIALIZED If VPP wasn't initialized
 */
 
-#define VPL_UTEST_MEMORY_TYPE_SYSTEM
-
 static mfxStatus InitDecodeBasic(mfxSession* session) {
     mfxVersion ver = {};
     ver.Major      = 2;
@@ -160,6 +158,8 @@ TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
     EXPECT_EQ(vppSurfaceIn->Data.MemType,
               MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
 
+    vppSurfaceIn->FrameInterface->Release(vppSurfaceIn);
+
     //free internal resources
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -212,7 +212,7 @@ TEST(Memory_GetSurfaceForVPP, UninitializedVPPReturnsNotInitialized) {
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
     sts                            = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
-    EXPECT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     //free internal resources
     sts = MFXClose(session);
@@ -226,7 +226,7 @@ TEST(Memory_GetSurfaceForEncode, InitializedEncodeReturnsSurface) {
 
     // init encode
     sts = InitEncodeBasic(&session);
-    EXPECT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // get internally allocated frame
     mfxFrameSurface1* encSurfaceIn = nullptr;
@@ -234,6 +234,10 @@ TEST(Memory_GetSurfaceForEncode, InitializedEncodeReturnsSurface) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
     EXPECT_EQ(encSurfaceIn->Data.MemType,
               MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
+
+    encSurfaceIn->FrameInterface->Release(encSurfaceIn);
+
+    sts = MFXVideoENCODE_Close(session);
 
     //free internal resources
     sts = MFXClose(session);
@@ -824,8 +828,6 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullResourceTypeReturnsErrNull) {
     CloseDecodeBasic(session);
 }
 
-#ifdef VPL_UTEST_MEMORY_TYPE_SYSTEM
-
 TEST(Memory_FrameInterfaceGetNativeHandle, SystemMemoryReturnsUnsupported) {
     mfxStatus sts;
     mfxSession session;
@@ -866,24 +868,6 @@ TEST(Memory_FrameInterfaceGetNativeHandle, NullSurfaceReturnsInvalidHandle) {
     // free internal resources
     CloseDecodeBasic(session);
 }
-
-#else
-
-TEST(Memory_FrameInterfaceGetNativeHandle, ValidInputReturnsErrNone) {}
-
-TEST(Memory_FrameInterfaceGetNativeHandle, DISABLED_NullSurfaceReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
-}
-
-TEST(Memory_FrameInterfaceGetNativeHandle, DISABLED_NullResourceReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
-}
-
-TEST(Memory_FrameInterfaceGetNativeHandle, DISABLED_NullResourceTypeReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
-}
-
-#endif
 
 //GetDeviceHandle
 TEST(Memory_FrameInterfaceGetDeviceHandle, NullSurfaceReturnsErrNull) {
@@ -939,8 +923,6 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, NullDeviceTypeReturnsErrNull) {
     CloseDecodeBasic(session);
 }
 
-#ifdef VPL_UTEST_MEMORY_TYPE_SYSTEM
-
 TEST(Memory_FrameInterfaceGetDeviceHandle, SystemMemoryReturnsUnsupported) {
     mfxStatus sts;
     mfxSession session;
@@ -960,29 +942,6 @@ TEST(Memory_FrameInterfaceGetDeviceHandle, SystemMemoryReturnsUnsupported) {
     // free internal resources
     CloseDecodeBasic(session);
 }
-
-#else
-
-TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_ValidInputReturnsErrNone) {
-    FAIL() << "Test not implemented";
-}
-
-TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_InvalidSurfaceReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
-}
-
-TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_InvalidHandleReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
-}
-
-TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_InvalidDeviceTypeReturnsInvalidHandle) {
-    FAIL() << "Test not implemented";
-}
-
-TEST(Memory_FrameInterfaceGetDeviceHandle, DISABLED_AsyncDependencyReturnsAborted) {
-    FAIL() << "Test not implemented";
-}
-#endif
 
 //GetDeviceHandle
 TEST(Memory_FrameInterfaceSynchronize, ValidInputReturnsErrNone) {

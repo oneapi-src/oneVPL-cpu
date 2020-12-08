@@ -67,6 +67,40 @@ public:
         Info.Width  = avframe->width;
         Info.Height = avframe->height;
         Info.FourCC = AVPixelFormat2MFXFourCC(avframe->format);
+        switch (avframe->format) {
+            case AV_PIX_FMT_YUV420P10LE:
+                Info.BitDepthLuma   = 10;
+                Info.BitDepthChroma = 10;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+                break;
+            case AV_PIX_FMT_YUV420P:
+            case AV_PIX_FMT_YUVJ420P:
+                Info.BitDepthLuma   = 8;
+                Info.BitDepthChroma = 8;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+                break;
+            case AV_PIX_FMT_BGRA:
+                Info.BitDepthLuma   = 8;
+                Info.BitDepthChroma = 8;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+                break;
+            default:
+                Info.BitDepthLuma   = 0;
+                Info.BitDepthChroma = 0;
+        }
+        Info.CropW     = avframe->width;
+        Info.CropH     = avframe->height;
+        Info.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
+
+        if (avframe->sample_aspect_ratio.num == 0 && avframe->sample_aspect_ratio.den == 1) {
+            Info.AspectRatioW = 1;
+            Info.AspectRatioH = 1;
+        }
+        else {
+            Info.AspectRatioW = (uint16_t)avframe->sample_aspect_ratio.num;
+            Info.AspectRatioH = (uint16_t)avframe->sample_aspect_ratio.den;
+        }
+
         if (Info.FourCC == MFX_FOURCC_RGB4) {
             Data.B = avframe->data[0] + 0;
             Data.G = avframe->data[0] + 1;

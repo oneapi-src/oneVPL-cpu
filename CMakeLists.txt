@@ -6,6 +6,11 @@
 # oneAPI Video Processing Library (oneVPL) main build script
 cmake_minimum_required(VERSION 3.10.2)
 
+set(CMAKE_NO_SYSTEM_FROM_IMPORTED
+    ON
+    CACHE BOOL "Do not treat contents of the
+  INTERFACE_INCLUDE_DIRECTORIES of IMPORTED targets as system includes" FORCE)
+
 file(STRINGS "version.txt" version_txt)
 project(oneVPL-cpu VERSION ${version_txt})
 if(NOT "${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")

@@ -63,14 +63,14 @@ md %build_dir% 2>NUL
 cd %build_dir%
 git clone --depth=1 -b v1.5.0 https://github.com/OpenVisualCloud/SVT-HEVC.git && cd SVT-HEVC
 if "%BUILD_MODE%"=="Debug" (
-  sed -i 's/#define DEBUG_MEMORY_USAGE/#undef DEBUG_MEMORY_USAGE/' Source\Lib\Common\EbMalloc.h
+  powershell -Command "(gc Source\Lib\Codec\EbMalloc.h) -replace '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE' | Out-File -encoding utf8 Source\Lib\Codec\EbMalloc.h"
 )
 
 :: checkout SVT-AV1
 cd %build_dir%
 git clone --depth=1 -b v0.8.4 https://github.com/AOMediaCodec/SVT-AV1 && cd SVT-AV1
 if "%BUILD_MODE%"=="Debug" (
-  sed -i 's/#define DEBUG_MEMORY_USAGE/#undef DEBUG_MEMORY_USAGE/' Source\Lib\Common\Codec\EbMalloc.h
+  powershell -Command "(gc Source\Lib\Common\Codec\EbMalloc.h) -replace '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE' | Out-File -encoding utf8 Source\Lib\Common\Codec\EbMalloc.h"
 )
 
 if "%USE_GPL%"=="yes" (
@@ -89,8 +89,7 @@ set PATH=%MINGWPATH%
 :: SVT-HEVC build and install
 cd %build_dir%\SVT-HEVC
 :::: to turn off log on screen, modify header file
-sed -i 's/#define LIB_PRINTF_ENABLE                1/#define LIB_PRINTF_ENABLE                0/' ^
-Source\Lib\Codec\EbDefinitions.h
+echo powershell -Command "(gc Source\Lib\Codec\EbDefinitions.h) -replace '#define LIB_PRINTF_ENABLE                1', '#define LIB_PRINTF_ENABLE                0' | Out-File -encoding utf8 Source\Lib\Codec\EbDefinitions.h"
 mkdir release && cd release
 cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_MODE% ^
 -DCMAKE_INSTALL_PREFIX=%install_dir%\ -DBUILD_SHARED_LIBS=off -DBUILD_APP=off

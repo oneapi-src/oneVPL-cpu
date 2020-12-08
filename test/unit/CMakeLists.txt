@@ -19,7 +19,6 @@ set(SOURCE_FILES
     api/test_bitstream_96x64_8bit_hevc.cpp
     api/test_bitstream_96x64_10bit_hevc.cpp
     api/test_bitstream_32x32_mjpeg.cpp
-    api/adapter.cpp
     api/x_getvideoparam.cpp
     api/core.cpp
     api/x_query.cpp

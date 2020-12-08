@@ -92,6 +92,10 @@ mfxStatus MFXVideoENCODE_Reset(mfxSession session, mfxVideoParam *par) {
     CpuEncode *encoder = ws->GetEncoder();
     RET_IF_FALSE(encoder, MFX_ERR_NOT_INITIALIZED);
 
+    mfxVideoParam oldParam = { 0 };
+    encoder->GetVideoParam(&oldParam);
+    RET_ERROR(encoder->IsSameVideoParam(par, &oldParam));
+
     RET_ERROR(MFXVideoENCODE_Close(session));
     return MFXVideoENCODE_Init(session, par);
 }

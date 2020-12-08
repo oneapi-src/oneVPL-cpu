@@ -24,6 +24,7 @@ mfxStatus MFXVideoVPP_QueryIOSurf(mfxSession session,
     VPL_TRACE_FUNC;
     RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
     RET_IF_FALSE(par, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(request, MFX_ERR_NULL_PTR);
 
     return CpuVPP::VPPQueryIOSurf(par, request);
 }

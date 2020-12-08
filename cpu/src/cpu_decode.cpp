@@ -24,6 +24,8 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_bFrameBuffered(false) {}
 
 mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
+    bool fixedIncompatible = false;
+
     switch (par->mfx.CodecId) {
         case MFX_CODEC_HEVC:
         case MFX_CODEC_AVC:
@@ -71,12 +73,20 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
 
         if (par->mfx.NumThread)
             return MFX_ERR_INVALID_VIDEO_PARAM;
+
+        if ((par->mfx.FrameInfo.ChromaFormat) &&
+            (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
+            return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
     //only I420 and I010 colorspaces allowed
     switch (par->mfx.FrameInfo.FourCC) {
         case MFX_FOURCC_I420:
             if (canCorrect) {
+                if (par->mfx.FrameInfo.BitDepthLuma && par->mfx.FrameInfo.BitDepthLuma != 8)
+                    fixedIncompatible = true;
+                if (par->mfx.FrameInfo.BitDepthChroma && par->mfx.FrameInfo.BitDepthChroma != 8)
+                    fixedIncompatible = true;
                 par->mfx.FrameInfo.BitDepthLuma   = 8;
                 par->mfx.FrameInfo.BitDepthChroma = 8;
                 par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
@@ -93,6 +103,10 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
             break;
         case MFX_FOURCC_I010:
             if (canCorrect) {
+                if (par->mfx.FrameInfo.BitDepthLuma && par->mfx.FrameInfo.BitDepthLuma != 10)
+                    fixedIncompatible = true;
+                if (par->mfx.FrameInfo.BitDepthChroma && par->mfx.FrameInfo.BitDepthChroma != 10)
+                    fixedIncompatible = true;
                 par->mfx.FrameInfo.BitDepthLuma   = 10;
                 par->mfx.FrameInfo.BitDepthChroma = 10;
                 par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
@@ -137,7 +151,10 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
     if (par->mfx.FrameInfo.FrameRateExtD > 65535)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
-    return MFX_ERR_NONE;
+    if (fixedIncompatible)
+        return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
+    else
+        return MFX_ERR_NONE;
 }
 
 //InitDecode can operate in two modes:
@@ -345,11 +362,15 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                     RET_ERROR(AVFrame2mfxFrameSurface(surface_work,
                                                       m_avDecFrameOut,
                                                       m_session->GetFrameAllocator()));
-                    m_bFrameBuffered = false;
+                    surface_work->Info.FrameRateExtN = (uint16_t)m_avDecContext->framerate.num;
+                    surface_work->Info.FrameRateExtD = (uint16_t)m_avDecContext->framerate.den;
+                    m_bFrameBuffered                 = false;
                 }
                 else {
                     if (cpu_frame) { // update MFXFrameSurface from AVFrame
                         cpu_frame->Update();
+                        surface_work->Info.FrameRateExtN = (uint16_t)m_avDecContext->framerate.num;
+                        surface_work->Info.FrameRateExtD = (uint16_t)m_avDecContext->framerate.den;
                     }
                 }
                 surface_work->Data.FrameOrder = m_frameOrder++;
@@ -426,6 +447,10 @@ mfxStatus CpuDecode::DecodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest 
         request->Info = par->mfx.FrameInfo;
     else
         request->Info = { 0 };
+
+    if (par)
+        if (ValidateDecodeParams(par, false) < 0)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
 
     request->NumFrameMin       = 1;
     request->NumFrameSuggested = 3;
