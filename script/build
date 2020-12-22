@@ -13,6 +13,13 @@ set -o errexit
 BUILD_MODE="Release"
 USE_GPL="no"
 
+if [ -z "$VPL_BUILD_DEPENDENCIES" ]
+then
+      export VPL_BUILD_DEPENDENCIES=${proj_dir}/_deps
+else
+      echo "VPL_BUILD_DEPENDENCIES = ${VPL_BUILD_DEPENDENCIES}"
+fi
+
 while [ "$1" != "" ]; do
   case $1 in
     gpl )

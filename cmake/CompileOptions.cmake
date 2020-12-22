@@ -9,6 +9,9 @@
 #
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_definitions(-D_DEBUG)
+  if(UNIX)
+    set(CMAKE_CXX_FLAGS "-O0 -g ${CMAKE_CXX_FLAGS}")
+  endif(UNIX)
 endif()
 
 if(MSVC)
