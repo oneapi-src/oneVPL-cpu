@@ -57,12 +57,14 @@ public:
         m_handles[ht] = hdl;
     }
 
-    mfxHDL* GetHandle(mfxHandleType ht) {
+    mfxStatus GetHandle(mfxHandleType ht, mfxHDL* hdl) {
         if (m_handles.find(ht) == m_handles.end()) {
-            return nullptr;
+            *hdl = nullptr;
+            return MFX_ERR_NOT_FOUND;
         }
         else {
-            return &m_handles[ht];
+            *hdl = m_handles[ht];
+            return MFX_ERR_NONE;
         }
     }
 

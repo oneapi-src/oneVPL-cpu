@@ -23,9 +23,10 @@ mfxStatus MFXVideoCORE_SetHandle(mfxSession session, mfxHandleType type, mfxHDL 
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
 
-    //Handle should not be redefined.  If the handle is null,
+    //Handle should not be redefined.  If the handle is not found,
     //set it.  Otherwise return UNDEFINED_BEHAVIOR.
-    if (!ws->GetHandle(type)) {
+    mfxHDL hdlTest = nullptr;
+    if (ws->GetHandle(type, &hdlTest) == MFX_ERR_NOT_FOUND) {
         ws->SetHandle(type, hdl);
         return MFX_ERR_NONE;
     }
@@ -41,8 +42,7 @@ mfxStatus MFXVideoCORE_GetHandle(mfxSession session, mfxHandleType type, mfxHDL 
     }
 
     CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
-    hdl               = ws->GetHandle(type);
-    return MFX_ERR_NONE;
+    return ws->GetHandle(type, hdl);
 }
 
 // QueryPlatform not implemented in CPU reference implementation

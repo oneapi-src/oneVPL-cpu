@@ -766,6 +766,49 @@ TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrNotFound) {
     MFXUnload(loader);
 }
 
+TEST(Dispatcher_CreateSession, ConfigHandleReturnsHandle) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+    mfxConfig cfg;
+
+    mfxHDL testHandle = (mfxHDL)0xabcd1234eeff5566;
+    #if defined(_WIN32) || defined(_WIN64)
+    mfxHandleType testHandleType = MFX_HANDLE_D3D11_DEVICE;
+    #else
+    mfxHandleType testHandleType = MFX_HANDLE_VA_DISPLAY;
+    #endif
+
+    // pass special config property - mfxHandleType
+    cfg                = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = testHandleType;
+    sts                = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxHandleType", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass special config property - mfxHDL
+    cfg                = MFXCreateConfig(loader);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = testHandle;
+    sts                = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxHDL", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // verify that handle was set properly
+    mfxHDL returnHandle = nullptr;
+    sts                 = MFXVideoCORE_GetHandle(session, testHandleType, &returnHandle);
+    EXPECT_EQ(returnHandle, testHandle);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 //MFXDispReleaseImplDescription
 TEST(Dispatcher_DispReleaseImplDescription, ValidInputReturnsErrNone) {
     mfxLoader loader = MFXLoad();
