@@ -10,16 +10,16 @@ proj_dir="$( dirname "${script_dir}" )"
 cd ${proj_dir}
 
 ## Read options -----------------------------------------------------------
-export USE_GPL="no"
-export BUILD_MODE= "Release"
+export GPL_FLAG=""
+export BUILD_MODE="Release"
 
 while [ "$1" != "" ]; do
     case $1 in
         gpl )
-            python3 script/bootstrap.py -gpl
+            export GPL_FLAG="-gpl"
             ;;
         debug )
-            python3 script/bootstrap.py --build-mode Debug
+            export BUILD_MODE="Debug"
             ;;
         * )
             echo "usage: build [gpl] [debug]"
@@ -28,4 +28,4 @@ while [ "$1" != "" ]; do
     shift
 done
 
-
+python3 script/bootstrap.py ${GPL_FLAG} -m ${BUILD_MODE}
