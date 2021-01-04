@@ -163,21 +163,6 @@ TEST(DecodeGetPayload, AlwaysReturnsNotImplemented) {
 }
 
 // API 2.1
-TEST(MFXMemory_GetSurfaceForVPPOut, AlwaysReturnsNotImplemented) {
-    mfxVersion ver = { 1, 2 };
-    mfxSession session;
-    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
-
-    mfxFrameSurface1 *vppSurfaceOut = nullptr;
-    sts                             = MFXMemory_GetSurfaceForVPPOut(session, &vppSurfaceOut);
-    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
-
-    //free internal resources
-    sts = MFXClose(session);
-    EXPECT_EQ(sts, MFX_ERR_NONE);
-}
-
 TEST(MFXVideoDECODE_VPP_Init, AlwaysReturnsNotImplemented) {
     mfxVersion ver = { 1, 2 };
     mfxSession session;

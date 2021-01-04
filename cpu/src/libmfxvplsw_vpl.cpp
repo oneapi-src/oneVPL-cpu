@@ -198,5 +198,12 @@ mfxStatus MFXMemory_GetSurfaceForDecode(mfxSession session, mfxFrameSurface1 **s
 
 mfxStatus MFXMemory_GetSurfaceForVPPOut(mfxSession session, mfxFrameSurface1 **surface) {
     VPL_TRACE_FUNC;
-    return MFX_ERR_NOT_IMPLEMENTED;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
+
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    CpuVPP *vpp       = ws->GetVPP();
+    RET_IF_FALSE(vpp, MFX_ERR_NOT_INITIALIZED);
+
+    return vpp->GetVPPSurfaceOut(surface);
 }

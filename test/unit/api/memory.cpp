@@ -142,8 +142,8 @@ static void CloseDecodeBasic(mfxSession session) {
     MFXClose(session);
 }
 
-//GetSurfaceForVPP
-TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
+//GetSurfaceForVPPIn
+TEST(Memory_GetSurfaceForVPPIn, InitializedVPPReturnsSurface) {
     mfxStatus sts;
     mfxSession session;
 
@@ -153,7 +153,7 @@ TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
 
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
-    sts                            = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForVPPIn(session, &vppSurfaceIn);
     ASSERT_EQ(sts, MFX_ERR_NONE);
     EXPECT_EQ(vppSurfaceIn->Data.MemType,
               MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
@@ -165,7 +165,7 @@ TEST(Memory_GetSurfaceForVPP, InitializedVPPReturnsSurface) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(Memory_GetSurfaceForVPP, NullSurfaceReturnsErrNull) {
+TEST(Memory_GetSurfaceForVPPIn, NullSurfaceReturnsErrNull) {
     mfxStatus sts;
     mfxSession session;
 
@@ -174,7 +174,7 @@ TEST(Memory_GetSurfaceForVPP, NullSurfaceReturnsErrNull) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // get internally allocated frame
-    sts = MFXMemory_GetSurfaceForVPP(session, nullptr);
+    sts = MFXMemory_GetSurfaceForVPPIn(session, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
     //free internal resources
@@ -182,7 +182,7 @@ TEST(Memory_GetSurfaceForVPP, NullSurfaceReturnsErrNull) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(Memory_GetSurfaceForVPP, NullSessionReturnsInvalidHandle) {
+TEST(Memory_GetSurfaceForVPPIn, NullSessionReturnsInvalidHandle) {
     mfxStatus sts;
     mfxSession session;
 
@@ -192,7 +192,7 @@ TEST(Memory_GetSurfaceForVPP, NullSessionReturnsInvalidHandle) {
 
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
-    sts                            = MFXMemory_GetSurfaceForVPP(nullptr, &vppSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForVPPIn(nullptr, &vppSurfaceIn);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
     //free internal resources
@@ -200,7 +200,7 @@ TEST(Memory_GetSurfaceForVPP, NullSessionReturnsInvalidHandle) {
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
 
-TEST(Memory_GetSurfaceForVPP, UninitializedVPPReturnsNotInitialized) {
+TEST(Memory_GetSurfaceForVPPIn, UninitializedVPPReturnsNotInitialized) {
     mfxStatus sts;
     mfxSession session;
 
@@ -211,7 +211,84 @@ TEST(Memory_GetSurfaceForVPP, UninitializedVPPReturnsNotInitialized) {
 
     // get internally allocated frame
     mfxFrameSurface1* vppSurfaceIn = nullptr;
-    sts                            = MFXMemory_GetSurfaceForVPP(session, &vppSurfaceIn);
+    sts                            = MFXMemory_GetSurfaceForVPPIn(session, &vppSurfaceIn);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+//GetSurfaceForVPPOut
+TEST(Memory_GetSurfaceForVPPOut, InitializedVPPReturnsSurface) {
+    mfxStatus sts;
+    mfxSession session;
+
+    // init VPP
+    sts = InitVPPBasic(&session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get internally allocated frame
+    mfxFrameSurface1* vppSurfaceOut = nullptr;
+    sts                             = MFXMemory_GetSurfaceForVPPOut(session, &vppSurfaceOut);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(vppSurfaceOut->Data.MemType,
+              MFX_MEMTYPE_FROM_VPPOUT | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME);
+
+    vppSurfaceOut->FrameInterface->Release(vppSurfaceOut);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(Memory_GetSurfaceForVPPOut, NullSurfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+
+    // init VPP
+    sts = InitVPPBasic(&session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get internally allocated frame
+    sts = MFXMemory_GetSurfaceForVPPOut(session, nullptr);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(Memory_GetSurfaceForVPPOut, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts;
+    mfxSession session;
+
+    // init VPP
+    sts = InitVPPBasic(&session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get internally allocated frame
+    mfxFrameSurface1* vppSurfaceOut = nullptr;
+    sts                             = MFXMemory_GetSurfaceForVPPOut(nullptr, &vppSurfaceOut);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(Memory_GetSurfaceForVPPOut, UninitializedVPPReturnsNotInitialized) {
+    mfxStatus sts;
+    mfxSession session;
+
+    // init session only, not VPP
+    mfxVersion ver = { 0, 2 };
+    sts            = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get internally allocated frame
+    mfxFrameSurface1* vppSurfaceOut = nullptr;
+    sts                             = MFXMemory_GetSurfaceForVPPOut(session, &vppSurfaceOut);
     ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
 
     //free internal resources
