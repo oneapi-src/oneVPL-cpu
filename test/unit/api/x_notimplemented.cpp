@@ -229,20 +229,3 @@ TEST(MFXVideoDECODE_VPP_GetChannelParam, AlwaysReturnsNotImplemented) {
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 }
-
-TEST(MFXVideoVPP_ProcessFrameAsync, AlwaysReturnsNotImplemented) {
-    mfxVersion ver = { 1, 2 };
-    mfxSession session;
-    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
-    ASSERT_EQ(sts, MFX_ERR_NONE);
-
-    mfxFrameSurface1 in   = {};
-    mfxFrameSurface1 *out = nullptr;
-
-    sts = MFXVideoVPP_ProcessFrameAsync(session, &in, &out);
-    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
-
-    //free internal resources
-    sts = MFXClose(session);
-    EXPECT_EQ(sts, MFX_ERR_NONE);
-}

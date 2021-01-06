@@ -1326,3 +1326,204 @@ TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
     delete[] vppSurfaces;
     delete[] DECoutbuf;
 }
+
+/*!
+   ProcessFrameAsync overview
+   Processes a single input frame to a single output frame. 
+
+   @param[in] session SDK session handle.
+   @param[in] in  Pointer to the input video surface structure
+   @param[out] out  Pointer to the output video surface structure
+
+   @return 
+   MFX_ERR_NONE The output frame is ready after synchronization. \n
+   
+*/
+//mfxStatus MFX_CDECL MFXVideoVPP_ProcessFrameAsync(mfxSession session, mfxFrameSurface1 *in, mfxFrameSurface1 *out);
+
+TEST(ProcessFrameAsync, ValidInputsReturnsErrNone) {
+    mfxSession session;
+    mfxVersion ver = {};
+    ver.Major      = 2;
+    ver.Minor      = 1;
+
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    // init VPP
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPParams.vpp.In.Width         = 352;
+    mfxVPPParams.vpp.In.Height        = 288;
+    mfxVPPParams.vpp.In.CropH         = mfxVPPParams.vpp.In.Height;
+    mfxVPPParams.vpp.In.CropW         = mfxVPPParams.vpp.In.Width;
+    mfxVPPParams.vpp.In.CropX         = 0;
+    mfxVPPParams.vpp.In.CropY         = 0;
+    mfxVPPParams.vpp.In.FrameRateExtN = 30;
+    mfxVPPParams.vpp.In.FrameRateExtD = 1;
+
+    mfxVPPParams.vpp.Out = mfxVPPParams.vpp.In;
+
+    sts = MFXVideoVPP_Init(session, &mfxVPPParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    // get internally allocated frame
+    mfxFrameSurface1 *vppSurfaceOut = nullptr;
+    sts                             = MFXMemory_GetSurfaceForVPPOut(session, &vppSurfaceOut);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    vppSurfaceOut->FrameInterface->Map(vppSurfaceOut, MFX_MAP_WRITE);
+
+    mfxU32 nSurfNum               = 2;
+    mfxFrameSurface1 *vppSurfaces = new mfxFrameSurface1[nSurfNum];
+    mfxU32 surfW                  = mfxVPPParams.vpp.In.Width;
+    mfxU32 surfH                  = mfxVPPParams.vpp.In.Height;
+
+    mfxU8 *surf_buf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
+
+    for (mfxU32 i = 0; i < nSurfNum; i++) {
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = surf_buf + buf_offset;
+        vppSurfaces[i].Data.U     = surf_buf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i].Data.Pitch = surfW;
+    }
+
+    sts = MFXVideoVPP_ProcessFrameAsync(session, &vppSurfaces[0], &vppSurfaceOut);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    vppSurfaceOut->FrameInterface->Unmap(
+        vppSurfaceOut); // Exception thrown: read access violation. vppSurfaceOut->FrameInterface was nullptr.
+    vppSurfaceOut->FrameInterface->Release(vppSurfaceOut);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] surf_buf;
+}
+
+TEST(ProcessFrameAsync, NullSessionReturnsInvalidHandle) {
+    mfxStatus sts = MFXVideoVPP_ProcessFrameAsync(0, nullptr, nullptr);
+    ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+}
+
+TEST(ProcessFrameAsync, NullSurfaceOutReturnsErrNone) {
+    mfxSession session;
+    mfxVersion ver = {};
+    ver.Major      = 2;
+    ver.Minor      = 1;
+
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    // init VPP
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
+    mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPParams.vpp.In.Width         = 352;
+    mfxVPPParams.vpp.In.Height        = 288;
+    mfxVPPParams.vpp.In.CropH         = mfxVPPParams.vpp.In.Height;
+    mfxVPPParams.vpp.In.CropW         = mfxVPPParams.vpp.In.Width;
+    mfxVPPParams.vpp.In.CropX         = 0;
+    mfxVPPParams.vpp.In.CropY         = 0;
+    mfxVPPParams.vpp.In.FrameRateExtN = 30;
+    mfxVPPParams.vpp.In.FrameRateExtD = 1;
+
+    mfxVPPParams.vpp.Out = mfxVPPParams.vpp.In;
+
+    sts = MFXVideoVPP_Init(session, &mfxVPPParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 nSurfNum               = 2;
+    mfxFrameSurface1 *vppSurfaces = new mfxFrameSurface1[nSurfNum];
+    mfxU32 surfW                  = mfxVPPParams.vpp.In.Width;
+    mfxU32 surfH                  = mfxVPPParams.vpp.In.Height;
+
+    mfxU8 *surf_buf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
+
+    for (mfxU32 i = 0; i < nSurfNum; i++) {
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = surf_buf + buf_offset;
+        vppSurfaces[i].Data.U     = surf_buf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i].Data.Pitch = surfW;
+    }
+
+    mfxFrameSurface1 *vppSurfaceOut = nullptr;
+    sts = MFXVideoVPP_ProcessFrameAsync(session, &vppSurfaces[0], &vppSurfaceOut);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    vppSurfaceOut->FrameInterface->Unmap(vppSurfaceOut);
+    vppSurfaceOut->FrameInterface->Release(vppSurfaceOut);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] surf_buf;
+}
+
+TEST(ProcessFrameAsync, VPPUninitializedReturnsNotInitialized) {
+    mfxSession session;
+    mfxVersion ver = {};
+    ver.Major      = 2;
+    ver.Minor      = 1;
+
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxVPPParams;
+    memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
+
+    // Input data
+    mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
+    mfxVPPParams.vpp.In.CropW         = 128;
+    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.FrameRateExtN = 30;
+    mfxVPPParams.vpp.In.FrameRateExtD = 1;
+    mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
+    mfxVPPParams.vpp.In.Height        = mfxVPPParams.vpp.In.CropH;
+    // Output data
+    mfxVPPParams.vpp.Out       = mfxVPPParams.vpp.In;
+    mfxVPPParams.vpp.In.FourCC = MFX_FOURCC_I420;
+    mfxVPPParams.IOPattern     = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxU32 nSurfNum               = 2;
+    mfxFrameSurface1 *vppSurfaces = new mfxFrameSurface1[nSurfNum];
+    mfxU32 surfW                  = mfxVPPParams.vpp.In.Width;
+    mfxU32 surfH                  = mfxVPPParams.vpp.In.Height;
+
+    mfxU8 *surf_buf = new mfxU8[(mfxU32)(surfW * surfH * nSurfNum * 1.5)];
+
+    for (mfxU32 i = 0; i < nSurfNum; i++) {
+        vppSurfaces[i]            = { 0 };
+        vppSurfaces[i].Info       = mfxVPPParams.mfx.FrameInfo;
+        int buf_offset            = i * surfW * surfH;
+        vppSurfaces[i].Data.Y     = surf_buf + buf_offset;
+        vppSurfaces[i].Data.U     = surf_buf + buf_offset + (surfW * surfH);
+        vppSurfaces[i].Data.V     = vppSurfaces[i].Data.U + ((surfW / 2) * (surfH / 2));
+        vppSurfaces[i].Data.Pitch = surfW;
+    }
+
+    mfxFrameSurface1 *vppSurfaceOut = nullptr;
+
+    sts = MFXVideoVPP_ProcessFrameAsync(session, &vppSurfaces[0], &vppSurfaceOut);
+    ASSERT_EQ(sts, MFX_ERR_NOT_INITIALIZED);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete[] vppSurfaces;
+    delete[] surf_buf;
+}
