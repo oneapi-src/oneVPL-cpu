@@ -766,6 +766,62 @@ TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrNotFound) {
     MFXUnload(loader);
 }
 
+TEST(Dispatcher_CreateSession, RequestAccelNoneCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_ACCEL_MODE_NA;
+
+    sts = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.AccelerationMode",
+                                     ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestAccelD3D9ReturnsNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_ACCEL_MODE_VIA_D3D9;
+
+    sts = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.AccelerationMode",
+                                     ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 TEST(Dispatcher_CreateSession, ConfigHandleReturnsHandle) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);

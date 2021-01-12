@@ -47,6 +47,19 @@ static const mfxChar strLicense[MFX_STRFIELD_LEN]   = "";
 static const mfxChar strKeywords[MFX_STRFIELD_LEN]  = "";
 static const mfxChar strDeviceID[MFX_STRFIELD_LEN]  = "CPU";
 
+#define NUM_ACCELERATION_MODES_CPU 1
+
+static const mfxAccelerationMode AccelerationMode[NUM_ACCELERATION_MODES_CPU] = {
+    MFX_ACCEL_MODE_NA,
+};
+
+static const mfxAccelerationModeDescription AccelerationModeDescription = {
+    { 0, 1 },
+    {},
+    NUM_ACCELERATION_MODES_CPU,
+    (mfxAccelerationMode *)AccelerationMode,
+};
+
 // query and release are independent of session - called during
 //   caps query and config stage using oneVPL extensions
 mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_impls) {
@@ -103,6 +116,8 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_i
     implDesc->VendorID     = 0x8086;
     implDesc->VendorImplID = 0;
     implDesc->NumExtParam  = 0;
+
+    implDesc->AccelerationModeDescription = AccelerationModeDescription;
 
     // initialize mfxDeviceDescription
     mfxDeviceDescription *Dev = &(implDesc->Dev);
