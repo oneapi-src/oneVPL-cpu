@@ -37,8 +37,9 @@ mfxStatus MFXVideoVPP_Init(mfxSession session, mfxVideoParam *par) {
     if (ws->GetVPP())
         return MFX_ERR_UNDEFINED_BEHAVIOR;
 
-    std::unique_ptr<CpuVPP> vpp(new CpuVPP(ws));
+    std::unique_ptr<CpuVPP> vpp(new CpuVPP);
     RET_IF_FALSE(vpp, MFX_ERR_MEMORY_ALLOC);
+    vpp->SetSession(ws);
     mfxStatus sts = vpp->InitVPP(par);
 
     if (sts < MFX_ERR_NONE)

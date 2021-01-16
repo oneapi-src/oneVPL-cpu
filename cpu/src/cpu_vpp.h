@@ -55,7 +55,7 @@ class CpuWorkstream;
 
 class CpuVPP {
 public:
-    explicit CpuVPP(CpuWorkstream* session);
+    CpuVPP();
     ~CpuVPP();
 
     static mfxStatus VPPQuery(mfxVideoParam* in, mfxVideoParam* out);
@@ -69,6 +69,7 @@ public:
     mfxStatus GetVPPSurface(mfxFrameSurface1** surface);
     mfxStatus GetVPPSurfaceOut(mfxFrameSurface1** surface);
     mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
+    void SetSession(CpuWorkstream* session);
 
 private:
     char m_vpp_filter_desc[1024];

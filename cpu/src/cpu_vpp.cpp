@@ -14,8 +14,8 @@
 // vpp in/out type
 enum { VPP_IN = 0x00, VPP_OUT = 0x01 };
 
-CpuVPP::CpuVPP(CpuWorkstream* session)
-        : m_session(session),
+CpuVPP::CpuVPP()
+        : m_session(nullptr),
           m_avVppFrameOut(nullptr),
           m_vpp_graph(nullptr),
           m_buffersrc_ctx(nullptr),
@@ -31,6 +31,10 @@ CpuVPP::CpuVPP(CpuWorkstream* session)
           m_vppSurfacesIn(),
           m_vppSurfacesOut() {
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
+}
+
+void CpuVPP::SetSession(CpuWorkstream* session) {
+    m_session = session;
 }
 
 // buffersrc --> execution filters from filter description --> buffersink
