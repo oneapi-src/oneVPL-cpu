@@ -13,9 +13,6 @@ set(CMAKE_NO_SYSTEM_FROM_IMPORTED
 
 file(STRINGS "version.txt" version_txt)
 project(oneVPL-cpu VERSION ${version_txt})
-if(NOT "${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-  message(FATAL_ERROR "Unsupported architecture: only 64-bit supported")
-endif()
 
 #
 # Project configuration options

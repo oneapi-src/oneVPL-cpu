@@ -26,7 +26,7 @@ CPU_COUNT = multiprocessing.cpu_count()
 # Flag indicating if verbose (debug) loging  should be output
 VERBOSE = 'VERBOSE' in os.environ
 if VERBOSE:
-    if os.environ['VERBOSE']:
+    if os.environ['VERBOSE'] not in ['', '-']:
         VERBOSE_FILE = open(os.environ['VERBOSE'], 'w')
     else:
         VERBOSE_FILE = sys.stdout
@@ -261,6 +261,14 @@ def main():
                         help='Use GPL codecs (x264)')
 
     parser.add_argument(
+        '-A',
+        "--arch",
+        dest='arch',
+        choices=['x86_64', 'x86_32'] if os.name == 'nt' else ['x86_64'],
+        default='x86_64',
+        help='Target Architecture')
+
+    parser.add_argument(
         '-clean',
         dest='clean',
         action="store_true",
@@ -268,33 +276,44 @@ def main():
 
     args = parser.parse_args()
 
-    bootstrap(args.clean, args.use_gpl, args.build_mode, proj_dir)
+    bootstrap(args.clean, args.use_gpl, args.build_mode, proj_dir, args.arch)
 
 
-def make_mingw_path():
+def make_mingw_path(arch):
     """Create PATH setting for MinGW"""
+    fallback_msys_root = os.path.join('C:\\', 'tools', 'msys64')
     if 'MSYS_ROOT' in os.environ:
         msys_root = os.environ['MSYS_ROOT']
         print(f'MSYS_ROOT found: {msys_root}', file=sys.stderr)
-    elif os.path.exists('C:\\tools\\msys64'):
-        msys_root = 'C:\\tools\\msys64'
+    elif os.path.exists(fallback_msys_root):
+        msys_root = fallback_msys_root
         print(f'MSYS_ROOT not found using msys at: {msys_root}',
               file=sys.stderr)
     else:
         raise 'MSys not found'
-    msys_usr_path = f'{msys_root}\\usr'
-    msys_usr_bin_path = f'{msys_usr_path}\\bin'
-    win_path = 'c:\\Windows'
-    win_sys_path = f'{win_path}\\System32'
-    mingw_path = os.pathsep.join([
-        f'{msys_root}\\mingw64\\bin', f'{msys_usr_path}\\local\\bin',
-        f'{msys_usr_bin_path}', f'{msys_root}\\bin', f'{win_sys_path}',
-        f'{win_path}', f'{win_sys_path}\\Wbem',
-        f'{win_sys_path}\\WindowsPowerShell\\v1.0\\',
-        f'{msys_usr_bin_path}\\site_perl', f'{msys_usr_bin_path}\\vendor_perl',
-        f'{msys_usr_bin_path}\\core_perl'
+    msys_usr_path = os.path.join(msys_root, 'usr')
+    msys_usr_bin_path = os.path.join(msys_usr_path, 'bin')
+    win_path = os.path.join('C:\\', 'Windows')
+    win_sys_path = os.path.join(win_path, 'System32')
+    mingw_path = []
+    if arch == 'x86_32':
+        mingw_path.append(os.path.join(msys_root, 'mingw32', 'bin'))
+        mingw_path.append(
+            os.path.join(msys_root, 'mingw32', 'i686-w64-mingw32', 'bin'))
+    mingw_path.append(os.path.join(msys_root, 'mingw64', 'bin'))
+    mingw_path.extend([
+        os.path.join(msys_usr_path, 'local', 'bin'),
+        msys_usr_bin_path,
+        os.path.join(msys_root, 'bin'),
+        win_sys_path,
+        win_path,
+        os.path.join(win_sys_path, 'Wbem'),
+        os.path.join(win_sys_path, 'WindowsPowerShell', 'v1.0'),
+        os.path.join(msys_usr_bin_path, 'site_perl'),
+        os.path.join(msys_usr_bin_path, 'vendor_perl'),
+        os.path.join(msys_usr_bin_path, 'core_perl'),
     ])
-    return mingw_path
+    return os.pathsep.join(mingw_path)
 
 
 def make_git_path(mingw_path):
@@ -307,12 +326,12 @@ def make_git_path(mingw_path):
     return git_path
 
 
-def bootstrap(clean, use_gpl, build_mode, proj_dir):
+def bootstrap(clean, use_gpl, build_mode, proj_dir, arch):
     """Bootstrap install"""
     if os.name == 'nt':
         #pylint: disable=global-statement
         global GIT_ENV
-        mingw_path = make_mingw_path()
+        mingw_path = make_mingw_path(arch)
         GIT_ENV = {'PATH': make_git_path(mingw_path)}
         # Don't update PATH with MinGW until we have figured out Git path
         set_env('PATH', mingw_path)
@@ -337,14 +356,15 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir):
         if use_gpl:
             build_gpl_x264_encoder(install_dir)
         # build_aom_av1_decoder(install_dir)
-        build_dav1d_decoder(install_dir)
-        build_svt_av1_encoder(install_dir, build_mode)
-        build_svt_hevc_encoder(install_dir, build_mode)
+        if arch == 'x86_64':
+            build_dav1d_decoder(install_dir)
+            build_svt_av1_encoder(install_dir, build_mode)
+            build_svt_hevc_encoder(install_dir, build_mode)
         #prepare ffmpeg build
         clone_ffmpeg()
         with pushd('ffmpeg'):
             configure_opts = []
-            configure_opts.extend(ffmpeg_configure_opts(install_dir))
+            configure_opts.extend(ffmpeg_configure_opts(install_dir, arch))
             if build_mode == "Debug":
                 configure_opts.extend(ffmpeg_debug_configure_opts())
             configure_opts.extend(ffmpeg_3rdparty_configure_opts(build_dir))
@@ -497,7 +517,7 @@ def clone_ffmpeg():
             xenv=GIT_ENV)
 
 
-def ffmpeg_configure_opts(install_dir):
+def ffmpeg_configure_opts(install_dir, arch):
     """configure options for ffmpeg build"""
     posix_install_dir = to_posix_path(install_dir)
     result = [
@@ -579,10 +599,16 @@ def ffmpeg_configure_opts(install_dir):
         result.extend([
             '--extra-cflags=-fPIC',
             '--extra-ldflags=-fPIC',
-            '--arch=x86_64',
-            '--target-os=mingw64',
             '--enable-filter=testsrc2',
         ])
+        if arch == 'x86_64':
+            result.append('--arch=x86_64')
+            result.append('--target-os=mingw64')
+        elif arch == 'x86_32':
+            result.append('--arch=x86_32')
+            result.append('--target-os=mingw32')
+        else:
+            raise Exception(f'Unknown architecture {arch}')
     else:
         result.extend([
             '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',

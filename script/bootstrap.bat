@@ -17,6 +17,7 @@ cd %PROJ_DIR%
 :: Read options -----------------------------------------------------------
 SET GPL_FLAG=
 SET BUILD_MODE=Release
+SET BUILD_ARCH=x86_64
 
 :Loop
 IF "%~1"=="" GOTO Continue
@@ -26,6 +27,10 @@ IF "%~1"=="" GOTO Continue
   IF "%~1"=="debug" (
     SET BUILD_MODE=Debug
   )
+  IF "%~1"=="-A" (
+    SET BUILD_ARCH=%~2
+    SHIFT
+  )
 SHIFT
 GOTO Loop
 :Continue
@@ -33,7 +38,7 @@ GOTO Loop
 :: start of commands -----------------------------------------------------------
 set DEFAULT_VPL_BUILD_DEPENDENCIES=%PROJ_DIR%\_deps
 
-py -3 script\\bootstrap.py %GPL_FLAG% -m %BUILD_MODE% || exit /b 1
+py -3 script\\bootstrap.py %GPL_FLAG% -m %BUILD_MODE% -A %BUILD_ARCH% || exit /b 1
 
 :: export build dependency environment
 (
