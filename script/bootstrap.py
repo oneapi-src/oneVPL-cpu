@@ -355,26 +355,6 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir):
             cmd('make', 'install')
 
 
-def build_aom_av1_decoder(install_dir):
-    """build libaom from source"""
-    if os.path.exists('aom'):
-        print("using existing aom av1 decoder dir")
-        return
-    cmd('git', 'clone'
-        '--depth=1',
-        '-b',
-        'master',
-        'https://aomedia.googlesource.com/aom',
-        xenv=GIT_ENV)
-    with pushd('aom'):
-        mkdir('_build')
-        with pushd('_build'):
-            cmd('cmake', '..', f'-DCMAKE_INSTALL_PREFIX={install_dir}',
-                '-DCONFIG_AV1_ENCODER=0', '-DBUILD_SHARED_LIBS=0')
-            cmd('make', '-j', CPU_COUNT)
-            cmd('make', 'install')
-
-
 def build_dav1d_decoder(install_dir):
     """build libdav1d from source"""
     if os.path.exists('dav1d'):
@@ -435,10 +415,9 @@ def build_svt_hevc_encoder(install_dir, build_mode):
             cmd('make', 'install')
             if os.name != 'nt':
                 if os.path.exists(os.path.join(install_dir, 'lib64')):
-                    cmd('cp', f'{install_dir}/lib64/*', f'{install_dir}/lib')
+                    cmd('cp', '-r', f'{install_dir}/lib64/*',
+                        f'{install_dir}/lib')
                     mkdir(os.path.join(install_dir, 'lib', 'pkgconfig'))
-                    cmd('cp', f'{install_dir}/lib64/pkgconfig/*',
-                        f'{install_dir}/lib/pkgconfig')
                     replace(f'{install_dir}/lib/pkgconfig/SvtHevcEnc.pc',
                             'lib64', 'lib')
 
@@ -473,10 +452,9 @@ def build_svt_av1_encoder(install_dir, build_mode):
             cmd('make', 'install')
             if os.name != 'nt':
                 if os.path.isdir(f"{install_dir}/lib64"):
-                    cmd('cp', f'{install_dir}/lib64/*', f'{install_dir}/lib')
+                    cmd('cp', '-r', f'{install_dir}/lib64/*',
+                        f'{install_dir}/lib')
                     mkdir(os.path.join(install_dir, 'lib', 'pkgconfig'))
-                    cmd('cp', f'{install_dir}/lib64/pkgconfig/*',
-                        f'{install_dir}/lib/pkgconfig')
                     replace(f'{install_dir}/lib/pkgconfig/SvtAv1Enc.pc',
                             'lib64', 'lib')
 
