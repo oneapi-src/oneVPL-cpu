@@ -496,11 +496,21 @@ TEST(Dispatcher_CreateSession, FilterNoMatchReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
     mfxVariant impl_value;
+    mfxConfig cfg;
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    impl_value.Type     = MFX_VARIANT_TYPE_U32;
+    impl_value.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                 = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     impl_value);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
 
     impl_value.Type     = MFX_VARIANT_TYPE_U32;
     impl_value.Data.U32 = MFX_CODEC_MPEG2;
@@ -508,7 +518,6 @@ TEST(Dispatcher_CreateSession, FilterNoMatchReturnsErrNotFound) {
         cfg,
         reinterpret_cast<const mfxU8 *>("mfxImplDescription.mfxDecoderDescription.decoder.CodecID"),
         impl_value);
-
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // create session with first implementation
@@ -536,12 +545,21 @@ TEST(Dispatcher_CreateSession, RequestAV1DecCreatesSession) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
     mfxVariant ImplValue;
+    mfxConfig cfg;
 
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_CODEC_AV1;
 
@@ -569,12 +587,21 @@ TEST(Dispatcher_CreateSession, RequestAV1EncCreatesSession) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
     mfxVariant ImplValue;
+    mfxConfig cfg;
 
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_CODEC_AV1;
 
@@ -602,11 +629,20 @@ TEST(Dispatcher_CreateSession, RequestI010toI420VPPCreatesSession) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
+    mfxConfig cfg;
     mfxStatus sts;
     mfxVariant ImplValue;
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_FOURCC_I010;
     sts                = MFXSetConfigFilterProperty(
@@ -641,16 +677,24 @@ TEST(Dispatcher_CreateSession, RequestVP9DecReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
+    mfxConfig cfg;
     mfxStatus sts;
     mfxVariant ImplValue;
 
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_CODEC_VP9;
-
-    sts = MFXSetConfigFilterProperty(
+    sts                = MFXSetConfigFilterProperty(
         cfg,
         (const mfxU8 *)"mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
         ImplValue);
@@ -670,12 +714,21 @@ TEST(Dispatcher_CreateSession, RequestVP9EncReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
+    mfxConfig cfg;
     mfxStatus sts;
     mfxVariant ImplValue;
 
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_CODEC_VP9;
 
@@ -699,11 +752,21 @@ TEST(Dispatcher_CreateSession, RequestAV1AndHEVCDecReturnsErrNone) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
+    mfxConfig cfg;
     mfxStatus sts;
     mfxVariant ImplValue;
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_CODEC_AV1;
     sts                = MFXSetConfigFilterProperty(
@@ -735,11 +798,21 @@ TEST(Dispatcher_CreateSession, RequestAV1AndVP9DecReturnsErrNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
+    mfxConfig cfg;
     mfxStatus sts;
     mfxVariant ImplValue;
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_CODEC_AV1;
     sts                = MFXSetConfigFilterProperty(
@@ -771,8 +844,6 @@ TEST(Dispatcher_CreateSession, RequestAccelNoneCreatesSession) {
     EXPECT_FALSE(loader == nullptr);
 
     mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
     mfxVariant ImplValue;
 
@@ -798,12 +869,21 @@ TEST(Dispatcher_CreateSession, RequestAccelD3D9ReturnsNotFound) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
+    mfxConfig cfg;
     mfxStatus sts;
     mfxVariant ImplValue;
 
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = MFX_ACCEL_MODE_VIA_D3D9;
 
@@ -962,6 +1042,15 @@ TEST(Dispatcher_CreateSession, ConfigHandleReturnsHandle) {
     mfxHandleType testHandleType = MFX_HANDLE_VA_DISPLAY;
     #endif
 
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
     // pass special config property - mfxHandleType
     cfg                = MFXCreateConfig(loader);
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
@@ -996,8 +1085,6 @@ TEST(Dispatcher_DispReleaseImplDescription, ValidInputReturnsErrNone) {
     EXPECT_FALSE(loader == nullptr);
 
     mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
     mfxVariant ImplValue;
 
