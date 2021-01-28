@@ -1,5 +1,5 @@
 /*############################################################################
-  # Copyright (C) 2020 Intel Corporation
+  # Copyright (C) Intel Corporation
   #
   # SPDX-License-Identifier: MIT
   ############################################################################*/
@@ -268,6 +268,9 @@ TEST(EncodeInit, DoubleInitReturnsUndefinedBehavior) {
 }
 
 TEST(EncodeInit, EncodeParamsInReturnsInitializedHEVCContext) {
+#if !defined(__x86_64__) && !defined(_WIN64)
+    GTEST_SKIP();
+#endif
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -322,6 +325,9 @@ TEST(EncodeInit, EncodeParamsInReturnsInitializedHEVCContext) {
 }
 
 TEST(EncodeInit, EncodeParamsInReturnsInitializedAV1Context) {
+#if !defined(__x86_64__) && !defined(_WIN64)
+    GTEST_SKIP();
+#endif
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -410,6 +416,9 @@ TEST(EncodeInit, EncodeParamsInReturnsInitializedJPEGContext) {
 }
 
 TEST(EncodeInit, AV1CloseCrashes) {
+#if !defined(__x86_64__) && !defined(_WIN64)
+    GTEST_SKIP();
+#endif
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
@@ -451,6 +460,9 @@ TEST(EncodeInit, AV1CloseCrashes) {
 }
 
 TEST(EncodeInit, BadAV1GopSizeReturnsInvalidParam) {
+#if !defined(__x86_64__) && !defined(_WIN64)
+    GTEST_SKIP();
+#endif
     mfxVersion ver = {};
     mfxSession session;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);

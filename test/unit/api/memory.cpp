@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 #include "api/test_bitstreams.h"
+#include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
 /*
@@ -60,7 +61,7 @@ static mfxStatus InitEncodeBasic(mfxSession* session) {
 
     mfxEncParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
-    mfxEncParams.mfx.CodecId                 = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.TargetUsage             = 7;
     mfxEncParams.mfx.TargetKbps              = 4000;
     mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_VBR;
@@ -78,6 +79,12 @@ static mfxStatus InitEncodeBasic(mfxSession* session) {
     mfxEncParams.mfx.FrameInfo.CropY = 0;
     mfxEncParams.mfx.FrameInfo.CropW = mfxEncParams.mfx.FrameInfo.Width;
     mfxEncParams.mfx.FrameInfo.CropH = mfxEncParams.mfx.FrameInfo.Height;
+
+    // Required for JPEG Encode
+    mfxEncParams.mfx.Interleaved     = 1;
+    mfxEncParams.mfx.Quality         = 50;
+    mfxEncParams.mfx.RestartInterval = 0;
+    memset(&mfxEncParams.mfx.reserved5, 0, sizeof(mfxEncParams.mfx.reserved5));
 
     sts = MFXVideoENCODE_Init(*session, &mfxEncParams);
     if (sts)

@@ -153,6 +153,11 @@ def mkdir(target):
         else:
             log(f'mkdir -p {target}')
         os.makedirs(target)
+        # Rarely there is a bit of async delay in filesystem changes.
+        # If a user script deleted this folder just before running this
+        # script we may need to wait a moment to see the folder created.
+        if not os.path.exists(target):
+            time.sleep(2)
 
 
 def join_command(command):

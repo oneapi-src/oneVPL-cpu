@@ -5,6 +5,7 @@
   ############################################################################*/
 
 #include <gtest/gtest.h>
+#include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
 /* GetVideoParam overview
@@ -22,7 +23,7 @@ TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {
 
     mfxVideoParam mfxEncParams = { 0 };
 
-    mfxEncParams.mfx.CodecId                 = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.TargetUsage             = MFX_TARGETUSAGE_BALANCED;
     mfxEncParams.mfx.TargetKbps              = 4000;
     mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_VBR;
