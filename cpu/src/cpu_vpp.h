@@ -122,6 +122,7 @@ private:
     void GetDoNotUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen);
     bool CheckFilterList(mfxU32* pList, mfxU32 count, bool bDoUseTable);
     mfxStatus CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count);
+    bool NeedWAForAlignment(mfxFrameInfo* fi, int* linesize);
 
     CpuWorkstream* m_session;
 
