@@ -142,20 +142,39 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 if(MSVC)
-  target_link_libraries(
-    ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
-                        ${SWSCALE_LIB} Threads::Threads)
-  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-    target_link_libraries(${TARGET} INTERFACE ${SVTHEVCENC_LIB}
-                                              ${SVTAV1ENC_LIB} ${DAV1D_LIB})
+  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    target_link_libraries(
+      ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
+                          ${SWSCALE_LIB} Threads::Threads)
+  elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    target_link_libraries(
+      ${TARGET}
+      INTERFACE ${AVCODEC_LIB}
+                ${AVUTIL_LIB}
+                ${AVFILTER_LIB}
+                ${SWSCALE_LIB}
+                ${SVTHEVCENC_LIB}
+                ${SVTAV1ENC_LIB}
+                ${DAV1D_LIB}
+                Threads::Threads)
   endif()
 else()
-  target_link_libraries(
-    ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
-                        ${SWSCALE_LIB} Threads::Threads dl)
-  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-    target_link_libraries(${TARGET} INTERFACE ${SVTHEVCENC_LIB}
-                                              ${SVTAV1ENC_LIB} ${DAV1D_LIB})
+  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    target_link_libraries(
+      ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
+                          ${SWSCALE_LIB} Threads::Threads ${CMAKE_DL_LIBS})
+  elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    target_link_libraries(
+      ${TARGET}
+      INTERFACE ${AVCODEC_LIB}
+                ${AVUTIL_LIB}
+                ${AVFILTER_LIB}
+                ${SWSCALE_LIB}
+                ${SVTHEVCENC_LIB}
+                ${SVTAV1ENC_LIB}
+                ${DAV1D_LIB}
+                Threads::Threads
+                ${CMAKE_DL_LIBS})
   endif()
 endif()
 
@@ -163,6 +182,7 @@ if(BUILD_GPL_X264)
   if(MSVC)
     target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads)
   else()
-    target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads dl)
+    target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads
+                                              ${CMAKE_DL_LIBS})
   endif()
 endif(BUILD_GPL_X264)

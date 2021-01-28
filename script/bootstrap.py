@@ -568,7 +568,6 @@ def ffmpeg_configure_opts(install_dir, arch):
         '--enable-muxer=hevc',
         '--enable-muxer=ivf',
         '--enable-filter=testsrc',
-        '--enable-filter=testsrc2',
         '--enable-demuxer=image2',
         '--enable-muxer=image2',
         '--enable-filter=yuvtestsrc',
@@ -600,6 +599,7 @@ def ffmpeg_configure_opts(install_dir, arch):
         result.extend([
             '--extra-cflags=-fPIC',
             '--extra-ldflags=-fPIC',
+            '--enable-filter=testsrc2',
         ])
         if arch == 'x86_64':
             result.append('--arch=x86_64')
@@ -611,8 +611,8 @@ def ffmpeg_configure_opts(install_dir, arch):
             raise Exception(f'Unknown architecture {arch}')
     else:
         result.extend([
-            '--disable-vaapi',
-            '--disable-cuda-llvm',
+            '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',
+            '--disable-swresample'
         ])
     return result
 

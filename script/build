@@ -47,7 +47,7 @@ cd ${CMAKE_BINARY_DIR}
 
 cmake ${INSTALL_OPTS} ${GPL_OPTS} -DCMAKE_BUILD_TYPE=${BUILD_MODE} ..
 
-make -j $(nproc)
+make -j $(nproc) VERBOSE=1
 
 cmake --build . --config ${BUILD_MODE} --target package
 
