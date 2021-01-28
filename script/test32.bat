@@ -11,7 +11,7 @@ FOR /D %%i IN ("%~dp0\..") DO (
 )
 cd %PROJ_DIR%
 :: start of commands -----------------------------------------------------------
-call "%PROJ_DIR%/test/tools/env/vars32.bat"
+call "%PROJ_DIR%/test/tools/env/vars.bat"
 if defined VPL_BUILD_DEPENDENCIES (
   set ffmpeg_dir=%VPL_BUILD_DEPENDENCIES%\bin
 ) else (

@@ -353,10 +353,10 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch):
     mkdir(install_dir)
     with pushd(build_dir):
         #build dependencies
-        if use_gpl:
-            build_gpl_x264_encoder(install_dir)
         # build_aom_av1_decoder(install_dir)
         if arch == 'x86_64':
+            if use_gpl:
+                build_gpl_x264_encoder(install_dir)
             build_dav1d_decoder(install_dir)
             build_svt_av1_encoder(install_dir, build_mode)
             build_svt_hevc_encoder(install_dir, build_mode)

@@ -34,12 +34,22 @@ GOTO Loop
 :: start of commands -----------------------------------------------------------
 set CMAKE_BINARY_DIR=_build
 if defined VPL_INSTALL_DIR (
-  call "%VPL_INSTALL_DIR%\env\vars.bat" || exit /b 1
-  set INSTALL_OPTS=-DCMAKE_INSTALL_PREFIX=%VPL_INSTALL_DIR%
+  IF "%BUILD_ARCH%"=="x86_64" (
+    call "%VPL_INSTALL_DIR%\env\vars.bat" || exit /b 1
+    set VPL_DIR=%VPL_INSTALL_DIR%\lib\cmake
+    set INSTALL_OPTS=-DCMAKE_INSTALL_PREFIX=%VPL_INSTALL_DIR% -DVPL_DIR=%VPL_INSTALL_DIR%\lib\cmake
+  )
+  IF "%BUILD_ARCH%"=="x86_32" (
+    call "%VPL_INSTALL_DIR%\env\vars32.bat" || exit /b 1
+    set VPL_DIR=%VPL_INSTALL_DIR%\lib32\cmake
+    set INSTALL_OPTS=-DCMAKE_INSTALL_PREFIX=%VPL_INSTALL_DIR%
+  )
 )
 
-if "%USE_GPL%"=="yes" (
-  set GPL_OPTS=-DBUILD_GPL_X264=ON
+IF "%BUILD_ARCH%"=="x86_64" (
+  if "%USE_GPL%"=="yes" (
+    set GPL_OPTS=-DBUILD_GPL_X264=ON
+  )
 )
 
 mkdir %CMAKE_BINARY_DIR%

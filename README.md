@@ -14,7 +14,7 @@ which includes the following features:
 - H.264/AVC encode (using x264 and libavcodec)
 - VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
 
-Note: H.265/HEVC and AV1 are not avalible in 32-bit builds.
+Note: H.265/HEVC, H.264, and AV1 are not avalible in 32-bit builds.
 
 ---
 
