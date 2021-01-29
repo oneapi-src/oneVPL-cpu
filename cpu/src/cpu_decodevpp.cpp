@@ -46,13 +46,16 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
     m_cpuVPP = new CpuVPP[m_numVPPCh];
 
     mfxVideoParam param = { 0 };
-    memcpy(&param, par, sizeof(mfxVideoParam));
-    memcpy(&param.vpp.In, &par->mfx.FrameInfo, sizeof(mfxFrameInfo));
+    memcpy_s(&param, sizeof(mfxVideoParam), par, sizeof(mfxVideoParam));
+    memcpy_s(&param.vpp.In, sizeof(mfxFrameInfo), &par->mfx.FrameInfo, sizeof(mfxFrameInfo));
     param.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
     for (mfxU32 i = 0; i < m_numVPPCh; i++) {
         m_cpuVPP[i].SetSession(m_session);
-        memcpy(&param.vpp.Out, &(*vpp_par_array)[i].VPP, sizeof(mfxFrameInfo));
+        memcpy_s(&param.vpp.Out,
+                 sizeof(mfxFrameInfo),
+                 &(*vpp_par_array)[i].VPP,
+                 sizeof(mfxFrameInfo));
         RET_ERROR(m_cpuVPP[i].InitVPP(&param));
     }
 
