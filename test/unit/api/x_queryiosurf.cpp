@@ -208,10 +208,11 @@ TEST(VPPQueryIOSurf, PopulatedParamsInReturnsRequest) {
     sts = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    mfxFrameAllocRequest request[2];
-    sts = MFXVideoVPP_QueryIOSurf(session, &par, request);
+    mfxFrameAllocRequest request[2] = { 0 };
+    sts                             = MFXVideoVPP_QueryIOSurf(session, &par, request);
     ASSERT_EQ(sts, MFX_ERR_NONE);
     ASSERT_GE(request[0].NumFrameSuggested, 1);
+    ASSERT_GE(request[1].NumFrameSuggested, 1);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);

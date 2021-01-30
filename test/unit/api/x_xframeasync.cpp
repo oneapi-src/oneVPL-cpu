@@ -1606,8 +1606,6 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
                 break;
         }
 
-        sts = surf_array_out->Surfaces[0]->FrameInterface->Release(surf_array_out->Surfaces[0]);
-        ASSERT_EQ(sts, MFX_ERR_NONE);
         sts = surf_array_out->Surfaces[1]->FrameInterface->Release(surf_array_out->Surfaces[1]);
         ASSERT_EQ(sts, MFX_ERR_NONE);
     }

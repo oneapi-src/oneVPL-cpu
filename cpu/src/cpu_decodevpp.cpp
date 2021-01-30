@@ -104,7 +104,6 @@ mfxStatus CpuDecodeVPP::DecodeVPPFrame(mfxBitstream *bs,
 
     // m_surfOut[0]   : surface for decode out
     // m_surfOut[1] ~ : surfaces for vpp out
-    RET_ERROR(MFXMemory_GetSurfaceForDecode(m_mfxsession, &m_surfOut[0]));
 
     for (mfxU32 i = 0; i < m_numVPPCh; i++) {
         m_cpuVPP[i].GetVPPSurfaceOut(&m_surfOut[i + 1]);
