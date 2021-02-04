@@ -822,6 +822,131 @@ TEST(Dispatcher_CreateSession, RequestAccelD3D9ReturnsNotFound) {
     MFXUnload(loader);
 }
 
+TEST(Dispatcher_CreateSession, RequestCurrentAPIVersionCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+
+    // load CPU runtime
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    mfxVersion ver     = {};
+    ver.Major          = MFX_VERSION_MAJOR;
+    ver.Minor          = MFX_VERSION_MINOR;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = ver.Version;
+
+    sts =
+        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion", ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestLowerAPIVersionCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+
+    // load CPU runtime
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // request version (API - 0.1), which should pass
+    mfxVersion ver     = {};
+    ver.Major          = MFX_VERSION_MAJOR;
+    ver.Minor          = MFX_VERSION_MINOR - 1;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = ver.Version;
+
+    sts =
+        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion", ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestHigherAPIVersionReturnsNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+
+    // load CPU runtime
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // request version (API + 0.1), which should fail
+    mfxVersion ver     = {};
+    ver.Major          = MFX_VERSION_MAJOR;
+    ver.Minor          = MFX_VERSION_MINOR + 1;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = ver.Version;
+
+    sts =
+        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion", ImplValue);
+
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 TEST(Dispatcher_CreateSession, ConfigHandleReturnsHandle) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
