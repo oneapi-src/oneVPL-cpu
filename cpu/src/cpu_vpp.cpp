@@ -529,6 +529,7 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
         if (bWA_alignment == true) {
             RET_ERROR(
                 AVFrame2mfxFrameSurface(surface_out, dst_avframe, m_session->GetFrameAllocator()));
+            av_frame_unref(dst_avframe);
         }
         else {
             dst_frame->Update();

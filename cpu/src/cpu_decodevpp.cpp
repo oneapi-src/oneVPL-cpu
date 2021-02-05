@@ -101,6 +101,7 @@ mfxStatus CpuDecodeVPP::DecodeVPPFrame(mfxBitstream *bs,
     mfxSyncPoint syncp             = { 0 };
     mfxStatus sts                  = MFX_ERR_NONE;
     const int WAIT_100_MILLSECONDS = 100;
+    mfxFrameSurface1 *pWorkSurface = nullptr;
 
     // m_surfOut[0]   : surface for decode out
     // m_surfOut[1] ~ : surfaces for vpp out
@@ -113,7 +114,8 @@ mfxStatus CpuDecodeVPP::DecodeVPPFrame(mfxBitstream *bs,
     (*surf_array_out)->NumSurfaces = m_numSurfs;
 
     // decode out from 0th channel
-    RET_ERROR(MFXVideoDECODE_DecodeFrameAsync(m_mfxsession, bs, nullptr, &m_surfOut[0], &syncp));
+    RET_ERROR(
+        MFXVideoDECODE_DecodeFrameAsync(m_mfxsession, bs, pWorkSurface, &m_surfOut[0], &syncp));
 
     do {
         sts = m_surfOut[0]->FrameInterface->Synchronize(m_surfOut[0], WAIT_100_MILLSECONDS);
