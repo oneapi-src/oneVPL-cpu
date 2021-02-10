@@ -80,3 +80,17 @@ mfxStatus MFXVideoDECODE_VPP_GetChannelParam(mfxSession session,
 
     return decvpp->GetChannelParam(par, channel_id);
 }
+
+mfxStatus MFXVideoDECODE_VPP_Close(mfxSession session) {
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+
+    if (ws->GetDecodeVPP() != nullptr)
+        ws->SetDecodeVPP(nullptr);
+    else
+        return MFX_ERR_NOT_INITIALIZED;
+
+    return MFX_ERR_NONE;
+}
