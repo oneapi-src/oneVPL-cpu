@@ -18,8 +18,10 @@ endif()
 
 option(BUILD_GPL_X264 "Build X264 with GPL License" OFF)
 
-set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
-set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
+if(BUILD_SVT)
+  set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
+  set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
+endif()
 set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
 set(AVCODEC_LIB ${VPL_DEP_DIR}/lib/libavcodec.a)
 set(AVUTIL_LIB ${VPL_DEP_DIR}/lib/libavutil.a)
@@ -33,9 +35,14 @@ if(BUILD_GPL_X264)
   endif()
 endif(BUILD_GPL_X264)
 
-if(NOT EXISTS ${SVTHEVCENC_LIB}
-   OR NOT EXISTS ${SVTHEVCENC_LIB}
-   OR NOT EXISTS ${DAV1D_LIB}
+if(BUILD_SVT)
+  if(NOT EXISTS ${SVTHEVCENC_LIB}
+     OR NOT EXISTS ${SVTHEVCENC_LIB})
+    message(FATAL_ERROR "Could not find expected SVT libraries")
+  endif()
+endif()
+
+if(NOT EXISTS ${DAV1D_LIB}
    OR NOT EXISTS ${AVCODEC_LIB}
    OR NOT EXISTS ${AVUTIL_LIB}
    OR NOT EXISTS ${AVFILTER_LIB}

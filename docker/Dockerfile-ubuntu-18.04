@@ -45,11 +45,8 @@ COPY --from=vpl_bootstrap /oneVPL/_deps /oneVPL/_deps
 ARG VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
 ARG VPL_INSTALL_PREFIX
 RUN cd /oneVPL && \
-    mkdir _build && \
-    cd _build && \
-    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} .. && \
-    make -j $(nproc --all) && \
-    make install
+  script/build && \
+  script/install
 
 
 # Runtime image build
