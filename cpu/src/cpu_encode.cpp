@@ -966,7 +966,7 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
         }
     }
 
-    uint8_t *presetval = new uint8_t[2048];
+    uint8_t *presetval;
     ret = av_opt_get(m_avEncContext->priv_data, "preset", AV_OPT_SEARCH_CHILDREN, &presetval);
     std::string presetstr((char *)presetval);
     int tu = 4;
@@ -985,7 +985,8 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
     if (presetstr == "ultrafast")
         tu = 7;
     par->mfx.TargetUsage = tu;
-    delete[] presetval;
+
+    av_free(presetval);
 
     return MFX_ERR_NONE;
 }
