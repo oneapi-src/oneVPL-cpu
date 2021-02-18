@@ -104,8 +104,9 @@ AVFrame *FrameLock::GetAVFrame(mfxFrameSurface1 *surface,
 
     mfxFrameInfo *info = &m_surface->Info;
     m_avframe->format  = MFXFourCC2AVPixelFormat(info->FourCC);
-    m_avframe->width   = info->Width;
-    m_avframe->height  = info->Height;
+    m_avframe->width   = info->CropW ? info->CropW : info->Width;
+    m_avframe->height  = info->CropH ? info->CropH : info->Height;
+
     if (info->FourCC == MFX_FOURCC_RGB4) {
         m_avframe->data[0] = m_data->B;
     }

@@ -475,8 +475,10 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     // Set general libav parameters
     // values not set in mfxVideoParam should keep defaults
     //------------------------------
-    m_avEncContext->width  = par->mfx.FrameInfo.Width;
-    m_avEncContext->height = par->mfx.FrameInfo.Height;
+    m_avEncContext->width =
+        par->mfx.FrameInfo.CropW ? par->mfx.FrameInfo.CropW : par->mfx.FrameInfo.Width;
+    m_avEncContext->height =
+        par->mfx.FrameInfo.CropH ? par->mfx.FrameInfo.CropH : par->mfx.FrameInfo.Height;
 
     m_avEncContext->gop_size = par->mfx.GopPicSize;
     // In case Jpeg, max_b_frames must be 0, otherwise avcodec_open2()'s crashed
