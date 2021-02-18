@@ -1,49 +1,26 @@
-::------------------------------------------------------------------------------
-:: Copyright (C) Intel Corporation
-::
-:: SPDX-License-Identifier: MIT
-::------------------------------------------------------------------------------
-:: start of boilerplate to switch to project root ------------------------------
-@echo off
-IF defined VERBOSE (
-  echo on
-)
+@REM ------------------------------------------------------------------------------
+@REM Copyright (C) Intel Corporation
+@REM 
+@REM SPDX-License-Identifier: MIT
+@REM ------------------------------------------------------------------------------
+@REM Build cpu dependencies.
 
-SETLOCAL EnableDelayedExpansion
-FOR /D %%i IN ("%~dp0\..") DO (
-	set PROJ_DIR=%%~fi
-)
-cd %PROJ_DIR%
-:: Read options -----------------------------------------------------------
-SET GPL_FLAG=
-SET BUILD_MODE=Release
-SET BUILD_ARCH=x86_64
+@ECHO off
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION 
 
-:Loop
-IF "%~1"=="" GOTO Continue
-  IF "%~1"=="gpl" (
-    SET GPL_FLAG=-gpl
-  )
-  IF "%~1"=="debug" (
-    SET BUILD_MODE=Debug
-  )
-  IF "%~1"=="-A" (
-    SET BUILD_ARCH=%~2
-    SHIFT
-  )
-SHIFT
-GOTO Loop
-:Continue
+@REM Read command line options
+CALL %~dp0%\_buildopts.bat ^
+    --name "%~n0%" ^
+    --desc "Build cpu dependencies." ^
+    -- %*
+IF DEFINED HELP_OPT ( EXIT /b 0 )
 
-:: start of commands -----------------------------------------------------------
-set DEFAULT_VPL_BUILD_DEPENDENCIES=%PROJ_DIR%\_deps
+py -3 %SCRIPT_DIR%\bootstrap.py %FORWARD_OPTS% || exit /b 1
 
-py -3 script\\bootstrap.py %GPL_FLAG% -m %BUILD_MODE% -A %BUILD_ARCH% || exit /b 1
-
-:: export build dependency environment
-(
-endlocal
-  if not defined VPL_BUILD_DEPENDENCIES (
-     set VPL_BUILD_DEPENDENCIES=%DEFAULT_VPL_BUILD_DEPENDENCIES%
-  )
+@REM Export build dependency environment
+@REM Note: this logic mirrors similar logic in bootstrap.py 
+IF DEFINED VPL_BUILD_DEPENDENCIES (
+  ENDLOCAL && SET VPL_BUILD_DEPENDENCIES=%VPL_BUILD_DEPENDENCIES%
+) ELSE (
+  ENDLOCAL
 )

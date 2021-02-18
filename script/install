@@ -4,31 +4,44 @@
 #
 # SPDX-License-Identifier: MIT
 ###############################################################################
-## start of boilerplate to switch to project root ------------------------------
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-proj_dir="$( dirname "${script_dir}" )"
-cd ${proj_dir}
+# Install cpu.
+
 set -o errexit
 
-## Read options -----------------------------------------------------------
-export BUILD_MODE= "Release"
 
-while [ "$1" != "" ]; do
-    case $1 in
-        debug )
-            export BUILD_MODE="Debug"
-            ;;
-        * )
-            echo "usage: install [debug]"
-            exit 1
-    esac
-    shift
-done
+SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 ; pwd -P )"
 
-## start of commands -----------------------------------------------------------
-CMAKE_BINARY_DIR=_build
-if [ -n "$VPL_INSTALL_DIR" ]; then
-  source "$VPL_INSTALL_DIR/env/vars.sh"
+# Read command line options
+. "${SCRIPT_DIR}/_buildopts.sh" \
+    --name install \
+    --desc "Install cpu." \
+    -- "$@"
+
+# Load project environment
+if [ -z "${VPL_ROOT}" ]; then
+  echo "Environment script appears not to have been run."
+  echo "Attempting to run now..."
+
+  if [ ! -e "${VPL_INSTALL_DIR}" ]
+  then
+    echo "Project must be installed to test implementation"
+    exit 1
+  fi
+
+  if [ ! -e "${VPL_INSTALL_DIR}/env/vars.sh" ]
+  then
+    # Detect case where user points VPL_INSTALL_DIR at the
+    # Base repo instead of the built output.
+    echo "Cannot find environment script in ${VPL_INSTALL_DIR}/env"
+    exit 1
+  fi
+
+  source "${VPL_INSTALL_DIR}/env/vars.sh"
+else
+  echo "Environment script appears to have already run. Continuing..."
 fi
 
-cmake --build ${CMAKE_BINARY_DIR} --config ${BUILD_MODE} --target install
+pushd "${PROJ_DIR}"
+    BUILD_DIR=_build
+    cmake --build "${BUILD_DIR}" --config "${COFIG_OPT}" --target install
+popd

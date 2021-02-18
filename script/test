@@ -4,39 +4,70 @@
 #
 # SPDX-License-Identifier: MIT
 ###############################################################################
-## start of boilerplate to switch to project root ------------------------------
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-proj_dir="$( dirname "${script_dir}" )"
-cd ${proj_dir}
+# Run basic tests on base.
+
 set -o errexit
-## start of commands -----------------------------------------------------------
-source ${proj_dir}/test/tools/env/vars.sh
-if [ -n "$VPL_BUILD_DEPENDENCIES" ]; then
-    export ffmpeg_dir=${VPL_BUILD_DEPENDENCIES}/bin
-else
+
+
+SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 ; pwd -P )"
+
+# Read command line options
+. "${SCRIPT_DIR}/_buildopts.sh" \
+    --name test \
+    --desc "Run basic tests on base." \
+    -- "$@"
+
+result_all=0
+
+if [ ! -e "${VPL_BUILD_DEPENDENCIES}" ]; then
     echo "VPL_BUILD_DEPENDENCIES not defined. Did you run bootstrap?"
     exit 1
 fi
-export PATH=${ffmpeg_dir}:${PATH}
 
-if [ -n "$VPL_INSTALL_DIR" ]; then
-  if [ -z "$VPL_ROOT" ]; then
-    source "$VPL_INSTALL_DIR/env/vars.sh"
+# Load project environment
+if [ -z "${VPL_ROOT}" ]; then
+  echo "Environment script appears not to have been run."
+  echo "Attempting to run now..."
+
+  if [ ! -e "${VPL_INSTALL_DIR}" ]
+  then
+    echo "Project must be installed to test implementation"
+    exit 1
   fi
+
+  if [ ! -e "${VPL_INSTALL_DIR}/env/vars.sh" ]
+  then
+    # Detect case where user points VPL_INSTALL_DIR at the
+    # Base repo instead of the built output.
+    echo "Cannot find environment script in ${VPL_INSTALL_DIR}/env"
+    exit 1
+  fi
+
+  source "${VPL_INSTALL_DIR}/env/vars.sh"
+else
+  echo "Environment script appears to have already run. Continuing..."
 fi
 
-cd _build
-export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
 result_all=0
 
-echo --- Running Unit Tests ---
-./vpl-utest --gtest_output=xml:${proj_dir}/_logs/
-ret=$?
-if [ $ret -ne 0 ]; then
-    echo --- Unit Tests FAILED ---
-    let result_all++
-else
-    echo --- Unit Tests PASSED ---
-fi
+pushd "${PROJ_DIR}"
+  . test/tools/env/vars.sh
+  export ffmpeg_dir="${VPL_BUILD_DEPENDENCIES}/bin"
+  export PATH=${ffmpeg_dir}:${PATH}
 
-exit $result_all
+  BUILD_DIR=_build
+  pushd "${BUILD_DIR}"
+    export LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH}
+    echo "--- Running Unit Tests ---"
+    # using " || ret=$?" to allow fail and capture exit code with errexit set
+    ./vpl-utest "--gtest_output=xml:${PROJ_DIR}/_logs/" || ret=$?
+    if [ ${ret} -ne 0 ]; then
+        echo "--- Unit Tests FAILED ---"
+        (( result_all++ )) || true
+    else
+        echo "--- Unit Tests PASSED ---"
+    fi
+  popd
+popd
+
+exit "${result_all}"

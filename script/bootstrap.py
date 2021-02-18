@@ -252,18 +252,20 @@ def main():
     proj_dir = str(Path(os.path.dirname(os.path.realpath(sys.argv[0]))).parent)
     parser = argparse.ArgumentParser(prog="bootstrap")
 
-    parser.add_argument('-m',
+    parser.add_argument("--config",
+                        '-m',
                         "--build_mode",
                         dest='build_mode',
                         choices=['Release', 'Debug'],
                         default='Release',
-                        help='Build mode')
+                        help='Build mode/configuration')
 
     parser.add_argument('-gpl',
                         "--use_gpl",
+                        "--gpl",
                         dest='use_gpl',
                         action="store_true",
-                        help='Use GPL codecs (x264)')
+                        help='Use GPL codecs (ex: x264)')
 
     parser.add_argument(
         '-A',
@@ -274,10 +276,17 @@ def main():
         help='Target Architecture')
 
     parser.add_argument(
+        '--clean',
         '-clean',
         dest='clean',
         action="store_true",
         help='Remove previous build/install dirs before starting')
+
+    # Unused argument for compatibility
+    parser.add_argument('--bootstrap',
+                        dest='bootstrap',
+                        action="store_true",
+                        help=argparse.SUPPRESS)
 
     args = parser.parse_args()
 

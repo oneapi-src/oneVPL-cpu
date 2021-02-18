@@ -21,7 +21,7 @@
 ## start of boilerplate to switch to project root ------------------------------
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 proj_dir="$( dirname "${script_dir}" )"
-cd ${proj_dir}
+cd "${proj_dir}"
 set -o errexit
 
 if [ "$1" == "" ];then
@@ -35,7 +35,7 @@ echo
 
 ## start of commands -----------------------------------------------------------
 source ${proj_dir}/test/tools/env/vars.sh
-if [ -n "$VPL_BUILD_DEPENDENCIES" ]; then
+if [ -n "${VPL_BUILD_DEPENDENCIES}" ]; then
     export ffmpeg_dir=${VPL_BUILD_DEPENDENCIES}/bin
 else
     echo "VPL_BUILD_DEPENDENCIES not defined. Did you run bootstrap?"
