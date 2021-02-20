@@ -116,6 +116,74 @@ static const mfxImplDescription *cpuImplDescArray[NUM_CPU_IMPLS] = {
     &cpuImplDesc,
 };
 
+// should match libvplsw.def (unless any are not actually implemented, of course)
+static const mfxChar *cpuImplFuncsNames[] = {
+    "MFXInit",
+    "MFXClose",
+    "MFXQueryIMPL",
+    "MFXQueryVersion",
+    "MFXJoinSession",
+    "MFXDisjoinSession",
+    "MFXCloneSession",
+    "MFXSetPriority",
+    "MFXGetPriority",
+    "MFXVideoCORE_SetFrameAllocator",
+    "MFXVideoCORE_SetHandle",
+    "MFXVideoCORE_GetHandle",
+    "MFXVideoCORE_QueryPlatform",
+    "MFXVideoCORE_SyncOperation",
+    "MFXVideoENCODE_Query",
+    "MFXVideoENCODE_QueryIOSurf",
+    "MFXVideoENCODE_Init",
+    "MFXVideoENCODE_Reset",
+    "MFXVideoENCODE_Close",
+    "MFXVideoENCODE_GetVideoParam",
+    "MFXVideoENCODE_GetEncodeStat",
+    "MFXVideoENCODE_EncodeFrameAsync",
+    "MFXVideoDECODE_Query",
+    "MFXVideoDECODE_DecodeHeader",
+    "MFXVideoDECODE_QueryIOSurf",
+    "MFXVideoDECODE_Init",
+    "MFXVideoDECODE_Reset",
+    "MFXVideoDECODE_Close",
+    "MFXVideoDECODE_GetVideoParam",
+    "MFXVideoDECODE_GetDecodeStat",
+    "MFXVideoDECODE_SetSkipMode",
+    "MFXVideoDECODE_GetPayload",
+    "MFXVideoDECODE_DecodeFrameAsync",
+    "MFXVideoVPP_Query",
+    "MFXVideoVPP_QueryIOSurf",
+    "MFXVideoVPP_Init",
+    "MFXVideoVPP_Reset",
+    "MFXVideoVPP_Close",
+    "MFXVideoVPP_GetVideoParam",
+    "MFXVideoVPP_GetVPPStat",
+    "MFXVideoVPP_RunFrameVPPAsync",
+    "MFXInitEx",
+    "MFXQueryImplsDescription",
+    "MFXReleaseImplDescription",
+    "MFXMemory_GetSurfaceForVPP",
+    "MFXMemory_GetSurfaceForEncode",
+    "MFXMemory_GetSurfaceForDecode",
+    "MFXInitialize",
+    "MFXMemory_GetSurfaceForVPPOut",
+    "MFXVideoDECODE_VPP_Init",
+    "MFXVideoDECODE_VPP_DecodeFrameAsync",
+    "MFXVideoDECODE_VPP_Reset",
+    "MFXVideoDECODE_VPP_GetChannelParam",
+    "MFXVideoDECODE_VPP_Close",
+    "MFXVideoVPP_ProcessFrameAsync", 
+};
+
+static const mfxImplementedFunctions cpuImplFuncs = {
+    sizeof(cpuImplFuncsNames) / sizeof(mfxChar *),
+    (mfxChar**)cpuImplFuncsNames
+};
+
+static const mfxImplementedFunctions *cpuImplFuncsArray[NUM_CPU_IMPLS] = {
+    &cpuImplFuncs,
+};
+
 // end table formatting
 // clang-format on
 
@@ -124,12 +192,17 @@ static const mfxImplDescription *cpuImplDescArray[NUM_CPU_IMPLS] = {
 mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_impls) {
     VPL_TRACE_FUNC;
 
-    // only structure format is currently supported
-    if (format != MFX_IMPLCAPS_IMPLDESCSTRUCTURE)
-        return nullptr;
-
     *num_impls = NUM_CPU_IMPLS;
-    return (mfxHDL *)(cpuImplDescArray);
+
+    if (format == MFX_IMPLCAPS_IMPLDESCSTRUCTURE) {
+        return (mfxHDL *)(cpuImplDescArray);
+    }
+    else if (format == MFX_IMPLCAPS_IMPLEMENTEDFUNCTIONS) {
+        return (mfxHDL *)(cpuImplFuncsArray);
+    }
+    else {
+        return nullptr;
+    }
 }
 
 // walk through implDesc and delete dynamically-allocated structs
