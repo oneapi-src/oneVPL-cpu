@@ -1027,6 +1027,82 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIVersionReturnsNotFound) {
     MFXUnload(loader);
 }
 
+TEST(Dispatcher_CreateSession, RequestImplementedFunctionCreatesSession) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+
+    // load CPU runtime
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // request an implemented function, which should pass
+    ImplValue.Type     = mfxVariantType::MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "MFXVideoDECODE_VPP_Init";
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplementedFunctions.FunctionsName",
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestNotImplementedFunctionReturnsNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+    mfxConfig cfg;
+    mfxVariant ImplValue;
+
+    // load CPU runtime
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // request an implemented function, which should pass
+    ImplValue.Type     = mfxVariantType::MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "MFXVideoDECODE_VPP_NOT_A_FUNCTION";
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplementedFunctions.FunctionsName",
+                                     ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 TEST(Dispatcher_CreateSession, ConfigHandleReturnsHandle) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
@@ -1160,12 +1236,8 @@ TEST(Dispatcher_DispReleaseImplDescription, NullDescReturnsErrNull) {
 }
 
 TEST(Dispatcher_DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) {
-    // create 2 loaders
     mfxLoader loader1 = MFXLoad();
     EXPECT_FALSE(loader1 == nullptr);
-
-    mfxLoader loader2 = MFXLoad();
-    EXPECT_FALSE(loader2 == nullptr);
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc1;
@@ -1175,13 +1247,16 @@ TEST(Dispatcher_DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) 
                                            reinterpret_cast<mfxHDL *>(&implDesc1));
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    // pass wrong loader for this handle
-    sts = MFXDispReleaseImplDescription(loader2, implDesc1);
+    // pass invalid handle
+    // Note: CPU RT now uses a read-only table for its implDesc, so multiple mfxLoader
+    //   objects may return the same pointer to implDesc (not a sufficient test to create
+    //   two loaders and release the handle from the wrong one)
+    mfxImplDescription implDescLocal;
+    sts = MFXDispReleaseImplDescription(loader1, &implDescLocal);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
     //free internal resources
     MFXUnload(loader1);
-    MFXUnload(loader2);
 }
 
 #endif // VPL_UTEST_LINK_RUNTIME
