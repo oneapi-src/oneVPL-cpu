@@ -70,7 +70,7 @@ PUSHD %PROJ_DIR%
     cmake %ARCH_CM_OPT% %INSTALL_PREFIX_CM_OPT% %COFIG_CM_OPT% %GPL_OPTS% .. ^
         || EXIT /b 1
     IF DEFINED NUMBER_OF_PROCESSORS (
-      PARALLEL_OPT=-j NUMBER_OF_PROCESSORS
+      SET PARALLEL_OPT=-j %NUMBER_OF_PROCESSORS%
     )
     cmake --build . --config %COFIG_OPT% %PARALLEL_OPT% || EXIT /b 1
     cmake --build . --config %COFIG_OPT% --target package || EXIT /b 1
