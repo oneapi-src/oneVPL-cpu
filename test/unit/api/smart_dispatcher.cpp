@@ -1259,4 +1259,69 @@ TEST(Dispatcher_DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) 
     MFXUnload(loader1);
 }
 
+TEST(Dispatcher_DispReleaseImplDescription, ReleaseTwiceReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
+
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    // first pass - Enum/CreateSession/DispRelease
+
+    // enumerate implementations, check capabilities of first one
+    mfxImplDescription *implDesc;
+    sts = MFXEnumImplementations(loader,
+                                 0,
+                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
+                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    // confirm correct Impl type was found
+    ASSERT_NE(implDesc, nullptr);
+    ASSERT_EQ(implDesc->Impl, MFX_IMPL_TYPE_SOFTWARE);
+
+    // create session
+    mfxSession session1 = nullptr;
+    sts                 = MFXCreateSession(loader, 0, &session1);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXDispReleaseImplDescription(loader, implDesc);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // second pass - Enum/CreateSession/DispRelease
+    // we are testing that calling EnumImplementations again on the same impl
+    //   (after calling DispRelease) returns a valid implDesc and creates a new session
+
+    // enumerate implementations, check capabilities of first one
+    implDesc = nullptr;
+    sts      = MFXEnumImplementations(loader,
+                                 0,
+                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
+                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    // confirm correct Impl type was found
+    ASSERT_NE(implDesc, nullptr);
+    ASSERT_EQ(implDesc->Impl, MFX_IMPL_TYPE_SOFTWARE);
+
+    // create session
+    mfxSession session2 = nullptr;
+    sts                 = MFXCreateSession(loader, 0, &session2);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    sts = MFXDispReleaseImplDescription(loader, implDesc);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
 #endif // VPL_UTEST_LINK_RUNTIME
