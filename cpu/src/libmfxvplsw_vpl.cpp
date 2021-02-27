@@ -60,8 +60,18 @@ static const mfxImplDescription cpuImplDesc = {
     { MFX_VERSION_MINOR, MFX_VERSION_MAJOR },       // ApiVersion
 
     "oneAPI VPL CPU Reference Impl",                // ImplName
-    "",                                             // License
-    "",                                             // Keywords
+
+#ifdef ENABLE_ENCODER_H264
+    "MIT,GPL",                                      // License
+#else
+    "MIT",                                          // License
+#endif
+
+#if defined _M_IX86
+    "VPL,CPU,x86",                                  // Keywords
+#else
+    "VPL,CPU,x64",                                  // Keywords
+#endif
 
     0x8086,                                         // VendorID
     0,                                              // VendorImplID

@@ -15,6 +15,20 @@
 
     #define VPL_UTEST_DISPATCHER_TYPE_SOFTWARE
 
+static mfxStatus SetConfigImplSoftware(mfxLoader loader) {
+    mfxVariant ImplValue;
+    mfxConfig cfg = MFXCreateConfig(loader);
+    if (!cfg)
+        return MFX_ERR_UNSUPPORTED;
+
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+
+    return MFXSetConfigFilterProperty(cfg,
+                                      reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
+                                      ImplValue);
+}
+
 //MFXLoad
 TEST(Dispatcher_Load, CallReturnsLoader) {
     mfxLoader loader = MFXLoad();
@@ -929,8 +943,9 @@ TEST(Dispatcher_CreateSession, RequestCurrentAPIVersionCreatesSession) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = ver.Version;
 
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Version", ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Version",
+                                     ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -971,8 +986,9 @@ TEST(Dispatcher_CreateSession, RequestLowerAPIVersionCreatesSession) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = ver.Version;
 
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Version", ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Version",
+                                     ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -1013,8 +1029,9 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIVersionReturnsNotFound) {
     ImplValue.Type     = MFX_VARIANT_TYPE_U32;
     ImplValue.Data.U32 = ver.Version;
 
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Version", ImplValue);
+    sts = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Version",
+                                     ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
@@ -1126,8 +1143,9 @@ TEST(Dispatcher_CreateSession, RequestCurrentAPIMajorMinorCreatesSession) {
     EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U16;
     ImplValue.Data.U16 = MFX_VERSION_MAJOR;
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Major", ImplValue);
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Major",
+                                     ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // set minor value
@@ -1135,8 +1153,9 @@ TEST(Dispatcher_CreateSession, RequestCurrentAPIMajorMinorCreatesSession) {
     EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U16;
     ImplValue.Data.U16 = MFX_VERSION_MINOR;
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Minor", ImplValue);
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Minor",
+                                     ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // create session with first implementation
@@ -1171,8 +1190,9 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIMajorReturnsNotFound) {
     EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U16;
     ImplValue.Data.U16 = MFX_VERSION_MAJOR + 1;
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Major", ImplValue);
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Major",
+                                     ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // set minor value
@@ -1180,8 +1200,9 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIMajorReturnsNotFound) {
     EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U16;
     ImplValue.Data.U16 = MFX_VERSION_MINOR;
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Minor", ImplValue);
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Minor",
+                                     ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // create session with first implementation
@@ -1216,8 +1237,9 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIMinorReturnsNotFound) {
     EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U16;
     ImplValue.Data.U16 = MFX_VERSION_MAJOR;
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Major", ImplValue);
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Major",
+                                     ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // set minor value
@@ -1225,8 +1247,9 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIMinorReturnsNotFound) {
     EXPECT_FALSE(cfg == nullptr);
     ImplValue.Type     = MFX_VARIANT_TYPE_U16;
     ImplValue.Data.U16 = MFX_VERSION_MINOR + 1;
-    sts =
-        MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ApiVersion.Minor", ImplValue);
+    sts                = MFXSetConfigFilterProperty(cfg,
+                                     (const mfxU8 *)"mfxImplDescription.ApiVersion.Minor",
+                                     ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // create session with first implementation
@@ -1235,6 +1258,282 @@ TEST(Dispatcher_CreateSession, RequestHigherAPIMinorReturnsNotFound) {
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
     //free internal resources
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestDeviceIDValidReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass deviceID = 0x0000 for CPU
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U16;
+    ImplValue.Data.U16 = 0x0000;
+    sts                = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxDeviceDescription.device.DeviceID",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestDeviceIDInvalidReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass invalid device ID
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_U16;
+    ImplValue.Data.U16 = 0xafaf;
+    sts                = MFXSetConfigFilterProperty(
+        cfg,
+        (const mfxU8 *)"mfxImplDescription.mfxDeviceDescription.device.DeviceID",
+        ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestImplNameValidReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass the correct ImplName for CPU RT
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "oneAPI VPL CPU Reference Impl";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ImplName", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestImplNameInvalidReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass invalid ImplName
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "oneAPI VPL Unsupported Impl";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.ImplName", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestLicenseValidReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass the correct License type for CPU RT
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "MIT";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.License", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestLicenseInvalidReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass the incorrect License type for CPU RT
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "ABC";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.License", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestLicenseMixedReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass a correct and incorrect License type for CPU RT
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "MIT,ABC";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.License", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestKeywordsValidReturnsErrNone) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass supported Keywords for CPU RT
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "CPU,VPL";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Keywords", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+TEST(Dispatcher_CreateSession, RequestKeywordsMixedReturnsErrNotFound) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxConfig cfg;
+    mfxStatus sts;
+    mfxVariant ImplValue;
+
+    // set to SW runtime
+    sts = SetConfigImplSoftware(loader);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // pass supported Keywords for CPU RT
+    cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+    ImplValue.Type     = MFX_VARIANT_TYPE_PTR;
+    ImplValue.Data.Ptr = (mfxHDL) "VPL,GPU,";
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Keywords", ImplValue);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXClose(session);
     MFXUnload(loader);
 }
 
