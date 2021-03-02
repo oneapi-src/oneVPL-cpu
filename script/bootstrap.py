@@ -282,6 +282,11 @@ def main():
         action="store_true",
         help='Remove previous build/install dirs before starting')
 
+    parser.add_argument('--validation',
+                        dest='validation',
+                        action="store_true",
+                        help='Build validation binaries')
+
     # Unused argument for compatibility
     parser.add_argument('--bootstrap',
                         dest='bootstrap',
@@ -290,7 +295,8 @@ def main():
 
     args = parser.parse_args()
 
-    bootstrap(args.clean, args.use_gpl, args.build_mode, proj_dir, args.arch)
+    bootstrap(args.clean, args.use_gpl, args.build_mode, proj_dir, args.arch,
+              args.validation)
 
 
 def make_mingw_path(arch):
@@ -340,7 +346,8 @@ def make_git_path(mingw_path):
     return git_path
 
 
-def bootstrap(clean, use_gpl, build_mode, proj_dir, arch):
+#pylint: disable=too-many-arguments
+def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
     """Bootstrap install"""
     if os.name == 'nt':
         #pylint: disable=global-statement
@@ -378,7 +385,8 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch):
         clone_ffmpeg()
         with pushd('ffmpeg'):
             configure_opts = []
-            configure_opts.extend(ffmpeg_configure_opts(install_dir, arch))
+            configure_opts.extend(
+                ffmpeg_configure_opts(install_dir, arch, validation))
             if build_mode == "Debug":
                 configure_opts.extend(ffmpeg_debug_configure_opts())
             configure_opts.extend(ffmpeg_3rdparty_configure_opts(build_dir))
@@ -531,7 +539,7 @@ def clone_ffmpeg():
             xenv=GIT_ENV)
 
 
-def ffmpeg_configure_opts(install_dir, arch):
+def ffmpeg_configure_opts(install_dir, arch, validation):
     """configure options for ffmpeg build"""
     posix_install_dir = to_posix_path(install_dir)
     result = [
@@ -628,6 +636,13 @@ def ffmpeg_configure_opts(install_dir, arch):
             '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',
             '--disable-swresample'
         ])
+        if validation:
+            result.extend(['--enable-filter=testsrc2', '--disable-avdevice'])
+        else:
+            result.extend([
+                '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',
+                '--disable-swresample'
+            ])
     return result
 
 
