@@ -525,7 +525,7 @@ def clone_ffmpeg():
             'clone',
             '--depth=1',
             '-b',
-            'n4.3.1',
+            'n4.3.2',
             'https://github.com/FFmpeg/FFmpeg',
             'ffmpeg',
             xenv=GIT_ENV)
