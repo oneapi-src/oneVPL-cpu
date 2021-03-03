@@ -632,12 +632,11 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
         else:
             raise Exception(f'Unknown architecture {arch}')
     else:
-        result.extend([
-            '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',
-            '--disable-swresample'
-        ])
         if validation:
-            result.extend(['--enable-filter=testsrc2', '--disable-avdevice'])
+            result.extend([
+                '--enable-filter=testsrc2', '--disable-vaapi',
+                '--disable-cuda-llvm'
+            ])
         else:
             result.extend([
                 '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',
