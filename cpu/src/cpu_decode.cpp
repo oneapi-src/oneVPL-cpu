@@ -352,6 +352,8 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                     if (avframe == nullptr)
                         return MFX_ERR_ABORTED;
                 }
+
+                avframe->color_range = AVCOL_RANGE_UNSPECIFIED;
             }
 
             if (m_avDecContext->codec_id == AV_CODEC_ID_AV1) {
