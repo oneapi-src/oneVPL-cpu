@@ -25,11 +25,16 @@ set(SOURCE_FILES
     api/session_management.cpp
     api/memory.cpp
     api/x_init_reset_close.cpp
-    api/smart_dispatcher.cpp
     api/x_xframeasync.cpp
     api/x_queryiosurf.cpp
     api/decodeheader.cpp
     api/x_notimplemented.cpp)
+
+if(NOT DEFINED VPL_UTEST_LINK_RUNTIME)
+  list(APPEND SOURCE_FILES api/smart_dispatcher_common.cpp
+       api/smart_dispatcher_sw.cpp api/smart_dispatcher_gpu.cpp
+       api/smart_dispatcher_util.cpp)
+endif()
 
 add_executable(${TARGET} ${SOURCE_FILES})
 set_property(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
