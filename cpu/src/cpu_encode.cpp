@@ -1283,8 +1283,15 @@ mfxStatus CpuEncode::GetEncodeSurface(mfxFrameSurface1 **surface) {
     }
 
     mfxStatus sts = m_encSurfaces->GetFreeSurface(surface);
-    (*surface)->Data.MemType |=
-        MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+    if (sts == MFX_ERR_NONE) {
+        if (*surface) {
+            (*surface)->Data.MemType |=
+                MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+        }
+        else {
+            sts = MFX_ERR_NULL_PTR;
+        }
+    }
     return sts;
 }
 
