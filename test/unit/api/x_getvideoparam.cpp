@@ -5,6 +5,7 @@
   ############################################################################*/
 
 #include <gtest/gtest.h>
+#include "vpl/mfxjpeg.h"
 #include "vpl/mfxvideo.h"
 
 /* GetVideoParam overview
@@ -22,7 +23,7 @@ TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {
 
     mfxVideoParam mfxEncParams = { 0 };
 
-    mfxEncParams.mfx.CodecId                 = MFX_CODEC_HEVC;
+    mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.TargetUsage             = MFX_TARGETUSAGE_BALANCED;
     mfxEncParams.mfx.TargetKbps              = 4000;
     mfxEncParams.mfx.RateControlMethod       = MFX_RATECONTROL_VBR;
@@ -224,4 +225,60 @@ TEST(VPPGetVideoParam, NullParamsOutReturnsErrNull) {
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(DecodeVPPGetChannelParam, InitializedDecodeVPPReturnsParams) {
+    mfxVersion ver = {};
+    mfxSession session;
+    ver.Major = 2;
+    ver.Minor = 1;
+
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams = { 0 };
+    mfxDecParams.mfx.CodecId   = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern     = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxDecParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
+    mfxDecParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxDecParams.mfx.FrameInfo.CropW         = 128;
+    mfxDecParams.mfx.FrameInfo.CropH         = 96;
+    mfxDecParams.mfx.FrameInfo.Width         = 128;
+    mfxDecParams.mfx.FrameInfo.Height        = 96;
+    mfxDecParams.mfx.FrameInfo.FrameRateExtN = 30;
+    mfxDecParams.mfx.FrameInfo.FrameRateExtD = 1;
+
+    mfxVideoChannelParam* mfxVPPChParams = new mfxVideoChannelParam;
+    memset(mfxVPPChParams, 0, sizeof(mfxVideoChannelParam));
+
+    // scaled output to 320x240
+    mfxVPPChParams->VPP.FourCC        = MFX_FOURCC_I420;
+    mfxVPPChParams->VPP.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPChParams->VPP.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    mfxVPPChParams->VPP.FrameRateExtN = 30;
+    mfxVPPChParams->VPP.FrameRateExtD = 1;
+    mfxVPPChParams->VPP.CropW         = 320;
+    mfxVPPChParams->VPP.CropH         = 240;
+    mfxVPPChParams->VPP.Width         = 320;
+    mfxVPPChParams->VPP.Height        = 240;
+    mfxVPPChParams->VPP.ChannelId     = 1;
+    mfxVPPChParams->Protected         = 0;
+    mfxVPPChParams->IOPattern   = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPChParams->ExtParam    = NULL;
+    mfxVPPChParams->NumExtParam = 0;
+
+    sts = MFXVideoDECODE_VPP_Init(session, &mfxDecParams, &mfxVPPChParams, 1);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoChannelParam par = { 0 };
+    sts                      = MFXVideoDECODE_VPP_GetChannelParam(session, &par, 1);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+    ASSERT_EQ(320, par.VPP.Width);
+    ASSERT_EQ(240, par.VPP.Height);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    delete mfxVPPChParams;
 }

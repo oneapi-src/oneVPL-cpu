@@ -10,7 +10,8 @@ set(TARGET ffmpeg-svt)
 add_library(${TARGET} INTERFACE)
 
 if(NOT DEFINED ENV{VPL_BUILD_DEPENDENCIES})
-  message(FATAL_ERROR "VPL_BUILD_DEPENDENCIES not defined in environment")
+  set(VPL_DEP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../_deps)
+  message(STATUS "Using default destination located at ${VPL_DEP_DIR}")
 else()
   set(VPL_DEP_DIR $ENV{VPL_BUILD_DEPENDENCIES})
   message(STATUS "Using VPL_BUILD_DEPENDENCIES located at ${VPL_DEP_DIR}")
@@ -18,9 +19,11 @@ endif()
 
 option(BUILD_GPL_X264 "Build X264 with GPL License" OFF)
 
-set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
-set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
-set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+  set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
+  set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
+  set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
+endif()
 set(AVCODEC_LIB ${VPL_DEP_DIR}/lib/libavcodec.a)
 set(AVUTIL_LIB ${VPL_DEP_DIR}/lib/libavutil.a)
 set(AVFILTER_LIB ${VPL_DEP_DIR}/lib/libavfilter.a)
@@ -33,10 +36,15 @@ if(BUILD_GPL_X264)
   endif()
 endif(BUILD_GPL_X264)
 
-if(NOT EXISTS ${SVTHEVCENC_LIB}
-   OR NOT EXISTS ${SVTHEVCENC_LIB}
-   OR NOT EXISTS ${DAV1D_LIB}
-   OR NOT EXISTS ${AVCODEC_LIB}
+if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+  if(NOT EXISTS ${SVTHEVCENC_LIB}
+     OR NOT EXISTS ${SVTHEVCENC_LIB}
+     OR NOT EXISTS ${DAV1D_LIB})
+    message(FATAL_ERROR "Could not find expected FFmpeg libraries")
+  endif()
+endif()
+
+if(NOT EXISTS ${AVCODEC_LIB}
    OR NOT EXISTS ${AVUTIL_LIB}
    OR NOT EXISTS ${AVFILTER_LIB}
    OR NOT EXISTS ${SWSCALE_LIB})
@@ -50,30 +58,60 @@ if(MSVC)
   else()
     set(MSYS_ROOT $ENV{MSYS_ROOT})
   endif()
-  execute_process(COMMAND ${MSYS_ROOT}/mingw64/bin/gcc.exe --version
+
+  message(STATUS "${CMAKE_SIZEOF_VOID_P}")
+  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    message(STATUS "64 bit")
+    set(mingw_name mingw64)
+    set(gcc_name x86_64-w64-mingw32)
+  elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    message(STATUS "32 bit")
+    set(mingw_name mingw32)
+    set(gcc_name i686-w64-mingw32)
+  else()
+    message(STATUS "${CMAKE_SIZEOF_VOID_P} * 8 bit")
+    message(FATAL_ERROR "Cannot identify library folder")
+  endif()
+
+  execute_process(COMMAND ${MSYS_ROOT}/${mingw_name}/bin/gcc.exe --version
                   OUTPUT_VARIABLE gcc_version_text)
   string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" gcc_version ${gcc_version_text})
 
   set(GCC_LIB
-      ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/${gcc_version}/libgcc.a)
+      ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libgcc.a)
   set(GCC_EH_LIB
-      ${MSYS_ROOT}/mingw64/lib/gcc/x86_64-w64-mingw32/${gcc_version}/libgcc_eh.a
-  )
-  set(BCRYPT_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libbcrypt.a)
-  set(MINGW32_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingw32.a)
-  set(MINGWEX_LIB ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libmingwex.a)
+      ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libgcc_eh.a)
+  set(BCRYPT_LIB ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libbcrypt.a)
+  set(MINGW32_LIB ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libmingw32.a)
+  set(MINGWEX_LIB ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libmingwex.a)
   set(PTHREAD_IMPLIB
-      ${MSYS_ROOT}/mingw64/x86_64-w64-mingw32/lib/libpthread.dll.a)
-  set(PTHREAD_DLL ${MSYS_ROOT}/mingw64/bin/libwinpthread-1.dll)
+      ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libpthread.dll.a)
+  set(PTHREAD_DLL ${MSYS_ROOT}/${mingw_name}/bin/libwinpthread-1.dll)
 
-  if(NOT EXISTS ${GCC_LIB}
-     OR NOT EXISTS ${GCC_EH_LIB}
-     OR NOT EXISTS ${BCRYPT_LIB}
-     OR NOT EXISTS ${MINGW32_LIB}
-     OR NOT EXISTS ${MINGWEX_LIB}
-     OR NOT EXISTS ${PTHREAD_DLL})
-    message(FATAL_ERROR "Could not find expected MinGW runtime libraries")
+  if(NOT EXISTS ${GCC_LIB})
+    message(FATAL_ERROR "Could not find expected MinGW GCC runtime libraries")
   endif()
+  if(NOT EXISTS ${GCC_EH_LIB})
+    message(
+      FATAL_ERROR "Could not find expected MinGW GCC EH runtime libraries")
+  endif()
+  if(NOT EXISTS ${BCRYPT_LIB})
+    message(
+      FATAL_ERROR "Could not find expected MinGW BCrypt runtime libraries")
+  endif()
+  if(NOT EXISTS ${MINGW32_LIB})
+    message(
+      FATAL_ERROR "Could not find expected MinGW MinGW32 runtime libraries")
+  endif()
+  if(NOT EXISTS ${MINGWEX_LIB})
+    message(
+      FATAL_ERROR "Could not find expected MinGW MinGWEX runtime libraries")
+  endif()
+  if(NOT EXISTS ${PTHREAD_DLL})
+    message(
+      FATAL_ERROR "Could not find expected MinGW PThread runtime libraries")
+  endif()
+
   target_link_libraries(
     ${TARGET} INTERFACE ${GCC_LIB} ${GCC_EH_LIB} ${BCRYPT_LIB} ${MINGW32_LIB}
                         ${MINGWEX_LIB})
@@ -105,34 +143,47 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 if(MSVC)
-  target_link_libraries(
-    ${TARGET}
-    INTERFACE ${AVCODEC_LIB}
-              ${AVUTIL_LIB}
-              ${AVFILTER_LIB}
-              ${SWSCALE_LIB}
-              ${SVTHEVCENC_LIB}
-              ${SVTAV1ENC_LIB}
-              ${DAV1D_LIB}
-              Threads::Threads)
+  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    target_link_libraries(
+      ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
+                          ${SWSCALE_LIB} Threads::Threads)
+  elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    target_link_libraries(
+      ${TARGET}
+      INTERFACE ${AVCODEC_LIB}
+                ${AVUTIL_LIB}
+                ${AVFILTER_LIB}
+                ${SWSCALE_LIB}
+                ${SVTHEVCENC_LIB}
+                ${SVTAV1ENC_LIB}
+                ${DAV1D_LIB}
+                Threads::Threads)
+  endif()
 else()
-  target_link_libraries(
-    ${TARGET}
-    INTERFACE ${AVCODEC_LIB}
-              ${AVUTIL_LIB}
-              ${AVFILTER_LIB}
-              ${SWSCALE_LIB}
-              ${SVTHEVCENC_LIB}
-              ${SVTAV1ENC_LIB}
-              ${DAV1D_LIB}
-              Threads::Threads
-              dl)
+  if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+    target_link_libraries(
+      ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
+                          ${SWSCALE_LIB} Threads::Threads ${CMAKE_DL_LIBS})
+  elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+    target_link_libraries(
+      ${TARGET}
+      INTERFACE ${AVCODEC_LIB}
+                ${AVUTIL_LIB}
+                ${AVFILTER_LIB}
+                ${SWSCALE_LIB}
+                ${SVTHEVCENC_LIB}
+                ${SVTAV1ENC_LIB}
+                ${DAV1D_LIB}
+                Threads::Threads
+                ${CMAKE_DL_LIBS})
+  endif()
 endif()
 
 if(BUILD_GPL_X264)
   if(MSVC)
     target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads)
   else()
-    target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads dl)
+    target_link_libraries(${TARGET} INTERFACE ${X264_LIB} Threads::Threads
+                                              ${CMAKE_DL_LIBS})
   endif()
 endif(BUILD_GPL_X264)

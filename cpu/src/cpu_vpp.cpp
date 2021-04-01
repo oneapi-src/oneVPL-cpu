@@ -14,19 +14,27 @@
 // vpp in/out type
 enum { VPP_IN = 0x00, VPP_OUT = 0x01 };
 
-CpuVPP::CpuVPP(CpuWorkstream* session)
-        : m_session(session),
+CpuVPP::CpuVPP()
+        : m_session(nullptr),
           m_avVppFrameOut(nullptr),
           m_vpp_graph(nullptr),
           m_buffersrc_ctx(nullptr),
           m_buffersink_ctx(nullptr),
           m_vppInFormat(MFX_FOURCC_I420),
-          m_vppWidth(0),
-          m_vppHeight(0),
+          m_vppInWidth(0),
+          m_vppInHeight(0),
+          m_vppOutFormat(MFX_FOURCC_I420),
+          m_vppOutWidth(0),
+          m_vppOutHeight(0),
           m_vppFunc(0),
           m_param(),
-          m_vppSurfaces() {
+          m_vppSurfacesIn(),
+          m_vppSurfacesOut() {
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
+}
+
+void CpuVPP::SetSession(CpuWorkstream* session) {
+    m_session = session;
 }
 
 // buffersrc --> execution filters from filter description --> buffersink
@@ -446,8 +454,12 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
         return MFX_ERR_NOT_INITIALIZED;
 
     m_vppInFormat = m_param.vpp.In.FourCC;
-    m_vppWidth    = m_param.vpp.In.Width;
-    m_vppHeight   = m_param.vpp.In.Height;
+    m_vppInWidth  = m_param.vpp.In.Width;
+    m_vppInHeight = m_param.vpp.In.Height;
+
+    m_vppOutFormat = m_param.vpp.Out.FourCC;
+    m_vppOutWidth  = m_param.vpp.Out.Width;
+    m_vppOutHeight = m_param.vpp.Out.Height;
 
     return sts;
 }
@@ -466,11 +478,25 @@ CpuVPP::~CpuVPP() {
 mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
                                mfxFrameSurface1* surface_out,
                                mfxExtVppAuxData* aux) {
+    bool bWA_alignment = false;
+
     // Try get AVFrame from surface_out
     AVFrame* dst_avframe = nullptr;
     CpuFrame* dst_frame  = CpuFrame::TryCast(surface_out);
     if (dst_frame) {
         dst_avframe = dst_frame->GetAVFrame();
+
+        // WA to cover 64 byte alignment issue --
+        // In case of i420, App know only Y pictch size and divide it by 2 for U,V pitch size.
+        // But the U,V pitch size is not /2 when the width is not 64 byte aligned.
+        // So, there's data misalignment when app processes data.
+        // We copy avframe data to mfx data to meet expecting pitch size instead of
+        // delievering memory pointer
+        bWA_alignment = NeedWAForAlignment(&surface_out->Info, (int*)dst_avframe->linesize);
+
+        // Do not unref because we do copy
+        if (bWA_alignment == false)
+            av_frame_unref(dst_avframe);
     }
     if (!dst_avframe) { // Otherwise use AVFrame allocated in this class
         dst_avframe = m_avVppFrameOut;
@@ -500,7 +526,14 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
         av_frame_unref(m_avVppFrameOut);
     }
     else if (dst_frame) { // update MFXFrameSurface from AVFrame
-        dst_frame->Update();
+        if (bWA_alignment == true) {
+            RET_ERROR(
+                AVFrame2mfxFrameSurface(surface_out, dst_avframe, m_session->GetFrameAllocator()));
+            av_frame_unref(dst_avframe);
+        }
+        else {
+            dst_frame->Update();
+        }
     }
 
     if (surface_in) {
@@ -663,17 +696,19 @@ mfxStatus CpuVPP::GetVideoParam(mfxVideoParam* par) {
 }
 
 mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
-    if (!m_vppSurfaces) {
+    if (!m_vppSurfacesIn) {
         mfxFrameAllocRequest VPPRequest[2] = { 0 };
         VPPQueryIOSurf(nullptr, VPPRequest);
 
         auto pool = std::make_unique<CpuFramePool>();
-        RET_ERROR(
-            pool->Init(m_vppInFormat, m_vppWidth, m_vppHeight, VPPRequest[0].NumFrameSuggested));
-        m_vppSurfaces = std::move(pool);
+        RET_ERROR(pool->Init(m_vppInFormat,
+                             m_vppInWidth,
+                             m_vppInHeight,
+                             VPPRequest[0].NumFrameSuggested));
+        m_vppSurfacesIn = std::move(pool);
     }
 
-    mfxStatus sts = m_vppSurfaces->GetFreeSurface(surface);
+    mfxStatus sts = m_vppSurfacesIn->GetFreeSurface(surface);
     if (sts != MFX_ERR_NONE) {
         return sts;
     }
@@ -682,6 +717,32 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
     }
     (*surface)->Data.MemType |=
         MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+
+    return sts;
+}
+
+mfxStatus CpuVPP::GetVPPSurfaceOut(mfxFrameSurface1** surface) {
+    if (!m_vppSurfacesOut) {
+        mfxFrameAllocRequest VPPRequest[2] = { 0 };
+        VPPQueryIOSurf(nullptr, VPPRequest);
+
+        auto pool = std::make_unique<CpuFramePool>();
+        RET_ERROR(pool->Init(m_vppOutFormat,
+                             m_vppOutWidth,
+                             m_vppOutHeight,
+                             VPPRequest[1].NumFrameSuggested));
+        m_vppSurfacesOut = std::move(pool);
+    }
+
+    mfxStatus sts = m_vppSurfacesOut->GetFreeSurface(surface);
+    if (sts != MFX_ERR_NONE) {
+        return sts;
+    }
+    if (surface == nullptr) {
+        return MFX_ERR_NOT_ENOUGH_BUFFER;
+    }
+    (*surface)->Data.MemType |=
+        MFX_MEMTYPE_FROM_VPPOUT | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
 
     return sts;
 }
@@ -741,4 +802,27 @@ mfxStatus CpuVPP::IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar)
     }
 
     return MFX_ERR_NONE;
+}
+
+bool CpuVPP::NeedWAForAlignment(mfxFrameInfo* fi, int* linesize) {
+    if (fi->FourCC == MFX_FOURCC_I420) {
+        // check the U pitch size of output surface and output avframe
+        if (fi->Width / 2 != linesize[1]) {
+            return true;
+        }
+    }
+    else if (fi->FourCC == MFX_FOURCC_I010) {
+        // check the U pitch size of output surface and output avframe
+        if (fi->Width != linesize[1]) {
+            return true;
+        }
+    }
+    else { // bgra
+        // check the bgra pitch size of output surface and output avframe
+        if (fi->Width * 4 != linesize[0]) {
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -3,24 +3,12 @@
 @REM 
 @REM SPDX-License-Identifier: MIT
 @REM ------------------------------------------------------------------------------
-@REM Check cpu code for issues.
+@REM Run basic tests on 32bit build of cpu.
 
 @ECHO off
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION 
 
-@REM Set project folder
-FOR /D %%i IN ("%~dp0\..") DO (
-	SET PROJ_DIR=%%~fi
-)
+CALL %~dp0%\test.bat -A x86_32
+SET result_all=%errorlevel%
 
-@REM Set script folder
-FOR /D %%i IN ("%~dp0") DO (
-	SET SCRIPT_DIR=%%~fi
-)
-
-PUSHD %PROJ_DIR%
-	gitlint || EXIT /b 1
-	pre-commit run --all-files || EXIT /b 1
-POPD
-
-ENDLOCAL
+ENDLOCAL && EXIT /B %result_all%

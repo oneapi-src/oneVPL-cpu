@@ -191,6 +191,19 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
     m_avDecContext->thread_count = 0;
 #endif
 
+    if (!bs) {
+        if (m_avDecCodec->id == AV_CODEC_ID_AV1) {
+            if (par->mfx.FilmGrain == 0) { // disable film-grain denoise
+                int ret = av_opt_set_int(m_avDecContext->priv_data,
+                                         "filmgrain",
+                                         par->mfx.FilmGrain,
+                                         AV_OPT_SEARCH_CHILDREN);
+                if (ret != 0)
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+        }
+    }
+
     if (avcodec_open2(m_avDecContext, m_avDecCodec, NULL) < 0) {
         return MFX_ERR_INVALID_VIDEO_PARAM;
     }
@@ -340,6 +353,62 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                         return MFX_ERR_ABORTED;
                 }
             }
+
+            if (m_avDecContext->codec_id == AV_CODEC_ID_AV1) {
+                // profile
+                switch (m_avDecContext->profile) {
+                    case 0:
+                        m_param.mfx.CodecProfile = MFX_PROFILE_AV1_MAIN;
+                        break;
+                    case 1:
+                        m_param.mfx.CodecProfile = MFX_PROFILE_AV1_HIGH;
+                        break;
+                    case 2:
+                        m_param.mfx.CodecProfile = MFX_PROFILE_AV1_PRO;
+                        break;
+                    default:
+                        return MFX_ERR_ABORTED;
+                }
+
+                // level
+                //
+                // codes when decoder sets level of context from av1 sequence header
+                //
+                //     c->level = ((p->seq_hdr->operating_points[0].major_level - 2) << 2)
+                //                | p->seq_hdr->operating_points[0].minor_level;
+                //
+                int major_level = (m_avDecContext->level >> 2) + 2;
+                int minor_level = m_avDecContext->level - ((major_level - 2) << 2);
+
+                if (major_level < 2 || major_level > 7 || minor_level < 0 || minor_level > 3)
+                    return MFX_ERR_ABORTED;
+
+                // in mfxstructure.h
+                // enum
+                //    MFX_LEVEL_AV1_2                         = 20,
+                //    MFX_LEVEL_AV1_21                        = 21,
+                //    ...
+                //    MFX_LEVEL_AV1_72                        = 72,
+                //    MFX_LEVEL_AV1_73                        = 73,
+                //
+                int mfx_level = (major_level * 10) + minor_level;
+
+                m_param.mfx.CodecLevel = mfx_level;
+
+                int ret;
+                int64_t optval;
+                ret = av_opt_get_int(m_avDecContext->priv_data,
+                                     "filmgrain",
+                                     AV_OPT_SEARCH_CHILDREN,
+                                     &optval);
+                if (ret == 0) {
+                    m_param.mfx.FilmGrain = (mfxU16)optval;
+                }
+                else {
+                    m_param.mfx.FilmGrain = 0;
+                }
+            }
+
             if (m_param.mfx.FrameInfo.Width != m_avDecContext->width ||
                 m_param.mfx.FrameInfo.Height != m_avDecContext->height) {
                 m_param.mfx.FrameInfo.Width  = m_avDecContext->width;

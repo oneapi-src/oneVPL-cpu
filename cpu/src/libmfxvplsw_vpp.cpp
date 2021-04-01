@@ -37,8 +37,9 @@ mfxStatus MFXVideoVPP_Init(mfxSession session, mfxVideoParam *par) {
     if (ws->GetVPP())
         return MFX_ERR_UNDEFINED_BEHAVIOR;
 
-    std::unique_ptr<CpuVPP> vpp(new CpuVPP(ws));
+    std::unique_ptr<CpuVPP> vpp(new CpuVPP);
     RET_IF_FALSE(vpp, MFX_ERR_MEMORY_ALLOC);
+    vpp->SetSession(ws);
     mfxStatus sts = vpp->InitVPP(par);
 
     if (sts < MFX_ERR_NONE)
@@ -109,4 +110,26 @@ mfxStatus MFXVideoVPP_Reset(mfxSession session, mfxVideoParam *par) {
 mfxStatus MFXVideoVPP_GetVPPStat(mfxSession session, mfxVPPStat *stat) {
     VPL_TRACE_FUNC;
     return MFX_ERR_NOT_IMPLEMENTED;
+}
+
+mfxStatus MFXVideoVPP_ProcessFrameAsync(mfxSession session,
+                                        mfxFrameSurface1 *in,
+                                        mfxFrameSurface1 **out) {
+    VPL_TRACE_FUNC;
+    RET_IF_FALSE(session, MFX_ERR_INVALID_HANDLE);
+
+    CpuWorkstream *ws = reinterpret_cast<CpuWorkstream *>(session);
+    CpuVPP *vpp       = ws->GetVPP();
+    RET_IF_FALSE(vpp, MFX_ERR_NOT_INITIALIZED);
+
+    if (*out == 0) {
+        // get a ref-counted surface for vpp into
+        // behavior is equivalent to the application calling this and then
+        //   passing the surface into ProcessFrameAsync()
+        RET_ERROR(MFXMemory_GetSurfaceForVPPOut(session, out));
+        (*out)->FrameInterface->Map(*out, MFX_MAP_WRITE);
+    }
+
+    mfxStatus sts = vpp->ProcessFrame(in, *out, NULL);
+    return sts;
 }

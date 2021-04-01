@@ -1,46 +1,58 @@
-::------------------------------------------------------------------------------
-:: Copyright (C) Intel Corporation
-::
-:: SPDX-License-Identifier: MIT
-::------------------------------------------------------------------------------
-:: start of boilerplate to switch to project root ------------------------------
-@echo off
-SETLOCAL
-FOR /D %%i IN ("%~dp0\..") DO (
-	set PROJ_DIR=%%~fi
+@REM ------------------------------------------------------------------------------
+@REM Copyright (C) Intel Corporation
+@REM 
+@REM SPDX-License-Identifier: MIT
+@REM ------------------------------------------------------------------------------
+@REM Run basic tests on base.
+
+@ECHO off
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION 
+
+@REM Read command line options
+CALL %~dp0%\_buildopts.bat ^
+    --name "%~n0%" ^
+    --desc "Build project code." ^
+    -- %*
+IF DEFINED HELP_OPT ( EXIT /b 0 )
+
+@REM Load project environment
+SET VARS_SCRIPT=vars.bat
+IF "%ARCH_OPT%"=="x86_32" (
+  SET VARS_SCRIPT=vars32.bat
 )
-cd %PROJ_DIR%
-:: start of commands -----------------------------------------------------------
-call "%PROJ_DIR%/test/tools/env/vars.bat"
-if defined VPL_BUILD_DEPENDENCIES (
-  set ffmpeg_dir=%VPL_BUILD_DEPENDENCIES%\bin
-) else (
-    echo VPL_BUILD_DEPENDENCIES not defined. Did you run bootstrap?
-    exit /b 1
+
+IF NOT DEFINED "%VPL_ROOT%" (
+  IF NOT EXIST "%VPL_INSTALL_DIR%" (
+    ECHO "Base must be installed to build implementation"
+    EXIT /b 1
   )
+
+  IF NOT EXIST "%VPL_INSTALL_DIR%\env\%VARS_SCRIPT%" (
+    @REM Detect case where user points VPL_INSTALL_DIR at the
+    @REM Base repo instead of the built output.
+    ECHO "Cannot find environment script in %VPL_INSTALL_DIR%\env"
+    EXIT /b 1
+  )
+
+  CALL "%VPL_INSTALL_DIR%\env\%VARS_SCRIPT%" || EXIT /b 1
 )
-set "PATH=%ffmpeg_dir%;%PATH%"
 
-if defined VPL_INSTALL_DIR (
-   if not defined VPL_ROOT (
-      call "%VPL_INSTALL_DIR%\env\vars.bat" || exit /b 1
-   )
-)
-
-
-cd _build\Release
 set /A result_all = 0
+SET BUILD_DIR=_build
+PUSHD  %BUILD_DIR%
+  PUSHD %COFIG_OPT%
+    ECHO *** Running Unit Tests ***
+    CALL vpl-utest.exe --gtest_output=xml:%PROJ_DIR%\_logs\
+    IF %errorlevel%==0 GOTO unit_tests_passed
+    ECHO *** Unit Tests FAILED ***
+    SET /A result_all = 1
+    GOTO test_end
 
-:unit_tests
-echo *** Running Unit Tests ***
-call vpl-utest.exe --gtest_output=xml:%PROJ_DIR%\_logs\
-if %errorlevel%==0 goto unit_tests_passed
-echo *** Unit Tests FAILED ***
-set /A result_all = 1
-goto test_end
+    :unit_tests_passed
+    echo *** Unit Tests PASSED ***
 
-:unit_tests_passed
-echo *** Unit Tests PASSED ***
+    :test_end
+  POPD
+POPD
 
-:test_end
-exit /B %result_all%
+ENDLOCAL && EXIT /B %result_all%

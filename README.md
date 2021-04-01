@@ -14,6 +14,8 @@ which includes the following features:
 - H.264/AVC encode (using x264 and libavcodec)
 - VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
 
+Note: H.265/HEVC, H.264, and AV1 are not avalible in 32-bit builds.
+
 ---
 
 **NOTE** Use of this implementation requires installation of the loader provided
@@ -90,6 +92,8 @@ for more information.
             pacman --needed -Sy mingw-w64-x86_64-cmake git python-pip
             pacman --needed -Sy mingw-w64-x86_64-meson mingw-w64-x86_64-ninja
 
+            # For 32-bit builds you will also need a 32-bit toolchain
+            pacman --needed -Sy mingw-w64-i686-toolchain
         ---
 
         **NOTE** While the msys2 shell is used in initial setup, it is not otherwise

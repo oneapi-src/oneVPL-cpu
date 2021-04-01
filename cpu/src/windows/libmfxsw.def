@@ -57,3 +57,11 @@ EXPORTS
     MFXMemory_GetSurfaceForDecode
 
     MFXInitialize
+
+    MFXMemory_GetSurfaceForVPPOut
+    MFXVideoDECODE_VPP_Init
+    MFXVideoDECODE_VPP_DecodeFrameAsync
+    MFXVideoDECODE_VPP_Reset
+    MFXVideoDECODE_VPP_GetChannelParam
+    MFXVideoDECODE_VPP_Close
+    MFXVideoVPP_ProcessFrameAsync

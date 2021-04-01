@@ -55,7 +55,7 @@ class CpuWorkstream;
 
 class CpuVPP {
 public:
-    explicit CpuVPP(CpuWorkstream* session);
+    CpuVPP();
     ~CpuVPP();
 
     static mfxStatus VPPQuery(mfxVideoParam* in, mfxVideoParam* out);
@@ -67,7 +67,9 @@ public:
                            mfxExtVppAuxData* aux);
     mfxStatus GetVideoParam(mfxVideoParam* par);
     mfxStatus GetVPPSurface(mfxFrameSurface1** surface);
+    mfxStatus GetVPPSurfaceOut(mfxFrameSurface1** surface);
     mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
+    void SetSession(CpuWorkstream* session);
 
 private:
     char m_vpp_filter_desc[1024];
@@ -78,12 +80,17 @@ private:
     AVFrame* m_avVppFrameOut;
 
     mfxU32 m_vppInFormat;
-    mfxU32 m_vppWidth;
-    mfxU32 m_vppHeight;
+    mfxU32 m_vppInWidth;
+    mfxU32 m_vppInHeight;
+
+    mfxU32 m_vppOutFormat;
+    mfxU32 m_vppOutWidth;
+    mfxU32 m_vppOutHeight;
 
     mfxU32 m_vppFunc;
     mfxVideoParam m_param;
-    std::unique_ptr<CpuFramePool> m_vppSurfaces;
+    std::unique_ptr<CpuFramePool> m_vppSurfacesIn;
+    std::unique_ptr<CpuFramePool> m_vppSurfacesOut;
 
     bool InitFilters(void);
     void CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in);
@@ -115,6 +122,7 @@ private:
     void GetDoNotUseFilterList(mfxVideoParam* par, mfxU32** ppList, mfxU32* pLen);
     bool CheckFilterList(mfxU32* pList, mfxU32 count, bool bDoUseTable);
     mfxStatus CheckExtParam(mfxExtBuffer** ppExtParam, mfxU16 count);
+    bool NeedWAForAlignment(mfxFrameInfo* fi, int* linesize);
 
     CpuWorkstream* m_session;
 

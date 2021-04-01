@@ -11,6 +11,7 @@
 #include <memory>
 #include "src/cpu_common.h"
 #include "src/cpu_decode.h"
+#include "src/cpu_decodevpp.h"
 #include "src/cpu_encode.h"
 #include "src/cpu_frame.h"
 #include "src/cpu_frame_pool.h"
@@ -30,6 +31,9 @@ public:
     void SetVPP(CpuVPP* vpp) {
         m_vpp.reset(vpp);
     }
+    void SetDecodeVPP(CpuDecodeVPP* decvpp) {
+        m_decvpp.reset(decvpp);
+    }
 
     CpuDecode* GetDecoder() {
         return m_decode.get();
@@ -39,6 +43,9 @@ public:
     }
     CpuVPP* GetVPP() {
         return m_vpp.get();
+    }
+    CpuDecodeVPP* GetDecodeVPP() {
+        return m_decvpp.get();
     }
 
     mfxStatus Sync(mfxSyncPoint& syncp, mfxU32 wait);
@@ -57,12 +64,14 @@ public:
         m_handles[ht] = hdl;
     }
 
-    mfxHDL* GetHandle(mfxHandleType ht) {
+    mfxStatus GetHandle(mfxHandleType ht, mfxHDL* hdl) {
         if (m_handles.find(ht) == m_handles.end()) {
-            return nullptr;
+            *hdl = nullptr;
+            return MFX_ERR_NOT_FOUND;
         }
         else {
-            return &m_handles[ht];
+            *hdl = m_handles[ht];
+            return MFX_ERR_NONE;
         }
     }
 
@@ -70,6 +79,7 @@ private:
     std::unique_ptr<CpuDecode> m_decode;
     std::unique_ptr<CpuEncode> m_encode;
     std::unique_ptr<CpuVPP> m_vpp;
+    std::unique_ptr<CpuDecodeVPP> m_decvpp;
 
     mfxFrameAllocator m_allocator;
     std::map<mfxHandleType, mfxHDL> m_handles;
