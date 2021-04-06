@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
@@ -19,7 +19,7 @@ project(oneVPL-cpu VERSION ${version_txt})
 #
 
 # Project options
-option(OPTION_BUILD_TESTS "Build tests." ON)
+option(BUILD_TESTS "Build tests." ON)
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -48,8 +48,7 @@ install(
 
 include(cmake/PackageTarget.cmake)
 
-option(vpl_build_tests "Build the tests" ON)
-if(vpl_build_tests)
+if(BUILD_TESTS)
   enable_testing()
   include(GoogleTest)
   add_subdirectory(test/unit)
