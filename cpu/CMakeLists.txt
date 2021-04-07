@@ -36,7 +36,7 @@ if(POLICY CMP0074)
   cmake_policy(SET CMP0074 OLD)
 endif()
 
-find_package(VPL REQUIRED COMPONENTS api)
+find_package(VPL 2.2 REQUIRED COMPONENTS api)
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
 if(BUILD_GPL_X264)
