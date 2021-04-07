@@ -49,4 +49,6 @@ endif()
 
 target_link_libraries(${TARGET} gtest)
 target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/test/unit)
-gtest_discover_tests(${TARGET})
+# gtest_add_tests instead of gtest_discover_tests(${TARGET}) allows building
+# test list without loading the dispatcher
+gtest_add_tests(TARGET ${TARGET})

@@ -17,30 +17,6 @@ SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 ; pwd -P 
     --desc "Build cpu." \
     -- "$@"
 
-# Load project environment
-if [ -z "${VPL_ROOT}" ]; then
-  echo "Environment script appears not to have been run."
-  echo "Attempting to run now..."
-
-  if [ ! -e "${VPL_INSTALL_DIR}" ]
-  then
-    echo "Base must be installed to build implementation"
-    exit 1
-  fi
-
-  if [ ! -e "${VPL_INSTALL_DIR}/env/vars.sh" ]
-  then
-    # Detect case where user points VPL_INSTALL_DIR at the
-    # Base repo instead of the built output.
-    echo "Cannot find environment script in ${VPL_INSTALL_DIR}/env"
-    exit 1
-  fi
-
-  source "${VPL_INSTALL_DIR}/env/vars.sh"
-else
-  echo "Environment script appears to have already run. Continuing..."
-fi
-
 if [ -n "${BOOTSTRAP_OPT}" ]
 then
   echo "Building dependencies..."
@@ -68,7 +44,7 @@ pushd "${PROJ_DIR}"
   popd
 popd
 
-# Signal to CI system 
+# Signal to CI system
 if [ -n "${TEAMCITY_VERSION}" ]; then
   echo "##teamcity[publishArtifacts 'oneVPL-cpu/${BUILD_DIR}/*-all.zip=>']"
 fi
