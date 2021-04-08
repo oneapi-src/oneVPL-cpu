@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
@@ -12,6 +12,11 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(TARGET vplswref64)
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
   set(TARGET vplswref32)
+endif()
+
+# add lib/<arch> to find_package path on windows
+if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+  set(CMAKE_LIBRARY_ARCHITECTURE x86)
 endif()
 
 file(GLOB SOURCES src/*.cpp)
