@@ -35,7 +35,7 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
     // create vpp instances as many as number of channels
     m_numVPPCh    = num_vpp_par;
     m_numSurfs    = m_numVPPCh + 1; // one more for decode at 0th location
-    m_vppChParams = *vpp_par_array;
+    m_vppChParams = vpp_par_array;
 
     if (m_cpuVPP != nullptr) {
         delete[] m_cpuVPP;
@@ -54,7 +54,7 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
         m_cpuVPP[i].SetSession(m_session);
         memcpy_s(&param.vpp.Out,
                  sizeof(mfxFrameInfo),
-                 &(*vpp_par_array)[i].VPP,
+                 &(vpp_par_array[i]->VPP),
                  sizeof(mfxFrameInfo));
         RET_ERROR(m_cpuVPP[i].InitVPP(&param));
     }
@@ -137,8 +137,8 @@ mfxStatus CpuDecodeVPP::GetChannelParam(mfxVideoChannelParam *par, mfxU32 channe
     bool bfound = false;
 
     for (mfxU32 i = 0; i < m_numVPPCh; i++) {
-        if (m_vppChParams[i].VPP.ChannelId == channel_id) {
-            *par   = m_vppChParams[i];
+        if (m_vppChParams[i]->VPP.ChannelId == channel_id) {
+            *par   = *(m_vppChParams)[i];
             bfound = true;
             break;
         }

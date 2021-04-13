@@ -42,7 +42,7 @@ public:
 
 private:
     CpuVPP* m_cpuVPP;
-    mfxVideoChannelParam* m_vppChParams;
+    mfxVideoChannelParam** m_vppChParams;
     mfxFrameSurface1** m_surfOut;
     mfxU32 m_numVPPCh;
     mfxU32 m_numSurfs;
