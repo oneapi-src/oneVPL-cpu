@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
@@ -59,13 +59,10 @@ if(MSVC)
     set(MSYS_ROOT $ENV{MSYS_ROOT})
   endif()
 
-  message(STATUS "${CMAKE_SIZEOF_VOID_P}")
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-    message(STATUS "64 bit")
     set(mingw_name mingw64)
     set(gcc_name x86_64-w64-mingw32)
   elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-    message(STATUS "32 bit")
     set(mingw_name mingw32)
     set(gcc_name i686-w64-mingw32)
   else()
