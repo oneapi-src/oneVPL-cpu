@@ -42,6 +42,7 @@ if(POLICY CMP0074)
 endif()
 
 find_package(VPL 2.2 REQUIRED COMPONENTS api)
+message(STATUS "Found VPL (version ${VPL_VERSION})")
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
 if(BUILD_GPL_X264)
