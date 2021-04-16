@@ -20,6 +20,17 @@ project(oneVPL-cpu VERSION ${version_txt})
 
 # Project options
 option(BUILD_TESTS "Build tests." ON)
+option(USE_ONEAPI_INSTALL_LAYOUT "Use oneAPI install layout instead of FHS" OFF)
+
+if(USE_ONEAPI_INSTALL_LAYOUT)
+  set(ONEAPI_INSTALL_ENVDIR "env")
+  set(ONEAPI_INSTALL_SYSCHECKDIR "sys_check")
+  set(ONEAPI_INSTALL_MODFILEDIR "modulefiles")
+  set(ONEAPI_INSTALL_EXAMPLEDIR "examples")
+  set(CMAKE_INSTALL_DOCDIR "documentation")
+  set(ONEAPI_INSTALL_LICENSEDIR "licensing")
+  set(ONEAPI_INSTALL_PYTHONDIR "python/lib")
+endif()
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -37,13 +48,13 @@ add_subdirectory(cpu)
 
 install(
   FILES third-party-programs.txt
-  DESTINATION ${CMAKE_INSTALL_LICENSEDIR}
+  DESTINATION ${ONEAPI_INSTALL_LICENSEDIR}
   COMPONENT license)
 
 install(
   FILES LICENSE
   RENAME license.txt
-  DESTINATION ${CMAKE_INSTALL_LICENSEDIR}
+  DESTINATION ${ONEAPI_INSTALL_LICENSEDIR}
   COMPONENT license)
 
 include(cmake/PackageTarget.cmake)
