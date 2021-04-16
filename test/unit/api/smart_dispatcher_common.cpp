@@ -517,12 +517,12 @@ void Dispatcher_CreateSession_RequestSupportedVPPCreatesSession(mfxImplType impl
     SetConfigFilterProperty<mfxU32>(
         loader,
         "mfxImplDescription.mfxVPPDescription.filter.memdesc.format.InFormat",
-        MFX_FOURCC_I010);
+        inFormat);
 
     SetConfigFilterProperty<mfxU32>(
         loader,
         "mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormat",
-        MFX_FOURCC_I420);
+        outFormat);
 
     // create session with first implementation
     mfxSession session = nullptr;
@@ -659,6 +659,20 @@ void Dispatcher_CreateSession_RequestAccelValidCreatesSession(mfxImplType implTy
     mfxSession session = nullptr;
     mfxStatus sts      = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxIMPL actualImpl = {};
+
+    sts = MFXQueryIMPL(session, &actualImpl);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    if (implType == MFX_IMPL_TYPE_SOFTWARE) {
+        // CPU RT should set impl = MFX_IMPL_TYPE_SOFTWARE, no other flags
+        EXPECT_EQ(actualImpl, MFX_IMPL_TYPE_SOFTWARE);
+    }
+    else {
+        // GPU RT should set impl = requested accelMode
+        EXPECT_EQ((actualImpl & 0x0F00), accelMode);
+    }
 
     //free internal resources
     MFXUnload(loader);
