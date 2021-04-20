@@ -452,16 +452,10 @@ def build_svt_hevc_encoder(install_dir, build_mode):
             cmd('cmake', '..', '-GUnix Makefiles',
                 f'-DCMAKE_BUILD_TYPE={build_mode}',
                 f'-DCMAKE_INSTALL_PREFIX={os.path.join(install_dir, "")}',
-                '-DBUILD_SHARED_LIBS=off', '-DBUILD_APP=off')
+                '-DCMAKE_INSTALL_LIBDIR=lib', '-DBUILD_SHARED_LIBS=off',
+                '-DBUILD_APP=off')
             cmd('make', '-j', CPU_COUNT)
             cmd('make', 'install')
-            if os.name != 'nt':
-                if os.path.exists(os.path.join(install_dir, 'lib64')):
-                    cmd('cp', '-r', f'{install_dir}/lib64/*',
-                        f'{install_dir}/lib')
-                    mkdir(os.path.join(install_dir, 'lib', 'pkgconfig'))
-                    replace(f'{install_dir}/lib/pkgconfig/SvtHevcEnc.pc',
-                            'lib64', 'lib')
 
 
 def build_svt_av1_encoder(install_dir, build_mode):
@@ -487,18 +481,12 @@ def build_svt_av1_encoder(install_dir, build_mode):
             cmd('cmake', '..', '-GUnix Makefiles',
                 f'-DCMAKE_BUILD_TYPE={build_mode}',
                 f'-DCMAKE_INSTALL_PREFIX={os.path.join(install_dir, "")}',
-                '-DBUILD_SHARED_LIBS=off', '-DBUILD_APPS=off',
+                '-DCMAKE_INSTALL_LIBDIR=lib', '-DBUILD_SHARED_LIBS=off',
+                '-DBUILD_APPS=off',
                 '-DBUILD_DEC=off' if os.name != 'nt' else '',
                 '-DCMAKE_C_FLAGS=$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1')
             cmd('make', '-j', CPU_COUNT)
             cmd('make', 'install')
-            if os.name != 'nt':
-                if os.path.isdir(f"{install_dir}/lib64"):
-                    cmd('cp', '-r', f'{install_dir}/lib64/*',
-                        f'{install_dir}/lib')
-                    mkdir(os.path.join(install_dir, 'lib', 'pkgconfig'))
-                    replace(f'{install_dir}/lib/pkgconfig/SvtAv1Enc.pc',
-                            'lib64', 'lib')
 
 
 def build_gpl_x264_encoder(install_dir):
