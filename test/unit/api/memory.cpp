@@ -1076,3 +1076,56 @@ TEST(Memory_FrameInterfaceSynchronize, InvalidSurfaceReturnsInvalidHandle) {
     // free internal resources
     CloseDecodeBasic(session);
 }
+
+TEST(Memory_FrameInterfaceQueryInterface, ValidSurfaceReturnsErrNotImplemented) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1* pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = {};
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, NullSurfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1* pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = {};
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(nullptr, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, NullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1* pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = {};
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, nullptr);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}

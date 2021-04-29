@@ -144,3 +144,10 @@ mfxStatus CpuFrame::Synchronize(mfxFrameSurface1* surface, mfxU32 wait) {
 void CpuFrame::OnComplete(mfxStatus sts) {
     return;
 }
+
+mfxStatus CpuFrame::QueryInterface(mfxFrameSurface1* surface, mfxGUID guid, mfxHDL* interface) {
+    RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
+    RET_IF_FALSE(interface, MFX_ERR_NULL_PTR);
+
+    return MFX_ERR_NOT_IMPLEMENTED;
+}
