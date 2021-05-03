@@ -144,12 +144,12 @@ need to set up the environment.
 
 For Linux:
 ```
-source <vpl-install-location>/env/vars.sh
+source <vpl-install-location>/share/oneVPL/env/vars.sh
 ```
 
 For Windows:
 ```
-<vpl-install-location>\env\vars.bat
+<vpl-install-location>\share\oneVPL\env\vars.bat
 ```
 
 ### Run the Command Line Tools
