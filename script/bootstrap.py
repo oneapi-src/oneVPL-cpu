@@ -406,7 +406,7 @@ def build_dav1d_decoder(install_dir):
         'clone',
         '--depth=1',
         '-b',
-        '0.7.0',
+        '0.8.2',
         'https://code.videolan.org/videolan/dav1d.git',
         xenv=GIT_ENV)
     with pushd('dav1d'):
@@ -469,7 +469,7 @@ def build_svt_av1_encoder(install_dir, build_mode):
         '--depth=1',
         '-b',
         'v0.8.4',
-        'https://github.com/AOMediaCodec/SVT-AV1',
+        'https://gitlab.com/AOMediaCodec/SVT-AV1',
         xenv=GIT_ENV)
     with pushd('SVT-AV1'):
         if build_mode == 'Debug':
