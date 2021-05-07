@@ -204,6 +204,16 @@ TEST(DISABLED_Dispatcher_GPU_CreateSession, ConfigHandleReturnsHandle) {
     Dispatcher_CreateSession_ConfigHandleReturnsHandle(MFX_IMPL_TYPE_HARDWARE);
 }
 
+TEST(Dispatcher_GPU_CreateSession, RequestValidDXGIAdapterCreatesSession) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_CreateSession_RequestValidDXGIAdapterCreatesSession(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_CreateSession, RequestInvalidDXGIAdapterReturnsErrNotFound) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_CreateSession_RequestInvalidDXGIAdapterReturnsErrNotFound(MFX_IMPL_TYPE_HARDWARE);
+}
+
 //MFXDispReleaseImplDescription
 TEST(Dispatcher_GPU_DispReleaseImplDescription, ValidInputReturnsErrNone) {
     SKIP_IF_DISP_GPU_DISABLED();

@@ -1158,6 +1158,91 @@ void Dispatcher_CreateSession_ConfigHandleReturnsHandle(mfxImplType implType) {
     MFXUnload(loader);
 }
 
+void Dispatcher_CreateSession_RequestValidDXGIAdapterCreatesSession(mfxImplType implType) {
+    if (implType != MFX_IMPL_TYPE_HARDWARE)
+        GTEST_SKIP();
+
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+
+    sts = SetConfigImpl(loader, implType);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // assume that test system has an x86 GPU as adapter 0
+    mfxVariant ImplValue;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = 0;
+
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"DXGIAdapterIndex", ImplValue);
+
+#if defined(_WIN32) || defined(_WIN64)
+    // property is only valid on Windows
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+#else
+    // property should return ERR_NOT_FOUND on non-Win
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+    return;
+#endif
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_NE(session, nullptr);
+
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    //free internal resources
+    MFXUnload(loader);
+}
+
+void Dispatcher_CreateSession_RequestInvalidDXGIAdapterReturnsErrNotFound(mfxImplType implType) {
+    if (implType != MFX_IMPL_TYPE_HARDWARE)
+        GTEST_SKIP();
+
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts;
+
+    sts = SetConfigImpl(loader, implType);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxConfig cfg = MFXCreateConfig(loader);
+    EXPECT_FALSE(cfg == nullptr);
+
+    // request adapter index which is far out of normal range
+    mfxVariant ImplValue;
+    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32 = 999999;
+
+    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"DXGIAdapterIndex", ImplValue);
+
+#if defined(_WIN32) || defined(_WIN64)
+    // property is only valid on Windows
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+#else
+    // property should return ERR_NOT_FOUND on non-Win
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+    return;
+#endif
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    //free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
 //MFXDispReleaseImplDescription
 void Dispatcher_DispReleaseImplDescription_ValidInputReturnsErrNone(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
