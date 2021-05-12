@@ -98,7 +98,8 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             par->mfx.IdrInterval = 0; //not supported
 
         //ratecontrolmethod codec specific
-        if (!par->mfx.TargetKbps)
+        if (!par->mfx.TargetKbps && par->mfx.CodecId != MFX_CODEC_JPEG &&
+            par->mfx.RateControlMethod != MFX_RATECONTROL_CQP)
             par->mfx.TargetKbps = 4000; //required
         //maxkbps needs no correction
 
