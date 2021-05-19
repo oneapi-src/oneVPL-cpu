@@ -1573,12 +1573,7 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxSurfaceArray *surf_array_out = nullptr;
-
-    mfxU32 numSurfs = numVPPCh + 1;
-    surf_array_out  = new mfxSurfaceArray[numSurfs];
-    for (mfxU32 i = 0; i < numSurfs; i++) {
-        memset(&surf_array_out[i], 0, sizeof(mfxSurfaceArray));
-    }
+    mfxU32 numSurfs                 = numVPPCh + 1;
 
     mfxBitstream *bs;
     // 1st run with bitstream: return MFX_ERR_MORE_DATA
@@ -1610,7 +1605,6 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
         ASSERT_EQ(sts, MFX_ERR_NONE);
     }
 
-    delete[] surf_array_out;
     delete mfxVPPChParams;
 
     //free internal resources
