@@ -6,19 +6,19 @@
 
 #include <gtest/gtest.h>
 
-#include "api/smart_dispatcher.h"
+#include "./smart_dispatcher.h"
 #include "api/unit_api.h"
 
-//MFXLoad
+// MFXLoad
 TEST(Dispatcher_Common_Load, CallReturnsLoader) {
     mfxLoader loader = MFXLoad();
     EXPECT_NE(loader, nullptr);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
-//MFXCreateConfig
+// MFXCreateConfig
 TEST(Dispatcher_Common_CreateConfig, InitializedLoaderReturnsConfig) {
     mfxLoader loader = MFXLoad();
     EXPECT_NE(loader, nullptr);
@@ -26,7 +26,7 @@ TEST(Dispatcher_Common_CreateConfig, InitializedLoaderReturnsConfig) {
     mfxConfig cfg = MFXCreateConfig(loader);
     EXPECT_NE(cfg, nullptr);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -35,7 +35,7 @@ TEST(Dispatcher_Common_CreateConfig, NullLoaderReturnsErrNull) {
     EXPECT_EQ(cfg, nullptr);
 }
 
-//MFXSetConfigFilterProperty
+// MFXSetConfigFilterProperty
 TEST(Dispatcher_Common_SetConfigFilterProperty, VPLImplInReturnsErrNone) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
@@ -46,14 +46,15 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, VPLImplInReturnsErrNone) {
     mfxStatus sts;
     mfxVariant ImplValue;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = MFX_IMPL_TYPE_SOFTWARE;
 
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -64,14 +65,15 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, NullConfigReturnsErrNull) {
     mfxStatus sts;
     mfxVariant ImplValue;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = MFX_IMPL_TYPE_SOFTWARE;
 
     sts = MFXSetConfigFilterProperty(nullptr, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -85,14 +87,15 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, NullNameReturnsErrNull) {
     mfxStatus sts;
     mfxVariant ImplValue;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = MFX_IMPL_TYPE_SOFTWARE;
 
     sts = MFXSetConfigFilterProperty(cfg, nullptr, ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -106,14 +109,15 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, UnknownParamReturnsNotFound) {
     mfxStatus sts;
     mfxVariant ImplValue;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = MFX_IMPL_TYPE_SOFTWARE;
 
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Unknown", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -127,14 +131,15 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, ValueTypeMismatchReturnsErrUnsup
     mfxStatus sts;
     mfxVariant ImplValue;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U8;
-    ImplValue.Data.U32 = MFX_IMPL_TYPE_SOFTWARE;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U8;
+    ImplValue.Data.U32        = MFX_IMPL_TYPE_SOFTWARE;
 
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     EXPECT_EQ(sts, MFX_ERR_UNSUPPORTED);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -147,12 +152,14 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, PartialFilterReturnsErrNotFound)
 
     mfxStatus sts;
     mfxVariant ImplValue;
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = 0;
-    sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription", ImplValue);
+
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = 0;
+    sts                       = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription", ImplValue);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -166,24 +173,22 @@ TEST(Dispatcher_Common_SetConfigFilterProperty, OutOfRangeValueReturnsErrNone) {
     mfxStatus sts;
     mfxVariant ImplValue;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = 9999;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = 9999;
 
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"mfxImplDescription.Impl", ImplValue);
 
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
-//MFXEnumImplementations
+// MFXEnumImplementations
 void Dispatcher_EnumImplementations_ValidInputsReturnValidDesc(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
-
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
 
     mfxStatus sts;
 
@@ -192,10 +197,7 @@ void Dispatcher_EnumImplementations_ValidInputsReturnValidDesc(mfxImplType implT
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
-    sts = MFXEnumImplementations(loader,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // confirm correct Impl type was found
@@ -204,7 +206,7 @@ void Dispatcher_EnumImplementations_ValidInputsReturnValidDesc(mfxImplType implT
     sts = MFXDispReleaseImplDescription(loader, implDesc);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -212,31 +214,22 @@ void Dispatcher_EnumImplementations_NullLoaderReturnsErrNull(mfxImplType implTyp
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
 
     sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     mfxImplDescription *implDesc;
-    sts = MFXEnumImplementations(nullptr,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts = MFXEnumImplementations(nullptr, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
 void Dispatcher_EnumImplementations_NullDescReturnsErrNull(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
-
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
 
     mfxStatus sts;
 
@@ -246,7 +239,7 @@ void Dispatcher_EnumImplementations_NullDescReturnsErrNull(mfxImplType implType)
     sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -254,26 +247,20 @@ void Dispatcher_EnumImplementations_IndexOutOfRangeReturnsNotFound(mfxImplType i
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
 
     sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     mfxImplDescription *implDesc;
-    sts = MFXEnumImplementations(loader,
-                                 999999,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts = MFXEnumImplementations(loader, 999999, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
-//MFXCreateSession
+// MFXCreateSession
 void Dispatcher_CreateSession_SimpleConfigCanCreateSession(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
@@ -287,7 +274,7 @@ void Dispatcher_CreateSession_SimpleConfigCanCreateSession(mfxImplType implType)
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -309,16 +296,13 @@ void Dispatcher_CreateSession_UnusedCfgCreatesSession(mfxImplType implType) {
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
 void Dispatcher_CreateSession_RequestSWImplCreatesSession(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
-
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
 
     mfxStatus sts;
 
@@ -334,7 +318,7 @@ void Dispatcher_CreateSession_RequestSWImplCreatesSession(mfxImplType implType) 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -380,13 +364,9 @@ void Dispatcher_CreateSession_DoubleConfigObjsCreatesTwoSessions(mfxImplType imp
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_AVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_AVC);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_HEVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_HEVC);
 
     // create two sessions
     mfxSession session1 = nullptr;
@@ -416,7 +396,7 @@ void Dispatcher_CreateSession_NullLoaderReturnsErrNull(mfxImplType implType) {
     mfxStatus sts      = MFXCreateSession(nullptr, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -427,7 +407,7 @@ void Dispatcher_CreateSession_NullSessionReturnsErrNull(mfxImplType implType) {
     mfxStatus sts = MFXCreateSession(loader, 0, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -439,7 +419,7 @@ void Dispatcher_CreateSession_InvalidIndexReturnsErrNotFound(mfxImplType implTyp
     mfxStatus sts      = MFXCreateSession(loader, 999999, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -452,9 +432,7 @@ void Dispatcher_CreateSession_RequestSupportedDecoderCreatesSession(mfxImplType 
     sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_AVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_AVC);
 
     // create session with first implementation
     mfxSession session = nullptr;
@@ -465,7 +443,7 @@ void Dispatcher_CreateSession_RequestSupportedDecoderCreatesSession(mfxImplType 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -478,9 +456,7 @@ void Dispatcher_CreateSession_RequestSupportedEncoderCreatesSession(mfxImplType 
     sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxEncoderDescription.encoder.CodecID",
-                                    MFX_CODEC_HEVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxEncoderDescription.encoder.CodecID", MFX_CODEC_HEVC);
 
     // create session with first implementation
     mfxSession session = nullptr;
@@ -491,7 +467,7 @@ void Dispatcher_CreateSession_RequestSupportedEncoderCreatesSession(mfxImplType 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -514,15 +490,9 @@ void Dispatcher_CreateSession_RequestSupportedVPPCreatesSession(mfxImplType impl
         outFormat = MFX_FOURCC_NV12;
     }
 
-    SetConfigFilterProperty<mfxU32>(
-        loader,
-        "mfxImplDescription.mfxVPPDescription.filter.memdesc.format.InFormat",
-        inFormat);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxVPPDescription.filter.memdesc.format.InFormat", inFormat);
 
-    SetConfigFilterProperty<mfxU32>(
-        loader,
-        "mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormat",
-        outFormat);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxVPPDescription.filter.memdesc.format.OutFormat", outFormat);
 
     // create session with first implementation
     mfxSession session = nullptr;
@@ -533,7 +503,7 @@ void Dispatcher_CreateSession_RequestSupportedVPPCreatesSession(mfxImplType impl
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -554,16 +524,14 @@ void Dispatcher_CreateSession_RequestUnsupportedDecoderReturnsErrNotFound(mfxImp
         inCodec = MFX_CODEC_CAPTURE;
     }
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    inCodec);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", inCodec);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -574,16 +542,14 @@ void Dispatcher_CreateSession_RequestUnsupportedEncoderReturnsErrNotFound(mfxImp
     mfxStatus sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxEncoderDescription.encoder.CodecID",
-                                    MFX_CODEC_VC1);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxEncoderDescription.encoder.CodecID", MFX_CODEC_VC1);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -594,20 +560,16 @@ void Dispatcher_CreateSession_RequestTwoSupportedDecodersReturnsErrNone(mfxImplT
     mfxStatus sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_AVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_AVC);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_HEVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_HEVC);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
     MFXUnload(loader);
 }
@@ -620,24 +582,20 @@ void Dispatcher_CreateSession_RequestMixedDecodersReturnsErrNotFound(mfxImplType
     mfxStatus sts = SetConfigImpl(loader, implType);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_AVC);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_AVC);
 
-    SetConfigFilterProperty<mfxU32>(loader,
-                                    "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",
-                                    MFX_CODEC_CAPTURE);
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID", MFX_CODEC_CAPTURE);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
-void Dispatcher_CreateSession_RequestAccelValidCreatesSession(mfxImplType implType) {
+void Dispatcher_CreateSession_RequestSupportedAccelModeCreatesSession(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -674,11 +632,13 @@ void Dispatcher_CreateSession_RequestAccelValidCreatesSession(mfxImplType implTy
         EXPECT_EQ((actualImpl & 0x0F00), accelMode);
     }
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }
 
-void Dispatcher_CreateSession_RequestAccelInvalidReturnsNotFound(mfxImplType implType) {
+void Dispatcher_CreateSession_RequestUnsupportedAccelModeReturnsNotFound(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
@@ -700,7 +660,7 @@ void Dispatcher_CreateSession_RequestAccelInvalidReturnsNotFound(mfxImplType imp
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -730,7 +690,9 @@ void Dispatcher_CreateSession_RequestCurrentAPIVersionCreatesSession(mfxImplType
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }
 
@@ -760,7 +722,9 @@ void Dispatcher_CreateSession_RequestLowerAPIVersionCreatesSession(mfxImplType i
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }
 
@@ -783,7 +747,7 @@ void Dispatcher_CreateSession_RequestHigherAPIVersionReturnsNotFound(mfxImplType
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -795,16 +759,16 @@ void Dispatcher_CreateSession_RequestImplementedFunctionCreatesSession(mfxImplTy
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // request an implemented function, which should pass
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplementedFunctions.FunctionsName",
-                                    const_cast<char *>("MFXQueryVersion"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplementedFunctions.FunctionsName", const_cast<char *>("MFXQueryVersion"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }
 
@@ -816,16 +780,14 @@ void Dispatcher_CreateSession_RequestNotImplementedFunctionReturnsNotFound(mfxIm
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // request a non-existent function, which should fail
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplementedFunctions.FunctionsName",
-                                    const_cast<char *>("MFXVideoDECODE_VPP_NOT_A_FUNCTION"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplementedFunctions.FunctionsName", const_cast<char *>("MFXVideoDECODE_VPP_NOT_A_FUNCTION"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -859,7 +821,9 @@ void Dispatcher_CreateSession_RequestCurrentAPIMajorMinorCreatesSession(mfxImplT
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }
 
@@ -871,21 +835,17 @@ void Dispatcher_CreateSession_RequestHigherAPIMajorReturnsNotFound(mfxImplType i
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // set major value = MFX_VERSION_MAJOR + 1, which should fail
-    SetConfigFilterProperty<mfxU16>(loader,
-                                    "mfxImplDescription.ApiVersion.Major",
-                                    MFX_VERSION_MAJOR + 1);
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.ApiVersion.Major", MFX_VERSION_MAJOR + 1);
 
     // set minor value
-    SetConfigFilterProperty<mfxU16>(loader,
-                                    "mfxImplDescription.ApiVersion.Minor",
-                                    MFX_VERSION_MINOR);
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.ApiVersion.Minor", MFX_VERSION_MINOR);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -897,21 +857,17 @@ void Dispatcher_CreateSession_RequestHigherAPIMinorReturnsNotFound(mfxImplType i
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // set major value
-    SetConfigFilterProperty<mfxU16>(loader,
-                                    "mfxImplDescription.ApiVersion.Major",
-                                    MFX_VERSION_MAJOR);
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.ApiVersion.Major", MFX_VERSION_MAJOR);
 
     // set minor value = MFX_VERSION_MINOR + 1, which should fail
-    SetConfigFilterProperty<mfxU16>(loader,
-                                    "mfxImplDescription.ApiVersion.Minor",
-                                    MFX_VERSION_MINOR + 1);
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.ApiVersion.Minor", MFX_VERSION_MINOR + 1);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -927,16 +883,14 @@ void Dispatcher_CreateSession_RequestDeviceIDValidReturnsErrNone(mfxImplType imp
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass deviceID = 0x0000 for CPU
-    SetConfigFilterProperty<mfxU16>(loader,
-                                    "mfxImplDescription.mfxDeviceDescription.device.DeviceID",
-                                    0x0000);
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.mfxDeviceDescription.device.DeviceID", 0x0000);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
     MFXUnload(loader);
 }
@@ -949,17 +903,14 @@ void Dispatcher_CreateSession_RequestDeviceIDInvalidReturnsErrNotFound(mfxImplTy
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass invalid device ID
-    SetConfigFilterProperty<mfxU16>(loader,
-                                    "mfxImplDescription.mfxDeviceDescription.device.DeviceID",
-                                    0xafaf);
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.mfxDeviceDescription.device.DeviceID", 0xafaf);
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
-    MFXClose(session);
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -972,14 +923,10 @@ void Dispatcher_CreateSession_RequestImplNameValidReturnsErrNone(mfxImplType imp
 
     // pass the correct ImplName for RT
     if (implType == MFX_IMPL_TYPE_SOFTWARE) {
-        SetConfigFilterProperty<mfxHDL>(loader,
-                                        "mfxImplDescription.ImplName",
-                                        const_cast<char *>("oneAPI VPL CPU Reference Impl"));
+        SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.ImplName", const_cast<char *>("oneAPI VPL CPU Reference Impl"));
     }
     else {
-        SetConfigFilterProperty<mfxHDL>(loader,
-                                        "mfxImplDescription.ImplName",
-                                        const_cast<char *>("mfx-gen"));
+        SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.ImplName", const_cast<char *>("mfx-gen"));
     }
 
     // create session with first implementation
@@ -987,7 +934,7 @@ void Dispatcher_CreateSession_RequestImplNameValidReturnsErrNone(mfxImplType imp
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
     MFXUnload(loader);
 }
@@ -1000,16 +947,14 @@ void Dispatcher_CreateSession_RequestImplNameInvalidReturnsErrNotFound(mfxImplTy
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass invalid ImplName
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplDescription.ImplName",
-                                    const_cast<char *>("oneAPI VPL Unsupported Impl"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.ImplName", const_cast<char *>("oneAPI VPL Unsupported Impl"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
     MFXUnload(loader);
 }
@@ -1022,16 +967,14 @@ void Dispatcher_CreateSession_RequestLicenseValidReturnsErrNone(mfxImplType impl
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass the correct License type
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplDescription.License",
-                                    const_cast<char *>("MIT"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.License", const_cast<char *>("MIT"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
     MFXUnload(loader);
 }
@@ -1044,17 +987,14 @@ void Dispatcher_CreateSession_RequestLicenseInvalidReturnsErrNotFound(mfxImplTyp
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass the incorrect License type
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplDescription.License",
-                                    const_cast<char *>("ABC"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.License", const_cast<char *>("ABC"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
-    MFXClose(session);
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -1066,17 +1006,14 @@ void Dispatcher_CreateSession_RequestLicenseMixedReturnsErrNotFound(mfxImplType 
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass a correct and incorrect License type
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplDescription.License",
-                                    const_cast<char *>("MIT,ABC"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.License", const_cast<char *>("MIT,ABC"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
-    MFXClose(session);
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -1088,16 +1025,14 @@ void Dispatcher_CreateSession_RequestKeywordsValidReturnsErrNone(mfxImplType imp
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass supported Keywords
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplDescription.Keywords",
-                                    const_cast<char *>("CPU,VPL"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.Keywords", const_cast<char *>("CPU,VPL"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
     MFXUnload(loader);
 }
@@ -1110,17 +1045,14 @@ void Dispatcher_CreateSession_RequestKeywordsMixedReturnsErrNotFound(mfxImplType
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass unsupported Keywords
-    SetConfigFilterProperty<mfxHDL>(loader,
-                                    "mfxImplDescription.Keywords",
-                                    const_cast<char *>("GPU,VPL"));
+    SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.Keywords", const_cast<char *>("GPU,VPL"));
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
-    MFXClose(session);
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -1154,7 +1086,9 @@ void Dispatcher_CreateSession_ConfigHandleReturnsHandle(mfxImplType implType) {
     sts                 = MFXVideoCORE_GetHandle(session, testHandleType, &returnHandle);
     EXPECT_EQ(returnHandle, testHandle);
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }
 
@@ -1175,19 +1109,16 @@ void Dispatcher_CreateSession_RequestValidDXGIAdapterCreatesSession(mfxImplType 
 
     // assume that test system has an x86 GPU as adapter 0
     mfxVariant ImplValue;
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = 0;
+
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = 0;
 
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"DXGIAdapterIndex", ImplValue);
 
 #if defined(_WIN32) || defined(_WIN64)
     // property is only valid on Windows
     EXPECT_EQ(sts, MFX_ERR_NONE);
-#else
-    // property should return ERR_NOT_FOUND on non-Win
-    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
-    return;
-#endif
 
     // create session with first implementation
     mfxSession session = nullptr;
@@ -1197,8 +1128,12 @@ void Dispatcher_CreateSession_RequestValidDXGIAdapterCreatesSession(mfxImplType 
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
+#else
+    // property should return ERR_NOT_FOUND on non-Win
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+#endif
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -1219,31 +1154,33 @@ void Dispatcher_CreateSession_RequestInvalidDXGIAdapterReturnsErrNotFound(mfxImp
 
     // request adapter index which is far out of normal range
     mfxVariant ImplValue;
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = 999999;
+
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = 999999;
 
     sts = MFXSetConfigFilterProperty(cfg, (const mfxU8 *)"DXGIAdapterIndex", ImplValue);
 
 #if defined(_WIN32) || defined(_WIN64)
     // property is only valid on Windows
     EXPECT_EQ(sts, MFX_ERR_NONE);
-#else
-    // property should return ERR_NOT_FOUND on non-Win
-    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
-    return;
-#endif
 
     // create session with first implementation
     mfxSession session = nullptr;
     sts                = MFXCreateSession(loader, 0, &session);
     EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
 
-    //free internal resources
+    // free internal resources
     MFXClose(session);
+#else
+    // property should return ERR_NOT_FOUND on non-Win
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+#endif
+
     MFXUnload(loader);
 }
 
-//MFXDispReleaseImplDescription
+// MFXDispReleaseImplDescription
 void Dispatcher_DispReleaseImplDescription_ValidInputReturnsErrNone(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
@@ -1255,10 +1192,7 @@ void Dispatcher_DispReleaseImplDescription_ValidInputReturnsErrNone(mfxImplType 
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
-    sts = MFXEnumImplementations(loader,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // confirm correct Impl type was found
@@ -1267,7 +1201,7 @@ void Dispatcher_DispReleaseImplDescription_ValidInputReturnsErrNone(mfxImplType 
     sts = MFXDispReleaseImplDescription(loader, implDesc);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -1275,23 +1209,17 @@ void Dispatcher_DispReleaseImplDescription_NullLoaderReturnsErrNull(mfxImplType 
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     mfxStatus sts;
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
-    sts = MFXEnumImplementations(loader,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXDispReleaseImplDescription(nullptr, implDesc);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
@@ -1299,35 +1227,25 @@ void Dispatcher_DispReleaseImplDescription_NullDescReturnsErrNull(mfxImplType im
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);
 
-    mfxConfig cfg = MFXCreateConfig(loader);
-    EXPECT_FALSE(cfg == nullptr);
-
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
-    mfxStatus sts = MFXEnumImplementations(loader,
-                                           0,
-                                           MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                           reinterpret_cast<mfxHDL *>(&implDesc));
+    mfxStatus sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXDispReleaseImplDescription(loader, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader);
 }
 
-void Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(
-    mfxImplType implType) {
+void Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(mfxImplType implType) {
     mfxLoader loader1 = MFXLoad();
     EXPECT_FALSE(loader1 == nullptr);
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc1;
-    mfxStatus sts = MFXEnumImplementations(loader1,
-                                           0,
-                                           MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                           reinterpret_cast<mfxHDL *>(&implDesc1));
+    mfxStatus sts = MFXEnumImplementations(loader1, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc1));
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
     // pass invalid handle (address of a local struct)
@@ -1335,7 +1253,7 @@ void Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(
     sts = MFXDispReleaseImplDescription(loader1, &implDescLocal);
     EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
-    //free internal resources
+    // free internal resources
     MFXUnload(loader1);
 }
 
@@ -1350,10 +1268,7 @@ void Dispatcher_DispReleaseImplDescription_ReleaseTwiceReturnsErrNone(mfxImplTyp
 
     // enumerate implementations, check capabilities of first one
     mfxImplDescription *implDesc;
-    sts = MFXEnumImplementations(loader,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // confirm correct Impl type was found
@@ -1374,10 +1289,7 @@ void Dispatcher_DispReleaseImplDescription_ReleaseTwiceReturnsErrNone(mfxImplTyp
 
     // enumerate implementations, check capabilities of first one
     implDesc = nullptr;
-    sts      = MFXEnumImplementations(loader,
-                                 0,
-                                 MFX_IMPLCAPS_IMPLDESCSTRUCTURE,
-                                 reinterpret_cast<mfxHDL *>(&implDesc));
+    sts      = MFXEnumImplementations(loader, 0, MFX_IMPLCAPS_IMPLDESCSTRUCTURE, reinterpret_cast<mfxHDL *>(&implDesc));
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     // confirm correct Impl type was found
@@ -1392,6 +1304,10 @@ void Dispatcher_DispReleaseImplDescription_ReleaseTwiceReturnsErrNone(mfxImplTyp
     sts = MFXDispReleaseImplDescription(loader, implDesc);
     EXPECT_EQ(sts, MFX_ERR_NONE);
 
-    //free internal resources
+    // free internal resources
+    sts = MFXClose(session1);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    sts = MFXClose(session2);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
     MFXUnload(loader);
 }

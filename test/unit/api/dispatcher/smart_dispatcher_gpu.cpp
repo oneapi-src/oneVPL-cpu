@@ -6,10 +6,10 @@
 
 #include <gtest/gtest.h>
 
-#include "api/smart_dispatcher.h"
+#include "./smart_dispatcher.h"
 #include "api/unit_api.h"
 
-//MFXEnumImplementations
+// MFXEnumImplementations
 TEST(Dispatcher_GPU_EnumImplementations, ValidInputsReturnValidDesc) {
     SKIP_IF_DISP_GPU_DISABLED();
     Dispatcher_EnumImplementations_ValidInputsReturnValidDesc(MFX_IMPL_TYPE_HARDWARE);
@@ -30,7 +30,7 @@ TEST(Dispatcher_GPU_EnumImplementations, IndexOutOfRangeReturnsNotFound) {
     Dispatcher_EnumImplementations_IndexOutOfRangeReturnsNotFound(MFX_IMPL_TYPE_HARDWARE);
 }
 
-//MFXCreateSession
+// MFXCreateSession
 TEST(Dispatcher_GPU_CreateSession, SimpleConfigCanCreateSession) {
     SKIP_IF_DISP_GPU_DISABLED();
     Dispatcher_CreateSession_SimpleConfigCanCreateSession(MFX_IMPL_TYPE_HARDWARE);
@@ -106,14 +106,14 @@ TEST(Dispatcher_GPU_CreateSession, RequestMixedDecodersReturnsErrNotFound) {
     Dispatcher_CreateSession_RequestMixedDecodersReturnsErrNotFound(MFX_IMPL_TYPE_HARDWARE);
 }
 
-TEST(Dispatcher_GPU_CreateSession, RequestAccelValidCreatesSession) {
+TEST(Dispatcher_GPU_CreateSession, RequestSupportedAccelModeCreatesSession) {
     SKIP_IF_DISP_GPU_DISABLED();
-    Dispatcher_CreateSession_RequestAccelValidCreatesSession(MFX_IMPL_TYPE_HARDWARE);
+    Dispatcher_CreateSession_RequestSupportedAccelModeCreatesSession(MFX_IMPL_TYPE_HARDWARE);
 }
 
 TEST(Dispatcher_GPU_CreateSession, RequestAccelInvalidReturnsNotFound) {
     SKIP_IF_DISP_GPU_DISABLED();
-    Dispatcher_CreateSession_RequestAccelInvalidReturnsNotFound(MFX_IMPL_TYPE_HARDWARE);
+    Dispatcher_CreateSession_RequestUnsupportedAccelModeReturnsNotFound(MFX_IMPL_TYPE_HARDWARE);
 }
 
 TEST(Dispatcher_GPU_CreateSession, RequestCurrentAPIVersionCreatesSession) {
@@ -214,7 +214,7 @@ TEST(Dispatcher_GPU_CreateSession, RequestInvalidDXGIAdapterReturnsErrNotFound) 
     Dispatcher_CreateSession_RequestInvalidDXGIAdapterReturnsErrNotFound(MFX_IMPL_TYPE_HARDWARE);
 }
 
-//MFXDispReleaseImplDescription
+// MFXDispReleaseImplDescription
 TEST(Dispatcher_GPU_DispReleaseImplDescription, ValidInputReturnsErrNone) {
     SKIP_IF_DISP_GPU_DISABLED();
     Dispatcher_DispReleaseImplDescription_ValidInputReturnsErrNone(MFX_IMPL_TYPE_HARDWARE);
@@ -232,11 +232,93 @@ TEST(Dispatcher_GPU_DispReleaseImplDescription, NullDescReturnsErrNull) {
 
 TEST(Dispatcher_GPU_DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) {
     SKIP_IF_DISP_GPU_DISABLED();
-    Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(
-        MFX_IMPL_TYPE_HARDWARE);
+    Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(MFX_IMPL_TYPE_HARDWARE);
 }
 
 TEST(Dispatcher_GPU_DispReleaseImplDescription, ReleaseTwiceReturnsErrNone) {
     SKIP_IF_DISP_GPU_DISABLED();
     Dispatcher_DispReleaseImplDescription_ReleaseTwiceReturnsErrNone(MFX_IMPL_TYPE_HARDWARE);
+}
+
+// MFXSetConfigFilterProperty - multiple props per cfg object
+
+TEST(Dispatcher_GPU_MultiProp, DecEncValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_DecEncValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, DecEncInvalid) {
+    // MSDK will not test invalid enc
+    SKIP_IF_DISP_GPU_VPL_DISABLED();
+    Dispatcher_MultiProp_DecEncInvalid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, APIMajorMinorValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_APIMajorMinorValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, APIMajorInvalid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_APIMajorInvalid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, APIMinorInvalid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_APIMinorInvalid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, APIPartialValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_APIPartialValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigMultiPropValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiPropValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigMultiPropInvalid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiPropInvalid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigOverwriteValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigOverwriteValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigOverwriteInvalid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigOverwriteInvalid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigCodecProfileValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigCodecProfileValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigCodecProfileInvalid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigCodecProfileInvalid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigMultiCodecMultiProfileValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigMultiCodecMultiProfileReorderValid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorderValid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigMultiCodecMultiProfileReorder2Valid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorder2Valid(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_MultiProp, MultiConfigMultiCodecMultiProfileReorderInvalid) {
+    SKIP_IF_DISP_GPU_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorderInvalid(MFX_IMPL_TYPE_HARDWARE);
 }

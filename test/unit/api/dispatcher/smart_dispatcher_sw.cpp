@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include "api/smart_dispatcher.h"
+#include "./smart_dispatcher.h"
 #include "api/unit_api.h"
 
 //MFXEnumImplementations
@@ -106,16 +106,14 @@ TEST(Dispatcher_SW_CreateSession, RequestMixedDecodersReturnsErrNotFound) {
     Dispatcher_CreateSession_RequestMixedDecodersReturnsErrNotFound(MFX_IMPL_TYPE_SOFTWARE);
 }
 
-// TO DO - changed to "supported accel mode"
-TEST(Dispatcher_SW_CreateSession, RequestAccelValidCreatesSession) {
+TEST(Dispatcher_SW_CreateSession, RequestSupportedAccelModeCreatesSession) {
     SKIP_IF_DISP_SW_DISABLED();
-    Dispatcher_CreateSession_RequestAccelValidCreatesSession(MFX_IMPL_TYPE_SOFTWARE);
+    Dispatcher_CreateSession_RequestSupportedAccelModeCreatesSession(MFX_IMPL_TYPE_SOFTWARE);
 }
 
-// TO DO - changed to "unsupported accel mode"
-TEST(Dispatcher_SW_CreateSession, RequestAccelInvalidReturnsNotFound) {
+TEST(Dispatcher_SW_CreateSession, RequestUnsupportedAccelModeNotFound) {
     SKIP_IF_DISP_SW_DISABLED();
-    Dispatcher_CreateSession_RequestAccelInvalidReturnsNotFound(MFX_IMPL_TYPE_SOFTWARE);
+    Dispatcher_CreateSession_RequestUnsupportedAccelModeReturnsNotFound(MFX_IMPL_TYPE_SOFTWARE);
 }
 
 TEST(Dispatcher_SW_CreateSession, RequestCurrentAPIVersionCreatesSession) {
@@ -226,11 +224,92 @@ TEST(Dispatcher_SW_DispReleaseImplDescription, NullDescReturnsErrNull) {
 
 TEST(Dispatcher_SW_DispReleaseImplDescription, HandleMismatchReturnsInvalidHandle) {
     SKIP_IF_DISP_SW_DISABLED();
-    Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(
-        MFX_IMPL_TYPE_SOFTWARE);
+    Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(MFX_IMPL_TYPE_SOFTWARE);
 }
 
 TEST(Dispatcher_SW_DispReleaseImplDescription, ReleaseTwiceReturnsErrNone) {
     SKIP_IF_DISP_SW_DISABLED();
     Dispatcher_DispReleaseImplDescription_ReleaseTwiceReturnsErrNone(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+// MFXSetConfigFilterProperty - multiple props per cfg object
+
+TEST(Dispatcher_SW_MultiProp, DecEncValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_DecEncValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, DecEncInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_DecEncInvalid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, APIMajorMinorValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_APIMajorMinorValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, APIMajorInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_APIMajorInvalid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, APIMinorInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_APIMinorInvalid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, APIPartialValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_APIPartialValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigMultiPropValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiPropValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigMultiPropInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiPropInvalid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigOverwriteValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigOverwriteValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigOverwriteInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigOverwriteInvalid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigCodecProfileValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigCodecProfileValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigCodecProfileInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigCodecProfileInvalid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigMultiCodecMultiProfileValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigMultiCodecMultiProfileReorderValid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorderValid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigMultiCodecMultiProfileReorder2Valid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorder2Valid(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_MultiProp, MultiConfigMultiCodecMultiProfileReorderInvalid) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorderInvalid(MFX_IMPL_TYPE_SOFTWARE);
 }

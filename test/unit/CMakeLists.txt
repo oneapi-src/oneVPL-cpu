@@ -31,9 +31,15 @@ set(SOURCE_FILES
     api/x_notimplemented.cpp)
 
 if(NOT DEFINED VPL_UTEST_LINK_RUNTIME)
-  list(APPEND SOURCE_FILES api/smart_dispatcher_common.cpp
-       api/smart_dispatcher_sw.cpp api/smart_dispatcher_gpu.cpp
-       api/smart_dispatcher_util.cpp)
+  list(
+    APPEND
+    SOURCE_FILES
+    api/dispatcher/smart_dispatcher_common.cpp
+    api/dispatcher/smart_dispatcher_common_multiprop.cpp
+    api/dispatcher/smart_dispatcher_sw.cpp
+    api/dispatcher/smart_dispatcher_sw_multiprop.cpp
+    api/dispatcher/smart_dispatcher_gpu.cpp
+    api/dispatcher/smart_dispatcher_util.cpp)
 endif()
 
 add_executable(${TARGET} ${SOURCE_FILES})

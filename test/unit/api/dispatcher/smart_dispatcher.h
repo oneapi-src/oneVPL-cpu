@@ -4,8 +4,8 @@
   # SPDX-License-Identifier: MIT
   ############################################################################*/
 
-#ifndef TEST_UNIT_API_SMART_DISPATCHER_H_
-#define TEST_UNIT_API_SMART_DISPATCHER_H_
+#ifndef TEST_UNIT_API_DISPATCHER_SMART_DISPATCHER_H_
+#define TEST_UNIT_API_DISPATCHER_SMART_DISPATCHER_H_
 
 #include "vpl/mfxdispatcher.h"
 #include "vpl/mfximplcaps.h"
@@ -20,17 +20,27 @@ static __inline mfxStatus SetConfigImpl(mfxLoader loader, mfxU32 implType) {
     if (!cfg)
         return MFX_ERR_UNSUPPORTED;
 
-    ImplValue.Type     = MFX_VARIANT_TYPE_U32;
-    ImplValue.Data.U32 = implType;
+    ImplValue.Version.Version = (mfxU16)MFX_VARIANT_VERSION;
+    ImplValue.Type            = MFX_VARIANT_TYPE_U32;
+    ImplValue.Data.U32        = implType;
 
-    return MFXSetConfigFilterProperty(cfg,
-                                      reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"),
-                                      ImplValue);
+    return MFXSetConfigFilterProperty(cfg, reinterpret_cast<const mfxU8 *>("mfxImplDescription.Impl"), ImplValue);
 }
 
 // create mfxConfig object and apply to loader
 template <typename varDataType>
 mfxStatus SetConfigFilterProperty(mfxLoader loader, const char *name, varDataType data);
+
+template <typename varDataType>
+mfxStatus SetConfigFilterProperty(mfxLoader loader, mfxConfig cfg, const char *name, varDataType data);
+
+// set property with a new cfg object
+template <typename varDataType>
+mfxStatus SetSingleProperty(mfxLoader loader, const char *name, mfxVariantType varType, varDataType data);
+
+// use same cfg instead of creating a new one
+template <typename varDataType>
+mfxStatus SetSingleProperty(mfxLoader loader, mfxConfig cfg, const char *name, mfxVariantType varType, varDataType data);
 
 // common kernels - set implType for SW, GPU, etc.
 void Dispatcher_EnumImplementations_ValidInputsReturnValidDesc(mfxImplType implType);
@@ -53,8 +63,8 @@ void Dispatcher_CreateSession_RequestUnsupportedDecoderReturnsErrNotFound(mfxImp
 void Dispatcher_CreateSession_RequestUnsupportedEncoderReturnsErrNotFound(mfxImplType implType);
 void Dispatcher_CreateSession_RequestTwoSupportedDecodersReturnsErrNone(mfxImplType implType);
 void Dispatcher_CreateSession_RequestMixedDecodersReturnsErrNotFound(mfxImplType implType);
-void Dispatcher_CreateSession_RequestAccelValidCreatesSession(mfxImplType implType);
-void Dispatcher_CreateSession_RequestAccelInvalidReturnsNotFound(mfxImplType implType);
+void Dispatcher_CreateSession_RequestSupportedAccelModeCreatesSession(mfxImplType implType);
+void Dispatcher_CreateSession_RequestUnsupportedAccelModeReturnsNotFound(mfxImplType implType);
 void Dispatcher_CreateSession_RequestCurrentAPIVersionCreatesSession(mfxImplType implType);
 void Dispatcher_CreateSession_RequestLowerAPIVersionCreatesSession(mfxImplType implType);
 void Dispatcher_CreateSession_RequestHigherAPIVersionReturnsNotFound(mfxImplType implType);
@@ -82,4 +92,22 @@ void Dispatcher_DispReleaseImplDescription_NullDescReturnsErrNull(mfxImplType im
 void Dispatcher_DispReleaseImplDescription_HandleMismatchReturnsInvalidHandle(mfxImplType implType);
 void Dispatcher_DispReleaseImplDescription_ReleaseTwiceReturnsErrNone(mfxImplType implType);
 
-#endif // TEST_UNIT_API_SMART_DISPATCHER_H_
+void Dispatcher_MultiProp_DecEncValid(mfxImplType implType);
+void Dispatcher_MultiProp_DecEncInvalid(mfxImplType implType);
+void Dispatcher_MultiProp_APIMajorMinorValid(mfxImplType implType);
+void Dispatcher_MultiProp_APIMajorInvalid(mfxImplType implType);
+void Dispatcher_MultiProp_APIMinorInvalid(mfxImplType implType);
+void Dispatcher_MultiProp_APIPartialValid(mfxImplType implType);
+
+void Dispatcher_MultiProp_MultiConfigMultiPropValid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigMultiPropInvalid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigOverwriteValid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigOverwriteInvalid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigCodecProfileValid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigCodecProfileInvalid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileValid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorderValid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorder2Valid(mfxImplType implType);
+void Dispatcher_MultiProp_MultiConfigMultiCodecMultiProfileReorderInvalid(mfxImplType implType);
+
+#endif // TEST_UNIT_API_DISPATCHER_SMART_DISPATCHER_H_
