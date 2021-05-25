@@ -27,6 +27,7 @@ CPU_COUNT = multiprocessing.cpu_count()
 VERBOSE = 'VERBOSE' in os.environ
 if VERBOSE:
     if os.environ['VERBOSE'] not in ['', '-']:
+        # pylint: disable=consider-using-with
         VERBOSE_FILE = open(os.environ['VERBOSE'], 'w')
     else:
         VERBOSE_FILE = sys.stdout
@@ -196,11 +197,11 @@ def cmd(*args, shell=None, no_throw=False, env=None, xenv=None):
             exec_cmd = f"exec bash -c '{command}'"
 
     log(f'{command}')
-    proc = subprocess.Popen(exec_cmd, shell=True, env=env)
-    proc.communicate()
-    if not no_throw and proc.returncode != 0:
-        raise Exception(f"Error running command: {command}")
-    return proc.returncode
+    with subprocess.Popen(exec_cmd, shell=True, env=env) as proc:
+        proc.communicate()
+        if not no_throw and proc.returncode != 0:
+            raise Exception(f"Error running command: {command}")
+        return proc.returncode
 
 
 def capture_cmd(*args, shell=None, log_errors=True, env=None, xenv=None):
@@ -234,16 +235,16 @@ def capture_cmd(*args, shell=None, log_errors=True, env=None, xenv=None):
             exec_cmd = f"exec bash -c '{command}'"
 
     log(f'{command}')
-    proc = subprocess.Popen(exec_cmd,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            universal_newlines=True,
-                            shell=True,
-                            env=env)
-    result = proc.communicate()
-    if log_errors and result[1]:
-        sys.stderr.write(result[1])
-    return (result[0], result[1], proc.returncode)
+    with subprocess.Popen(exec_cmd,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          universal_newlines=True,
+                          shell=True,
+                          env=env) as proc:
+        result = proc.communicate()
+        if log_errors and result[1]:
+            sys.stderr.write(result[1])
+        return (result[0], result[1], proc.returncode)
 
 
 def main():

@@ -16,17 +16,19 @@ repos:
     rev: python
     hooks:
       - id: clang-format
+        args: [-i]
   - repo: https://github.com/iconmaster5326/cmake-format-pre-commit-hook
     rev: master
     hooks:
       - id: cmake-format
-  - repo: local
+  - repo: https://github.com/PyCQA/pylint
+    rev: v2.8.2
     hooks:
       - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
+        args:
+          [
+            "--disable=import-error,no-name-in-module,duplicate-code",
+          ]
   - repo: local
     hooks:
       - id: cpplint
