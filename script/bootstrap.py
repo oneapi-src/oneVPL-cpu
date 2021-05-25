@@ -390,7 +390,8 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
                 ffmpeg_configure_opts(install_dir, arch, validation))
             if build_mode == "Debug":
                 configure_opts.extend(ffmpeg_debug_configure_opts())
-            configure_opts.extend(ffmpeg_3rdparty_configure_opts(build_dir))
+            configure_opts.extend(
+                ffmpeg_3rdparty_configure_opts(build_dir, use_gpl))
             # run configure
             cmd('./configure', *configure_opts, shell='bash')
             # build ffmpeg
@@ -643,7 +644,7 @@ def ffmpeg_debug_configure_opts():
     ]
 
 
-def ffmpeg_3rdparty_configure_opts(build_dir):
+def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
     """update ffmpeg configure command line based on packages findable
     by pkg-config"""
     result = []
@@ -654,10 +655,12 @@ def ffmpeg_3rdparty_configure_opts(build_dir):
     if "dav1d" in pkg_list:
         print("dav1d decoder found")
         result.extend(['--enable-libdav1d', '--enable-decoder=libdav1d'])
-    if "x264" in pkg_list:
-        print("x264 encoder found")
-        result.extend(
-            ['--enable-gpl', '--enable-libx264', '--enable-encoder=libx264'])
+    if use_gpl:
+        if "x264" in pkg_list:
+            print("x264 encoder found")
+            result.extend([
+                '--enable-gpl', '--enable-libx264', '--enable-encoder=libx264'
+            ])
     if "SvtAv1Enc" in pkg_list:
         print("SVT-AV1 encoder found")
         result.extend(['--enable-libsvtav1', '--enable-encoder=libsvt_av1'])
