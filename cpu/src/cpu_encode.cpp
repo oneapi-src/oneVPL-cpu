@@ -1338,6 +1338,7 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
             par->mfx.FrameInfo.BitDepthChroma = 10;
             par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
             break;
+        case AV_PIX_FMT_YUVJ420P:
         case AV_PIX_FMT_YUV420P:
             par->mfx.FrameInfo.FourCC         = MFX_FOURCC_IYUV;
             par->mfx.FrameInfo.BitDepthLuma   = 8;
