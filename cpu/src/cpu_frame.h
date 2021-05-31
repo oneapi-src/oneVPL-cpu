@@ -58,7 +58,7 @@ public:
         m_avframe->height = height;
         m_avframe->format = MFXFourCC2AVPixelFormat(FourCC);
         RET_IF_FALSE(m_avframe->format != AV_PIX_FMT_NONE, MFX_ERR_INVALID_VIDEO_PARAM);
-        RET_IF_FALSE(av_frame_get_buffer(m_avframe, 0) == 0, MFX_ERR_MEMORY_ALLOC);
+        RET_IF_FALSE(av_frame_get_buffer(m_avframe, 1) == 0, MFX_ERR_MEMORY_ALLOC);
         return Update();
     }
 
