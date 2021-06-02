@@ -75,7 +75,7 @@ RUN cd /oneVPL && \
     mkdir _build && \
     cd _build && \
     source /opt/rh/devtoolset-7/enable && \
-    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} .. && \
+    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release .. && \
     make -j $(nproc --all) && \
     make install
 

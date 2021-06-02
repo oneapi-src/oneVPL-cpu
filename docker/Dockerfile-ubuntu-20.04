@@ -47,7 +47,7 @@ ARG VPL_INSTALL_PREFIX
 RUN cd /oneVPL && \
     mkdir _build && \
     cd _build && \
-    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} .. && \
+    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release .. && \
     make -j $(nproc --all) && \
     make install
 
