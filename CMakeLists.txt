@@ -29,7 +29,7 @@ if(USE_ONEAPI_INSTALL_LAYOUT)
   set(ONEAPI_INSTALL_SYSCHECKDIR "sys_check")
   set(ONEAPI_INSTALL_MODFILEDIR "modulefiles")
   set(ONEAPI_INSTALL_EXAMPLEDIR "examples")
-  set(ONEAPI_INSTALL_LICENSEDIR "licensing")
+  set(ONEAPI_INSTALL_LICENSEDIR "licensing/oneVPL-CPU")
   set(ONEAPI_INSTALL_PYTHONDIR "python/lib")
 endif()
 
