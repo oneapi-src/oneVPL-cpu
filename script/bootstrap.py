@@ -439,7 +439,7 @@ def build_svt_hevc_encoder(install_dir, build_mode):
         'clone',
         '--depth=1',
         '-b',
-        'v1.5.0',
+        'v1.5.1',
         'https://github.com/OpenVisualCloud/SVT-HEVC.git',
         xenv=GIT_ENV)
     with pushd('SVT-HEVC'):
@@ -470,7 +470,7 @@ def build_svt_av1_encoder(install_dir, build_mode):
         'clone',
         '--depth=1',
         '-b',
-        'v0.8.4',
+        'v0.8.7',
         'https://gitlab.com/AOMediaCodec/SVT-AV1',
         xenv=GIT_ENV)
     with pushd('SVT-AV1'):
@@ -523,7 +523,7 @@ def clone_ffmpeg():
             'clone',
             '--depth=1',
             '-b',
-            'n4.3.2',
+            'n4.4',
             'https://github.com/FFmpeg/FFmpeg',
             'ffmpeg',
             xenv=GIT_ENV)
@@ -664,21 +664,6 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
     if "SvtAv1Enc" in pkg_list:
         print("SVT-AV1 encoder found")
         result.extend(['--enable-libsvtav1', '--enable-encoder=libsvt_av1'])
-        if os.path.isfile("svt-av1-patched"):
-            print("SVT-AV1 patch already applied")
-        else:
-            cmd('git',
-                'config',
-                'user.email',
-                'bootstrap@localhost',
-                xenv=GIT_ENV)
-            cmd('git', 'config', 'user.name', 'bootstrap', xenv=GIT_ENV)
-            patch = '0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch'
-            cmd('git',
-                'am',
-                os.path.join(build_dir, 'SVT-AV1', 'ffmpeg_plugin', patch),
-                xenv=GIT_ENV)
-            cmd('touch', 'svt-av1-patched')
     if "SvtHevcEnc" in pkg_list:
         print("SVT-HEVC encoder found")
         result.extend(['--enable-libsvthevc', '--enable-encoder=libsvt_hevc'])
@@ -691,7 +676,7 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
                 'bootstrap@localhost',
                 xenv=GIT_ENV)
             cmd('git', 'config', 'user.name', 'bootstrap', xenv=GIT_ENV)
-            patch = '0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
+            patch = 'n4.4-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
             cmd('git',
                 'am',
                 os.path.join(build_dir, 'SVT-HEVC', 'ffmpeg_plugin', patch),
