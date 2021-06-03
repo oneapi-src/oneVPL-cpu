@@ -1356,9 +1356,15 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avEncContext->framerate.den;
 
     // Aspect ratio
-    par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avEncContext->sample_aspect_ratio.num;
-    par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avEncContext->sample_aspect_ratio.den;
-
+    if (m_avEncContext->sample_aspect_ratio.num == 0 &&
+        m_avEncContext->sample_aspect_ratio.den == 1) {
+        par->mfx.FrameInfo.AspectRatioW = 1;
+        par->mfx.FrameInfo.AspectRatioH = 1;
+    }
+    else {
+        par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avEncContext->sample_aspect_ratio.num;
+        par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avEncContext->sample_aspect_ratio.den;
+    }
     // Codec params
     switch (par->mfx.CodecId) {
         case MFX_CODEC_HEVC:
