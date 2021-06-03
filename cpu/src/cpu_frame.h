@@ -75,11 +75,21 @@ public:
                 Info.BitDepthChroma = 10;
                 Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
                 break;
+            case AV_PIX_FMT_YUV422P10LE:
+                Info.BitDepthLuma   = 10;
+                Info.BitDepthChroma = 10;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+                break;
             case AV_PIX_FMT_YUV420P:
             case AV_PIX_FMT_YUVJ420P:
                 Info.BitDepthLuma   = 8;
                 Info.BitDepthChroma = 8;
                 Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+                break;
+            case AV_PIX_FMT_YUV422P:
+                Info.BitDepthLuma   = 8;
+                Info.BitDepthChroma = 8;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
                 break;
             case AV_PIX_FMT_BGRA:
                 Info.BitDepthLuma   = 8;

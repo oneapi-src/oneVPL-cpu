@@ -74,12 +74,14 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
         if (par->mfx.NumThread)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
+        //only YUV420 or YUV422 chromaformats accepted
         if ((par->mfx.FrameInfo.ChromaFormat) &&
-            (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
+            !((par->mfx.FrameInfo.ChromaFormat == MFX_CHROMAFORMAT_YUV420) ||
+              (par->mfx.FrameInfo.ChromaFormat == MFX_CHROMAFORMAT_YUV422)))
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
 
-    //only I420 and I010 colorspaces allowed
+    //only I420, I422, I010, and and I210 colorspaces allowed
     switch (par->mfx.FrameInfo.FourCC) {
         case MFX_FOURCC_I420:
             if (canCorrect) {
@@ -101,6 +103,26 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
             break;
+        case MFX_FOURCC_I422:
+            if (canCorrect) {
+                if (par->mfx.FrameInfo.BitDepthLuma && par->mfx.FrameInfo.BitDepthLuma != 8)
+                    fixedIncompatible = true;
+                if (par->mfx.FrameInfo.BitDepthChroma && par->mfx.FrameInfo.BitDepthChroma != 8)
+                    fixedIncompatible = true;
+                par->mfx.FrameInfo.BitDepthLuma   = 8;
+                par->mfx.FrameInfo.BitDepthChroma = 8;
+                par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+            }
+            else {
+                if (par->mfx.FrameInfo.BitDepthLuma && (par->mfx.FrameInfo.BitDepthLuma != 8))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.BitDepthChroma && (par->mfx.FrameInfo.BitDepthChroma != 8))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.ChromaFormat &&
+                    (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV422))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            break;
         case MFX_FOURCC_I010:
             if (canCorrect) {
                 if (par->mfx.FrameInfo.BitDepthLuma && par->mfx.FrameInfo.BitDepthLuma != 10)
@@ -118,6 +140,26 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
                     return MFX_ERR_INVALID_VIDEO_PARAM;
                 if (par->mfx.FrameInfo.ChromaFormat &&
                     (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV420))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+            }
+            break;
+        case MFX_FOURCC_I210:
+            if (canCorrect) {
+                if (par->mfx.FrameInfo.BitDepthLuma && par->mfx.FrameInfo.BitDepthLuma != 10)
+                    fixedIncompatible = true;
+                if (par->mfx.FrameInfo.BitDepthChroma && par->mfx.FrameInfo.BitDepthChroma != 10)
+                    fixedIncompatible = true;
+                par->mfx.FrameInfo.BitDepthLuma   = 10;
+                par->mfx.FrameInfo.BitDepthChroma = 10;
+                par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+            }
+            else {
+                if (par->mfx.FrameInfo.BitDepthLuma && (par->mfx.FrameInfo.BitDepthLuma != 10))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.BitDepthChroma && (par->mfx.FrameInfo.BitDepthChroma != 10))
+                    return MFX_ERR_INVALID_VIDEO_PARAM;
+                if (par->mfx.FrameInfo.ChromaFormat &&
+                    (par->mfx.FrameInfo.ChromaFormat != MFX_CHROMAFORMAT_YUV422))
                     return MFX_ERR_INVALID_VIDEO_PARAM;
             }
             break;
@@ -420,6 +462,12 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                     case AV_PIX_FMT_YUV420P10LE:
                         m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I010;
                         break;
+                    case AV_PIX_FMT_YUV422P10LE:
+                        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I210;
+                        break;
+                    case AV_PIX_FMT_YUV422P:
+                        m_param.mfx.FrameInfo.FourCC = MFX_FOURCC_I422;
+                        break;
                     case AV_PIX_FMT_YUV420P:
                     case AV_PIX_FMT_YUVJ420P:
                     default:
@@ -640,6 +688,18 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
             par->mfx.FrameInfo.BitDepthLuma   = 8;
             par->mfx.FrameInfo.BitDepthChroma = 8;
             par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+            break;
+        case AV_PIX_FMT_YUV422P10LE:
+            par->mfx.FrameInfo.FourCC         = MFX_FOURCC_I210;
+            par->mfx.FrameInfo.BitDepthLuma   = 10;
+            par->mfx.FrameInfo.BitDepthChroma = 10;
+            par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+            break;
+        case AV_PIX_FMT_YUV422P:
+            par->mfx.FrameInfo.FourCC         = MFX_FOURCC_I422;
+            par->mfx.FrameInfo.BitDepthLuma   = 8;
+            par->mfx.FrameInfo.BitDepthChroma = 8;
+            par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
             break;
         default:
             //zero value after decodeheader indicates that
