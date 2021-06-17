@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 ###############################################################################
 """Build oneVPL-cpu ffmpeg dependencies"""
+from io import BytesIO
 import sys
 import os
 import posixpath
@@ -12,9 +13,18 @@ import subprocess
 import shutil
 import time
 import multiprocessing
+import urllib.request
+import zipfile
 from pathlib import Path
 from os import environ
 from contextlib import contextmanager
+
+# Component Versions
+SVT_HEVC_VERSION = '1.5.1'
+SVT_AV1_VERSION = 'v0.8.6'
+DAV1D_VERSION = '0.8.2'
+X264_VERSION = 'stable'
+FFMPEG_VERSION = 'n4.4'
 
 # Folder this script is in
 SCRIPT_PATH = os.path.realpath(
@@ -41,6 +51,9 @@ if VERBOSE:
 # Optional dictionary with environment options for Git
 # mostly used to set an alternate PATH
 GIT_ENV = None
+
+# indicate if we prefer to clone, or to download archives
+PREFER_CLONE = False
 
 
 def _escape_cmd_arg(arg):
@@ -247,6 +260,17 @@ def capture_cmd(*args, shell=None, log_errors=True, env=None, xenv=None):
         return (result[0], result[1], proc.returncode)
 
 
+def download_archive(url, path):
+    """download an archive and unpack it to a folder"""
+    if not os.path.exists(path):
+        mkdir(path)
+    log_comment(f"Downloading {url}")
+    with urllib.request.urlopen(url) as webstream:
+        with zipfile.ZipFile(BytesIO(webstream.read())) as archfileobj:
+            log_comment(f"Extracting {url} to {path} as zip file")
+            archfileobj.extractall(path)
+
+
 def main():
     """Main steps to build ffmpeg and dependencies"""
 
@@ -383,8 +407,24 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
             build_svt_av1_encoder(install_dir, build_mode)
             build_svt_hevc_encoder(install_dir, build_mode)
         #prepare ffmpeg build
-        clone_ffmpeg()
-        with pushd('ffmpeg'):
+        version = FFMPEG_VERSION
+        if os.path.exists(f'FFmpeg-{version}'):
+            print("using existing ffmpeg dir")
+        else:
+            if PREFER_CLONE:
+                cmd('git',
+                    'clone',
+                    '--depth=1',
+                    '-b',
+                    f'{version}',
+                    'https://github.com/FFmpeg/FFmpeg',
+                    f'FFmpeg-{version}',
+                    xenv=GIT_ENV)
+            else:
+                download_archive(
+                    f"https://github.com/FFmpeg/FFmpeg/archive/refs/tags/{version}.zip",
+                    ".")
+        with pushd(f'FFmpeg-{version}'):
             configure_opts = []
             configure_opts.extend(
                 ffmpeg_configure_opts(install_dir, arch, validation))
@@ -401,17 +441,24 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
 
 def build_dav1d_decoder(install_dir):
     """build libdav1d from source"""
-    if os.path.exists('dav1d'):
+    version = DAV1D_VERSION
+    if os.path.exists(f'dav1d-{version}'):
         print("using existing david decoder dir")
         return
-    cmd('git',
-        'clone',
-        '--depth=1',
-        '-b',
-        '0.8.2',
-        'https://code.videolan.org/videolan/dav1d.git',
-        xenv=GIT_ENV)
-    with pushd('dav1d'):
+    if PREFER_CLONE:
+        cmd('git',
+            'clone',
+            '--depth=1',
+            '-b',
+            f'{version}',
+            'https://code.videolan.org/videolan/dav1d.git',
+            f'dav1d-{version}',
+            xenv=GIT_ENV)
+    else:
+        download_archive(
+            f"https://code.videolan.org/videolan/dav1d/-/archive/{version}/dav1d-{version}.zip",
+            ".")
+    with pushd(f'dav1d-{version}'):
         cmd('meson', 'build', '--prefix', os.path.join(install_dir,
                                                        ''), '--libdir',
             os.path.join(install_dir, 'lib'), '--buildtype', 'release',
@@ -432,17 +479,24 @@ def build_dav1d_decoder(install_dir):
 
 def build_svt_hevc_encoder(install_dir, build_mode):
     """build SVT HEVC encoder from source"""
-    if os.path.exists('SVT-HEVC'):
+    version = SVT_HEVC_VERSION
+    if os.path.exists(f'SVT-HEVC-{version}'):
         print("using existing SVT-HEVC encoder dir")
         return
-    cmd('git',
-        'clone',
-        '--depth=1',
-        '-b',
-        'v1.5.1',
-        'https://github.com/OpenVisualCloud/SVT-HEVC.git',
-        xenv=GIT_ENV)
-    with pushd('SVT-HEVC'):
+    if PREFER_CLONE:
+        cmd('git',
+            'clone',
+            '--depth=1',
+            '-b',
+            f'v{version}',
+            'https://github.com/OpenVisualCloud/SVT-HEVC.git',
+            f'SVT-HEVC-{version}',
+            xenv=GIT_ENV)
+    else:
+        download_archive(
+            f"https://github.com/OpenVisualCloud/SVT-HEVC/archive/refs/tags/v{version}.zip",
+            ".")
+    with pushd(f'SVT-HEVC-{version}'):
         if build_mode == 'Debug':
             replace(os.path.join('Source', 'Lib', 'Codec', 'EbMalloc.h'),
                     '#define DEBUG_MEMORY_USAGE', '#undef DEBUG_MEMORY_USAGE')
@@ -462,18 +516,24 @@ def build_svt_hevc_encoder(install_dir, build_mode):
 
 def build_svt_av1_encoder(install_dir, build_mode):
     """build SVT AV1 encoder from source"""
-    if os.path.exists('SVT-AV1'):
+    version = SVT_AV1_VERSION
+    if os.path.exists(f'SVT-AV1-{version}'):
         print("using existing SVT-AV1 encoder dir")
         return
-
-    cmd('git',
-        'clone',
-        '--depth=1',
-        '-b',
-        'v0.8.6',
-        'https://gitlab.com/AOMediaCodec/SVT-AV1',
-        xenv=GIT_ENV)
-    with pushd('SVT-AV1'):
+    if PREFER_CLONE:
+        cmd('git',
+            'clone',
+            '--depth=1',
+            '-b',
+            f'{version}',
+            'https://gitlab.com/AOMediaCodec/SVT-AV1',
+            f'SVT-AV1-{version}',
+            xenv=GIT_ENV)
+    else:
+        download_archive(
+            f"https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/{version}/SVT-AV1-{version}.zip",
+            ".")
+    with pushd(f'SVT-AV1-{version}'):
         if build_mode == 'Debug':
             replace(
                 os.path.join('Source', 'Lib', 'Common', 'Codec', 'EbMalloc.h'),
@@ -493,18 +553,25 @@ def build_svt_av1_encoder(install_dir, build_mode):
 
 def build_gpl_x264_encoder(install_dir):
     """build x264 encoder from source"""
+    version = X264_VERSION
     posix_install_dir = to_posix_path(install_dir)
-    if os.path.exists('x264'):
+    if os.path.exists(f'x264-{version}'):
         print("using existing x264 encoder dir")
         return
-    cmd('git',
-        'clone',
-        '--depth=1',
-        '-b',
-        'stable',
-        'https://code.videolan.org/videolan/x264.git',
-        xenv=GIT_ENV)
-    with pushd('x264'):
+    if PREFER_CLONE:
+        cmd('git',
+            'clone',
+            '--depth=1',
+            '-b',
+            f'{version}',
+            'https://code.videolan.org/videolan/x264.git',
+            f'x264-{version}',
+            xenv=GIT_ENV)
+    else:
+        download_archive(
+            f"https://code.videolan.org/videolan/x264/-/archive/{version}/x264-{version}.zip",
+            ".")
+    with pushd(f'x264-{version}'):
         cmd('./configure',
             f'--prefix={posix_install_dir}',
             '--enable-static',
@@ -512,21 +579,6 @@ def build_gpl_x264_encoder(install_dir):
             shell='bash')
         cmd('make', '-j', CPU_COUNT)
         cmd('make', 'install')
-
-
-def clone_ffmpeg():
-    """get ffmpeg library source"""
-    if os.path.exists('ffmpeg'):
-        print("using existing ffmpeg dir")
-    else:
-        cmd('git',
-            'clone',
-            '--depth=1',
-            '-b',
-            'n4.4',
-            'https://github.com/FFmpeg/FFmpeg',
-            'ffmpeg',
-            xenv=GIT_ENV)
 
 
 def ffmpeg_configure_opts(install_dir, arch, validation):
@@ -670,6 +722,11 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
         if os.path.isfile("svt-hevc-patched"):
             print("SVT-HEVC patch already applied")
         else:
+            if not PREFER_CLONE:
+                # make this folder a git repo so we can use "git am" to apply patches
+                cmd('git', 'init', xenv=GIT_ENV)
+                cmd('git', 'add', '.', xenv=GIT_ENV)
+                cmd('git', 'commit', '-m', 'Import', xenv=GIT_ENV)
             cmd('git',
                 'config',
                 'user.email',
@@ -679,7 +736,8 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
             patch = 'n4.4-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
             cmd('git',
                 'am',
-                os.path.join(build_dir, 'SVT-HEVC', 'ffmpeg_plugin', patch),
+                os.path.join(build_dir, f'SVT-HEVC-{SVT_HEVC_VERSION}',
+                             'ffmpeg_plugin', patch),
                 xenv=GIT_ENV)
             cmd('touch', 'svt-hevc-patched')
     return result
