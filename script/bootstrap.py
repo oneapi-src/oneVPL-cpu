@@ -260,13 +260,28 @@ def capture_cmd(*args, shell=None, log_errors=True, env=None, xenv=None):
         return (result[0], result[1], proc.returncode)
 
 
+class ZipFileWithPermissions(zipfile.ZipFile):
+    """ZipFile class that handles file permissions."""
+    def _extract_member(self, member, targetpath, pwd):
+        """Extract the ZipInfo object 'member' to a physical
+           file on the path targetpath, preserving permissions.
+        """
+        if not isinstance(member, zipfile.ZipInfo):
+            member = self.getinfo(member)
+        targetpath = super()._extract_member(member, targetpath, pwd)
+        attr = member.external_attr >> 16
+        if attr != 0:
+            os.chmod(targetpath, attr)
+        return targetpath
+
+
 def download_archive(url, path):
     """download an archive and unpack it to a folder"""
     if not os.path.exists(path):
         mkdir(path)
     log_comment(f"Downloading {url}")
     with urllib.request.urlopen(url) as webstream:
-        with zipfile.ZipFile(BytesIO(webstream.read())) as archfileobj:
+        with ZipFileWithPermissions(BytesIO(webstream.read())) as archfileobj:
             log_comment(f"Extracting {url} to {path} as zip file")
             archfileobj.extractall(path)
 
