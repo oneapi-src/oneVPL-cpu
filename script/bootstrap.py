@@ -726,15 +726,21 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
                 # make this folder a git repo so we can use "git am" to apply patches
                 cmd('git', 'init', xenv=GIT_ENV)
                 cmd('git', 'add', '.', xenv=GIT_ENV)
-                cmd('git', 'commit', '-m', 'Import', xenv=GIT_ENV)
-            cmd('git',
-                'config',
-                'user.email',
-                'bootstrap@localhost',
-                xenv=GIT_ENV)
-            cmd('git', 'config', 'user.name', 'bootstrap', xenv=GIT_ENV)
+                cmd('git',
+                    '-c',
+                    'user.name=bootstrap',
+                    '-c',
+                    'user.email=bootstrap@localhost',
+                    'commit',
+                    '-m',
+                    'Import',
+                    xenv=GIT_ENV)
             patch = 'n4.4-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
             cmd('git',
+                '-c',
+                'user.name=bootstrap',
+                '-c',
+                'user.email=bootstrap@localhost',
                 'am',
                 os.path.join(build_dir, f'SVT-HEVC-{SVT_HEVC_VERSION}',
                              'ffmpeg_plugin', patch),
