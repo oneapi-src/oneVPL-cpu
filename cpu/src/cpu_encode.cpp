@@ -12,13 +12,14 @@
 #define X264_DEFAULT_QUALITY_VALUE 23
 
 CpuEncode::CpuEncode(CpuWorkstream *session)
-        : m_session(session),
-          m_avEncCodec(nullptr),
+        : m_avEncCodec(nullptr),
           m_avEncContext(nullptr),
           m_avEncPacket(nullptr),
+          m_input_locker(),
           m_param({}),
-          m_encSurfaces(),
-          m_bFrameEncoded(false) {}
+          m_bFrameEncoded(false),
+          m_session(session),
+          m_encSurfaces() {}
 
 CpuEncode::~CpuEncode() {
     if (m_bFrameEncoded) {
@@ -131,7 +132,7 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
 
         //max ref frames is 16 for any codec
         if (par->mfx.NumRefFrame > 16)
-            MFX_ERR_INVALID_VIDEO_PARAM;
+            return MFX_ERR_INVALID_VIDEO_PARAM;
 
         if (par->mfx.EncodedOrder)
             return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -139,11 +140,12 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
 
     // mfx.FrameInfo params
 
-    if (par->mfx.FrameInfo.Shift)
+    if (par->mfx.FrameInfo.Shift) {
         if (canCorrect)
             par->mfx.FrameInfo.Shift = 0;
         else
             return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
 
     if (par->mfx.FrameInfo.BitDepthChroma) {
         if (par->mfx.FrameInfo.BitDepthChroma != 8 && par->mfx.FrameInfo.BitDepthChroma != 10)
@@ -176,11 +178,12 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     if (!par->mfx.FrameInfo.CropH && canCorrect)
         par->mfx.FrameInfo.CropH = par->mfx.FrameInfo.Height;
 
-    if (par->mfx.NumSlice > par->mfx.FrameInfo.CropH)
+    if (par->mfx.NumSlice > par->mfx.FrameInfo.CropH) {
         if (canCorrect)
             par->mfx.NumSlice = par->mfx.FrameInfo.CropH;
         else
             return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
 
     if (!par->mfx.FrameInfo.CropW || !par->mfx.FrameInfo.CropH)
         return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -633,7 +636,7 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
         //   In MSDK, tier is combined with level.  In SVT-HEVC it is set
         //   separately.
         std::stringstream tierss;
-        tierss << (par->mfx.CodecLevel & MFX_TIER_HEVC_HIGH) ? 1 : 0;
+        tierss << ((par->mfx.CodecLevel & MFX_TIER_HEVC_HIGH) ? 1 : 0);
         ret = av_opt_set(m_avEncContext->priv_data,
                          "tier",
                          tierss.str().c_str(),
@@ -947,11 +950,12 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
     int ret;
     int64_t optval;
     ret = av_opt_get_int(m_avEncContext->priv_data, "rc", AV_OPT_SEARCH_CHILDREN, &optval);
-    if (optval == 0) {
+    if (ret == 0 && optval == 0) {
         par->mfx.RateControlMethod = MFX_RATECONTROL_CQP;
         int64_t qpval;
         ret = av_opt_get_int(m_avEncContext->priv_data, "qp", AV_OPT_SEARCH_CHILDREN, &qpval);
-        par->mfx.QPP = static_cast<mfxU16>(qpval);
+        if (ret == 0)
+            par->mfx.QPP = static_cast<mfxU16>(qpval);
     }
     else {
         par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
@@ -973,20 +977,22 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
     ret = av_opt_get(m_avEncContext->priv_data, "preset", AV_OPT_SEARCH_CHILDREN, &presetval);
     std::string presetstr((char *)presetval);
     int tu = 4;
-    if (presetstr == "veryslow")
-        tu = 1;
-    if (presetstr == "slower")
-        tu = 2;
-    if (presetstr == "slow")
-        tu = 3;
-    if (presetstr == "medium")
-        tu = 4;
-    if (presetstr == "veryfast")
-        tu = 5;
-    if (presetstr == "superfast")
-        tu = 6;
-    if (presetstr == "ultrafast")
-        tu = 7;
+    if (ret == 0) {
+        if (presetstr == "veryslow")
+            tu = 1;
+        if (presetstr == "slower")
+            tu = 2;
+        if (presetstr == "slow")
+            tu = 3;
+        if (presetstr == "medium")
+            tu = 4;
+        if (presetstr == "veryfast")
+            tu = 5;
+        if (presetstr == "superfast")
+            tu = 6;
+        if (presetstr == "ultrafast")
+            tu = 7;
+    }
     par->mfx.TargetUsage = tu;
 
     av_free(presetval);

@@ -1573,7 +1573,6 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxSurfaceArray *surf_array_out = nullptr;
-    mfxU32 numSurfs                 = numVPPCh + 1;
 
     mfxBitstream *bs;
     // 1st run with bitstream: return MFX_ERR_MORE_DATA

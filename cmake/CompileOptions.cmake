@@ -14,6 +14,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   endif(UNIX)
 endif()
 
+if(DEFINED ENV{MFX_DEPRECATED_OFF})
+  set(MFX_DEPRECATED_OFF 1)
+endif()
+
+if(MFX_DEPRECATED_OFF)
+  message(STATUS "Deprecation warnings disabled")
+  add_definitions(-DMFX_DEPRECATED_OFF)
+endif()
+
 if(MSVC)
   add_link_options("/DYNAMICBASE")
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")

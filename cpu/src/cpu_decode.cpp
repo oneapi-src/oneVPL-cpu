@@ -10,8 +10,7 @@
 #include "src/cpu_workstream.h"
 
 CpuDecode::CpuDecode(CpuWorkstream *session)
-        : m_session(session),
-          m_avDecCodec(nullptr),
+        : m_avDecCodec(nullptr),
           m_avDecContext(nullptr),
           m_avDecParser(nullptr),
           m_avDecPacket(nullptr),
@@ -19,9 +18,10 @@ CpuDecode::CpuDecode(CpuWorkstream *session)
           m_swsContext(nullptr),
           m_param(),
           m_decSurfaces(),
-          m_frameOrder(0),
+          m_bFrameBuffered(false),
           m_bStreamInfo(false),
-          m_bFrameBuffered(false) {}
+          m_session(session),
+          m_frameOrder(0) {}
 
 mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
     bool fixedIncompatible = false;

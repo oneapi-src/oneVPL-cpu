@@ -35,6 +35,8 @@ uint32_t AVPixelFormat2MFXFourCC(int format) {
             return MFX_FOURCC_RGB4;
         case AV_PIX_FMT_YUV420P:
             return MFX_FOURCC_I420;
+        default:
+            return 0;
     }
     return 0;
 }
@@ -63,6 +65,8 @@ mfxU32 AVCodecID_to_MFXCodecId(AVCodecID CodecId) {
             return MFX_CODEC_JPEG;
         case AV_CODEC_ID_AV1:
             return MFX_CODEC_AV1;
+        default:
+            return 0;
     }
     return 0;
 }

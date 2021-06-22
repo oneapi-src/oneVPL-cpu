@@ -15,11 +15,11 @@
 enum { VPP_IN = 0x00, VPP_OUT = 0x01 };
 
 CpuVPP::CpuVPP()
-        : m_session(nullptr),
-          m_avVppFrameOut(nullptr),
-          m_vpp_graph(nullptr),
+        : m_vpp_graph(nullptr),
           m_buffersrc_ctx(nullptr),
           m_buffersink_ctx(nullptr),
+          m_input_locker(),
+          m_avVppFrameOut(nullptr),
           m_vppInFormat(MFX_FOURCC_I420),
           m_vppInWidth(0),
           m_vppInHeight(0),
@@ -29,7 +29,8 @@ CpuVPP::CpuVPP()
           m_vppFunc(0),
           m_param(),
           m_vppSurfacesIn(),
-          m_vppSurfacesOut() {
+          m_vppSurfacesOut(),
+          m_session(nullptr) {
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
 }
 
