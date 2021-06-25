@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
@@ -12,6 +12,11 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(TARGET vplswref64)
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
   set(TARGET vplswref32)
+endif()
+
+# add lib/<arch> to find_package path on windows
+if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+  set(CMAKE_LIBRARY_ARCHITECTURE x86)
 endif()
 
 file(GLOB SOURCES src/*.cpp)
@@ -36,7 +41,8 @@ if(POLICY CMP0074)
   cmake_policy(SET CMP0074 OLD)
 endif()
 
-find_package(VPL REQUIRED COMPONENTS api)
+find_package(VPL 2.2 REQUIRED COMPONENTS api)
+message(STATUS "Found VPL (version ${VPL_VERSION})")
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
 if(BUILD_GPL_X264)
@@ -63,5 +69,4 @@ endif()
 install(
   TARGETS ${TARGET}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT dev)
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT runtime)

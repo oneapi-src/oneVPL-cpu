@@ -27,6 +27,7 @@ CPU_COUNT = multiprocessing.cpu_count()
 VERBOSE = 'VERBOSE' in os.environ
 if VERBOSE:
     if os.environ['VERBOSE'] not in ['', '-']:
+        # pylint: disable=consider-using-with
         VERBOSE_FILE = open(os.environ['VERBOSE'], 'w')
     else:
         VERBOSE_FILE = sys.stdout
@@ -196,11 +197,11 @@ def cmd(*args, shell=None, no_throw=False, env=None, xenv=None):
             exec_cmd = f"exec bash -c '{command}'"
 
     log(f'{command}')
-    proc = subprocess.Popen(exec_cmd, shell=True, env=env)
-    proc.communicate()
-    if not no_throw and proc.returncode != 0:
-        raise Exception(f"Error running command: {command}")
-    return proc.returncode
+    with subprocess.Popen(exec_cmd, shell=True, env=env) as proc:
+        proc.communicate()
+        if not no_throw and proc.returncode != 0:
+            raise Exception(f"Error running command: {command}")
+        return proc.returncode
 
 
 def capture_cmd(*args, shell=None, log_errors=True, env=None, xenv=None):
@@ -234,16 +235,16 @@ def capture_cmd(*args, shell=None, log_errors=True, env=None, xenv=None):
             exec_cmd = f"exec bash -c '{command}'"
 
     log(f'{command}')
-    proc = subprocess.Popen(exec_cmd,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            universal_newlines=True,
-                            shell=True,
-                            env=env)
-    result = proc.communicate()
-    if log_errors and result[1]:
-        sys.stderr.write(result[1])
-    return (result[0], result[1], proc.returncode)
+    with subprocess.Popen(exec_cmd,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          universal_newlines=True,
+                          shell=True,
+                          env=env) as proc:
+        result = proc.communicate()
+        if log_errors and result[1]:
+            sys.stderr.write(result[1])
+        return (result[0], result[1], proc.returncode)
 
 
 def main():
@@ -389,7 +390,8 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
                 ffmpeg_configure_opts(install_dir, arch, validation))
             if build_mode == "Debug":
                 configure_opts.extend(ffmpeg_debug_configure_opts())
-            configure_opts.extend(ffmpeg_3rdparty_configure_opts(build_dir))
+            configure_opts.extend(
+                ffmpeg_3rdparty_configure_opts(build_dir, use_gpl))
             # run configure
             cmd('./configure', *configure_opts, shell='bash')
             # build ffmpeg
@@ -406,7 +408,7 @@ def build_dav1d_decoder(install_dir):
         'clone',
         '--depth=1',
         '-b',
-        '0.7.0',
+        '0.8.2',
         'https://code.videolan.org/videolan/dav1d.git',
         xenv=GIT_ENV)
     with pushd('dav1d'):
@@ -437,7 +439,7 @@ def build_svt_hevc_encoder(install_dir, build_mode):
         'clone',
         '--depth=1',
         '-b',
-        'v1.5.0',
+        'v1.5.1',
         'https://github.com/OpenVisualCloud/SVT-HEVC.git',
         xenv=GIT_ENV)
     with pushd('SVT-HEVC'):
@@ -452,16 +454,10 @@ def build_svt_hevc_encoder(install_dir, build_mode):
             cmd('cmake', '..', '-GUnix Makefiles',
                 f'-DCMAKE_BUILD_TYPE={build_mode}',
                 f'-DCMAKE_INSTALL_PREFIX={os.path.join(install_dir, "")}',
-                '-DBUILD_SHARED_LIBS=off', '-DBUILD_APP=off')
+                '-DCMAKE_INSTALL_LIBDIR=lib', '-DBUILD_SHARED_LIBS=off',
+                '-DBUILD_APP=off')
             cmd('make', '-j', CPU_COUNT)
             cmd('make', 'install')
-            if os.name != 'nt':
-                if os.path.exists(os.path.join(install_dir, 'lib64')):
-                    cmd('cp', '-r', f'{install_dir}/lib64/*',
-                        f'{install_dir}/lib')
-                    mkdir(os.path.join(install_dir, 'lib', 'pkgconfig'))
-                    replace(f'{install_dir}/lib/pkgconfig/SvtHevcEnc.pc',
-                            'lib64', 'lib')
 
 
 def build_svt_av1_encoder(install_dir, build_mode):
@@ -474,8 +470,8 @@ def build_svt_av1_encoder(install_dir, build_mode):
         'clone',
         '--depth=1',
         '-b',
-        'v0.8.4',
-        'https://github.com/AOMediaCodec/SVT-AV1',
+        'v0.8.6',
+        'https://gitlab.com/AOMediaCodec/SVT-AV1',
         xenv=GIT_ENV)
     with pushd('SVT-AV1'):
         if build_mode == 'Debug':
@@ -487,18 +483,12 @@ def build_svt_av1_encoder(install_dir, build_mode):
             cmd('cmake', '..', '-GUnix Makefiles',
                 f'-DCMAKE_BUILD_TYPE={build_mode}',
                 f'-DCMAKE_INSTALL_PREFIX={os.path.join(install_dir, "")}',
-                '-DBUILD_SHARED_LIBS=off', '-DBUILD_APPS=off',
+                '-DCMAKE_INSTALL_LIBDIR=lib', '-DBUILD_SHARED_LIBS=off',
+                '-DBUILD_APPS=off',
                 '-DBUILD_DEC=off' if os.name != 'nt' else '',
                 '-DCMAKE_C_FLAGS=$(CMAKE_C_FLAGS) -DSVT_LOG_QUIET=1')
             cmd('make', '-j', CPU_COUNT)
             cmd('make', 'install')
-            if os.name != 'nt':
-                if os.path.isdir(f"{install_dir}/lib64"):
-                    cmd('cp', '-r', f'{install_dir}/lib64/*',
-                        f'{install_dir}/lib')
-                    mkdir(os.path.join(install_dir, 'lib', 'pkgconfig'))
-                    replace(f'{install_dir}/lib/pkgconfig/SvtAv1Enc.pc',
-                            'lib64', 'lib')
 
 
 def build_gpl_x264_encoder(install_dir):
@@ -533,7 +523,7 @@ def clone_ffmpeg():
             'clone',
             '--depth=1',
             '-b',
-            'n4.3.2',
+            'n4.4',
             'https://github.com/FFmpeg/FFmpeg',
             'ffmpeg',
             xenv=GIT_ENV)
@@ -654,7 +644,7 @@ def ffmpeg_debug_configure_opts():
     ]
 
 
-def ffmpeg_3rdparty_configure_opts(build_dir):
+def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
     """update ffmpeg configure command line based on packages findable
     by pkg-config"""
     result = []
@@ -665,28 +655,15 @@ def ffmpeg_3rdparty_configure_opts(build_dir):
     if "dav1d" in pkg_list:
         print("dav1d decoder found")
         result.extend(['--enable-libdav1d', '--enable-decoder=libdav1d'])
-    if "x264" in pkg_list:
-        print("x264 encoder found")
-        result.extend(
-            ['--enable-gpl', '--enable-libx264', '--enable-encoder=libx264'])
+    if use_gpl:
+        if "x264" in pkg_list:
+            print("x264 encoder found")
+            result.extend([
+                '--enable-gpl', '--enable-libx264', '--enable-encoder=libx264'
+            ])
     if "SvtAv1Enc" in pkg_list:
         print("SVT-AV1 encoder found")
-        result.extend(['--enable-libsvtav1', '--enable-encoder=libsvt_av1'])
-        if os.path.isfile("svt-av1-patched"):
-            print("SVT-AV1 patch already applied")
-        else:
-            cmd('git',
-                'config',
-                'user.email',
-                'bootstrap@localhost',
-                xenv=GIT_ENV)
-            cmd('git', 'config', 'user.name', 'bootstrap', xenv=GIT_ENV)
-            patch = '0001-Add-ability-for-ffmpeg-to-run-svt-av1.patch'
-            cmd('git',
-                'am',
-                os.path.join(build_dir, 'SVT-AV1', 'ffmpeg_plugin', patch),
-                xenv=GIT_ENV)
-            cmd('touch', 'svt-av1-patched')
+        result.extend(['--enable-libsvtav1', '--enable-encoder=libsvtav1'])
     if "SvtHevcEnc" in pkg_list:
         print("SVT-HEVC encoder found")
         result.extend(['--enable-libsvthevc', '--enable-encoder=libsvt_hevc'])
@@ -699,7 +676,7 @@ def ffmpeg_3rdparty_configure_opts(build_dir):
                 'bootstrap@localhost',
                 xenv=GIT_ENV)
             cmd('git', 'config', 'user.name', 'bootstrap', xenv=GIT_ENV)
-            patch = '0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
+            patch = 'n4.4-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
             cmd('git',
                 'am',
                 os.path.join(build_dir, 'SVT-HEVC', 'ffmpeg_plugin', patch),

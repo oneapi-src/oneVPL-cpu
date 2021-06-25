@@ -24,28 +24,18 @@ if [ ! -e "${VPL_BUILD_DEPENDENCIES}" ]; then
     exit 1
 fi
 
-# Load project environment
-if [ -z "${VPL_ROOT}" ]; then
-  echo "Environment script appears not to have been run."
-  echo "Attempting to run now..."
 
-  if [ ! -e "${VPL_INSTALL_DIR}" ]
-  then
-    echo "Project must be installed to test implementation"
-    exit 1
+# do custom environment configuration if var is set.
+if [ -n "$VPL_INSTALL_DIR" ]; then
+  echo "VPL_INSTALL_DIR set, assuming environment script needs to be run."
+  if [ -d "${VPL_INSTALL_DIR}/share/oneVPL/env" ]; then
+    echo "Using custom environment configuration from ${VPL_INSTALL_DIR}/share/oneVPL/env"
+    source "$VPL_INSTALL_DIR/share/oneVPL/env/vars.sh"
+  else
+    echo "Using custom environment configuration from ${VPL_INSTALL_DIR}/env"
+    source "$VPL_INSTALL_DIR/env/vars.sh"
   fi
 
-  if [ ! -e "${VPL_INSTALL_DIR}/env/vars.sh" ]
-  then
-    # Detect case where user points VPL_INSTALL_DIR at the
-    # Base repo instead of the built output.
-    echo "Cannot find environment script in ${VPL_INSTALL_DIR}/env"
-    exit 1
-  fi
-
-  source "${VPL_INSTALL_DIR}/env/vars.sh"
-else
-  echo "Environment script appears to have already run. Continuing..."
 fi
 
 result_all=0

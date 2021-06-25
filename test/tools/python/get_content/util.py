@@ -53,36 +53,37 @@ class Runner:
         timeout_exceeded = False
         # The following runs the provided command. The command is an explicit
         # parameter from the caller who is responsible for checking it.
-        proc = subprocess.Popen(
-            cmd,  # nosec
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            close_fds=(sys.platform != 'win32'),
-            bufsize=1)
-        self._start_threads(proc)
-        # Wait for process to complete
-        busy = True
-        start_time = datetime.datetime.now()
-        while busy:
-            busy = False
-            try:
-                proc.wait(5)
-            except subprocess.TimeoutExpired:
-                end_time = datetime.datetime.now()
-                if timeout is None or (end_time -
-                                       start_time).total_seconds() < timeout:
-                    busy = True
-                else:
-                    print("TIMEOUT!")
-                    timeout_exceeded = True
-                    proc.kill()
-        self._end_threads()
-        if timeout_exceeded:
-            raise RuntimeError(
-                "Timeout exceeded: process killed after {} seconds".format(
-                    timeout))
-        return (proc.returncode, ''.join(self.stdout), ''.join(self.stderr))
+        with subprocess.Popen(
+                cmd,  # nosec
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                close_fds=(sys.platform != 'win32'),
+                bufsize=1) as proc:
+            self._start_threads(proc)
+            # Wait for process to complete
+            busy = True
+            start_time = datetime.datetime.now()
+            while busy:
+                busy = False
+                try:
+                    proc.wait(5)
+                except subprocess.TimeoutExpired:
+                    end_time = datetime.datetime.now()
+                    if timeout is None or (
+                            end_time - start_time).total_seconds() < timeout:
+                        busy = True
+                    else:
+                        print("TIMEOUT!")
+                        timeout_exceeded = True
+                        proc.kill()
+            self._end_threads()
+            if timeout_exceeded:
+                raise RuntimeError(
+                    "Timeout exceeded: process killed after {} seconds".format(
+                        timeout))
+            return (proc.returncode, ''.join(self.stdout),
+                    ''.join(self.stderr))
 
     def _start_threads(self, proc):
         """start i/o capture threads"""

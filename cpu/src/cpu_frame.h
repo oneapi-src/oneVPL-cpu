@@ -29,6 +29,7 @@ public:
         m_interface.GetDeviceHandle = GetDeviceHandle;
         m_interface.Synchronize     = Synchronize;
         m_interface.OnComplete      = OnComplete;
+        m_interface.QueryInterface  = QueryInterface;
     }
 
     ~CpuFrame() {
@@ -57,7 +58,7 @@ public:
         m_avframe->height = height;
         m_avframe->format = MFXFourCC2AVPixelFormat(FourCC);
         RET_IF_FALSE(m_avframe->format != AV_PIX_FMT_NONE, MFX_ERR_INVALID_VIDEO_PARAM);
-        RET_IF_FALSE(av_frame_get_buffer(m_avframe, 0) == 0, MFX_ERR_MEMORY_ALLOC);
+        RET_IF_FALSE(av_frame_get_buffer(m_avframe, 1) == 0, MFX_ERR_MEMORY_ALLOC);
         return Update();
     }
 
@@ -143,6 +144,7 @@ private:
                                      mfxHandleType* device_type);
     static mfxStatus Synchronize(mfxFrameSurface1* surface, mfxU32 wait);
     static void OnComplete(mfxStatus sts);
+    static mfxStatus QueryInterface(mfxFrameSurface1* surface, mfxGUID guid, mfxHDL* interface);
 };
 
 #endif // CPU_SRC_CPU_FRAME_H_

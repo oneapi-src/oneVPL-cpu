@@ -98,7 +98,8 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             par->mfx.IdrInterval = 0; //not supported
 
         //ratecontrolmethod codec specific
-        if (!par->mfx.TargetKbps)
+        if (!par->mfx.TargetKbps && par->mfx.CodecId != MFX_CODEC_JPEG &&
+            par->mfx.RateControlMethod != MFX_RATECONTROL_CQP)
             par->mfx.TargetKbps = 4000; //required
         //maxkbps needs no correction
 
@@ -1283,8 +1284,15 @@ mfxStatus CpuEncode::GetEncodeSurface(mfxFrameSurface1 **surface) {
     }
 
     mfxStatus sts = m_encSurfaces->GetFreeSurface(surface);
-    (*surface)->Data.MemType |=
-        MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+    if (sts == MFX_ERR_NONE) {
+        if (*surface) {
+            (*surface)->Data.MemType |=
+                MFX_MEMTYPE_FROM_ENC | MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_INTERNAL_FRAME;
+        }
+        else {
+            sts = MFX_ERR_NULL_PTR;
+        }
+    }
     return sts;
 }
 
@@ -1330,6 +1338,7 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
             par->mfx.FrameInfo.BitDepthChroma = 10;
             par->mfx.FrameInfo.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
             break;
+        case AV_PIX_FMT_YUVJ420P:
         case AV_PIX_FMT_YUV420P:
             par->mfx.FrameInfo.FourCC         = MFX_FOURCC_IYUV;
             par->mfx.FrameInfo.BitDepthLuma   = 8;
@@ -1347,9 +1356,15 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.FrameRateExtD = (uint16_t)m_avEncContext->framerate.den;
 
     // Aspect ratio
-    par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avEncContext->sample_aspect_ratio.num;
-    par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avEncContext->sample_aspect_ratio.den;
-
+    if (m_avEncContext->sample_aspect_ratio.num == 0 &&
+        m_avEncContext->sample_aspect_ratio.den == 1) {
+        par->mfx.FrameInfo.AspectRatioW = 1;
+        par->mfx.FrameInfo.AspectRatioH = 1;
+    }
+    else {
+        par->mfx.FrameInfo.AspectRatioW = (uint16_t)m_avEncContext->sample_aspect_ratio.num;
+        par->mfx.FrameInfo.AspectRatioH = (uint16_t)m_avEncContext->sample_aspect_ratio.den;
+    }
     // Codec params
     switch (par->mfx.CodecId) {
         case MFX_CODEC_HEVC:

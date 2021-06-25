@@ -45,9 +45,10 @@ COPY --from=vpl_bootstrap /oneVPL/_deps /oneVPL/_deps
 ARG VPL_BUILD_DEPENDENCIES=/oneVPL/_deps
 ARG VPL_INSTALL_PREFIX
 RUN cd /oneVPL && \
+    rm -rf _build && \
     mkdir _build && \
     cd _build && \
-    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} .. && \
+    cmake -DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release .. && \
     make -j $(nproc --all) && \
     make install
 

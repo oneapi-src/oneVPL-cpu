@@ -13,6 +13,7 @@ CpuDecodeVPP::CpuDecodeVPP(CpuWorkstream *session)
         : m_cpuVPP(nullptr),
           m_vppChParams(nullptr),
           m_surfOut(nullptr),
+          m_surfOutArray(nullptr),
           m_numVPPCh(0),
           m_numSurfs(0),
           m_session(session) {
@@ -35,7 +36,7 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
     // create vpp instances as many as number of channels
     m_numVPPCh    = num_vpp_par;
     m_numSurfs    = m_numVPPCh + 1; // one more for decode at 0th location
-    m_vppChParams = *vpp_par_array;
+    m_vppChParams = vpp_par_array;
 
     if (m_cpuVPP != nullptr) {
         delete[] m_cpuVPP;
@@ -54,7 +55,7 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
         m_cpuVPP[i].SetSession(m_session);
         memcpy_s(&param.vpp.Out,
                  sizeof(mfxFrameInfo),
-                 &(*vpp_par_array)[i].VPP,
+                 &(vpp_par_array[i]->VPP),
                  sizeof(mfxFrameInfo));
         RET_ERROR(m_cpuVPP[i].InitVPP(&param));
     }
@@ -69,17 +70,29 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
         m_surfOut = nullptr;
     }
 
+    if (m_surfOutArray) {
+        delete m_surfOutArray;
+        m_surfOutArray = nullptr;
+    }
+
     m_surfOut = new mfxFrameSurface1 *[m_numSurfs];
     for (mfxU32 i = 0; i < m_numSurfs; i++) {
         m_surfOut[i] = new mfxFrameSurface1;
         memset(m_surfOut[i], 0, sizeof(mfxFrameSurface1));
     }
 
+    m_surfOutArray = new mfxSurfaceArray;
+
     return MFX_ERR_NONE;
 }
 
 mfxStatus CpuDecodeVPP::Close() {
     MFXVideoDECODE_Close(m_mfxsession);
+
+    if (m_surfOutArray) {
+        delete m_surfOutArray;
+        m_surfOutArray = nullptr;
+    }
 
     if (m_cpuVPP) {
         delete[] m_cpuVPP;
@@ -110,8 +123,10 @@ mfxStatus CpuDecodeVPP::DecodeVPPFrame(mfxBitstream *bs,
         m_cpuVPP[i].GetVPPSurfaceOut(&m_surfOut[i + 1]);
     }
 
-    (*surf_array_out)->Surfaces    = m_surfOut;
-    (*surf_array_out)->NumSurfaces = m_numSurfs;
+    m_surfOutArray->Surfaces    = m_surfOut;
+    m_surfOutArray->NumSurfaces = m_numSurfs;
+
+    *surf_array_out = m_surfOutArray;
 
     // decode out from 0th channel
     RET_ERROR(
@@ -137,8 +152,8 @@ mfxStatus CpuDecodeVPP::GetChannelParam(mfxVideoChannelParam *par, mfxU32 channe
     bool bfound = false;
 
     for (mfxU32 i = 0; i < m_numVPPCh; i++) {
-        if (m_vppChParams[i].VPP.ChannelId == channel_id) {
-            *par   = m_vppChParams[i];
+        if (m_vppChParams[i]->VPP.ChannelId == channel_id) {
+            *par   = *(m_vppChParams)[i];
             bfound = true;
             break;
         }

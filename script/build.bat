@@ -1,12 +1,12 @@
 @REM ------------------------------------------------------------------------------
 @REM Copyright (C) Intel Corporation
-@REM 
+@REM
 @REM SPDX-License-Identifier: MIT
 @REM ------------------------------------------------------------------------------
 @REM Build cpu.
 
 @ECHO off
-SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION 
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
 @REM Read command line options
 CALL %~dp0%\_buildopts.bat ^
@@ -14,29 +14,6 @@ CALL %~dp0%\_buildopts.bat ^
     --desc "Build cpu." ^
     -- %*
 IF DEFINED HELP_OPT ( EXIT /b 0 )
-
-@REM Load project environment
-SET VARS_SCRIPT=vars.bat
-IF "%ARCH_OPT%"=="x86_32" (
-  SET VARS_SCRIPT=vars32.bat
-)
-ECHO %VARS_SCRIPT%
-IF NOT DEFINED VPL_ROOT (
-
-  IF NOT EXIST "%VPL_INSTALL_DIR%" (
-    ECHO "Base must be installed to build implementation"
-    EXIT /b 1
-  )
-
-  IF NOT EXIST "%VPL_INSTALL_DIR%\env\%VARS_SCRIPT%" (
-    @REM Detect case where user points VPL_INSTALL_DIR at the
-    @REM Base repo instead of the built output.
-    ECHO "Cannot find environment script in %VPL_INSTALL_DIR%\env"
-    EXIT /b 1
-  )
-
-  CALL "%VPL_INSTALL_DIR%\env\%VARS_SCRIPT%" || EXIT /b 1
-)
 
 IF DEFINED BOOTSTRAP_OPT (
     ECHO Building dependencies...
@@ -75,7 +52,7 @@ PUSHD %PROJ_DIR%
     cmake --build . --config %COFIG_OPT% %PARALLEL_OPT% || EXIT /b 1
     cmake --build . --config %COFIG_OPT% --target package || EXIT /b 1
 
-    @REM Signal to CI system 
+    @REM Signal to CI system
     IF DEFINED TEAMCITY_VERSION (
       ECHO ##teamcity[publishArtifacts 'oneVPL-cpu/%BUILD_DIR%/*-all.zip=^>']
     )

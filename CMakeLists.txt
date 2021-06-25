@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
@@ -19,7 +19,19 @@ project(oneVPL-cpu VERSION ${version_txt})
 #
 
 # Project options
-option(OPTION_BUILD_TESTS "Build tests." ON)
+option(BUILD_TESTS "Build tests." ON)
+option(USE_ONEAPI_INSTALL_LAYOUT "Use oneAPI install layout instead of FHS" OFF)
+
+if(USE_ONEAPI_INSTALL_LAYOUT)
+  set(CMAKE_INSTALL_DOCDIR "documentation")
+  set(CMAKE_INSTALL_LIBDIR "lib")
+  set(ONEAPI_INSTALL_ENVDIR "env")
+  set(ONEAPI_INSTALL_SYSCHECKDIR "sys_check")
+  set(ONEAPI_INSTALL_MODFILEDIR "modulefiles")
+  set(ONEAPI_INSTALL_EXAMPLEDIR "examples")
+  set(ONEAPI_INSTALL_LICENSEDIR "licensing/oneVPL-CPU")
+  set(ONEAPI_INSTALL_PYTHONDIR "python/lib")
+endif()
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -37,19 +49,18 @@ add_subdirectory(cpu)
 
 install(
   FILES third-party-programs.txt
-  DESTINATION ${CMAKE_INSTALL_LICENSEDIR}
+  DESTINATION ${ONEAPI_INSTALL_LICENSEDIR}
   COMPONENT license)
 
 install(
   FILES LICENSE
   RENAME license.txt
-  DESTINATION ${CMAKE_INSTALL_LICENSEDIR}
+  DESTINATION ${ONEAPI_INSTALL_LICENSEDIR}
   COMPONENT license)
 
 include(cmake/PackageTarget.cmake)
 
-option(vpl_build_tests "Build the tests" ON)
-if(vpl_build_tests)
+if(BUILD_TESTS)
   enable_testing()
   include(GoogleTest)
   add_subdirectory(test/unit)

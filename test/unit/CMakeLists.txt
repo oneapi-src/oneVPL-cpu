@@ -25,11 +25,22 @@ set(SOURCE_FILES
     api/session_management.cpp
     api/memory.cpp
     api/x_init_reset_close.cpp
-    api/smart_dispatcher.cpp
     api/x_xframeasync.cpp
     api/x_queryiosurf.cpp
     api/decodeheader.cpp
     api/x_notimplemented.cpp)
+
+if(NOT DEFINED VPL_UTEST_LINK_RUNTIME)
+  list(
+    APPEND
+    SOURCE_FILES
+    api/dispatcher/smart_dispatcher_common.cpp
+    api/dispatcher/smart_dispatcher_common_multiprop.cpp
+    api/dispatcher/smart_dispatcher_sw.cpp
+    api/dispatcher/smart_dispatcher_sw_multiprop.cpp
+    api/dispatcher/smart_dispatcher_gpu.cpp
+    api/dispatcher/smart_dispatcher_util.cpp)
+endif()
 
 add_executable(${TARGET} ${SOURCE_FILES})
 set_property(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
@@ -49,4 +60,6 @@ endif()
 
 target_link_libraries(${TARGET} gtest)
 target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/test/unit)
-gtest_discover_tests(${TARGET})
+# gtest_add_tests instead of gtest_discover_tests(${TARGET}) allows building
+# test list without loading the dispatcher
+gtest_add_tests(TARGET ${TARGET})

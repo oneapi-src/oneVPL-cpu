@@ -1,20 +1,10 @@
-# oneAPI Video Processing Library CPU Reference Implementation
+# oneAPI Video Processing Library CPU Implementation
 
 The oneAPI Video Processing Library (oneVPL) provides a single video processing
 API for encode, decode, and video processing that works across a wide range of
 accelerators.
 
-This repository contains the CPU reference implementation of the specification,
-which includes the following features:
-
-- H.265/HEVC, H.264/AVC, and MJPEG decode (using libavcodec)
-- AV1 decode (using libdav1d and libavcodec)
-- MJPEG encode (using libavcodec)
-- H.265/HEVC and AV1 encode (using SVT-HEVC, SVT-AV1, and libavcodec)
-- H.264/AVC encode (using x264 and libavcodec)
-- VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
-
-Note: H.265/HEVC, H.264, and AV1 are not avalible in 32-bit builds.
+This repository contains a CPU implementation of the specification.
 
 ---
 
@@ -27,136 +17,86 @@ See the [oneAPI Specification](https://spec.oneapi.com) and
 [oneVPL Specification](https://spec.oneapi.com/versions/latest/elements/oneVPL/source/index.html)
 for more information.
 
-## Build and Installation
 
-### Prerequisites
+## CPU Implementation Feature/Color Format Info
 
-- Make sure your shell is configured to allow downloads and git clones from the
-  public Internet.
+This CPU implementation includes the following features:
 
-- Obtain and install the oneVPL base package from the
-[oneVPL repository](https://github.com/oneapi-src/oneVPL).
+- H.265/HEVC, H.264/AVC, and MJPEG decode (using libavcodec)
+- AV1 decode (using libdav1d and libavcodec)
+- MJPEG encode (using libavcodec)
+- H.265/HEVC and AV1 encode (using SVT-HEVC, SVT-AV1, and libavcodec)
+- H.264/AVC encode (using x264 and libavcodec)
+- VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
 
-### Build and Install on Linux*
+Note: H.265/HEVC, H.264, and AV1 are not available in 32-bit builds.
 
-1. Install the required build tools:
+Codecs (+raw frame formats) supported by the CPU software implementation:
 
-        sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-            build-essential git pkg-config yasm nasm cmake python3 \
-            python3-setuptools python3-pip
-        sudo pip3 install -U wheel --user
-        sudo pip3 install meson ninja
+|  Codec        |  Encode     | Decode     |
+|---------------|-------------|------------|
+| AVC/H.264     | 8/10 bit +  | 8/10 bit + |
+|               | 4:2:0 only  | 4:2:0 only |
+|---------------|-------------|------------|
+| HEVC/H.265    | 8/10 bit +  | 8/10 bit + |
+|               | 4:2:0 only  | 4:2:0 only |
+|---------------|-------------|------------|
+| MJPEG         | 8 bit +     | 8 bit +    |
+|               | 4:2:0 only  | 4:2:0 only |
+|---------------|-------------|------------|
+| AV1           | 8/10 bit +  | 8/10 bit + |
+|               | 4:2:0 only  | 4:2:0 only |
+|---------------|-------------|------------|
 
-2. Configure, build, and install the CPU reference implementation:
-
-        export VPL_INSTALL_DIR=<vpl-install-location>
-        source script/bootstrap
-        script/build
-        script/install
-
-### Build and Install on Windows*
-
-1. Install the following common developer tools:
-
-    - [Microsoft Visual Studio*](https://visualstudio.microsoft.com/), 2017 or newer
-    - [CMake*](https://cmake.org/)
-    - [Python* 3](https://www.python.org/)
-    - [Git*](https://git-scm.com/)
-    - [Chocolatey*](http://chocolatey.org)
-
-2. Install MSYS2 based tools.
-
-    1. Install MSYS2 from a cmd or powershell with admin permissions:
-
-        ```
-        choco install msys2
-        ```
-
-    2. Start a mingw64 shell from cmd or powershell with regular permissions:
-
-        ```
-        C:\tools\msys64\msys2.exe
-        ```
-
-        ---
-
-        **NOTE** This path is for default choco install. If another install method is
-        used the path to the shell may be different.
-
-        ---
-
-    3. Get packages required by build using the mingw64 shell:
-
-            pacman -Syu
-            pacman --needed -Sy mingw-w64-x86_64-toolchain base-devel yasm nasm
-            pacman --needed -Sy mingw-w64-x86_64-cmake git python-pip
-            pacman --needed -Sy mingw-w64-x86_64-meson mingw-w64-x86_64-ninja
-
-            # For 32-bit builds you will also need a 32-bit toolchain
-            pacman --needed -Sy mingw-w64-i686-toolchain
-        ---
-
-        **NOTE** While the msys2 shell is used in initial setup, it is not otherwise
-        supported as a build or run environment.
-
-        ---
-
-3. Configure, build, and install CPU reference implementation:
-
-        set VPL_INSTALL_DIR=<vpl-install-location>
-        script\bootstrap
-        script\build
-        script\install
+Video processing (+raw frame formats) supported by the CPU software implementation:
 
 
-### Optionally Enable H.264 Encode
+| Operation     | In formats  | Out formats |
+|---------------|-------------|-------------|
+| Resize/Crop   | I420, I010  | I420, I010  |
+|               | BGRA        | BGRA        |
+|---------------|-------------|-------------|
+| Colorspace    | I420, I010  | I420, I010  |
+| Conversion    | BGRA        | BGRA        |
+|---------------|-------------|-------------|
 
-Add `gpl` to the build commands to enable H.264 encode capability.
+Note: I420 = 8 bit/420.  I010=10 bit/420.
+  
 
-For Linux:
+## Installation
+You can install oneVPL CPU implementation:
 
-```
-script/bootstrap gpl
-script/build gpl
-script/install
-```
+- from [oneVPL home page](https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onevpl.html) as a part of Intel&reg; oneAPI Base Toolkit or standalone.
 
-For Windows:
-
-```
-script\bootstrap gpl
-script\build gpl
-script\install
-```
-
----
-
-**Note** The GPL license will apply to a build generated with `gpl`.
-
----
+### Installation from Source 
+See [Installation from Sources](INSTALL.md) for details.
 
 ## Usage
 
 ### Configure the Environment
 
-If you are not using the shell session that you used to build and install, you
-need to set up the environment.
+If you install to standard system locations, applications can find the dispatcher library and 
+the dispatcher's default search rules will find your CPU implementation.
+
+Otherwise you need to set up the environment search paths.  This is easiest to manage when the
+install location <vpl-install-location> for oneVPL base is the same directory as used for the 
+CPU implementation.  In that case you can use the following steps:  
 
 For Linux:
 ```
-source <vpl-install-location>/env/vars.sh
+source <vpl-install-location>/share/oneVPL/env/vars.sh
 ```
 
 For Windows:
 ```
-<vpl-install-location>\env\vars.bat
+<vpl-install-location>\share\oneVPL\env\vars.bat
 ```
 
 ### Run the Command Line Tools
 
 The oneVPL build that you installed as a prerequisite includes command line
 tools that use installed implementations. You can use these command line tools
-to process video from the command line using the CPU reference implementation.
+to process video from the command line using the CPU implementation.
 
 All commands below assume `test/content` is the current directory.
 
@@ -170,19 +110,13 @@ All commands below assume `test/content` is the current directory.
 - Decode an an H.265 encoded video file:
 
     ```
-    vpl-decode -if h265 -i cars_128x96.h265 -o out.i420
+    sample-decode h265 -i cars_128x96.h265 -o out.i420 -sw
     ```
 
 - Encode a raw video file to H.265:
 
     ```
-    vpl-encode -if i420 -i cars_128x96.i420 -sw 128 -sh 96 -of h265 -o out.h265
-    ```
-
-- Resize an I420 raw video file:
-
-    ```
-    vpl-vpp -if i420 -i cars_128x96.i420 -sw 128 -sh 96 -of i420 -o out_640x480.i420 -dw 640 -dh 480
+    sample-encode h265 -i cars_128x96.i420 -w 128 -h 96 -o out.h265
     ```
 
 
