@@ -33,11 +33,11 @@ mfxStatus CpuFramePool::Init(mfxU32 FourCC, mfxU32 width, mfxU32 height, mfxU32 
 }
 
 // return free surface and set refCount to 1
-mfxStatus CpuFramePool::GetFreeSurface(mfxFrameSurface1** surface) {
+mfxStatus CpuFramePool::GetFreeSurface(mfxFrameSurface1 **surface) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
     *surface = nullptr;
 
-    for (std::unique_ptr<CpuFrame>& surf : m_surfaces) {
+    for (std::unique_ptr<CpuFrame> &surf : m_surfaces) {
         mfxU32 counter = 0xFFFFFFFF;
         surf->FrameInterface->GetRefCounter(surf.get(), &counter);
 

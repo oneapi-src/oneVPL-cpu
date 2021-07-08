@@ -249,7 +249,7 @@ TEST(DecodeVPPGetChannelParam, InitializedDecodeVPPReturnsParams) {
     mfxDecParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxDecParams.mfx.FrameInfo.FrameRateExtD = 1;
 
-    mfxVideoChannelParam* mfxVPPChParams = new mfxVideoChannelParam;
+    mfxVideoChannelParam *mfxVPPChParams = new mfxVideoChannelParam;
     memset(mfxVPPChParams, 0, sizeof(mfxVideoChannelParam));
 
     // scaled output to 320x240

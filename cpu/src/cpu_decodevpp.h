@@ -17,44 +17,44 @@ class CpuWorkstream;
 
 class CpuDecodeVPP {
 public:
-    explicit CpuDecodeVPP(CpuWorkstream* session);
+    explicit CpuDecodeVPP(CpuWorkstream *session);
     ~CpuDecodeVPP();
 
-    mfxStatus InitDecodeVPP(mfxVideoParam* par,
-                            mfxVideoChannelParam** vpp_par_array,
+    mfxStatus InitDecodeVPP(mfxVideoParam *par,
+                            mfxVideoChannelParam **vpp_par_array,
                             mfxU32 num_vpp_par);
-    mfxStatus Reset(mfxVideoParam* par, mfxVideoChannelParam** vpp_par_array, mfxU32 num_vpp_par);
-    mfxStatus DecodeVPPFrame(mfxBitstream* bs,
-                             mfxU32* skip_channels,
+    mfxStatus Reset(mfxVideoParam *par, mfxVideoChannelParam **vpp_par_array, mfxU32 num_vpp_par);
+    mfxStatus DecodeVPPFrame(mfxBitstream *bs,
+                             mfxU32 *skip_channels,
                              mfxU32 num_skip_channels,
-                             mfxSurfaceArray** surf_array_out);
+                             mfxSurfaceArray **surf_array_out);
 
     mfxU32 GetVPPChannelCount(void);
-    mfxStatus GetChannelParam(mfxVideoChannelParam* par, mfxU32 channel_id);
+    mfxStatus GetChannelParam(mfxVideoChannelParam *par, mfxU32 channel_id);
 
-    mfxStatus CheckVideoParamDecodeVPP(mfxVideoParam* in);
-    mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
+    mfxStatus CheckVideoParamDecodeVPP(mfxVideoParam *in);
+    mfxStatus IsSameVideoParam(mfxVideoParam *newPar, mfxVideoParam *oldPar);
 
-    mfxStatus CheckVideoChannelParamDecodeVPP(mfxVideoChannelParam** inChPar, mfxU32 num_ch);
-    mfxStatus IsSameVideoChannelParam(mfxVideoChannelParam* newChPar,
-                                      mfxVideoChannelParam* oldChPar);
+    mfxStatus CheckVideoChannelParamDecodeVPP(mfxVideoChannelParam **inChPar, mfxU32 num_ch);
+    mfxStatus IsSameVideoChannelParam(mfxVideoChannelParam *newChPar,
+                                      mfxVideoChannelParam *oldChPar);
     mfxStatus Close();
 
 private:
-    CpuVPP* m_cpuVPP;
-    mfxVideoChannelParam** m_vppChParams;
-    mfxFrameSurface1** m_surfOut;
-    mfxSurfaceArray* m_surfOutArray;
+    CpuVPP *m_cpuVPP;
+    mfxVideoChannelParam **m_vppChParams;
+    mfxFrameSurface1 **m_surfOut;
+    mfxSurfaceArray *m_surfOutArray;
     mfxU32 m_numVPPCh;
     mfxU32 m_numSurfs;
-    CpuWorkstream* m_session;
+    CpuWorkstream *m_session;
     mfxSession m_mfxsession;
 
-    mfxStatus InitVPP(mfxVideoParam* par, mfxVideoChannelParam** vpp_par_array, mfxU32 num_vpp_par);
+    mfxStatus InitVPP(mfxVideoParam *par, mfxVideoChannelParam **vpp_par_array, mfxU32 num_vpp_par);
 
     /* copy not allowed */
-    CpuDecodeVPP(const CpuDecodeVPP&);
-    CpuDecodeVPP& operator=(const CpuDecodeVPP&);
+    CpuDecodeVPP(const CpuDecodeVPP &);
+    CpuDecodeVPP &operator=(const CpuDecodeVPP &);
 };
 
 #endif // CPU_SRC_CPU_DECODEVPP_H_

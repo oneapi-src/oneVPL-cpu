@@ -15,10 +15,10 @@ public:
     CpuFrame() : m_refCount(0), m_mappedFlags(0) {
         m_avframe = av_frame_alloc();
 
-        *(mfxFrameSurface1*)this    = {};
+        *(mfxFrameSurface1 *)this   = {};
         Version.Version             = MFX_FRAMESURFACE1_VERSION;
         FrameInterface              = &m_interface;
-        m_interface.Context         = (mfxHDL*)this;
+        m_interface.Context         = (mfxHDL *)this;
         m_interface.Version.Version = MFX_FRAMESURFACEINTERFACE_VERSION;
         m_interface.AddRef          = AddRef;
         m_interface.Release         = Release;
@@ -38,18 +38,18 @@ public:
         }
     }
 
-    static CpuFrame* TryCast(mfxFrameSurface1* surface) {
+    static CpuFrame *TryCast(mfxFrameSurface1 *surface) {
         if (surface && surface->FrameInterface && surface->FrameInterface->Context &&
             surface->Version.Version >= MFX_FRAMESURFACE1_VERSION &&
             surface->FrameInterface->Map == Map) {
-            return (CpuFrame*)surface->FrameInterface->Context;
+            return (CpuFrame *)surface->FrameInterface->Context;
         }
         else {
             return nullptr;
         }
     }
 
-    AVFrame* GetAVFrame() {
+    AVFrame *GetAVFrame() {
         return m_avframe;
     }
 
@@ -62,7 +62,7 @@ public:
         return Update();
     }
 
-    mfxStatus ImportAVFrame(AVFrame* avframe) {
+    mfxStatus ImportAVFrame(AVFrame *avframe) {
         RET_IF_FALSE(avframe, MFX_ERR_NULL_PTR);
         RET_IF_FALSE(m_avframe == nullptr || avframe == m_avframe, MFX_ERR_UNDEFINED_BEHAVIOR);
         m_avframe   = avframe;
@@ -128,23 +128,23 @@ public:
 private:
     std::atomic<mfxU32> m_refCount; // TODO(we have C++11, correct?)
     mfxU32 m_mappedFlags;
-    AVFrame* m_avframe;
+    AVFrame *m_avframe;
     mfxFrameSurfaceInterface m_interface;
 
-    static mfxStatus AddRef(mfxFrameSurface1* surface);
-    static mfxStatus Release(mfxFrameSurface1* surface);
-    static mfxStatus GetRefCounter(mfxFrameSurface1* surface, mfxU32* counter);
-    static mfxStatus Map(mfxFrameSurface1* surface, mfxU32 flags);
-    static mfxStatus Unmap(mfxFrameSurface1* surface);
-    static mfxStatus GetNativeHandle(mfxFrameSurface1* surface,
-                                     mfxHDL* resource,
-                                     mfxResourceType* resource_type);
-    static mfxStatus GetDeviceHandle(mfxFrameSurface1* surface,
-                                     mfxHDL* device_handle,
-                                     mfxHandleType* device_type);
-    static mfxStatus Synchronize(mfxFrameSurface1* surface, mfxU32 wait);
+    static mfxStatus AddRef(mfxFrameSurface1 *surface);
+    static mfxStatus Release(mfxFrameSurface1 *surface);
+    static mfxStatus GetRefCounter(mfxFrameSurface1 *surface, mfxU32 *counter);
+    static mfxStatus Map(mfxFrameSurface1 *surface, mfxU32 flags);
+    static mfxStatus Unmap(mfxFrameSurface1 *surface);
+    static mfxStatus GetNativeHandle(mfxFrameSurface1 *surface,
+                                     mfxHDL *resource,
+                                     mfxResourceType *resource_type);
+    static mfxStatus GetDeviceHandle(mfxFrameSurface1 *surface,
+                                     mfxHDL *device_handle,
+                                     mfxHandleType *device_type);
+    static mfxStatus Synchronize(mfxFrameSurface1 *surface, mfxU32 wait);
     static void OnComplete(mfxStatus sts);
-    static mfxStatus QueryInterface(mfxFrameSurface1* surface, mfxGUID guid, mfxHDL* interface);
+    static mfxStatus QueryInterface(mfxFrameSurface1 *surface, mfxGUID guid, mfxHDL *interface);
 };
 
 #endif // CPU_SRC_CPU_FRAME_H_

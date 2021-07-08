@@ -15,9 +15,9 @@ TEST(SetFrameAllocator, SetFrameAllocatorReturnsErrNone) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxFrameAllocator allocator{};
-    allocator.pthis                              = reinterpret_cast<void*>(1);
-    *reinterpret_cast<void**>(&allocator.Lock)   = reinterpret_cast<void*>(2);
-    *reinterpret_cast<void**>(&allocator.Unlock) = reinterpret_cast<void*>(3);
+    allocator.pthis                               = reinterpret_cast<void *>(1);
+    *reinterpret_cast<void **>(&allocator.Lock)   = reinterpret_cast<void *>(2);
+    *reinterpret_cast<void **>(&allocator.Unlock) = reinterpret_cast<void *>(3);
     sts = MFXVideoCORE_SetFrameAllocator(session, &allocator);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
@@ -28,10 +28,10 @@ TEST(SetFrameAllocator, SetFrameAllocatorReturnsErrNone) {
 
 TEST(SetFrameAllocator, NullSessionReturnsInvalidHandle) {
     mfxFrameAllocator allocator{};
-    allocator.pthis                              = reinterpret_cast<void*>(1);
-    *reinterpret_cast<void**>(&allocator.Lock)   = reinterpret_cast<void*>(2);
-    *reinterpret_cast<void**>(&allocator.Unlock) = reinterpret_cast<void*>(3);
-    mfxStatus sts                                = MFXVideoCORE_SetFrameAllocator(NULL, &allocator);
+    allocator.pthis                               = reinterpret_cast<void *>(1);
+    *reinterpret_cast<void **>(&allocator.Lock)   = reinterpret_cast<void *>(2);
+    *reinterpret_cast<void **>(&allocator.Unlock) = reinterpret_cast<void *>(3);
+    mfxStatus sts = MFXVideoCORE_SetFrameAllocator(NULL, &allocator);
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 

@@ -52,7 +52,7 @@ extern "C" {
     #include <iostream>
 class TraceObject {
 public:
-    explicit TraceObject(const char* name) : m_name(name) {
+    explicit TraceObject(const char *name) : m_name(name) {
         std::cout << "### entering " << name << std::endl;
     }
     ~TraceObject() {
@@ -60,7 +60,7 @@ public:
     }
 
 protected:
-    const char* m_name;
+    const char *m_name;
 };
 
     #define VPL_TRACE(_NAME) TraceObject trace_object(_NAME)
@@ -106,15 +106,15 @@ uint32_t AVPixelFormat2MFXFourCC(int format);
 AVCodecID MFXCodecId_to_AVCodecID(mfxU32 CodecId);
 mfxU32 AVCodecID_to_MFXCodecId(AVCodecID CodecId);
 
-std::shared_ptr<AVFrame> GetAVFrameFromMfxSurface(mfxFrameSurface1* surface,
-                                                  mfxFrameAllocator* allocator);
+std::shared_ptr<AVFrame> GetAVFrameFromMfxSurface(mfxFrameSurface1 *surface,
+                                                  mfxFrameAllocator *allocator);
 
 // copy image data from AVFrame to mfxFrameSurface1
-mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1* surface,
-                                  AVFrame* frame,
-                                  mfxFrameAllocator* allocator);
+mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
+                                  AVFrame *frame,
+                                  mfxFrameAllocator *allocator);
 
-mfxStatus CheckFrameInfoCommon(mfxFrameInfo* info, mfxU32 codecId);
-mfxStatus CheckFrameInfoCodecs(mfxFrameInfo* info, mfxU32 codecId);
-mfxStatus CheckVideoParamCommon(mfxVideoParam* in);
+mfxStatus CheckFrameInfoCommon(mfxFrameInfo *info, mfxU32 codecId);
+mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId);
+mfxStatus CheckVideoParamCommon(mfxVideoParam *in);
 #endif // CPU_SRC_CPU_COMMON_H_

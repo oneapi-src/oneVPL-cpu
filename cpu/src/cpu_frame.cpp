@@ -7,11 +7,11 @@
 #include "src/cpu_frame.h"
 
 // increase refCount on surface (+1)
-mfxStatus CpuFrame::AddRef(mfxFrameSurface1* surface) {
+mfxStatus CpuFrame::AddRef(mfxFrameSurface1 *surface) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
     // if TryCast fails (e.g. invalid Context) then return INVALID_HANDLE
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     cpu_frame->m_refCount++;
@@ -20,10 +20,10 @@ mfxStatus CpuFrame::AddRef(mfxFrameSurface1* surface) {
 }
 
 // decrease refCount on surface (-1)
-mfxStatus CpuFrame::Release(mfxFrameSurface1* surface) {
+mfxStatus CpuFrame::Release(mfxFrameSurface1 *surface) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     if (cpu_frame->m_refCount == 0)
@@ -35,12 +35,12 @@ mfxStatus CpuFrame::Release(mfxFrameSurface1* surface) {
 }
 
 // return current refCount on surface
-mfxStatus CpuFrame::GetRefCounter(mfxFrameSurface1* surface, mfxU32* counter) {
+mfxStatus CpuFrame::GetRefCounter(mfxFrameSurface1 *surface, mfxU32 *counter) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
     RET_IF_FALSE(counter, MFX_ERR_NULL_PTR);
 
     // if TryCast fails (e.g. invalid Context) then return INVALID_HANDLE
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     *counter = cpu_frame->m_refCount;
@@ -56,10 +56,10 @@ mfxStatus CpuFrame::GetRefCounter(mfxFrameSurface1* surface, mfxU32* counter) {
 
 // map surface to system memory according to "flags"
 // currently does nothing for system memory
-mfxStatus CpuFrame::Map(mfxFrameSurface1* surface, mfxU32 flags) {
+mfxStatus CpuFrame::Map(mfxFrameSurface1 *surface, mfxU32 flags) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     mfxU32 validFlags = MFX_MAP_READ | MFX_MAP_WRITE | MFX_MAP_NOWAIT;
@@ -77,10 +77,10 @@ mfxStatus CpuFrame::Map(mfxFrameSurface1* surface, mfxU32 flags) {
 
 // unmap surface - no longer accessible to application
 // currently does nothing for system memory
-mfxStatus CpuFrame::Unmap(mfxFrameSurface1* surface) {
+mfxStatus CpuFrame::Unmap(mfxFrameSurface1 *surface) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     // surface was already unmapped
@@ -94,12 +94,12 @@ mfxStatus CpuFrame::Unmap(mfxFrameSurface1* surface) {
 }
 
 // return native handle and type
-mfxStatus CpuFrame::GetNativeHandle(mfxFrameSurface1* surface,
-                                    mfxHDL* resource,
-                                    mfxResourceType* resource_type) {
+mfxStatus CpuFrame::GetNativeHandle(mfxFrameSurface1 *surface,
+                                    mfxHDL *resource,
+                                    mfxResourceType *resource_type) {
     RET_IF_FALSE(surface && resource && resource_type, MFX_ERR_NULL_PTR);
 
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     *resource      = nullptr;
@@ -110,12 +110,12 @@ mfxStatus CpuFrame::GetNativeHandle(mfxFrameSurface1* surface,
 
 // return device handle and type
 // not relevant for system memory
-mfxStatus CpuFrame::GetDeviceHandle(mfxFrameSurface1* surface,
-                                    mfxHDL* device_handle,
-                                    mfxHandleType* device_type) {
+mfxStatus CpuFrame::GetDeviceHandle(mfxFrameSurface1 *surface,
+                                    mfxHDL *device_handle,
+                                    mfxHandleType *device_type) {
     RET_IF_FALSE(surface && device_handle && device_type, MFX_ERR_NULL_PTR);
 
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     *device_handle = nullptr;
@@ -126,10 +126,10 @@ mfxStatus CpuFrame::GetDeviceHandle(mfxFrameSurface1* surface,
 
 // synchronize on surface after calling DecodeFrameAsync or VPP
 // alternative to calling MFXCore_SyncOperation
-mfxStatus CpuFrame::Synchronize(mfxFrameSurface1* surface, mfxU32 wait) {
+mfxStatus CpuFrame::Synchronize(mfxFrameSurface1 *surface, mfxU32 wait) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
 
-    CpuFrame* cpu_frame = TryCast(surface);
+    CpuFrame *cpu_frame = TryCast(surface);
     RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
 
     // TO DO - VPL CPU ref is currently synchronous (Sync does nothing)
@@ -145,7 +145,7 @@ void CpuFrame::OnComplete(mfxStatus sts) {
     return;
 }
 
-mfxStatus CpuFrame::QueryInterface(mfxFrameSurface1* surface, mfxGUID guid, mfxHDL* interface) {
+mfxStatus CpuFrame::QueryInterface(mfxFrameSurface1 *surface, mfxGUID guid, mfxHDL *interface) {
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
     RET_IF_FALSE(interface, MFX_ERR_NULL_PTR);
 

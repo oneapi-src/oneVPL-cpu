@@ -22,41 +22,41 @@ public:
     CpuWorkstream();
     ~CpuWorkstream();
 
-    void SetDecoder(CpuDecode* decode) {
+    void SetDecoder(CpuDecode *decode) {
         m_decode.reset(decode);
     }
-    void SetEncoder(CpuEncode* encode) {
+    void SetEncoder(CpuEncode *encode) {
         m_encode.reset(encode);
     }
-    void SetVPP(CpuVPP* vpp) {
+    void SetVPP(CpuVPP *vpp) {
         m_vpp.reset(vpp);
     }
-    void SetDecodeVPP(CpuDecodeVPP* decvpp) {
+    void SetDecodeVPP(CpuDecodeVPP *decvpp) {
         m_decvpp.reset(decvpp);
     }
 
-    CpuDecode* GetDecoder() {
+    CpuDecode *GetDecoder() {
         return m_decode.get();
     }
-    CpuEncode* GetEncoder() {
+    CpuEncode *GetEncoder() {
         return m_encode.get();
     }
-    CpuVPP* GetVPP() {
+    CpuVPP *GetVPP() {
         return m_vpp.get();
     }
-    CpuDecodeVPP* GetDecodeVPP() {
+    CpuDecodeVPP *GetDecodeVPP() {
         return m_decvpp.get();
     }
 
-    mfxStatus Sync(mfxSyncPoint& syncp, mfxU32 wait);
+    mfxStatus Sync(mfxSyncPoint &syncp, mfxU32 wait);
 
-    mfxStatus SetFrameAllocator(mfxFrameAllocator* allocator) {
+    mfxStatus SetFrameAllocator(mfxFrameAllocator *allocator) {
         RET_IF_FALSE(allocator, MFX_ERR_NULL_PTR);
         m_allocator = *allocator;
         return MFX_ERR_NONE;
     }
 
-    mfxFrameAllocator* GetFrameAllocator() {
+    mfxFrameAllocator *GetFrameAllocator() {
         return m_allocator.pthis ? &m_allocator : nullptr;
     }
 
@@ -64,7 +64,7 @@ public:
         m_handles[ht] = hdl;
     }
 
-    mfxStatus GetHandle(mfxHandleType ht, mfxHDL* hdl) {
+    mfxStatus GetHandle(mfxHandleType ht, mfxHDL *hdl) {
         if (m_handles.find(ht) == m_handles.end()) {
             *hdl = nullptr;
             return MFX_ERR_NOT_FOUND;
@@ -85,8 +85,8 @@ private:
     std::map<mfxHandleType, mfxHDL> m_handles;
 
     /* copy not allowed */
-    CpuWorkstream(const CpuWorkstream&);
-    CpuWorkstream& operator=(const CpuWorkstream&);
+    CpuWorkstream(const CpuWorkstream &);
+    CpuWorkstream &operator=(const CpuWorkstream &);
 };
 
 #endif // CPU_SRC_CPU_WORKSTREAM_H_
