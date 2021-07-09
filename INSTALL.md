@@ -87,7 +87,7 @@ Add `gpl` to the build commands to enable H.264 encode capability.
 For Linux:
 
 ```
-script/bootstrap gpl
+source script/bootstrap gpl
 script/build gpl
 script/install
 ```
@@ -110,9 +110,9 @@ script\install
 
 The bootstrap and build scripts accept additional options.  See the -h flag for more details.
 
-To build in debug mode:
+To build in debug mode in Linux:
 ```
- script/bootstrap --config Debug
+ source script/bootstrap --config Debug
  script/build --config Debug
  script/install
 ```
