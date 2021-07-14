@@ -21,8 +21,8 @@ from contextlib import contextmanager
 
 # Component Versions
 SVT_HEVC_VERSION = '1.5.1'
-SVT_AV1_VERSION = 'v0.8.6'
-DAV1D_VERSION = '0.8.2'
+SVT_AV1_VERSION = 'v0.8.7'
+DAV1D_VERSION = '0.9.0'
 X264_VERSION = 'stable'
 FFMPEG_VERSION = 'n4.4'
 
