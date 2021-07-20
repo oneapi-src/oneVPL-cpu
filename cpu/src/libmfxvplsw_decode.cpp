@@ -125,7 +125,8 @@ mfxStatus MFXVideoDECODE_DecodeFrameAsync(mfxSession session,
         RET_IF_FALSE(surface_work == 0, MFX_ERR_NOT_INITIALIZED);
 
         mfxVideoParam param = { 0 };
-        param.mfx.CodecId   = bs->CodecId;
+        RET_IF_FALSE(bs, MFX_ERR_NULL_PTR);
+        param.mfx.CodecId = bs->CodecId;
         RET_ERROR(MFXVideoDECODE_DecodeHeader(session, bs, &param));
         RET_ERROR(MFXVideoDECODE_Init(session, &param));
         decoder = ws->GetDecoder();
