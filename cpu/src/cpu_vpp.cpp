@@ -410,9 +410,8 @@ mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam *par, bool canCorrect) {
 }
 
 mfxStatus CpuVPP::InitVPP(mfxVideoParam *par) {
-    mfxStatus sts = ValidateVPPParams(par, false);
-    if (sts != MFX_ERR_NONE)
-        return sts;
+    mfxStatus valSts = ValidateVPPParams(par, false);
+    RET_ERROR(valSts);
 
     m_param = *par;
 
@@ -462,7 +461,7 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam *par) {
     m_vppOutWidth  = m_param.vpp.Out.Width;
     m_vppOutHeight = m_param.vpp.Out.Height;
 
-    return sts;
+    return valSts;
 }
 
 CpuVPP::~CpuVPP() {

@@ -11,6 +11,9 @@
 
 #define X264_DEFAULT_QUALITY_VALUE 23
 
+// used for setting default value of mfx.BufferSizeInKB if not otherwise specified
+#define DEF_BUFFER_SIZE_MULT 5
+
 CpuEncode::CpuEncode(CpuWorkstream *session)
         : m_avEncCodec(nullptr),
           m_avEncContext(nullptr),
@@ -170,6 +173,33 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     }
     else if (canCorrect) {
         par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+    }
+
+    // require width/height to be even numbers
+    // each codec may also require a stricter alignment below
+    if ((par->mfx.FrameInfo.Width & 0x01) || (par->mfx.FrameInfo.Height & 0x01))
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+
+    // require crop values to be even numbers
+    // if not, correct and return warning
+    if ((par->mfx.FrameInfo.CropW & 0x01)) {
+        par->mfx.FrameInfo.CropW &= ~0x01;
+        fixedIncompatible = true;
+    }
+
+    if ((par->mfx.FrameInfo.CropH & 0x01)) {
+        par->mfx.FrameInfo.CropH &= ~0x01;
+        fixedIncompatible = true;
+    }
+
+    if ((par->mfx.FrameInfo.CropX & 0x01)) {
+        par->mfx.FrameInfo.CropX &= ~0x01;
+        fixedIncompatible = true;
+    }
+
+    if ((par->mfx.FrameInfo.CropY & 0x01)) {
+        par->mfx.FrameInfo.CropY &= ~0x01;
+        fixedIncompatible = true;
     }
 
     if (!par->mfx.FrameInfo.CropW && canCorrect)
@@ -460,7 +490,8 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     m_param = *par;
     par     = &m_param;
 
-    RET_VAR_IF_NOT(ValidateEncodeParams(par, false), MFX_ERR_NONE);
+    mfxStatus valSts = ValidateEncodeParams(par, false);
+    RET_ERROR(valSts);
 
     AVCodecID cid = MFXCodecId_to_AVCodecID(m_param.mfx.CodecId);
     RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
@@ -560,10 +591,10 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
 
     if (!m_param.mfx.BufferSizeInKB) {
         // TODO(estimate better based on RateControlMethod)
-        m_param.mfx.BufferSizeInKB = m_param.mfx.TargetKbps;
+        m_param.mfx.BufferSizeInKB = DEF_BUFFER_SIZE_MULT * m_param.mfx.TargetKbps;
     }
 
-    return MFX_ERR_NONE;
+    return valSts;
 }
 
 //utility function to convert between TargetUsage/Encode Mode
@@ -1333,7 +1364,7 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     par->mfx.FrameInfo.CropH  = (uint16_t)m_avEncContext->height;
 
     if (!par->mfx.BufferSizeInKB) {
-        par->mfx.BufferSizeInKB = par->mfx.TargetKbps;
+        par->mfx.BufferSizeInKB = DEF_BUFFER_SIZE_MULT * par->mfx.TargetKbps;
     }
 
     // FourCC and chroma format

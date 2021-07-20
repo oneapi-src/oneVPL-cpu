@@ -166,10 +166,10 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
     AVCodecID cid = MFXCodecId_to_AVCodecID(par->mfx.CodecId);
     RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
 
+    mfxStatus valSts = MFX_ERR_NONE;
     if (!bs) {
-        mfxStatus sts = ValidateDecodeParams(par, false);
-        if (sts != MFX_ERR_NONE)
-            return sts;
+        valSts = ValidateDecodeParams(par, false);
+        RET_ERROR(valSts);
     }
 
     m_avDecCodec = avcodec_find_decoder(cid);
@@ -231,7 +231,7 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
         GetVideoParam(par);
     }
 
-    return MFX_ERR_NONE;
+    return valSts;
 }
 
 CpuDecode::~CpuDecode() {
