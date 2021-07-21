@@ -56,6 +56,8 @@ private:
 
 class mfxSurfaceArrayImpl : public mfxSurfaceArray, public mfxRefCountableBase {
 public:
+    virtual ~mfxSurfaceArrayImpl() {}
+
     static mfxSurfaceArrayImpl *CreateSurfaceArray() {
         mfxSurfaceArrayImpl *surfArr = new mfxSurfaceArrayImpl();
         ((mfxSurfaceArray *)surfArr)->AddRef(surfArr);
