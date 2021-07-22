@@ -41,7 +41,7 @@ if(POLICY CMP0074)
   cmake_policy(SET CMP0074 OLD)
 endif()
 
-find_package(VPL 2.2 REQUIRED COMPONENTS api)
+find_package(VPL 2.4 REQUIRED COMPONENTS api)
 message(STATUS "Found VPL (version ${VPL_VERSION})")
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
