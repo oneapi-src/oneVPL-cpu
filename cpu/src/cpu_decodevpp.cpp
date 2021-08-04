@@ -5,15 +5,17 @@
   ############################################################################*/
 
 #include "src/cpu_decodevpp.h"
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include "src/cpu_workstream.h"
+
+constexpr mfxU16 decoderChannelID = 0;
 
 CpuDecodeVPP::CpuDecodeVPP(CpuWorkstream *session)
         : m_cpuVPP(nullptr),
           m_vppChParams(nullptr),
           m_surfOut(nullptr),
-          m_surfOutArray(nullptr),
           m_numVPPCh(0),
           m_numSurfs(0),
           m_session(session) {
@@ -70,29 +72,17 @@ mfxStatus CpuDecodeVPP::InitVPP(mfxVideoParam *par,
         m_surfOut = nullptr;
     }
 
-    if (m_surfOutArray) {
-        delete m_surfOutArray;
-        m_surfOutArray = nullptr;
-    }
-
     m_surfOut = new mfxFrameSurface1 *[m_numSurfs];
     for (mfxU32 i = 0; i < m_numSurfs; i++) {
         m_surfOut[i] = new mfxFrameSurface1;
         memset(m_surfOut[i], 0, sizeof(mfxFrameSurface1));
     }
 
-    m_surfOutArray = new mfxSurfaceArray;
-
     return MFX_ERR_NONE;
 }
 
 mfxStatus CpuDecodeVPP::Close() {
     MFXVideoDECODE_Close(m_mfxsession);
-
-    if (m_surfOutArray) {
-        delete m_surfOutArray;
-        m_surfOutArray = nullptr;
-    }
 
     if (m_cpuVPP) {
         delete[] m_cpuVPP;
@@ -111,34 +101,77 @@ mfxStatus CpuDecodeVPP::DecodeVPPFrame(mfxBitstream *bs,
                                        mfxU32 *skip_channels,
                                        mfxU32 num_skip_channels,
                                        mfxSurfaceArray **surf_array_out) {
+    if (num_skip_channels != 0) {
+        RET_IF_FALSE(skip_channels, MFX_ERR_NULL_PTR);
+    }
+
+    //skip channels
+    std::vector<mfxU32> skipChannels;
+    if (num_skip_channels != 0) {
+        skipChannels.assign(skip_channels, skip_channels + num_skip_channels);
+    }
+
     mfxSyncPoint syncp             = { 0 };
-    mfxStatus sts                  = MFX_ERR_NONE;
-    const int WAIT_100_MILLSECONDS = 100;
     mfxFrameSurface1 *pWorkSurface = nullptr;
 
     // m_surfOut[0]   : surface for decode out
     // m_surfOut[1] ~ : surfaces for vpp out
-
     for (mfxU32 i = 0; i < m_numVPPCh; i++) {
         m_cpuVPP[i].GetVPPSurfaceOut(&m_surfOut[i + 1]);
     }
-
-    m_surfOutArray->Surfaces    = m_surfOut;
-    m_surfOutArray->NumSurfaces = m_numSurfs;
-
-    *surf_array_out = m_surfOutArray;
 
     // decode out from 0th channel
     RET_ERROR(
         MFXVideoDECODE_DecodeFrameAsync(m_mfxsession, bs, pWorkSurface, &m_surfOut[0], &syncp));
 
-    do {
-        sts = m_surfOut[0]->FrameInterface->Synchronize(m_surfOut[0], WAIT_100_MILLSECONDS);
-    } while (sts == MFX_WRN_IN_EXECUTION);
+    //output DEC
+    RAIISurfaceArray surfArray;
+    mfxFrameSurface1 *decChannelSurf = m_surfOut[0];
+    decChannelSurf->Info.ChannelId   = decoderChannelID;
 
-    // vpp out of each vpp channels
+    //output DEC channel
+    if (skipChannels.end() ==
+        std::find(skipChannels.begin(), skipChannels.end(), decoderChannelID)) {
+        surfArray->AddSurface(decChannelSurf);
+    }
+    else {
+        RET_ERROR(decChannelSurf->FrameInterface->Release(decChannelSurf));
+    }
+
+    // * Total number of output surfaces (m_surfOut[])
+    //   = 1 decode out surface + m_numVPPCh
+    //
+    //   m_surfOut[0]   : reserved for decode output
+    //   m_surfOut[1] ~ : for VPP output
+    //
+    // * There will be m_numVPPCh of mfxVideoChannelParam (m_vppChParams[])
+
+    // execute process for vpp channels
     for (mfxU32 i = 0; i < m_numVPPCh; i++) {
-        RET_ERROR(m_cpuVPP[i].ProcessFrame(m_surfOut[0], m_surfOut[i + 1], NULL));
+        // check skip channels
+        if (skipChannels.end() !=
+            std::find(skipChannels.begin(), skipChannels.end(), m_vppChParams[i]->VPP.ChannelId)) {
+            //skip this channel
+            continue;
+        }
+
+        // vpp surface index in m_surfOut[]
+        int vppSurfIndex = i + 1;
+
+        // input is m_surfOut[0] (decode output),
+        // vpp output to m_surfOut[vppSurfIndex]
+        RET_ERROR(m_cpuVPP[i].ProcessFrame(m_surfOut[0], m_surfOut[vppSurfIndex], NULL));
+
+        // update vpp output channel id
+        m_surfOut[vppSurfIndex]->Info.ChannelId = m_vppChParams[i]->VPP.ChannelId;
+        surfArray->AddSurface(m_surfOut[vppSurfIndex]);
+    }
+
+    if (surfArray->NumSurfaces == 0) {
+        *surf_array_out = nullptr;
+    }
+    else {
+        *surf_array_out = surfArray.ReleaseContent();
     }
 
     return MFX_ERR_NONE;

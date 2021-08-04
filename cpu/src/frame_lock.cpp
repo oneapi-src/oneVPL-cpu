@@ -8,13 +8,13 @@
 #include "src/cpu_frame.h"
 
 FrameLock::FrameLock()
-        : m_data(nullptr),
-          m_surface(nullptr),
+        : m_surface(nullptr),
           m_allocator(nullptr),
           m_newapi(false),
-          m_avframe(nullptr),
+          m_data(nullptr),
+          m_locked_data({ 0 }),
           mem_id(0),
-          m_locked_data({ 0 }) {}
+          m_avframe(nullptr) {}
 
 FrameLock::~FrameLock() {
     Unlock();

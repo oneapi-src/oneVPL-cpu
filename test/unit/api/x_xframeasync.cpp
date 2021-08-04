@@ -1573,7 +1573,6 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     mfxSurfaceArray *surf_array_out = nullptr;
-    mfxU32 numSurfs                 = numVPPCh + 1;
 
     mfxBitstream *bs;
     // 1st run with bitstream: return MFX_ERR_MORE_DATA
@@ -1586,7 +1585,7 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
         switch (i) {
             case 0:
                 EXPECT_EQ(sts, MFX_ERR_MORE_DATA);
-                break;
+                continue;
             case 1:
                 ASSERT_EQ(surf_array_out->Surfaces[0]->Data.FrameOrder, 0); // check frameorder
                 ASSERT_EQ(surf_array_out->Surfaces[1]->Info.Width, 320); // check vpp output size
@@ -1605,7 +1604,191 @@ TEST(DecodeVPPDecodeFrameAsync, ValidInputsReturnsErrNone) {
         ASSERT_EQ(sts, MFX_ERR_NONE);
     }
 
+    sts = surf_array_out->Release(surf_array_out);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    surf_array_out = nullptr;
+
     delete mfxVPPChParams;
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(DecodeVPPDecodeFrameAsync, ReturnCorrectChannelID) {
+    mfxVersion ver = {};
+    mfxSession session;
+    ver.Major = 2;
+    ver.Minor = 1;
+
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
+
+    sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 testChId                      = 3;
+    mfxU32 numVPPCh                      = 1;
+    mfxVideoChannelParam *mfxVPPChParams = new mfxVideoChannelParam;
+    memset(mfxVPPChParams, 0, sizeof(mfxVideoChannelParam));
+
+    // scaled output to 320x240
+    mfxVPPChParams->VPP.FourCC        = MFX_FOURCC_I420;
+    mfxVPPChParams->VPP.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+    mfxVPPChParams->VPP.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+    mfxVPPChParams->VPP.FrameRateExtN = 30;
+    mfxVPPChParams->VPP.FrameRateExtD = 1;
+    mfxVPPChParams->VPP.CropW         = 320;
+    mfxVPPChParams->VPP.CropH         = 240;
+    mfxVPPChParams->VPP.Width         = 320;
+    mfxVPPChParams->VPP.Height        = 240;
+    mfxVPPChParams->VPP.ChannelId     = testChId;
+    mfxVPPChParams->Protected         = 0;
+    mfxVPPChParams->IOPattern   = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+    mfxVPPChParams->ExtParam    = NULL;
+    mfxVPPChParams->NumExtParam = 0;
+
+    sts = MFXVideoDECODE_VPP_Init(session, &mfxDecParams, &mfxVPPChParams, numVPPCh);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxSurfaceArray *surf_array_out = nullptr;
+
+    mfxBitstream *bs;
+    // 1st run with bitstream: return MFX_ERR_MORE_DATA
+    // 2nd run with nullptr: return 1st decoded(FrameOrder=0), vpp frame
+    // 3th run with nullptrL, return 2nd decoded(FrameOrder=1), vpp frame
+    for (mfxU32 i = 0; i < 3; i++) {
+        bs  = (i == 0) ? &mfxBS : nullptr;
+        sts = MFXVideoDECODE_VPP_DecodeFrameAsync(session, bs, nullptr, 0, &surf_array_out);
+
+        switch (i) {
+            case 0:
+                EXPECT_EQ(sts, MFX_ERR_MORE_DATA);
+                continue;
+            case 1:
+                ASSERT_EQ(surf_array_out->Surfaces[0]->Data.FrameOrder, 0); // check frameorder
+                ASSERT_EQ(surf_array_out->Surfaces[1]->Info.Width, 320); // check vpp output size
+                ASSERT_EQ(surf_array_out->Surfaces[1]->Info.Height, 240);
+                ASSERT_EQ(sts, MFX_ERR_NONE);
+                break;
+            case 2:
+                ASSERT_EQ(surf_array_out->Surfaces[1]->Info.ChannelId, testChId); // check channelid
+                ASSERT_EQ(sts, MFX_ERR_NONE);
+                break;
+            default:
+                break;
+        }
+
+        sts = surf_array_out->Surfaces[1]->FrameInterface->Release(surf_array_out->Surfaces[1]);
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
+
+    sts = surf_array_out->Release(surf_array_out);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    surf_array_out = nullptr;
+
+    delete mfxVPPChParams;
+
+    //free internal resources
+    sts = MFXClose(session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+}
+
+TEST(DecodeVPPDecodeFrameAsync, SkipChannel) {
+    mfxVersion ver = {};
+    mfxSession session;
+    ver.Major = 2;
+    ver.Minor = 1;
+
+    mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxVideoParam mfxDecParams;
+    memset(&mfxDecParams, 0, sizeof(mfxDecParams));
+    mfxDecParams.mfx.CodecId = MFX_CODEC_HEVC;
+    mfxDecParams.IOPattern   = MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+
+    mfxBitstream mfxBS = { 0 };
+    mfxBS.MaxLength = mfxBS.DataLength = test_bitstream_96x64_8bit_hevc::getlen();
+    mfxBS.Data                         = test_bitstream_96x64_8bit_hevc::getdata();
+
+    sts = MFXVideoDECODE_DecodeHeader(session, &mfxBS, &mfxDecParams);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 skipChId                       = 5;
+    mfxU32 numVPPCh                       = 2;
+    mfxVideoChannelParam **mfxVPPChParams = new mfxVideoChannelParam *[numVPPCh];
+    for (mfxU16 i = 0; i < numVPPCh; i++) {
+        mfxVPPChParams[i] = new mfxVideoChannelParam;
+        memset(mfxVPPChParams[i], 0, sizeof(mfxVideoChannelParam));
+
+        // scaled output to 320x240
+        mfxVPPChParams[i]->VPP.FourCC        = MFX_FOURCC_I420;
+        mfxVPPChParams[i]->VPP.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
+        mfxVPPChParams[i]->VPP.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
+        mfxVPPChParams[i]->VPP.FrameRateExtN = mfxDecParams.mfx.FrameInfo.FrameRateExtN;
+        mfxVPPChParams[i]->VPP.FrameRateExtD = mfxDecParams.mfx.FrameInfo.FrameRateExtD;
+        mfxVPPChParams[i]->VPP.CropW         = 320;
+        mfxVPPChParams[i]->VPP.CropH         = 240;
+        mfxVPPChParams[i]->VPP.Width         = 320;
+        mfxVPPChParams[i]->VPP.Height        = 240;
+        mfxVPPChParams[i]->VPP.ChannelId     = (i == 1) ? skipChId : i + 1;
+        mfxVPPChParams[i]->Protected         = 0;
+        mfxVPPChParams[i]->IOPattern =
+            MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+        mfxVPPChParams[i]->ExtParam    = NULL;
+        mfxVPPChParams[i]->NumExtParam = 0;
+    }
+
+    sts = MFXVideoDECODE_VPP_Init(session, &mfxDecParams, mfxVPPChParams, numVPPCh);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    mfxSurfaceArray *surf_array_out = nullptr;
+
+    mfxBitstream *bs;
+    // 1st run with bitstream: return MFX_ERR_MORE_DATA
+    // 2nd run with nullptr: return 1st decoded, vpp frame
+    for (mfxU32 i = 0; i < 3; i++) {
+        bs  = (i == 0) ? &mfxBS : nullptr;
+        sts = MFXVideoDECODE_VPP_DecodeFrameAsync(session, bs, &skipChId, 1, &surf_array_out);
+
+        switch (i) {
+            case 0:
+                EXPECT_EQ(sts, MFX_ERR_MORE_DATA);
+                continue;
+            case 1:
+                ASSERT_EQ(
+                    surf_array_out->NumSurfaces,
+                    2); // check number of surfaces, it should 2, one for decode and the other for vpp
+                ASSERT_NE(surf_array_out->Surfaces[1]->Info.ChannelId,
+                          skipChId); // check channelid, it shouldn't be the skipped channel id
+                ASSERT_EQ(sts, MFX_ERR_NONE);
+                break;
+            default:
+                break;
+        }
+
+        sts = surf_array_out->Surfaces[1]->FrameInterface->Release(surf_array_out->Surfaces[1]);
+        ASSERT_EQ(sts, MFX_ERR_NONE);
+    }
+
+    sts = surf_array_out->Release(surf_array_out);
+    ASSERT_EQ(sts, MFX_ERR_NONE);
+
+    surf_array_out = nullptr;
+
+    delete[] mfxVPPChParams;
 
     //free internal resources
     sts = MFXClose(session);

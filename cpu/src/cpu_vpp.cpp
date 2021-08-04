@@ -15,11 +15,11 @@
 enum { VPP_IN = 0x00, VPP_OUT = 0x01 };
 
 CpuVPP::CpuVPP()
-        : m_session(nullptr),
-          m_avVppFrameOut(nullptr),
-          m_vpp_graph(nullptr),
+        : m_vpp_graph(nullptr),
           m_buffersrc_ctx(nullptr),
           m_buffersink_ctx(nullptr),
+          m_input_locker(),
+          m_avVppFrameOut(nullptr),
           m_vppInFormat(MFX_FOURCC_I420),
           m_vppInWidth(0),
           m_vppInHeight(0),
@@ -29,11 +29,12 @@ CpuVPP::CpuVPP()
           m_vppFunc(0),
           m_param(),
           m_vppSurfacesIn(),
-          m_vppSurfacesOut() {
+          m_vppSurfacesOut(),
+          m_session(nullptr) {
     memset(m_vpp_filter_desc, 0, sizeof(m_vpp_filter_desc));
 }
 
-void CpuVPP::SetSession(CpuWorkstream* session) {
+void CpuVPP::SetSession(CpuWorkstream *session) {
     m_session = session;
 }
 
@@ -41,10 +42,10 @@ void CpuVPP::SetSession(CpuWorkstream* session) {
 bool CpuVPP::InitFilters(void) {
     int ret                          = 0;
     char buffersrc_fmt[512]          = { 0 };
-    const AVFilter* buffersrc        = avfilter_get_by_name("buffer");
-    const AVFilter* buffersink       = avfilter_get_by_name("buffersink");
-    AVFilterInOut* buffersrc_out_pad = avfilter_inout_alloc();
-    AVFilterInOut* buffersink_in_pad = avfilter_inout_alloc();
+    const AVFilter *buffersrc        = avfilter_get_by_name("buffer");
+    const AVFilter *buffersink       = avfilter_get_by_name("buffersink");
+    AVFilterInOut *buffersrc_out_pad = avfilter_inout_alloc();
+    AVFilterInOut *buffersink_in_pad = avfilter_inout_alloc();
 
     m_vpp_graph = avfilter_graph_alloc();
 
@@ -215,7 +216,7 @@ bool CpuVPP::InitFilters(void) {
     }
 
     ret = avfilter_graph_parse_ptr(m_vpp_graph,
-                                   (const char*)m_vpp_filter_desc,
+                                   (const char *)m_vpp_filter_desc,
                                    &buffersink_in_pad,
                                    &buffersrc_out_pad,
                                    NULL);
@@ -237,7 +238,7 @@ bool CpuVPP::InitFilters(void) {
     }
 }
 
-void CpuVPP::CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in) {
+void CpuVPP::CloseFilterPads(AVFilterInOut *src_out, AVFilterInOut *sink_in) {
     if (src_out)
         avfilter_inout_free(&src_out);
     if (sink_in)
@@ -245,7 +246,7 @@ void CpuVPP::CloseFilterPads(AVFilterInOut* src_out, AVFilterInOut* sink_in) {
     return;
 }
 
-mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
+mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam *par, bool canCorrect) {
     bool fixedIncompatible = false;
 
     if (canCorrect) {
@@ -408,10 +409,9 @@ mfxStatus CpuVPP::ValidateVPPParams(mfxVideoParam* par, bool canCorrect) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
-    mfxStatus sts = ValidateVPPParams(par, false);
-    if (sts != MFX_ERR_NONE)
-        return sts;
+mfxStatus CpuVPP::InitVPP(mfxVideoParam *par) {
+    mfxStatus valSts = ValidateVPPParams(par, false);
+    RET_ERROR(valSts);
 
     m_param = *par;
 
@@ -461,7 +461,7 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam* par) {
     m_vppOutWidth  = m_param.vpp.Out.Width;
     m_vppOutHeight = m_param.vpp.Out.Height;
 
-    return sts;
+    return valSts;
 }
 
 CpuVPP::~CpuVPP() {
@@ -475,14 +475,14 @@ CpuVPP::~CpuVPP() {
     }
 }
 
-mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
-                               mfxFrameSurface1* surface_out,
-                               mfxExtVppAuxData* aux) {
+mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1 *surface_in,
+                               mfxFrameSurface1 *surface_out,
+                               mfxExtVppAuxData *aux) {
     bool bWA_alignment = false;
 
     // Try get AVFrame from surface_out
-    AVFrame* dst_avframe = nullptr;
-    CpuFrame* dst_frame  = CpuFrame::TryCast(surface_out);
+    AVFrame *dst_avframe = nullptr;
+    CpuFrame *dst_frame  = CpuFrame::TryCast(surface_out);
     if (dst_frame) {
         dst_avframe = dst_frame->GetAVFrame();
 
@@ -492,7 +492,7 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
         // So, there's data misalignment when app processes data.
         // We copy avframe data to mfx data to meet expecting pitch size instead of
         // delievering memory pointer
-        bWA_alignment = NeedWAForAlignment(&surface_out->Info, (int*)dst_avframe->linesize);
+        bWA_alignment = NeedWAForAlignment(&surface_out->Info, (int *)dst_avframe->linesize);
 
         // Do not unref because we do copy
         if (bWA_alignment == false)
@@ -503,7 +503,7 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
     }
 
     if (surface_in) {
-        AVFrame* av_frame =
+        AVFrame *av_frame =
             m_input_locker.GetAVFrame(surface_in, MFX_MAP_READ, m_session->GetFrameAllocator());
         RET_IF_FALSE(av_frame, MFX_ERR_ABORTED);
 
@@ -545,7 +545,7 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1* surface_in,
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
+mfxStatus CpuVPP::VPPQuery(mfxVideoParam *in, mfxVideoParam *out) {
     mfxStatus sts = MFX_ERR_NONE;
 
     if (out == 0)
@@ -601,7 +601,7 @@ mfxStatus CpuVPP::VPPQuery(mfxVideoParam* in, mfxVideoParam* out) {
     return sts;
 }
 
-mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest request[2]) {
+mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest request[2]) {
     mfxStatus sts;
 
     // VPP_IN
@@ -632,8 +632,8 @@ mfxStatus CpuVPP::VPPQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest reques
 }
 
 mfxStatus CpuVPP::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
-                                                  mfxU16* pInMemType,
-                                                  mfxU16* pOutMemType) {
+                                                  mfxU16 *pInMemType,
+                                                  mfxU16 *pOutMemType) {
     if (IOPattern & MFX_IOPATTERN_IN_VIDEO_MEMORY || IOPattern & MFX_IOPATTERN_OUT_VIDEO_MEMORY)
         return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -653,7 +653,7 @@ mfxStatus CpuVPP::CheckIOPattern_AndSetIOMemTypes(mfxU16 IOPattern,
 }
 
 // check each field of FrameInfo excluding PicStruct
-mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info) {
+mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo *info) {
     /* FourCC */
     switch (info->FourCC) {
         case MFX_FOURCC_BGRA:
@@ -689,13 +689,13 @@ mfxStatus CpuVPP::CheckFrameInfo(mfxFrameInfo* info) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuVPP::GetVideoParam(mfxVideoParam* par) {
+mfxStatus CpuVPP::GetVideoParam(mfxVideoParam *par) {
     *par = m_param;
 
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
+mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1 **surface) {
     if (!m_vppSurfacesIn) {
         mfxFrameAllocRequest VPPRequest[2] = { 0 };
         VPPQueryIOSurf(nullptr, VPPRequest);
@@ -721,7 +721,7 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1** surface) {
     return sts;
 }
 
-mfxStatus CpuVPP::GetVPPSurfaceOut(mfxFrameSurface1** surface) {
+mfxStatus CpuVPP::GetVPPSurfaceOut(mfxFrameSurface1 **surface) {
     if (!m_vppSurfacesOut) {
         mfxFrameAllocRequest VPPRequest[2] = { 0 };
         VPPQueryIOSurf(nullptr, VPPRequest);
@@ -747,7 +747,7 @@ mfxStatus CpuVPP::GetVPPSurfaceOut(mfxFrameSurface1** surface) {
     return sts;
 }
 
-mfxStatus CpuVPP::IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar) {
+mfxStatus CpuVPP::IsSameVideoParam(mfxVideoParam *newPar, mfxVideoParam *oldPar) {
     if (!(newPar->IOPattern & MFX_IOPATTERN_IN_SYSTEM_MEMORY) ||
         !(newPar->IOPattern & MFX_IOPATTERN_OUT_SYSTEM_MEMORY)) {
         return MFX_ERR_INCOMPATIBLE_VIDEO_PARAM;
@@ -804,7 +804,7 @@ mfxStatus CpuVPP::IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar)
     return MFX_ERR_NONE;
 }
 
-bool CpuVPP::NeedWAForAlignment(mfxFrameInfo* fi, int* linesize) {
+bool CpuVPP::NeedWAForAlignment(mfxFrameInfo *fi, int *linesize) {
     if (fi->FourCC == MFX_FOURCC_I420) {
         // check the U pitch size of output surface and output avframe
         if (fi->Width / 2 != linesize[1]) {

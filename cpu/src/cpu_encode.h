@@ -18,47 +18,47 @@ class CpuWorkstream;
 
 class CpuEncode {
 public:
-    explicit CpuEncode(CpuWorkstream* session);
+    explicit CpuEncode(CpuWorkstream *session);
     ~CpuEncode();
 
-    static mfxStatus EncodeQuery(mfxVideoParam* in, mfxVideoParam* out);
-    static mfxStatus EncodeQueryIOSurf(mfxVideoParam* par, mfxFrameAllocRequest* request);
+    static mfxStatus EncodeQuery(mfxVideoParam *in, mfxVideoParam *out);
+    static mfxStatus EncodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest *request);
 
-    mfxStatus InitEncode(mfxVideoParam* par);
-    mfxStatus EncodeFrame(mfxFrameSurface1* surface, mfxEncodeCtrl* ctrl, mfxBitstream* bs);
-    mfxStatus GetVideoParam(mfxVideoParam* par);
-    mfxStatus GetEncodeSurface(mfxFrameSurface1** surface);
-    mfxStatus IsSameVideoParam(mfxVideoParam* newPar, mfxVideoParam* oldPar);
+    mfxStatus InitEncode(mfxVideoParam *par);
+    mfxStatus EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl, mfxBitstream *bs);
+    mfxStatus GetVideoParam(mfxVideoParam *par);
+    mfxStatus GetEncodeSurface(mfxFrameSurface1 **surface);
+    mfxStatus IsSameVideoParam(mfxVideoParam *newPar, mfxVideoParam *oldPar);
 
 private:
-    static mfxStatus ValidateEncodeParams(mfxVideoParam* par, bool canCorrect);
+    static mfxStatus ValidateEncodeParams(mfxVideoParam *par, bool canCorrect);
     int convertTargetUsageVal(int val, int minIn, int maxIn, int minOut, int maxOut);
-    mfxStatus InitHEVCParams(mfxVideoParam* par);
-    mfxStatus GetHEVCParams(mfxVideoParam* par);
-    mfxStatus InitAV1Params(mfxVideoParam* par);
-    mfxStatus GetAV1Params(mfxVideoParam* par);
-    mfxStatus InitAVCParams(mfxVideoParam* par);
-    mfxStatus GetAVCParams(mfxVideoParam* par);
-    mfxStatus InitJPEGParams(mfxVideoParam* par);
-    mfxStatus GetJPEGParams(mfxVideoParam* par);
+    mfxStatus InitHEVCParams(mfxVideoParam *par);
+    mfxStatus GetHEVCParams(mfxVideoParam *par);
+    mfxStatus InitAV1Params(mfxVideoParam *par);
+    mfxStatus GetAV1Params(mfxVideoParam *par);
+    mfxStatus InitAVCParams(mfxVideoParam *par);
+    mfxStatus GetAVCParams(mfxVideoParam *par);
+    mfxStatus InitJPEGParams(mfxVideoParam *par);
+    mfxStatus GetJPEGParams(mfxVideoParam *par);
 
-    AVFrame* CreateAVFrame(mfxFrameSurface1* surface);
+    AVFrame *CreateAVFrame(mfxFrameSurface1 *surface);
 
-    const AVCodec* m_avEncCodec;
-    AVCodecContext* m_avEncContext;
-    AVPacket* m_avEncPacket;
+    const AVCodec *m_avEncCodec;
+    AVCodecContext *m_avEncContext;
+    AVPacket *m_avEncPacket;
     FrameLock m_input_locker;
 
     mfxVideoParam m_param;
     bool m_bFrameEncoded;
 
-    CpuWorkstream* m_session;
+    CpuWorkstream *m_session;
 
     std::unique_ptr<CpuFramePool> m_encSurfaces;
 
     /* copy not allowed */
-    CpuEncode(const CpuEncode&);
-    CpuEncode& operator=(const CpuEncode&);
+    CpuEncode(const CpuEncode &);
+    CpuEncode &operator=(const CpuEncode &);
 };
 
 #endif // CPU_SRC_CPU_ENCODE_H_

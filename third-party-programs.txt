@@ -854,4 +854,74 @@ POSSIBILITY OF SUCH DAMAGE.
 See SVT-AV1 3rd Party Components here: https://gitlab.com/AOMediaCodec/SVT-AV1/-/tree/master/third_party
 
 ----------------------------------------------------------------------------------------------- 
+
+10.  Wayland
+
+Copyright © 2008-2012 Kristian Høgsberg
+Copyright © 2010-2012 Intel Corporation
+Copyright © 2010-2011 Benjamin Franzke
+Copyright © 2011-2012 Collabora, Ltd.
+Copyright © 2010 Red Hat <mjg@redhat.com>
+ 
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice (including the next
+paragraph) shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+---
+
+The above is the version of the MIT "Expat" License used by X.org:
+
+    http://cgit.freedesktop.org/xorg/xserver/tree/COPYING
+
+----------------------------------------------------------------------------------------------- 
+
+11.  libxcd
+
+Copyright (C) 2001-2006 Bart Massey, Jamey Sharp, and Josh Triplett.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall
+be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the names of the authors
+or their institutions shall not be used in advertising or
+otherwise to promote the sale, use or other dealings in this
+Software without prior written authorization from the
+authors.
+
+----------------------------------------------------------------------------------------------- 
 Other names and brands may be claimed as the property of others. 

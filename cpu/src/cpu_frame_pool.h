@@ -14,11 +14,11 @@
 
 class CpuFramePool {
 public:
-    CpuFramePool() : m_info({}) {}
+    CpuFramePool() : m_surfaces(), m_info({}) {}
 
     mfxStatus Init(mfxU32 nPoolSize);
     mfxStatus Init(mfxU32 FourCC, mfxU32 width, mfxU32 height, mfxU32 nPoolSize);
-    mfxStatus GetFreeSurface(mfxFrameSurface1** surface);
+    mfxStatus GetFreeSurface(mfxFrameSurface1 **surface);
 
 private:
     std::vector<std::unique_ptr<CpuFrame>> m_surfaces;
