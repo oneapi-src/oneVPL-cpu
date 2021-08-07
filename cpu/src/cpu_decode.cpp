@@ -267,8 +267,8 @@ mfxStatus CpuDecode::InitDecode(mfxVideoParam *par, mfxBitstream *bs) {
         // todo: this only works if input is large enough to
         // decode a frame
         mfxBitstream bs2 = *bs;
-        bs2.DataFlag     = MFX_BITSTREAM_EOS;
-        m_bStreamInfo    = true;
+        bs2.DataFlag |= MFX_BITSTREAM_EOS;
+        m_bStreamInfo = true;
         DecodeFrame(&bs2, nullptr, nullptr);
         GetVideoParam(par);
     }
