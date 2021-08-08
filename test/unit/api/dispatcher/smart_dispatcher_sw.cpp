@@ -166,6 +166,16 @@ TEST(Dispatcher_SW_CreateSession, RequestDeviceIDInvalidReturnsErrNotFound) {
     Dispatcher_CreateSession_RequestDeviceIDInvalidReturnsErrNotFound(MFX_IMPL_TYPE_SOFTWARE);
 }
 
+TEST(Dispatcher_SW_CreateSession, RequestMediaAdapterTypeValidReturnsErrNone) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_CreateSession_RequestMediaAdapterTypeValidReturnsErrNone(MFX_IMPL_TYPE_SOFTWARE);
+}
+
+TEST(Dispatcher_SW_CreateSession, RequestMediaAdapterTypeInvalidReturnsErrNotFound) {
+    SKIP_IF_DISP_SW_DISABLED();
+    Dispatcher_CreateSession_RequestMediaAdapterTypeInvalidReturnsErrNotFound(MFX_IMPL_TYPE_SOFTWARE);
+}
+
 TEST(Dispatcher_SW_CreateSession, RequestImplNameValidReturnsErrNone) {
     SKIP_IF_DISP_SW_DISABLED();
     Dispatcher_CreateSession_RequestImplNameValidReturnsErrNone(MFX_IMPL_TYPE_SOFTWARE);

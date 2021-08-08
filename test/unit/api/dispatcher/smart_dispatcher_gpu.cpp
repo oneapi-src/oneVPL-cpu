@@ -161,6 +161,16 @@ TEST(Dispatcher_GPU_CreateSession, RequestDeviceIDInvalidReturnsErrNotFound) {
     Dispatcher_CreateSession_RequestDeviceIDInvalidReturnsErrNotFound(MFX_IMPL_TYPE_HARDWARE);
 }
 
+TEST(Dispatcher_GPU_CreateSession, RequestMediaAdapterTypeValidReturnsErrNone) {
+    SKIP_IF_DISP_GPU_VPL_DISABLED();
+    Dispatcher_CreateSession_RequestMediaAdapterTypeValidReturnsErrNone(MFX_IMPL_TYPE_HARDWARE);
+}
+
+TEST(Dispatcher_GPU_CreateSession, RequestMediaAdapterTypeInvalidReturnsErrNotFound) {
+    SKIP_IF_DISP_GPU_VPL_DISABLED();
+    Dispatcher_CreateSession_RequestMediaAdapterTypeInvalidReturnsErrNotFound(MFX_IMPL_TYPE_HARDWARE);
+}
+
 TEST(Dispatcher_GPU_CreateSession, RequestImplNameValidReturnsErrNone) {
     SKIP_IF_DISP_GPU_VPL_DISABLED();
     Dispatcher_CreateSession_RequestImplNameValidReturnsErrNone(MFX_IMPL_TYPE_HARDWARE);

@@ -914,6 +914,59 @@ void Dispatcher_CreateSession_RequestDeviceIDInvalidReturnsErrNotFound(mfxImplTy
     MFXUnload(loader);
 }
 
+// tests for MediaAdapterType also require mfxDeviceDescription struct version >= 1.1
+void Dispatcher_CreateSession_RequestMediaAdapterTypeValidReturnsErrNone(mfxImplType implType) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts = SetConfigImpl(loader, implType);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU16 mediaAdapterType = 0xafaf;
+    if (implType == MFX_IMPL_TYPE_SOFTWARE) {
+        mediaAdapterType = MFX_MEDIA_UNKNOWN;
+    }
+    else {
+        // assume HW has integrated device
+        // need another configuration of unit tests for discrete-only systems
+        mediaAdapterType = MFX_MEDIA_INTEGRATED;
+    }
+
+    // pass MediaAdapterType = 0x0000 for CPU
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.mfxDeviceDescription.device.MediaAdapterType", mediaAdapterType);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+void Dispatcher_CreateSession_RequestMediaAdapterTypeInvalidReturnsErrNotFound(mfxImplType implType) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts = SetConfigImpl(loader, implType);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // invalid value
+    mfxU16 mediaAdapterType = 0xafaf;
+
+    // pass MediaAdapterType = 0x0000 for CPU
+    SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.mfxDeviceDescription.device.MediaAdapterType", mediaAdapterType);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    // free internal resources
+    MFXUnload(loader);
+}
+
 void Dispatcher_CreateSession_RequestImplNameValidReturnsErrNone(mfxImplType implType) {
     mfxLoader loader = MFXLoad();
     EXPECT_FALSE(loader == nullptr);

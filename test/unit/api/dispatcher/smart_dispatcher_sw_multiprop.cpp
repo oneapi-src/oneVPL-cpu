@@ -29,6 +29,7 @@ static const TestPropVal TestPropIntTab[] = {
     { MFX_VARIANT_TYPE_U32, "mfxImplDescription.VendorImplID",                                                      0, 0xffffffff },
 
     { MFX_VARIANT_TYPE_U16, "mfxImplDescription.mfxDeviceDescription.device.DeviceID",                              0, 0xefef },
+    { MFX_VARIANT_TYPE_U16, "mfxImplDescription.mfxDeviceDescription.device.MediaAdapterType",                      MFX_MEDIA_UNKNOWN, MFX_MEDIA_INTEGRATED },
 
     { MFX_VARIANT_TYPE_U32, "mfxImplDescription.mfxDecoderDescription.decoder.CodecID",                             MFX_CODEC_AVC, MFX_CODEC_VC1 },
     { MFX_VARIANT_TYPE_U16, "mfxImplDescription.mfxDecoderDescription.decoder.MaxcodecLevel",                       MFX_LEVEL_AVC_52, MFX_LEVEL_AVC_62 },
@@ -312,6 +313,10 @@ TEST(Dispatcher_SW_MultiProp, MultiConfig_AllPropsInt_InvalidProp_21) {
     TestAllPropsIntSingleInvalid(21);
 }
 
+TEST(Dispatcher_SW_MultiProp, MultiConfig_AllPropsInt_InvalidProp_22) {
+    TestAllPropsIntSingleInvalid(22);
+}
+
 // set all properties to valid (PTR), except set one to invalid
 TEST(Dispatcher_SW_MultiProp, MultiConfig_AllPropsPtr_InvalidProp_00) {
     TestAllPropsPtrSingleInvalid(0);
@@ -444,6 +449,10 @@ TEST(Dispatcher_SW_MultiProp, SingleConfig_AllPropsInt_InvalidProp_20) {
 
 TEST(Dispatcher_SW_MultiProp, SingleConfig_AllPropsInt_InvalidProp_21) {
     TestAllPropsIntSingleInvalid(21, true);
+}
+
+TEST(Dispatcher_SW_MultiProp, SingleConfig_AllPropsInt_InvalidProp_22) {
+    TestAllPropsIntSingleInvalid(22, true);
 }
 
 // set all properties to valid (PTR), except set one to invalid
