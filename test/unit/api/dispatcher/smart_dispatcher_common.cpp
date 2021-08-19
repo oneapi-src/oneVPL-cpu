@@ -932,7 +932,6 @@ void Dispatcher_CreateSession_RequestMediaAdapterTypeValidReturnsErrNone(mfxImpl
         mediaAdapterType = MFX_MEDIA_INTEGRATED;
     }
 
-    // pass MediaAdapterType = 0x0000 for CPU
     SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.mfxDeviceDescription.device.MediaAdapterType", mediaAdapterType);
 
     // create session with first implementation
@@ -955,8 +954,56 @@ void Dispatcher_CreateSession_RequestMediaAdapterTypeInvalidReturnsErrNotFound(m
     // invalid value
     mfxU16 mediaAdapterType = 0xafaf;
 
-    // pass MediaAdapterType = 0x0000 for CPU
     SetConfigFilterProperty<mfxU16>(loader, "mfxImplDescription.mfxDeviceDescription.device.MediaAdapterType", mediaAdapterType);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NOT_FOUND);
+
+    // free internal resources
+    MFXUnload(loader);
+}
+
+// tests for PoolAllocationPolicy require mfxImplDescription struct version >= 1.2
+void Dispatcher_CreateSession_RequestPoolAllocationPolicyValidReturnsErrNone(mfxImplType implType) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts = SetConfigImpl(loader, implType);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxPoolAllocationPolicy poolAllocationPolicy = MFX_ALLOCATION_UNLIMITED;
+    if (implType == MFX_IMPL_TYPE_SOFTWARE) {
+        poolAllocationPolicy = MFX_ALLOCATION_UNLIMITED;
+    }
+    else {
+        // assume HW supports optimal policy
+        poolAllocationPolicy = MFX_ALLOCATION_OPTIMAL;
+    }
+
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxSurfacePoolMode", poolAllocationPolicy);
+
+    // create session with first implementation
+    mfxSession session = nullptr;
+    sts                = MFXCreateSession(loader, 0, &session);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    MFXClose(session);
+    MFXUnload(loader);
+}
+
+void Dispatcher_CreateSession_RequestPoolAllocationPolicyInvalidReturnsErrNotFound(mfxImplType implType) {
+    mfxLoader loader = MFXLoad();
+    EXPECT_FALSE(loader == nullptr);
+
+    mfxStatus sts = SetConfigImpl(loader, implType);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxPoolAllocationPolicy poolAllocationPolicy = (mfxPoolAllocationPolicy)0xfafa; // invalid policy;
+
+    SetConfigFilterProperty<mfxU32>(loader, "mfxImplDescription.mfxSurfacePoolMode", poolAllocationPolicy);
 
     // create session with first implementation
     mfxSession session = nullptr;

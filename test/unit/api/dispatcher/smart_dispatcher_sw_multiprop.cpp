@@ -27,6 +27,7 @@ static const TestPropVal TestPropIntTab[] = {
     { MFX_VARIANT_TYPE_U32, "mfxImplDescription.ApiVersion.Version",                                                (MFX_VERSION_MAJOR << 16) | (MFX_VERSION_MINOR), (99 << 16) | (0) },
     { MFX_VARIANT_TYPE_U32, "mfxImplDescription.VendorID",                                                          0x8086, 0xefefefef },
     { MFX_VARIANT_TYPE_U32, "mfxImplDescription.VendorImplID",                                                      0, 0xffffffff },
+    { MFX_VARIANT_TYPE_U32, "mfxImplDescription.mfxSurfacePoolMode",                                                MFX_ALLOCATION_UNLIMITED, 0xefefefef },
 
     { MFX_VARIANT_TYPE_U16, "mfxImplDescription.mfxDeviceDescription.device.DeviceID",                              0, 0xefef },
     { MFX_VARIANT_TYPE_U16, "mfxImplDescription.mfxDeviceDescription.device.MediaAdapterType",                      MFX_MEDIA_UNKNOWN, MFX_MEDIA_INTEGRATED },
@@ -317,6 +318,10 @@ TEST(Dispatcher_SW_MultiProp, MultiConfig_AllPropsInt_InvalidProp_22) {
     TestAllPropsIntSingleInvalid(22);
 }
 
+TEST(Dispatcher_SW_MultiProp, MultiConfig_AllPropsInt_InvalidProp_23) {
+    TestAllPropsIntSingleInvalid(23);
+}
+
 // set all properties to valid (PTR), except set one to invalid
 TEST(Dispatcher_SW_MultiProp, MultiConfig_AllPropsPtr_InvalidProp_00) {
     TestAllPropsPtrSingleInvalid(0);
@@ -453,6 +458,10 @@ TEST(Dispatcher_SW_MultiProp, SingleConfig_AllPropsInt_InvalidProp_21) {
 
 TEST(Dispatcher_SW_MultiProp, SingleConfig_AllPropsInt_InvalidProp_22) {
     TestAllPropsIntSingleInvalid(22, true);
+}
+
+TEST(Dispatcher_SW_MultiProp, SingleConfig_AllPropsInt_InvalidProp_23) {
+    TestAllPropsIntSingleInvalid(23, true);
 }
 
 // set all properties to valid (PTR), except set one to invalid
