@@ -149,5 +149,25 @@ mfxStatus CpuFrame::QueryInterface(mfxFrameSurface1 *surface, mfxGUID guid, mfxH
     RET_IF_FALSE(surface, MFX_ERR_NULL_PTR);
     RET_IF_FALSE(interface, MFX_ERR_NULL_PTR);
 
+    CpuFrame *cpu_frame = TryCast(surface);
+    RET_IF_FALSE(cpu_frame, MFX_ERR_INVALID_HANDLE);
+
+    if (guid == (mfxGUID)MFX_GUID_SURFACE_POOL) {
+        CpuFramePoolInterface *parentPoolInterface = cpu_frame->m_parentPoolInterface;
+        RET_IF_FALSE(parentPoolInterface, MFX_ERR_NOT_INITIALIZED);
+
+        mfxSurfacePoolInterface *poolInterface = &(parentPoolInterface->m_surfacePoolInterface);
+        RET_IF_FALSE(poolInterface, MFX_ERR_NOT_INITIALIZED);
+
+        if (poolInterface->Context == nullptr)
+            return MFX_ERR_NOT_INITIALIZED;
+
+        // increase refcount every time interface is requested via QueryInterface
+        poolInterface->AddRef(poolInterface);
+
+        *interface = (mfxHDL)poolInterface;
+        return MFX_ERR_NONE;
+    }
+
     return MFX_ERR_NOT_IMPLEMENTED;
 }
