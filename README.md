@@ -1,4 +1,4 @@
-# oneAPI Video Processing Library CPU Implementation
+# ![oneAPI](assets/oneapi-logo.png "oneAPI") Video Processing Library CPU Implementation
 
 The oneAPI Video Processing Library (oneVPL) provides a single video processing
 API for encode, decode, and video processing that works across a wide range of
