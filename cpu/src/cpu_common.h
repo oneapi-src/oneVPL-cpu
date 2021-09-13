@@ -7,6 +7,7 @@
 #ifndef CPU_SRC_CPU_COMMON_H_
 #define CPU_SRC_CPU_COMMON_H_
 
+#include <algorithm>
 #include <chrono>
 #include <future>
 #include <map>
@@ -16,7 +17,12 @@
 
 #include "vpl/mfxjpeg.h"
 #include "vpl/mfxstructures.h"
+#include "vpl/mfxsurfacepool.h"
 #include "vpl/mfxvideo.h"
+
+static inline bool operator==(mfxGUID const &l, mfxGUID const &r) {
+    return std::equal(l.Data, l.Data + 16, r.Data);
+}
 
 #define ENABLE_LIBAV_AUTO_THREADS
 

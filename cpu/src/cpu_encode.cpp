@@ -518,7 +518,9 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     m_avEncContext->gop_size = par->mfx.GopPicSize;
     // In case Jpeg, max_b_frames must be 0, otherwise avcodec_open2()'s crashed
     m_avEncContext->max_b_frames =
-        (m_param.mfx.CodecId == MFX_CODEC_JPEG) ? 0 : par->mfx.GopRefDist;
+        (m_param.mfx.CodecId == MFX_CODEC_JPEG || par->mfx.GopRefDist == 0)
+            ? 0
+            : (par->mfx.GopRefDist - 1);
     m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
 
     m_avEncContext->framerate.num = par->mfx.FrameInfo.FrameRateExtN;

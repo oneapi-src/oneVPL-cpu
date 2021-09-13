@@ -1,4 +1,4 @@
-# oneAPI Video Processing Library CPU Implementation
+# ![oneAPI](assets/oneapi-logo.png "oneAPI") Video Processing Library CPU Implementation
 
 The oneAPI Video Processing Library (oneVPL) provides a single video processing
 API for encode, decode, and video processing that works across a wide range of
@@ -12,9 +12,9 @@ This repository contains a CPU implementation of the specification.
 as part of the [oneVPL base repository](https://github.com/oneapi-src/oneVPL).
 
 ---
-This project is part of the larger [oneAPI](https://www.oneapi.com/) project.
-See the [oneAPI Specification](https://spec.oneapi.com) and
-[oneVPL Specification](https://spec.oneapi.com/versions/latest/elements/oneVPL/source/index.html)
+This project is part of the larger [oneAPI](https://www.oneapi.io/) project.
+See the [oneAPI Specification](https://spec.oneapi.io) and
+[oneVPL Specification](https://spec.oneapi.io/versions/latest/elements/oneVPL/source/index.html)
 for more information.
 
 
@@ -61,26 +61,26 @@ Video processing (+raw frame formats) supported by the CPU software implementati
 |---------------|-------------|-------------|
 
 Note: I420 = 8 bit/420.  I010=10 bit/420.
-  
+
 
 ## Installation
 You can install oneVPL CPU implementation:
 
 - from [oneVPL home page](https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onevpl.html) as a part of Intel&reg; oneAPI Base Toolkit or standalone.
 
-### Installation from Source 
+### Installation from Source
 See [Installation from Sources](INSTALL.md) for details.
 
 ## Usage
 
 ### Configure the Environment
 
-If you install to standard system locations, applications can find the dispatcher library and 
+If you install to standard system locations, applications can find the dispatcher library and
 the dispatcher's default search rules will find your CPU implementation.
 
 Otherwise you need to set up the environment search paths.  This is easiest to manage when the
-install location <vpl-install-location> for oneVPL base is the same directory as used for the 
-CPU implementation.  In that case you can use the following steps:  
+install location <vpl-install-location> for oneVPL base is the same directory as used for the
+CPU implementation.  In that case you can use the following steps:
 
 For Linux:
 ```

@@ -286,6 +286,17 @@ def download_archive(url, path):
             archfileobj.extractall(path)
 
 
+def is_repo_root(path):
+    """check if path is the root of a git working copy"""
+    output, _, result = capture_cmd('git',
+                                    'rev-parse',
+                                    "--git-dir",
+                                    xenv=GIT_ENV)
+    log(result)
+    log(output)
+    return (result != 0) and os.path.samefile(os.path.join(output, ".."), path)
+
+
 def main():
     """Main steps to build ffmpeg and dependencies"""
 
@@ -386,7 +397,7 @@ def make_git_path(mingw_path):
     return git_path
 
 
-#pylint: disable=too-many-arguments
+#pylint: disable=too-many-arguments,too-many-branches,too-many-statements
 def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
     """Bootstrap install"""
     if os.name == 'nt':
@@ -440,6 +451,32 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
                     f"https://github.com/FFmpeg/FFmpeg/archive/refs/tags/{version}.zip",
                     ".")
         with pushd(f'FFmpeg-{version}'):
+            if not is_repo_root("."):
+                # make this folder a git repo so we can use "git am" to apply patches
+                cmd('git', 'init', xenv=GIT_ENV)
+                cmd('git', 'add', '.', xenv=GIT_ENV)
+                cmd('git',
+                    '-c',
+                    'user.name=bootstrap',
+                    '-c',
+                    'user.email=bootstrap@localhost',
+                    'commit',
+                    '-m',
+                    'Import',
+                    xenv=GIT_ENV)
+            patch_path = os.path.join(SCRIPT_PATH, 'patches', 'ffmpeg')
+            if os.path.exists(patch_path):
+                for patch in os.scandir(patch_path):
+                    if patch.is_file():
+                        cmd('git',
+                            '-c',
+                            'user.name=bootstrap',
+                            '-c',
+                            'user.email=bootstrap@localhost',
+                            'am',
+                            patch.path,
+                            xenv=GIT_ENV)
+
             configure_opts = []
             configure_opts.extend(
                 ffmpeg_configure_opts(install_dir, arch, validation))
@@ -737,19 +774,6 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
         if os.path.isfile("svt-hevc-patched"):
             print("SVT-HEVC patch already applied")
         else:
-            if not PREFER_CLONE:
-                # make this folder a git repo so we can use "git am" to apply patches
-                cmd('git', 'init', xenv=GIT_ENV)
-                cmd('git', 'add', '.', xenv=GIT_ENV)
-                cmd('git',
-                    '-c',
-                    'user.name=bootstrap',
-                    '-c',
-                    'user.email=bootstrap@localhost',
-                    'commit',
-                    '-m',
-                    'Import',
-                    xenv=GIT_ENV)
             patch = 'n4.4-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
             cmd('git',
                 '-c',

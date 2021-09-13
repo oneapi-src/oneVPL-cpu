@@ -19,6 +19,10 @@ AVPixelFormat MFXFourCC2AVPixelFormat(uint32_t fourcc) {
             return AV_PIX_FMT_BGRA;
         case MFX_FOURCC_I420:
             return AV_PIX_FMT_YUV420P;
+        case MFX_FOURCC_I422:
+            return AV_PIX_FMT_YUV422P;
+        case MFX_FOURCC_I210:
+            return AV_PIX_FMT_YUV422P10LE;
     }
     return (AVPixelFormat)-1;
 }
@@ -35,8 +39,10 @@ uint32_t AVPixelFormat2MFXFourCC(int format) {
             return MFX_FOURCC_RGB4;
         case AV_PIX_FMT_YUV420P:
             return MFX_FOURCC_I420;
-        default:
-            return 0;
+        case AV_PIX_FMT_YUV422P:
+            return MFX_FOURCC_I422;
+        case AV_PIX_FMT_YUV422P10LE:
+            return MFX_FOURCC_I210;
     }
     return 0;
 }
@@ -95,6 +101,18 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
             info->BitDepthChroma = 10;
             info->ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
             break;
+        case AV_PIX_FMT_YUV422P10LE:
+            info->FourCC         = MFX_FOURCC_I210;
+            info->BitDepthLuma   = 10;
+            info->BitDepthChroma = 10;
+            info->ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+            break;
+        case AV_PIX_FMT_YUV422P:
+            info->FourCC         = MFX_FOURCC_I422;
+            info->BitDepthLuma   = 8;
+            info->BitDepthChroma = 8;
+            info->ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+            break;
         case AV_PIX_FMT_YUV420P:
         case AV_PIX_FMT_YUVJ420P:
             info->FourCC         = MFX_FOURCC_IYUV;
@@ -135,6 +153,18 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
         w = info->Width;
         h = info->Height;
     }
+    else if (frame->format == AV_PIX_FMT_YUV422P10LE) {
+        RET_IF_FALSE(info->FourCC == MFX_FOURCC_I210, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
+
+        w = info->Width * 2;
+        h = info->Height;
+    }
+    else if (frame->format == AV_PIX_FMT_YUV422P) {
+        RET_IF_FALSE(info->FourCC == MFX_FOURCC_I422, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
+
+        w = info->Width;
+        h = info->Height;
+    }
     else if (frame->format == AV_PIX_FMT_BGRA) {
         RET_IF_FALSE(info->FourCC == MFX_FOURCC_RGB4, MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
 
@@ -151,6 +181,25 @@ mfxStatus AVFrame2mfxFrameSurface(mfxFrameSurface1 *surface,
         for (y = 0; y < h; y++) {
             offset = pitch * (y + info->CropY) + info->CropX;
             memcpy_s(data->B + offset, w, frame->data[0] + y * frame->linesize[0], w);
+        }
+    }
+    else if ((frame->format == AV_PIX_FMT_YUV422P) || (frame->format == AV_PIX_FMT_YUV422P10LE)) {
+        // copy Y plane
+        for (y = 0; y < h; y++) {
+            offset = pitch * (y + info->CropY) + info->CropX;
+            memcpy_s(data->Y + offset, w, frame->data[0] + y * frame->linesize[0], w);
+        }
+
+        // copy U plane
+        for (y = 0; y < h; y++) {
+            offset = pitch / 2 * (y + info->CropY) + info->CropX;
+            memcpy_s(data->U + offset, w / 2, frame->data[1] + y * frame->linesize[1], w / 2);
+        }
+
+        // copy V plane
+        for (y = 0; y < h; y++) {
+            offset = pitch / 2 * (y + info->CropY) + info->CropX;
+            memcpy_s(data->V + offset, w / 2, frame->data[2] + y * frame->linesize[2], w / 2);
         }
     }
     else {
@@ -187,6 +236,8 @@ mfxStatus CheckFrameInfoCommon(mfxFrameInfo *info, mfxU32 codecId) {
     switch (info->FourCC) {
         case MFX_FOURCC_I420:
         case MFX_FOURCC_I010:
+        case MFX_FOURCC_I422:
+        case MFX_FOURCC_I210:
             break;
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -207,6 +258,7 @@ mfxStatus CheckFrameInfoCommon(mfxFrameInfo *info, mfxU32 codecId) {
     if (info->BitDepthLuma > 8 || info->BitDepthChroma > 8) {
         switch (info->FourCC) {
             case MFX_FOURCC_I010:
+            case MFX_FOURCC_I210:
                 //case MFX_FOURCC_P010: // for later
                 break;
             default:
@@ -219,7 +271,9 @@ mfxStatus CheckFrameInfoCommon(mfxFrameInfo *info, mfxU32 codecId) {
     //    RET_IF_FALSE(info->Shift, MFX_ERR_INVALID_VIDEO_PARAM);
     //}
 
-    RET_IF_FALSE(info->ChromaFormat == MFX_CHROMAFORMAT_YUV420, MFX_ERR_INVALID_VIDEO_PARAM);
+    RET_IF_FALSE((info->ChromaFormat == MFX_CHROMAFORMAT_YUV420) ||
+                     (info->ChromaFormat == MFX_CHROMAFORMAT_YUV422),
+                 MFX_ERR_INVALID_VIDEO_PARAM);
     RET_IF_FALSE((info->FrameRateExtN == 0 && info->FrameRateExtD == 0) ||
                      (info->FrameRateExtN != 0 && info->FrameRateExtD != 0),
                  MFX_ERR_INCOMPATIBLE_VIDEO_PARAM);
@@ -242,7 +296,8 @@ mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId) {
         case MFX_CODEC_AVC:
         case MFX_CODEC_HEVC:
         case MFX_CODEC_AV1:
-            if (info->FourCC != MFX_FOURCC_I420 && info->FourCC != MFX_FOURCC_I010)
+            if (info->FourCC != MFX_FOURCC_I420 && info->FourCC != MFX_FOURCC_I010 &&
+                info->FourCC != MFX_FOURCC_I422 && info->FourCC != MFX_FOURCC_I210)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
         default:
@@ -255,11 +310,13 @@ mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId) {
         case MFX_CODEC_AVC:
         case MFX_CODEC_HEVC:
         case MFX_CODEC_AV1:
-            if (info->ChromaFormat != MFX_CHROMAFORMAT_YUV420)
+            if (info->ChromaFormat != MFX_CHROMAFORMAT_YUV420 &&
+                info->ChromaFormat != MFX_CHROMAFORMAT_YUV422)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
         default:
-            RET_IF_FALSE(info->ChromaFormat == MFX_CHROMAFORMAT_YUV420,
+            RET_IF_FALSE(info->ChromaFormat == MFX_CHROMAFORMAT_YUV420 ||
+                             info->ChromaFormat == MFX_CHROMAFORMAT_YUV422,
                          MFX_ERR_INVALID_VIDEO_PARAM);
             break;
     }

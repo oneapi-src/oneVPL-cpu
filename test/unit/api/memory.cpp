@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include "api/test_bitstreams.h"
 #include "vpl/mfxjpeg.h"
+#include "vpl/mfxsurfacepool.h"
 #include "vpl/mfxvideo.h"
 
 /*
@@ -1073,7 +1074,9 @@ TEST(Memory_FrameInterfaceSynchronize, InvalidSurfaceReturnsInvalidHandle) {
     CloseDecodeBasic(session);
 }
 
-TEST(Memory_FrameInterfaceQueryInterface, ValidSurfaceReturnsErrNotImplemented) {
+// QueryInterface tests - GUID = unknown
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDUnknownReturnsErrNotImplemented) {
     mfxStatus sts;
     mfxSession session;
     mfxFrameSurface1 *pmfxWorkSurface = nullptr;
@@ -1091,7 +1094,7 @@ TEST(Memory_FrameInterfaceQueryInterface, ValidSurfaceReturnsErrNotImplemented) 
     CloseDecodeBasic(session);
 }
 
-TEST(Memory_FrameInterfaceQueryInterface, NullSurfaceReturnsErrNull) {
+TEST(Memory_FrameInterfaceQueryInterface, GUIDUnknownNullSurfaceReturnsErrNull) {
     mfxStatus sts;
     mfxSession session;
     mfxFrameSurface1 *pmfxWorkSurface = nullptr;
@@ -1109,7 +1112,7 @@ TEST(Memory_FrameInterfaceQueryInterface, NullSurfaceReturnsErrNull) {
     CloseDecodeBasic(session);
 }
 
-TEST(Memory_FrameInterfaceQueryInterface, NullInterfaceReturnsErrNull) {
+TEST(Memory_FrameInterfaceQueryInterface, GUIDUnknownNullInterfaceReturnsErrNull) {
     mfxStatus sts;
     mfxSession session;
     mfxFrameSurface1 *pmfxWorkSurface = nullptr;
@@ -1121,6 +1124,818 @@ TEST(Memory_FrameInterfaceQueryInterface, NullInterfaceReturnsErrNull) {
     ASSERT_NE(nullptr, pmfxWorkSurface);
     sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, nullptr);
     EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+// QueryInterface tests - GUID = MFX_GUID_SURFACE_POOL
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolAddRefValidReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    sts = surfacePoolInterface->AddRef(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolAddRefNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    sts = surfacePoolInterface->AddRef(nullptr);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolReleaseValidReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // initial QueryInterface call caused refcount++
+    sts = surfacePoolInterface->Release(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolReleaseNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    sts = surfacePoolInterface->Release(nullptr);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolReleaseTwiceReturnsErrInvalidHandle) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    sts = surfacePoolInterface->Release(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // call again - refcount already 0 so error (interface was destroyed)
+    sts = surfacePoolInterface->Release(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetRefCounterValidReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // initial QueryInterface call caused refcount++
+    mfxU32 counter = 0;
+    sts            = surfacePoolInterface->GetRefCounter(surfacePoolInterface, &counter);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(counter, 1);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetRefCounterIncrementIsCorrect) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // initial QueryInterface call caused refcount++, then call again
+    sts = surfacePoolInterface->AddRef(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 counter = 0;
+    sts            = surfacePoolInterface->GetRefCounter(surfacePoolInterface, &counter);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(counter, 2);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetRefCounterIncDecIsCorrect) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // initial QueryInterface call caused refcount++, then call again, then call release
+    sts = surfacePoolInterface->AddRef(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    sts = surfacePoolInterface->Release(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxU32 counter = 0;
+    sts            = surfacePoolInterface->GetRefCounter(surfacePoolInterface, &counter);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(counter, 1);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetRefCounterNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    mfxU32 counter = 0;
+    sts            = surfacePoolInterface->GetRefCounter(nullptr, &counter);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetRefCounterNullCounterReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    sts = surfacePoolInterface->GetRefCounter(surfacePoolInterface, nullptr);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePoolSetNumSurfacesValidReturnsWrnIncompatible) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED, so this should return warning (input is ignored)
+    sts = surfacePoolInterface->SetNumSurfaces(surfacePoolInterface, 5);
+    EXPECT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePoolSetNumSurfacesNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    sts = surfacePoolInterface->SetNumSurfaces(nullptr, 5);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePoolRevokeSurfacesValidReturnsWrnIncompatible) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED, so this should return warning (input is ignored)
+    sts = surfacePoolInterface->SetNumSurfaces(surfacePoolInterface, 5);
+    EXPECT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+
+    // same for RevokeSurfaces
+    sts = surfacePoolInterface->RevokeSurfaces(surfacePoolInterface, 5);
+    EXPECT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePoolRevokeSurfacesNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED, so this should return warning (input is ignored)
+    sts = surfacePoolInterface->SetNumSurfaces(surfacePoolInterface, 5);
+    EXPECT_EQ(sts, MFX_WRN_INCOMPATIBLE_VIDEO_PARAM);
+
+    sts = surfacePoolInterface->RevokeSurfaces(nullptr, 5);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetAllocationPolicyValidReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED
+    mfxPoolAllocationPolicy policy = (mfxPoolAllocationPolicy)0xFFFFFFFF;
+    sts = surfacePoolInterface->GetAllocationPolicy(surfacePoolInterface, &policy);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(policy, MFX_ALLOCATION_UNLIMITED);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePoolGetAllocationPolicyNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED
+    mfxPoolAllocationPolicy policy = (mfxPoolAllocationPolicy)0xFFFFFFFF;
+    sts                            = surfacePoolInterface->GetAllocationPolicy(nullptr, &policy);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolGetMaximumPoolSizeValidReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetMaximumPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(size, 0xFFFFFFFF);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePoolGetMaximumPoolSizeNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // CPU RT only supports MFX_ALLOCATION_UNLIMITED
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetMaximumPoolSize(nullptr, &size);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePool_GetCurrentPoolSizeValidReturnsErrNone) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // by default CPU RT initializes surfaces pool of size NumFrameSuggested
+    mfxVideoParam currParams = { 0 };
+    sts                      = MFXVideoDECODE_GetVideoParam(session, &currParams);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest request = {};
+    sts                          = MFXVideoDECODE_QueryIOSurf(session, &currParams, &request);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get current pool size
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(size, request.NumFrameSuggested);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePool_GetCurrentPoolNullInterfaceReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // by default CPU RT initializes surfaces pool of size NumFrameSuggested
+    mfxVideoParam currParams = { 0 };
+    sts                      = MFXVideoDECODE_GetVideoParam(session, &currParams);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest request = {};
+    sts                          = MFXVideoDECODE_QueryIOSurf(session, &currParams, &request);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get current pool size
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetCurrentPoolSize(nullptr, &size);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePool_GetCurrentPoolNullSizeReturnsErrNull) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // by default CPU RT initializes surfaces pool of size NumFrameSuggested
+    mfxVideoParam currParams = { 0 };
+    sts                      = MFXVideoDECODE_GetVideoParam(session, &currParams);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest request = {};
+    sts                          = MFXVideoDECODE_QueryIOSurf(session, &currParams, &request);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get current pool size
+    sts = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, nullptr);
+    EXPECT_EQ(sts, MFX_ERR_NULL_PTR);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePool_GetCurrentPoolSizeMaxSurfacesIsCorrect) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // by default CPU RT initializes surfaces pool of size NumFrameSuggested
+    mfxVideoParam currParams = { 0 };
+    sts                      = MFXVideoDECODE_GetVideoParam(session, &currParams);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest request = {};
+    sts                          = MFXVideoDECODE_QueryIOSurf(session, &currParams, &request);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get current pool size
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(size, request.NumFrameSuggested);
+
+    // use up all of the free surfaces (one was already requested in GetFrameDecodeBasic)
+    for (mfxU16 i = 1; i < request.NumFrameSuggested; i++) {
+        mfxFrameSurface1 *decSurfaceIn = nullptr;
+        sts                            = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
+    }
+
+    // size should still be original pool size
+    size = 0;
+    sts  = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(size, request.NumFrameSuggested);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface,
+     GUIDSurfacePool_GetCurrentPoolSizeReqMoreSurfacesIsCorrect) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // by default CPU RT initializes surfaces pool of size NumFrameSuggested
+    mfxVideoParam currParams = { 0 };
+    sts                      = MFXVideoDECODE_GetVideoParam(session, &currParams);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    mfxFrameAllocRequest request = {};
+    sts                          = MFXVideoDECODE_QueryIOSurf(session, &currParams, &request);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get current pool size
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(size, request.NumFrameSuggested);
+
+    // use up all of the initial free surfaces and then add one more
+    for (mfxU16 i = 1; i < request.NumFrameSuggested + 1; i++) {
+        mfxFrameSurface1 *decSurfaceIn = nullptr;
+        sts                            = MFXMemory_GetSurfaceForDecode(session, &decSurfaceIn);
+    }
+
+    // size should be original pool size + 1
+    size = 0;
+    sts  = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+    EXPECT_EQ(size, request.NumFrameSuggested + 1);
+
+    // free internal resources
+    CloseDecodeBasic(session);
+}
+
+TEST(Memory_FrameInterfaceQueryInterface, GUIDSurfacePoolCallsAfterReleaseReturnErrInvalidHandle) {
+    mfxStatus sts;
+    mfxSession session;
+    mfxFrameSurface1 *pmfxWorkSurface = nullptr;
+    mfxGUID guid                      = { MFX_GUID_SURFACE_POOL };
+    mfxHDL interface;
+
+    sts = GetFrameDecodeBasic(&session, &pmfxWorkSurface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    ASSERT_NE(nullptr, pmfxWorkSurface);
+    sts = pmfxWorkSurface->FrameInterface->QueryInterface(pmfxWorkSurface, guid, &interface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // get pointer to surfacePoolInterface
+    mfxSurfacePoolInterface *surfacePoolInterface =
+        reinterpret_cast<mfxSurfacePoolInterface *>(interface);
+    EXPECT_NE(surfacePoolInterface, nullptr);
+
+    // initial QueryInterface call caused refcount++
+    sts = surfacePoolInterface->Release(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_NONE);
+
+    // call each of the functions after release - should return MFX_ERR_INVALID_HANDLE
+    //   because the interface has been destroyed
+    sts = surfacePoolInterface->AddRef(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    sts = surfacePoolInterface->Release(surfacePoolInterface);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    mfxU32 counter = 0;
+    sts            = surfacePoolInterface->GetRefCounter(surfacePoolInterface, &counter);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    sts = surfacePoolInterface->SetNumSurfaces(surfacePoolInterface, 5);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    sts = surfacePoolInterface->RevokeSurfaces(surfacePoolInterface, 5);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    mfxPoolAllocationPolicy policy = (mfxPoolAllocationPolicy)0xFFFFFFFF;
+    sts = surfacePoolInterface->GetAllocationPolicy(surfacePoolInterface, &policy);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    mfxU32 size = 0;
+    sts         = surfacePoolInterface->GetMaximumPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
+
+    sts = surfacePoolInterface->GetCurrentPoolSize(surfacePoolInterface, &size);
+    EXPECT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 
     // free internal resources
     CloseDecodeBasic(session);

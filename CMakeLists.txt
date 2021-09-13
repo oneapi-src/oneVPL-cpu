@@ -59,6 +59,7 @@ install(
   COMPONENT license)
 
 include(cmake/PackageTarget.cmake)
+include(InstallRequiredSystemLibraries)
 
 if(BUILD_TESTS)
   enable_testing()

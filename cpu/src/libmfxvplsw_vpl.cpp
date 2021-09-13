@@ -50,11 +50,17 @@ static const mfxAccelerationMode AccelerationMode[NUM_ACCELERATION_MODES_CPU] = 
     MFX_ACCEL_MODE_NA,
 };
 
+#define NUM_POOL_POLICIES_CPU 1
+
+static const mfxPoolAllocationPolicy PoolPolicy[NUM_POOL_POLICIES_CPU] = {
+    MFX_ALLOCATION_UNLIMITED,
+};
+
 // leave table formatting alone
 // clang-format off
 
 static const mfxImplDescription cpuImplDesc = {
-    { 1, 1 },                                       // struct Version
+    { 2, 1 },                                       // struct Version
     MFX_IMPL_TYPE_SOFTWARE,                         // Impl
     MFX_ACCEL_MODE_NA,                              // AccelerationMode
     { MFX_VERSION_MINOR, MFX_VERSION_MAJOR },       // ApiVersion
@@ -78,11 +84,12 @@ static const mfxImplDescription cpuImplDesc = {
 
     // mfxDeviceDescription Dev
     {
-        { 0, 1 },       // struct Version
-        {},             // reserved
-        "0000",         // DeviceID
-        0,              // NumSubDevices
-        {},             // SubDevices
+        { 1, 1 },          // struct Version
+        {},                // reserved
+        MFX_MEDIA_UNKNOWN, // MediaAdapterType
+        "0000",            // DeviceID
+        0,                 // NumSubDevices
+        {},                // SubDevices
     },
 
     // mfxDecoderDescription Dec
@@ -116,6 +123,14 @@ static const mfxImplDescription cpuImplDesc = {
         NUM_ACCELERATION_MODES_CPU,
         (mfxAccelerationMode *)AccelerationMode,
     } },
+
+    // mfxPoolPolicyDescription PoolPolicies
+    {
+        { 0, 1 },                       // struct Version
+        {},                             // reserved
+        NUM_POOL_POLICIES_CPU,          // NumPoolPolicies
+        (mfxPoolAllocationPolicy*)PoolPolicy,
+    },
 
     {},     // reserved
     0,      // NumExtParam

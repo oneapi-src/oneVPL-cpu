@@ -9,10 +9,56 @@
 
 #include "src/cpu_common.h"
 
+// interface for MFX_GUID_SURFACE_POOL
+struct CpuFramePoolInterface {
+public:
+    CpuFramePoolInterface() : m_surfacePoolInterface(), m_parentPool(), m_refCount(0) {
+        m_surfacePoolInterface.Context             = (mfxHDL *)this;
+        m_surfacePoolInterface.AddRef              = AddRef;
+        m_surfacePoolInterface.Release             = Release;
+        m_surfacePoolInterface.GetRefCounter       = GetRefCounter;
+        m_surfacePoolInterface.SetNumSurfaces      = SetNumSurfaces;
+        m_surfacePoolInterface.RevokeSurfaces      = RevokeSurfaces;
+        m_surfacePoolInterface.GetAllocationPolicy = GetAllocationPolicy;
+        m_surfacePoolInterface.GetMaximumPoolSize  = GetMaximumPoolSize;
+        m_surfacePoolInterface.GetCurrentPoolSize  = GetCurrentPoolSize;
+    }
+
+    ~CpuFramePoolInterface() {}
+
+    void SetParentPool(mfxHDL parentPool) {
+        m_parentPool = parentPool;
+    }
+
+    mfxHDL GetParentPool() {
+        return m_parentPool;
+    }
+
+    mfxSurfacePoolInterface m_surfacePoolInterface;
+
+private:
+    mfxHDL m_parentPool; // pointer to CpuFramePool (opaque handle to avoid circular dependency)
+    std::atomic<mfxU32> m_refCount;
+
+    static mfxStatus AddRef(struct mfxSurfacePoolInterface *pool);
+    static mfxStatus Release(struct mfxSurfacePoolInterface *pool);
+    static mfxStatus GetRefCounter(struct mfxSurfacePoolInterface *pool, mfxU32 *counter);
+    static mfxStatus SetNumSurfaces(struct mfxSurfacePoolInterface *pool, mfxU32 num_surfaces);
+    static mfxStatus RevokeSurfaces(struct mfxSurfacePoolInterface *pool, mfxU32 num_surfaces);
+    static mfxStatus GetAllocationPolicy(struct mfxSurfacePoolInterface *pool,
+                                         mfxPoolAllocationPolicy *policy);
+    static mfxStatus GetMaximumPoolSize(struct mfxSurfacePoolInterface *pool, mfxU32 *size);
+    static mfxStatus GetCurrentPoolSize(struct mfxSurfacePoolInterface *pool, mfxU32 *size);
+};
+
 // Implemented via AVFrame
 class CpuFrame : public mfxFrameSurface1 {
 public:
-    CpuFrame() : m_refCount(0), m_mappedFlags(0) {
+    explicit CpuFrame(CpuFramePoolInterface *parentPoolInterface)
+            : m_refCount(0),
+              m_mappedFlags(0),
+              m_interface(),
+              m_parentPoolInterface(parentPoolInterface) {
         m_avframe = av_frame_alloc();
 
         *(mfxFrameSurface1 *)this   = {};
@@ -75,11 +121,21 @@ public:
                 Info.BitDepthChroma = 10;
                 Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
                 break;
+            case AV_PIX_FMT_YUV422P10LE:
+                Info.BitDepthLuma   = 10;
+                Info.BitDepthChroma = 10;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
+                break;
             case AV_PIX_FMT_YUV420P:
             case AV_PIX_FMT_YUVJ420P:
                 Info.BitDepthLuma   = 8;
                 Info.BitDepthChroma = 8;
                 Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
+                break;
+            case AV_PIX_FMT_YUV422P:
+                Info.BitDepthLuma   = 8;
+                Info.BitDepthChroma = 8;
+                Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV422;
                 break;
             case AV_PIX_FMT_BGRA:
                 Info.BitDepthLuma   = 8;
@@ -130,6 +186,7 @@ private:
     mfxU32 m_mappedFlags;
     AVFrame *m_avframe;
     mfxFrameSurfaceInterface m_interface;
+    CpuFramePoolInterface *m_parentPoolInterface;
 
     static mfxStatus AddRef(mfxFrameSurface1 *surface);
     static mfxStatus Release(mfxFrameSurface1 *surface);
