@@ -374,6 +374,16 @@ mfxStatus CpuDecode::DecodeFrame(mfxBitstream *bs,
                 m_avDecPacket->pts = bs->TimeStamp;
 
             auto av_ret = avcodec_send_packet(m_avDecContext, m_avDecPacket);
+
+            if (av_ret == AVERROR_INVALIDDATA) {
+                // corrupted stream - set Corrupted flag in mfxFrameData and return
+                if (surface_work && surface_out) {
+                    surface_work->Data.Corrupted = MFX_CORRUPTION_MAJOR;
+                    *surface_out                 = surface_work;
+                    return MFX_ERR_NONE;
+                }
+            }
+
             if (av_ret < 0) {
                 return MFX_ERR_ABORTED;
             }
