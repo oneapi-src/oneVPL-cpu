@@ -15,6 +15,13 @@ CALL %~dp0%\_buildopts.bat ^
     -- %*
 IF DEFINED HELP_OPT ( EXIT /b 0 )
 
+@REM ------------------------------------------------------------------------------
+@REM Globals
+IF NOT DEFINED VPL_CPU_BUILD_DIR (
+    set "VPL_CPU_BUILD_DIR=%PROJ_DIR%\_build"
+)
+@REM ------------------------------------------------------------------------------
+
 @REM Load project environment
 set VPL_INTEL_ARCH=intel64
 if "%ARCH_OPT%"=="x86_32" (
@@ -34,22 +41,20 @@ if defined VPL_INSTALL_DIR (
 )
 
 set /A result_all = 0
-PUSHD %PROJ_DIR%
-  SET BUILD_DIR=_build
-  PUSHD  %BUILD_DIR%
-    PUSHD %COFIG_OPT%
-      ECHO *** Running Unit Tests ***
-      CALL vpl-utest.exe --gtest_output=xml:%PROJ_DIR%\_logs\
-      IF %errorlevel%==0 GOTO unit_tests_passed
-      ECHO *** Unit Tests FAILED ***
-      SET /A result_all = 1
-      GOTO test_end
+SET BUILD_DIR=%VPL_CPU_BUILD_DIR%
+PUSHD  %BUILD_DIR%
+  PUSHD %COFIG_OPT%
+    ECHO *** Running Unit Tests ***
+    CALL vpl-utest.exe --gtest_output=xml:%PROJ_DIR%\_logs\
+    IF %errorlevel%==0 GOTO unit_tests_passed
+    ECHO *** Unit Tests FAILED ***
+    SET /A result_all = 1
+    GOTO test_end
 
-      :unit_tests_passed
-      echo *** Unit Tests PASSED ***
+    :unit_tests_passed
+    echo *** Unit Tests PASSED ***
 
-      :test_end
-    POPD
+    :test_end
   POPD
 POPD
 

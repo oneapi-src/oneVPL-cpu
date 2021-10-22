@@ -15,6 +15,7 @@ import time
 import multiprocessing
 import urllib.request
 import zipfile
+import ssl
 from pathlib import Path
 from os import environ
 from contextlib import contextmanager
@@ -280,7 +281,10 @@ def download_archive(url, path):
     if not os.path.exists(path):
         mkdir(path)
     log_comment(f"Downloading {url}")
-    with urllib.request.urlopen(url) as webstream:
+    # bypassing ssl because we keep running into cases where certs have expired.
+    #pylint: disable=protected-access
+    context = ssl._create_unverified_context()
+    with urllib.request.urlopen(url, context=context) as webstream:
         with ZipFileWithPermissions(BytesIO(webstream.read())) as archfileobj:
             log_comment(f"Extracting {url} to {path} as zip file")
             archfileobj.extractall(path)
@@ -407,12 +411,19 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
         GIT_ENV = {'PATH': make_git_path(mingw_path)}
         # Don't update PATH with MinGW until we have figured out Git path
         set_env('PATH', mingw_path)
+
     build_dir = os.path.join(proj_dir, '_extbuild')
+    if "VPL_CPU_DEPS_BUILD_DIR" in os.environ:
+        build_dir = environ.get("VPL_CPU_DEPS_BUILD_DIR")
+    else:
+        set_env('VPL_CPU_DEPS_BUILD_DIR', build_dir)
+
     install_dir = os.path.join(proj_dir, '_deps')
     if "VPL_BUILD_DEPENDENCIES" in os.environ:
         install_dir = environ.get("VPL_BUILD_DEPENDENCIES")
     else:
         set_env('VPL_BUILD_DEPENDENCIES', install_dir)
+
     pkg_config_path = [os.path.join(install_dir, "lib", "pkgconfig")]
     if 'PKG_CONFIG_PATH' in os.environ:
         pkg_config_path.append(os.environ['PKG_CONFIG_PATH'])

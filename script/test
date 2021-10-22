@@ -6,8 +6,12 @@
 ###############################################################################
 # Run basic tests on base.
 
-set -o errexit
-
+if [ "$0" = "$BASH_SOURCE" ]
+then
+  set -o errexit
+else
+  echo "Warning: This script should not be sourced. Skipping exit on error."
+fi
 
 SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 ; pwd -P )"
 
@@ -16,6 +20,14 @@ SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 ; pwd -P 
     --name test \
     --desc "Run basic tests on base." \
     -- "$@"
+
+###############################################################################
+# Globals
+if [ -z "${VPL_CPU_BUILD_DIR}" ]
+then
+  VPL_CPU_BUILD_DIR="${PROJ_DIR}/_build"
+fi
+###############################################################################
 
 result_all=0
 
@@ -40,24 +52,22 @@ fi
 
 result_all=0
 
-pushd "${PROJ_DIR}"
-  . test/tools/env/vars.sh
-  export ffmpeg_dir="${VPL_BUILD_DEPENDENCIES}/bin"
-  export PATH=${ffmpeg_dir}:${PATH}
+. ${PROJ_DIR}/test/tools/env/vars.sh
+export ffmpeg_dir="${VPL_BUILD_DEPENDENCIES}/bin"
+export PATH=${ffmpeg_dir}:${PATH}
 
-  BUILD_DIR=_build
-  pushd "${BUILD_DIR}"
-    export LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH}
-    echo "--- Running Unit Tests ---"
-    # using " || ret=$?" to allow fail and capture exit code with errexit set
-    ./vpl-utest "--gtest_output=xml:${PROJ_DIR}/_logs/" || ret=$?
-    if [ ${ret} -ne 0 ]; then
-        echo "--- Unit Tests FAILED ---"
-        (( result_all++ )) || true
-    else
-        echo "--- Unit Tests PASSED ---"
-    fi
-  popd
+BUILD_DIR="${VPL_CPU_BUILD_DIR}"
+pushd "${BUILD_DIR}"
+  export LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH}
+  echo "--- Running Unit Tests ---"
+  # using " || ret=$?" to allow fail and capture exit code with errexit set
+  ./vpl-utest "--gtest_output=xml:${PROJ_DIR}/_logs/" || ret=$?
+  if [ ${ret} -ne 0 ]; then
+      echo "--- Unit Tests FAILED ---"
+      (( result_all++ )) || true
+  else
+      echo "--- Unit Tests PASSED ---"
+  fi
 popd
 
 exit "${result_all}"
