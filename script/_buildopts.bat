@@ -118,33 +118,5 @@ IF DEFINED BOOTSTRAP_OPT (
   SET FORWARD_OPTS=%FORWARD_OPTS% --bootstrap
 )
 
-@REM ECHO Environment Summary:
-@REM CALL :print_var SCRIPT_DIR
-@REM CALL :print_var ROOT_DIR
-@REM CALL :print_var VPL_BUILD_DEPENDENCIES
-@REM CALL :print_var VPL_INSTALL_DIR
-
-@REM ECHO Option Summary:
-@REM CALL :print_var HELP_OPT
-@REM CALL :print_var GPL_OPT
-@REM CALL :print_var WARNING_AS_ERROR_OPT
-@REM CALL :print_var COFIG_OPT
-@REM CALL :print_var ARCH_OPT
-@REM CALL :print_var BOOTSTRAP_OPT
-@REM CALL :print_var FORWARD_OPTS
-
 exit /b 0
 
-@REM SUBROUTINE "print_var"
-@REM Takes one parameter, the name of a variable
-@REM Echos Name followed by value or "(not defined)"
-@REM depending on state of the named variable
-:print_var
-SETLOCAL EnableDelayedExpansion
-IF DEFINED %1% (
-  ECHO    %1%: "!%1%!"
-) ELSE (
-  ECHO    %1%: ^(not defined^)
-)
-ENDLOCAL
-exit /b 0

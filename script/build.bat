@@ -15,6 +15,13 @@ CALL %~dp0%\_buildopts.bat ^
     -- %*
 IF DEFINED HELP_OPT ( EXIT /b 0 )
 
+@REM ------------------------------------------------------------------------------
+@REM Globals
+IF NOT DEFINED VPL_CPU_BUILD_DIR (
+    set "VPL_CPU_BUILD_DIR=%PROJ_DIR%\_build"
+)
+@REM ------------------------------------------------------------------------------
+
 IF DEFINED BOOTSTRAP_OPT (
     ECHO Building dependencies...
     %SCRIPT_DIR%/bootstrap.bat %FORWARD_OPTS%
@@ -42,24 +49,22 @@ IF DEFINED WARNING_AS_ERROR_OPT (
   SET WARN_CM_OPTS=-DENABLE_WARNING_AS_ERROR=ON
 )
 
-PUSHD %PROJ_DIR%
-  SET BUILD_DIR=_build
-  MKDIR %BUILD_DIR%
-  PUSHD  %BUILD_DIR%
-    @REM work around parallel build bug
-    MKDIR %COFIG_OPT%
-    cmake %ARCH_CM_OPT% %INSTALL_PREFIX_CM_OPT% %COFIG_CM_OPT% %GPL_OPTS% %WARN_CM_OPTS% .. ^
-        || EXIT /b 1
-    IF DEFINED NUMBER_OF_PROCESSORS (
-      SET PARALLEL_OPT=-j %NUMBER_OF_PROCESSORS%
-    )
-    cmake --build . --config %COFIG_OPT% %PARALLEL_OPT% || EXIT /b 1
-    cmake --build . --config %COFIG_OPT% --target package || EXIT /b 1
+SET BUILD_DIR=%VPL_CPU_BUILD_DIR%
+MKDIR %BUILD_DIR%
+PUSHD  %BUILD_DIR%
+  @REM work around parallel build bug
+  MKDIR %COFIG_OPT%
+  cmake %ARCH_CM_OPT% %INSTALL_PREFIX_CM_OPT% %COFIG_CM_OPT% %GPL_OPTS% %WARN_CM_OPTS% %PROJ_DIR% ^
+      || EXIT /b 1
+  IF DEFINED NUMBER_OF_PROCESSORS (
+    SET PARALLEL_OPT=-j %NUMBER_OF_PROCESSORS%
+  )
+  cmake --build . --config %COFIG_OPT% %PARALLEL_OPT% || EXIT /b 1
+  cmake --build . --config %COFIG_OPT% --target package || EXIT /b 1
 
-    @REM Signal to CI system
-    IF DEFINED TEAMCITY_VERSION (
-      ECHO ##teamcity[publishArtifacts 'oneVPL-cpu/%BUILD_DIR%/*-all.zip=^>']
-    )
-  POPD
+  @REM Signal to CI system
+  IF DEFINED TEAMCITY_VERSION (
+    ECHO ##teamcity[publishArtifacts '%BUILD_DIR%/*-all.zip=^>']
+  )
 POPD
 ENDLOCAL

@@ -15,9 +15,14 @@ CALL %~dp0%\_buildopts.bat ^
     -- %*
 IF DEFINED HELP_OPT ( EXIT /b 0 )
 
-PUSHD  %PROJ_DIR%
-  SET BUILD_DIR=_build
-  cmake --build %BUILD_DIR% --config %COFIG_OPT% --target install
-POPD
+@REM ------------------------------------------------------------------------------
+@REM Globals
+IF NOT DEFINED VPL_CPU_BUILD_DIR (
+    set "VPL_CPU_BUILD_DIR=%PROJ_DIR%\_build"
+)
+@REM ------------------------------------------------------------------------------
+
+SET BUILD_DIR=%VPL_CPU_BUILD_DIR%
+cmake --build %BUILD_DIR% --config %COFIG_OPT% --target install
 
 ENDLOCAL
