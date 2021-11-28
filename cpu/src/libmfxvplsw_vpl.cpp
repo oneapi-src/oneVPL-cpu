@@ -65,7 +65,7 @@ static const mfxImplDescription cpuImplDesc = {
     MFX_ACCEL_MODE_NA,                              // AccelerationMode
     { MFX_VERSION_MINOR, MFX_VERSION_MAJOR },       // ApiVersion
 
-    "oneAPI VPL CPU Reference Impl",                // ImplName
+    "oneAPI VPL CPU Implementation",                // ImplName
 
 #ifdef ENABLE_ENCODER_H264
     "MIT,GPL",                                      // License
