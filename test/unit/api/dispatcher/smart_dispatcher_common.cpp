@@ -1023,7 +1023,7 @@ void Dispatcher_CreateSession_RequestImplNameValidReturnsErrNone(mfxImplType imp
 
     // pass the correct ImplName for RT
     if (implType == MFX_IMPL_TYPE_SOFTWARE) {
-        SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.ImplName", const_cast<char *>("oneAPI VPL CPU Reference Impl"));
+        SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.ImplName", const_cast<char *>("oneAPI VPL CPU Implementation"));
     }
     else {
         SetConfigFilterProperty<mfxHDL>(loader, "mfxImplDescription.ImplName", const_cast<char *>("mfx-gen"));
