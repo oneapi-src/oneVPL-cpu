@@ -127,8 +127,12 @@ if(MSVC)
   add_dependencies(${TARGET} mingw-pthread)
   add_custom_command(
     TARGET mingw-pthread
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/)
+  add_custom_command(
+    TARGET mingw-pthread
     COMMAND ${CMAKE_COMMAND} -E copy ${PTHREAD_DLL}
-            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/)
 
 endif()
 
