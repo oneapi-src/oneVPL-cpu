@@ -56,6 +56,23 @@ private:
 
     std::unique_ptr<CpuFramePool> m_encSurfaces;
 
+    void InitExtBuffers();
+    void CleanUpExtBuffers();
+    mfxStatus CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtParam);
+    void CopyExtParam(mfxVideoParam& dst, mfxVideoParam& src);
+    inline mfxExtBuffer *GetExtBufferById(mfxExtBuffer **extBuffer, int32_t numExtBuffer, uint32_t id) {
+        if (extBuffer)
+            for (int32_t i = 0; i < numExtBuffer; i++)
+                if (extBuffer[i]->BufferId == id)
+                    return extBuffer[i];
+        return NULL;
+    }
+
+    mfxExtAV1BitstreamParam m_extAV1BSParam;
+    mfxExtBuffer *m_extParamAll[1];
+
+    size_t m_numExtSupported;
+
     /* copy not allowed */
     CpuEncode(const CpuEncode &);
     CpuEncode &operator=(const CpuEncode &);
