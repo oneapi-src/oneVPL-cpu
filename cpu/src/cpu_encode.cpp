@@ -20,7 +20,8 @@ CpuEncode::CpuEncode(CpuWorkstream *session)
           m_param({}),
           m_bFrameEncoded(false),
           m_session(session),
-          m_encSurfaces() {}
+          m_encSurfaces(),
+          m_numExtSupported(0) {}
 
 CpuEncode::~CpuEncode() {
     if (m_bFrameEncoded) {
@@ -59,8 +60,6 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
 
         if (par->Protected)
             par->Protected = 0;
-        if (par->NumExtParam)
-            par->NumExtParam = 0;
         if (par->IOPattern != MFX_IOPATTERN_IN_SYSTEM_MEMORY)
             par->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
     }
@@ -70,8 +69,6 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
         }
 
         if (par->Protected)
-            return MFX_ERR_INVALID_VIDEO_PARAM;
-        if (par->NumExtParam)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
         if (par->IOPattern != MFX_IOPATTERN_IN_SYSTEM_MEMORY)
@@ -540,12 +537,84 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
         return MFX_ERR_NONE;
 }
 
+void CpuEncode::InitExtBuffers() {
+    puts("InitExtBuffers");
+    Zero(m_extParamAll);
+    CleanUpExtBuffers();
+    size_t count = 0;    
+    m_extParamAll[count++] = &m_extAV1BSParam.Header;
+
+    m_numExtSupported = sizeof(m_extParamAll) / sizeof(m_extParamAll[--count]);
+}
+
+void CpuEncode::CleanUpExtBuffers() {
+    puts("CleanUpExtBuffers");
+    InitExtBuffer(m_extAV1BSParam);
+}
+
+mfxStatus CpuEncode::CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtParam) {
+    puts("CheckExtBuffers");
+    if (extParam == NULL)
+        return MFX_ERR_NONE;
+
+    const int32_t numSupported = sizeof(m_extParamAll) / sizeof(m_extParamAll[0]);
+    int32_t found[numSupported] = {};
+
+    for (int32_t i = 0; i < numExtParam; i++) {
+        if (extParam[i] == NULL)
+            return MFX_ERR_NULL_PTR;
+        int32_t idx = 0;
+        for (; idx < numSupported; idx++) {
+            printf("%d, %d\n", m_extParamAll[idx]->BufferId, extParam[i]->BufferId);
+            if (m_extParamAll[idx]->BufferId == extParam[i]->BufferId)
+                break;
+        }
+        if (idx >= numSupported)
+            return MFX_ERR_UNSUPPORTED;
+        if (extParam[i]->BufferSz != m_extParamAll[idx]->BufferSz)
+            return MFX_ERR_UNDEFINED_BEHAVIOR;
+        if (found[idx])
+            return MFX_ERR_UNDEFINED_BEHAVIOR;
+        found[idx] = 1;
+    }
+
+    return MFX_ERR_NONE;
+}
+
+void CpuEncode::CopyExtParam(mfxVideoParam& dst, mfxVideoParam& src) {
+    if (dst.ExtParam && src.ExtParam) {
+        for (uint32_t i = 0; i < src.NumExtParam; i++) {
+            if (mfxExtBuffer* d = GetExtBufferById(dst.ExtParam, dst.NumExtParam, src.ExtParam[i]->BufferId)) {
+                memmove(d, src.ExtParam[i], src.ExtParam[i]->BufferSz);
+            }
+        }
+    }
+}
+
 mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
+    InitExtBuffers();
+
+    if (par->mfx.CodecId == MFX_CODEC_AV1 && par->NumExtParam) {
+        if (CheckExtBuffers(par->ExtParam, par->NumExtParam) != MFX_ERR_NONE)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
     m_param = *par;
     par     = &m_param;
 
     mfxStatus valSts = ValidateEncodeParams(par, false);
     RET_ERROR(valSts);
+
+    if (par->mfx.CodecId == MFX_CODEC_AV1 && par->NumExtParam) {
+        CopyExtParam(m_param, *par);
+
+        for(int i = 0; i < m_param.NumExtParam; i++) {
+            if(m_param.ExtParam[i]->BufferId == MFX_EXTBUFF_AV1_BITSTREAM_PARAM) {
+                memcpy(&m_extAV1BSParam, m_param.ExtParam[i], m_param.ExtParam[i]->BufferSz);
+                printf("WriteIVFHeaders: %d\n", m_extAV1BSParam.WriteIVFHeaders);
+            }
+        }
+    }
 
     AVCodecID cid = MFXCodecId_to_AVCodecID(m_param.mfx.CodecId);
     RET_IF_FALSE(cid, MFX_ERR_INVALID_VIDEO_PARAM);
@@ -625,6 +694,11 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
             }
             break;
         case MFX_CODEC_AV1:
+            if (m_numExtSupported) {
+                if(m_extParamAll[0]->BufferId == MFX_EXTBUFF_AV1_BITSTREAM_PARAM) {
+                    memcpy(&m_extAV1BSParam, (mfxExtAV1BitstreamParam *)m_extParamAll[0], sizeof(mfxExtAV1BitstreamParam));
+                }
+            }
             RET_ERROR(InitAV1Params(par));
             break;
         case MFX_CODEC_AVC:
