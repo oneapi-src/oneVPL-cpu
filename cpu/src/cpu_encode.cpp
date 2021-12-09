@@ -12,8 +12,14 @@
 // used for setting default value of mfx.BufferSizeInKB if not otherwise specified
 #define DEF_BUFFER_SIZE_MULT 5
 
+// used for ivf header "AV01"
+#define AV1_FOURCC             0x31305641
+#define IVF_STREAM_HEADER_SIZE 32
+#define IVF_FRAME_HEADER_SIZE  12
+
 CpuEncode::CpuEncode(CpuWorkstream *session)
-        : m_avEncCodec(nullptr),
+        : m_bWriteIVFHeaders(false),
+          m_avEncCodec(nullptr),
           m_avEncContext(nullptr),
           m_avEncPacket(nullptr),
           m_input_locker(),
@@ -541,7 +547,7 @@ void CpuEncode::InitExtBuffers() {
     puts("InitExtBuffers");
     Zero(m_extParamAll);
     CleanUpExtBuffers();
-    size_t count = 0;    
+    size_t count           = 0;
     m_extParamAll[count++] = &m_extAV1BSParam.Header;
 
     m_numExtSupported = sizeof(m_extParamAll) / sizeof(m_extParamAll[--count]);
@@ -557,7 +563,7 @@ mfxStatus CpuEncode::CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtPara
     if (extParam == NULL)
         return MFX_ERR_NONE;
 
-    const int32_t numSupported = sizeof(m_extParamAll) / sizeof(m_extParamAll[0]);
+    const int32_t numSupported  = sizeof(m_extParamAll) / sizeof(m_extParamAll[0]);
     int32_t found[numSupported] = {};
 
     for (int32_t i = 0; i < numExtParam; i++) {
@@ -581,10 +587,11 @@ mfxStatus CpuEncode::CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtPara
     return MFX_ERR_NONE;
 }
 
-void CpuEncode::CopyExtParam(mfxVideoParam& dst, mfxVideoParam& src) {
+void CpuEncode::CopyExtParam(mfxVideoParam &dst, mfxVideoParam &src) {
     if (dst.ExtParam && src.ExtParam) {
         for (uint32_t i = 0; i < src.NumExtParam; i++) {
-            if (mfxExtBuffer* d = GetExtBufferById(dst.ExtParam, dst.NumExtParam, src.ExtParam[i]->BufferId)) {
+            if (mfxExtBuffer *d =
+                    GetExtBufferById(dst.ExtParam, dst.NumExtParam, src.ExtParam[i]->BufferId)) {
                 memmove(d, src.ExtParam[i], src.ExtParam[i]->BufferSz);
             }
         }
@@ -608,10 +615,13 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
     if (par->mfx.CodecId == MFX_CODEC_AV1 && par->NumExtParam) {
         CopyExtParam(m_param, *par);
 
-        for(int i = 0; i < m_param.NumExtParam; i++) {
-            if(m_param.ExtParam[i]->BufferId == MFX_EXTBUFF_AV1_BITSTREAM_PARAM) {
+        for (int i = 0; i < m_param.NumExtParam; i++) {
+            if (m_param.ExtParam[i]->BufferId == MFX_EXTBUFF_AV1_BITSTREAM_PARAM) {
                 memcpy(&m_extAV1BSParam, m_param.ExtParam[i], m_param.ExtParam[i]->BufferSz);
-                printf("WriteIVFHeaders: %d\n", m_extAV1BSParam.WriteIVFHeaders);
+                if (m_extAV1BSParam.WriteIVFHeaders == MFX_CODINGOPTION_ON ||
+                    m_extAV1BSParam.WriteIVFHeaders == MFX_CODINGOPTION_UNKNOWN) {
+                    m_bWriteIVFHeaders = true;
+                }
             }
         }
     }
@@ -694,11 +704,11 @@ mfxStatus CpuEncode::InitEncode(mfxVideoParam *par) {
             }
             break;
         case MFX_CODEC_AV1:
-            if (m_numExtSupported) {
-                if(m_extParamAll[0]->BufferId == MFX_EXTBUFF_AV1_BITSTREAM_PARAM) {
-                    memcpy(&m_extAV1BSParam, (mfxExtAV1BitstreamParam *)m_extParamAll[0], sizeof(mfxExtAV1BitstreamParam));
-                }
-            }
+            //            if (m_numExtSupported) {
+            //              if(m_extParamAll[0]->BufferId == MFX_EXTBUFF_AV1_BITSTREAM_PARAM) {
+            //                memcpy(&m_extAV1BSParam, (mfxExtAV1BitstreamParam *)m_extParamAll[0], sizeof(mfxExtAV1BitstreamParam));
+            //          }
+            //    }
             RET_ERROR(InitAV1Params(par));
             break;
         case MFX_CODEC_AVC:
@@ -1430,6 +1440,10 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
         par->mfx.TargetUsage = convertTargetUsageVal((int)optval, 0, 8, 1, 7);
     }
 
+    if (m_bWriteIVFHeaders == true) {
+        Zero(m_cfgIVF);
+    }
+
     return MFX_ERR_NONE;
 }
 
@@ -1498,14 +1512,58 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
             m_bFrameEncoded = true;
 
         // copy encoded data to output buffer
-        nBytesOut   = m_avEncPacket->size;
+        if (m_bWriteIVFHeaders == true) {
+            if (m_cfgIVF.frame_count ==
+                0) // add the stream header and the frame header for the 1st frame
+                nBytesOut = IVF_STREAM_HEADER_SIZE + IVF_FRAME_HEADER_SIZE + m_avEncPacket->size;
+            else // add the frame header only from 2nd frame
+                nBytesOut = IVF_FRAME_HEADER_SIZE + m_avEncPacket->size;
+        }
+        else {
+            nBytesOut = m_avEncPacket->size;
+        }
         nBytesAvail = bs->MaxLength - (bs->DataLength + bs->DataOffset);
 
         if (nBytesOut > nBytesAvail) {
             //error if encoded bytes out is larger than provided output buffer size
             return MFX_ERR_NOT_ENOUGH_BUFFER;
         }
-        memcpy_s(bs->Data + bs->DataOffset, nBytesAvail, m_avEncPacket->data, nBytesOut);
+
+        // only available for av1, otherwise it is 0 always
+        mfxU32 nHeaderSize = 0;
+        if (m_bWriteIVFHeaders == true) {
+            ++m_cfgIVF.frame_count;
+
+            if (m_cfgIVF.frame_count == 1) {
+                m_cfgIVF.input_padded_width = (m_param.mfx.FrameInfo.CropW)
+                                                  ? m_param.mfx.FrameInfo.CropW
+                                                  : m_param.mfx.FrameInfo.Width;
+                m_cfgIVF.input_padded_height = (m_param.mfx.FrameInfo.CropH)
+                                                   ? m_param.mfx.FrameInfo.CropH
+                                                   : m_param.mfx.FrameInfo.Height;
+                m_cfgIVF.frame_rate_numerator   = m_param.mfx.FrameInfo.FrameRateExtN;
+                m_cfgIVF.frame_rate_denominator = m_param.mfx.FrameInfo.FrameRateExtD;
+
+                WriteIVFStreamHeader(&m_cfgIVF, bs->Data + bs->DataOffset, nBytesAvail);
+
+                nHeaderSize = IVF_STREAM_HEADER_SIZE;
+                nBytesAvail -= IVF_STREAM_HEADER_SIZE;
+            }
+
+            WriteIVFFrameHeader(&m_cfgIVF,
+                                bs->Data + bs->DataOffset + nHeaderSize,
+                                nBytesAvail,
+                                m_avEncPacket->size);
+
+            nHeaderSize += IVF_FRAME_HEADER_SIZE;
+            nBytesAvail -= IVF_FRAME_HEADER_SIZE;
+        }
+
+        memcpy_s(bs->Data + bs->DataOffset + nHeaderSize,
+                 nBytesAvail,
+                 m_avEncPacket->data,
+                 m_avEncPacket->size);
+
         bs->DataLength += nBytesOut;
         // TO DO - convert to 90khz timestamps (read m_avEncPacket->pts, ->dts)
         // Note dts may start at < 0, should +=1 each frame
@@ -1743,4 +1801,52 @@ mfxStatus CpuEncode::IsSameVideoParam(mfxVideoParam *newPar, mfxVideoParam *oldP
     }
 
     return MFX_ERR_NONE;
+}
+
+void CpuEncode::WriteIVFStreamHeader(EbConfig *config, unsigned char *bs, uint32_t bs_size) {
+    char header[IVF_STREAM_HEADER_SIZE];
+    header[0] = 'D';
+    header[1] = 'K';
+    header[2] = 'I';
+    header[3] = 'F';
+
+    mem_put_le16(header + 4, 0); // version
+    mem_put_le16(header + 6, 32); // header size
+    mem_put_le32(header + 8, AV1_FOURCC); // fourcc
+    mem_put_le16(header + 12, config->input_padded_width); // width
+    mem_put_le16(header + 14, config->input_padded_height); // height
+
+    if (config->frame_rate_denominator != 0 && config->frame_rate_numerator != 0) {
+        mem_put_le32(header + 16, config->frame_rate_numerator); // rate
+        mem_put_le32(header + 20, config->frame_rate_denominator); // scale
+    }
+    else {
+        mem_put_le32(header + 16, (config->frame_rate >> 16) * 1000); // rate
+        mem_put_le32(header + 20, 1000); // scale
+    }
+
+    mem_put_le32(header + 24, 0); // length
+    mem_put_le32(header + 28, 0); // unused
+
+    memcpy_s(bs, bs_size, header, IVF_STREAM_HEADER_SIZE);
+
+    return;
+}
+
+void CpuEncode::WriteIVFFrameHeader(EbConfig *config,
+                                    unsigned char *bs,
+                                    uint32_t bs_size,
+                                    uint32_t frame_size) {
+    char header[IVF_FRAME_HEADER_SIZE];
+    int32_t write_location = 0;
+
+    mem_put_le32(&header[write_location], (int32_t)frame_size);
+    write_location = write_location + 4;
+    mem_put_le32(&header[write_location], (int32_t)((config->ivf_count) & 0xFFFFFFFF));
+    write_location = write_location + 4;
+    mem_put_le32(&header[write_location], (int32_t)((config->ivf_count) >> 32));
+
+    config->ivf_count++;
+
+    memcpy_s(bs, bs_size, header, IVF_FRAME_HEADER_SIZE);
 }
