@@ -124,18 +124,28 @@ mfxStatus CheckFrameInfoCommon(mfxFrameInfo *info, mfxU32 codecId);
 mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId);
 mfxStatus CheckVideoParamCommon(mfxVideoParam *in);
 
-template<class T> inline void Zero(T &obj) { memset(&obj, 0, sizeof(obj)); }
-template<class T> struct Type2Id;
-template<> struct Type2Id<mfxExtAV1BitstreamParam>   { enum { id = MFX_EXTBUFF_AV1_BITSTREAM_PARAM }; };
-template <class T> mfxExtBuffer MakeExtBufferHeader() {
-    mfxExtBuffer header = {Type2Id<T>::id, sizeof(T)};
+template <class T>
+inline void Zero(T &obj) {
+    memset(&obj, 0, sizeof(obj));
+}
+template <class T>
+struct Type2Id;
+template <>
+struct Type2Id<mfxExtAV1BitstreamParam> {
+    enum { id = MFX_EXTBUFF_AV1_BITSTREAM_PARAM };
+};
+template <class T>
+mfxExtBuffer MakeExtBufferHeader() {
+    mfxExtBuffer header = { Type2Id<T>::id, sizeof(T) };
     return header;
 }
-template <class T> void InitExtBuffer0(T &buf) {
+template <class T>
+void InitExtBuffer0(T &buf) {
     buf.Header = MakeExtBufferHeader<T>();
     memset((uint8_t *)&buf + sizeof(mfxExtBuffer), 0, sizeof(T) - sizeof(mfxExtBuffer));
 }
-template <class T> void InitExtBuffer(T &buf) {
+template <class T>
+void InitExtBuffer(T &buf) {
     InitExtBuffer0<T>(buf);
 }
 

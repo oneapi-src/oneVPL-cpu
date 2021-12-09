@@ -14,6 +14,23 @@
 #include "src/cpu_frame_pool.h"
 #include "src/frame_lock.h"
 
+// AV1: for adding IVF header
+typedef struct EbConfig {
+    uint32_t input_padded_width;
+    uint32_t input_padded_height;
+
+    uint64_t frame_count;
+    uint64_t ivf_count;
+    uint32_t frame_rate;
+    /* Default is 0. */
+    uint32_t frame_rate_numerator;
+    /* Frame rate denominator. When zero, the encoder will use -fps if
+     * FrameRateNumerator is also zero, otherwise an error is returned.
+     *
+     * Default is 0. */
+    uint32_t frame_rate_denominator;
+} EbConfig;
+
 class CpuWorkstream;
 
 class CpuEncode {
@@ -44,6 +61,31 @@ private:
 
     AVFrame *CreateAVFrame(mfxFrameSurface1 *surface);
 
+    inline void mem_put_le32(void *vmem, int32_t val) {
+        uint8_t *mem = (uint8_t *)vmem;
+
+        mem[0] = (uint8_t)((val >> 0) & 0xff);
+        mem[1] = (uint8_t)((val >> 8) & 0xff);
+        mem[2] = (uint8_t)((val >> 16) & 0xff);
+        mem[3] = (uint8_t)((val >> 24) & 0xff);
+    }
+
+    inline void mem_put_le16(void *vmem, int32_t val) {
+        uint8_t *mem = (uint8_t *)vmem;
+
+        mem[0] = (uint8_t)((val >> 0) & 0xff);
+        mem[1] = (uint8_t)((val >> 8) & 0xff);
+    }
+
+    void WriteIVFStreamHeader(EbConfig *config, unsigned char *bs, uint32_t bs_size);
+    void WriteIVFFrameHeader(EbConfig *config,
+                             unsigned char *bs,
+                             uint32_t bs_size,
+                             uint32_t frame_size);
+
+    EbConfig m_cfgIVF;
+    bool m_bWriteIVFHeaders;
+
     const AVCodec *m_avEncCodec;
     AVCodecContext *m_avEncContext;
     AVPacket *m_avEncPacket;
@@ -59,8 +101,10 @@ private:
     void InitExtBuffers();
     void CleanUpExtBuffers();
     mfxStatus CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtParam);
-    void CopyExtParam(mfxVideoParam& dst, mfxVideoParam& src);
-    inline mfxExtBuffer *GetExtBufferById(mfxExtBuffer **extBuffer, int32_t numExtBuffer, uint32_t id) {
+    void CopyExtParam(mfxVideoParam &dst, mfxVideoParam &src);
+    inline mfxExtBuffer *GetExtBufferById(mfxExtBuffer **extBuffer,
+                                          int32_t numExtBuffer,
+                                          uint32_t id) {
         if (extBuffer)
             for (int32_t i = 0; i < numExtBuffer; i++)
                 if (extBuffer[i]->BufferId == id)
