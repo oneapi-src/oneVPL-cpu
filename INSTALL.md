@@ -15,8 +15,8 @@
         sudo apt-get update && sudo apt-get install -y --no-install-recommends \
             build-essential git pkg-config yasm nasm cmake python3 \
             python3-setuptools python3-pip
-        sudo pip3 install -U wheel --user
-        sudo pip3 install meson ninja
+        pip3 install -U wheel --user
+        pip3 install meson ninja
 
 2. Configure, build, and install the CPU reference implementation:
 
