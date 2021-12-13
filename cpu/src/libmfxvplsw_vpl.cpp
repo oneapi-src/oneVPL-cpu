@@ -219,14 +219,17 @@ mfxHDL *MFXQueryImplsDescription(mfxImplCapsDeliveryFormat format, mfxU32 *num_i
 
     *num_impls = NUM_CPU_IMPLS;
 
-    if (format == MFX_IMPLCAPS_IMPLDESCSTRUCTURE) {
-        return (mfxHDL *)(cpuImplDescArray);
-    }
-    else if (format == MFX_IMPLCAPS_IMPLEMENTEDFUNCTIONS) {
-        return (mfxHDL *)(cpuImplFuncsArray);
-    }
-    else {
-        return nullptr;
+    switch (format) {
+        case MFX_IMPLCAPS_IMPLDESCSTRUCTURE:
+            return (mfxHDL *)(cpuImplDescArray);
+        case MFX_IMPLCAPS_IMPLEMENTEDFUNCTIONS:
+            return (mfxHDL *)(cpuImplFuncsArray);
+#ifdef ONEVPL_EXPERIMENTAL
+        case MFX_IMPLCAPS_DEVICE_ID_EXTENDED:
+            return nullptr;
+#endif // ONEVPL_EXPERIMENTAL
+        default:
+            return nullptr;
     }
 }
 
