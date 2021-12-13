@@ -25,6 +25,7 @@ project(oneVPL-cpu VERSION ${version_txt})
 
 # Project options
 option(BUILD_TESTS "Build tests." ON)
+option(USE_EXPERIMENTAL_API "Enable oneVPL Experimental API." ON)
 option(USE_ONEAPI_INSTALL_LAYOUT "Use oneAPI install layout instead of FHS" OFF)
 option(USE_MSVC_STATIC_RUNTIME
        "Link MSVC runtime statically to all components." OFF)
@@ -75,4 +76,71 @@ if(BUILD_TESTS)
   enable_testing()
   include(GoogleTest)
   add_subdirectory(test/unit)
+endif()
+
+message(
+  STATUS "---------------- Configuration summary ------------------------------"
+)
+message(STATUS "CMake:")
+message(STATUS "  CMAKE_VERSION                  : ${CMAKE_VERSION}")
+message(STATUS "  CMAKE_GENERATOR                : ${CMAKE_GENERATOR}")
+message(STATUS "  CMAKE_BUILD_TOOL               : ${CMAKE_BUILD_TOOL}")
+message(STATUS "Target:")
+message(STATUS "  CMAKE_SYSTEM_NAME              : ${CMAKE_SYSTEM_NAME}")
+message(STATUS "  CMAKE_SYSTEM_VERSION           : ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "  CMAKE_SYSTEM_PROCESSOR         : ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "General:")
+message(STATUS "  CMAKE_BUILD_TYPE               : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  CMAKE_TOOLCHAIN_FILE           : ${CMAKE_TOOLCHAIN_FILE}")
+message(STATUS "  CMAKE_C_COMPILER               : ${CMAKE_C_COMPILER}")
+message(STATUS "  CMAKE_CXX_COMPILER             : ${CMAKE_CXX_COMPILER}")
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  message(STATUS "  Build architecture             : 64-bit")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  message(STATUS "  Build architecture             : 32-bit")
+endif()
+message(STATUS "Flags:")
+message(STATUS "  CMAKE_C_FLAGS                  : ${CMAKE_C_FLAGS}")
+message(STATUS "  CMAKE_CXX_FLAGS                : ${CMAKE_CXX_FLAGS}")
+message(STATUS "Release flags:")
+message(STATUS "  CMAKE_C_FLAGS_RELEASE          : ${CMAKE_C_FLAGS_RELEASE}")
+message(STATUS "  CMAKE_CXX_FLAGS_RELEASE        : ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "Debug flags:")
+message(STATUS "  CMAKE_C_FLAGS_DEBUG            : ${CMAKE_C_FLAGS_DEBUG}")
+message(STATUS "  CMAKE_CXX_FLAGS_DEBUG          : ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "RelWithDebRT flags:")
+message(
+  STATUS "  CMAKE_C_FLAGS_RELWITHDEBRT     : ${CMAKE_C_FLAGS_RELWITHDEBRT}")
+message(
+  STATUS "  CMAKE_CXX_FLAGS_RELWITHDEBRT   : ${CMAKE_CXX_FLAGS_RELWITHDEBRT}")
+message(STATUS "Install:")
+message(STATUS "  CMAKE_INSTALL_PREFIX           : ${CMAKE_INSTALL_PREFIX}")
+message(
+  STATUS "  CMAKE_INSTALL_FULL_BINDIR      : ${CMAKE_INSTALL_FULL_BINDIR}")
+message(
+  STATUS "  CMAKE_INSTALL_FULL_INCLUDEDIR  : ${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+message(
+  STATUS "  CMAKE_INSTALL_FULL_LIBDIR      : ${CMAKE_INSTALL_FULL_LIBDIR}")
+message(
+  STATUS "  CMAKE_INSTALL_FULL_DOCDIR      : ${CMAKE_INSTALL_FULL_DOCDIR}")
+message(
+  STATUS "  ONEAPI_INSTALL_FULL_ENVDIR     : ${ONEAPI_INSTALL_FULL_ENVDIR}")
+message(
+  STATUS "  ONEAPI_INSTALL_FULL_SYSCHECKDIR: ${ONEAPI_INSTALL_FULL_SYSCHECKDIR}"
+)
+message(
+  STATUS "  ONEAPI_INSTALL_FULL_MODFILEDIR : ${ONEAPI_INSTALL_FULL_MODFILEDIR}")
+message(
+  STATUS "  ONEAPI_INSTALL_FULL_EXAMPLEDIR : ${ONEAPI_INSTALL_FULL_EXAMPLEDIR}")
+message(
+  STATUS "  ONEAPI_INSTALL_FULL_LICENSEDIR : ${ONEAPI_INSTALL_FULL_LICENSEDIR}")
+message(
+  STATUS "  ONEAPI_INSTALL_FULL_PYTHONDIR  : ${ONEAPI_INSTALL_FULL_PYTHONDIR}")
+message(STATUS "Build:")
+message(STATUS "  BUILD_TESTS                        : ${BUILD_TESTS}")
+message(STATUS "  USE_EXPERIMENTAL_API               : ${USE_EXPERIMENTAL_API}")
+
+if(MSVC)
+  message(
+    STATUS "  USE_MSVC_STATIC_RUNTIME        : ${USE_MSVC_STATIC_RUNTIME}")
 endif()

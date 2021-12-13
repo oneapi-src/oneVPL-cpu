@@ -49,6 +49,10 @@ if(BUILD_GPL_X264)
   add_definitions("-DENABLE_ENCODER_H264")
 endif(BUILD_GPL_X264)
 
+if(USE_EXPERIMENTAL_API)
+  add_definitions(-DONEVPL_EXPERIMENTAL)
+endif()
+
 add_subdirectory(ext/ffmpeg-svt)
 
 target_link_libraries(${TARGET} PRIVATE ffmpeg-svt)
