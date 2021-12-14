@@ -72,7 +72,7 @@
 
         ---
 
-3. Configure, build, and install CPU reference implementation:
+3. Configure, build, and install CPU reference implementation from Windows command prompt:
 
         set VPL_INSTALL_DIR=<vpl-install-location>
         script\bootstrap
