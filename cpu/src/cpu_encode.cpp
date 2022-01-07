@@ -629,12 +629,21 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
     else {
         //SVT-HEVC rc 1=VBR
         av_opt_set_int(m_avEncContext->priv_data, "rc", 1, AV_OPT_SEARCH_CHILDREN);
-        ret = av_opt_set_int(m_avEncContext->priv_data,
-                             "la_depth",
-                             par->mfx.GopPicSize,
-                             AV_OPT_SEARCH_CHILDREN);
-        if (ret)
-            return MFX_ERR_INVALID_VIDEO_PARAM;
+        m_avEncContext->gop_size = par->mfx.GopPicSize;
+
+        // SVT-HEVC recommends that
+        // "When RateControlMode is VBR, it's the best to set 'la_depth' to be equal to the intra period value (gop_size)."
+        // 'lookahead' concept is to improve dynamic allocation for p/b frames.
+        // SVT-HEVC does not expect 'la_depth' is set when gop_size is 1 because it's I frames only.
+        // When 'la_depth' is 1, it causes SVT-HEVC stack crash.
+        if (m_avEncContext->gop_size > 1) {
+            ret = av_opt_set_int(m_avEncContext->priv_data,
+                                 "la_depth",
+                                 par->mfx.GopPicSize,
+                                 AV_OPT_SEARCH_CHILDREN);
+            if (ret)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
 
         m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
     }
