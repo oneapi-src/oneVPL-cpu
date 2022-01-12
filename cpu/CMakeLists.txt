@@ -46,7 +46,7 @@ message(STATUS "Found VPL (version ${VPL_VERSION})")
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
 if(BUILD_GPL_X264)
-  add_definitions("-DENABLE_ENCODER_H264")
+  add_definitions("-DENABLE_ENCODER_X264")
 endif(BUILD_GPL_X264)
 
 if(USE_EXPERIMENTAL_API)
