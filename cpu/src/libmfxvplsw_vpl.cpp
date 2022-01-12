@@ -14,12 +14,7 @@
 // only include one time in this library
 #include "./libmfxvplsw_caps_dec.h"
 #include "./libmfxvplsw_caps_vpp.h"
-
-#ifdef ENABLE_ENCODER_H264
-    #include "./libmfxvplsw_caps_enc_h264.h"
-#else
-    #include "./libmfxvplsw_caps_enc.h"
-#endif
+#include "./libmfxvplsw_caps_enc.h"
 
 // preferred entrypoint for 2.0 implementations (instead of MFXInitEx)
 mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {
@@ -67,10 +62,14 @@ static const mfxImplDescription cpuImplDesc = {
 
     "oneAPI VPL CPU Implementation",                // ImplName
 
-#ifdef ENABLE_ENCODER_H264
+#ifdef ENABLE_ENCODER_X264
     "MIT,GPL",                                      // License
 #else
-    "MIT",                                          // License
+#ifdef __linux__
+    "MIT,BSD",                                      // License
+#else
+    "MIT",                                      // License
+#endif
 #endif
 
 #if defined _M_IX86

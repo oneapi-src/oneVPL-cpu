@@ -25,6 +25,9 @@ SVT_HEVC_VERSION = '1.5.1'
 SVT_AV1_VERSION = 'v0.8.6'  # v0.8.7 is missing AVC support
 DAV1D_VERSION = '0.9.2'
 X264_VERSION = 'stable'
+# The latest release of openh264 is v2.1.1 but it has an issue on supporting static lib.
+# Use the tip of master at 01/10/22 until the new release is ready with the fix.
+OPENH264_VERSION = 'e3abd766e39b5337e8c6cf748d432dd287e93987'
 FFMPEG_VERSION = 'n4.4'
 
 # Folder this script is in
@@ -440,6 +443,9 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
         if arch == 'x86_64':
             if use_gpl:
                 build_gpl_x264_encoder(install_dir)
+            else:
+                if os.name != 'nt':
+                    build_openh264_encoder(install_dir)
             build_dav1d_decoder(install_dir)
             build_svt_av1_encoder(install_dir, build_mode)
             build_svt_hevc_encoder(install_dir, build_mode)
@@ -644,6 +650,49 @@ def build_gpl_x264_encoder(install_dir):
         cmd('make', 'install')
 
 
+def build_openh264_encoder(install_dir):
+    """build openh264 encoder from source"""
+    version = OPENH264_VERSION
+    posix_install_dir = to_posix_path(install_dir)
+    if os.path.exists(f'openh264-{version}'):
+        print("using existing openh264 encoder dir")
+        return
+
+    ## don't support the build from archived source code
+    ## because the latest archived release (v2.1.1) has the issue on support static lib.
+
+    # clone from the tip of openh264 without creating a checkout
+    cmd('git',
+        'clone',
+        '-n',
+        'https://github.com/cisco/openh264.git',
+        f'openh264-{version}',
+        xenv=GIT_ENV)
+    with pushd(f'openh264-{version}'):
+        # checkout the specific commit id
+        cmd('git',
+            'checkout',
+            f'{version}',
+            xenv=GIT_ENV)
+        cmd('meson', 'build', '--prefix', os.path.join(install_dir,
+                                                       ''), '--libdir',
+            os.path.join(install_dir, 'lib'), '--buildtype', 'release',
+            '--default-library=static')
+        cmd('ninja', '-C', 'build')
+        with pushd('build'):
+            cmd('ninja', 'install')
+            cmd('cp', '--force', 'openh264-static.pc', f'{install_dir}/lib/pkgconfig/openh264.pc')
+            if os.name == 'nt':
+                if os.path.isfile(
+                        os.path.join(install_dir, 'lib', 'pkgconfig',
+                                     'openh264_edited')):
+                    print("openh264.pc already edited")
+                else:
+                    with pushd(install_dir, 'lib', 'pkgconfig'):
+                        replace('openh264.pc', '-lpthread', '')
+                        cmd('touch', 'openh264_edited')
+
+
 def ffmpeg_configure_opts(install_dir, arch, validation):
     """configure options for ffmpeg build"""
     posix_install_dir = to_posix_path(install_dir)
@@ -777,6 +826,12 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
             result.extend([
                 '--enable-gpl', '--enable-libx264', '--enable-encoder=libx264'
             ])
+    else:
+        if os.name != 'nt':
+            if "openh264" in pkg_list:
+                print("openh264 encoder found")
+                result.extend(['--enable-libopenh264', '--enable-encoder=libopenh264'])
+    
     if "SvtAv1Enc" in pkg_list:
         print("SVT-AV1 encoder found")
         result.extend(['--enable-libsvtav1', '--enable-encoder=libsvtav1'])

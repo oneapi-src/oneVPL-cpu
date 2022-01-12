@@ -9,8 +9,6 @@
 #include <sstream>
 #include "src/cpu_workstream.h"
 
-#define X264_DEFAULT_QUALITY_VALUE 23
-
 // used for setting default value of mfx.BufferSizeInKB if not otherwise specified
 #define DEF_BUFFER_SIZE_MULT 5
 
