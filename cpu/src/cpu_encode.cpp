@@ -631,12 +631,16 @@ mfxStatus CpuEncode::InitHEVCParams(mfxVideoParam *par) {
         av_opt_set_int(m_avEncContext->priv_data, "rc", 1, AV_OPT_SEARCH_CHILDREN);
         ret = av_opt_set_int(m_avEncContext->priv_data,
                              "la_depth",
-                             par->mfx.GopPicSize,
+                             par->mfx.GopPicSize > 1 ? par->mfx.GopPicSize : 2, // temp fix to avoid la_depth=1
                              AV_OPT_SEARCH_CHILDREN);
         if (ret)
             return MFX_ERR_INVALID_VIDEO_PARAM;
 
         m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
+    }
+    // GopRefDist is distance between I- or P- key frames (1 means no B-frames or IPPP)
+    if (par->mfx.GopRefDist == 1) {
+        av_opt_set_int(m_avEncContext->priv_data, "pred_struct", 0, AV_OPT_SEARCH_CHILDREN);
     }
 
     if (par->mfx.TargetUsage) {
