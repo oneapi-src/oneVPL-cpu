@@ -57,6 +57,8 @@ AVCodecID MFXCodecId_to_AVCodecID(mfxU32 CodecId) {
             return AV_CODEC_ID_MJPEG;
         case MFX_CODEC_AV1:
             return AV_CODEC_ID_AV1;
+        case MFX_CODEC_MPEG2:
+            return AV_CODEC_ID_MPEG2VIDEO;
     }
     return AV_CODEC_ID_NONE;
 }
@@ -71,6 +73,8 @@ mfxU32 AVCodecID_to_MFXCodecId(AVCodecID CodecId) {
             return MFX_CODEC_JPEG;
         case AV_CODEC_ID_AV1:
             return MFX_CODEC_AV1;
+        case AV_CODEC_ID_MPEG2VIDEO:
+            return MFX_CODEC_MPEG2;
         default:
             return 0;
     }
@@ -290,6 +294,7 @@ mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId) {
 
     switch (codecId) {
         case MFX_CODEC_JPEG:
+        case MFX_CODEC_MPEG2:
             if (info->FourCC != MFX_FOURCC_I420)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
             break;
@@ -309,6 +314,7 @@ mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId) {
         case MFX_CODEC_JPEG:
         case MFX_CODEC_AVC:
         case MFX_CODEC_HEVC:
+        case MFX_CODEC_MPEG2:
         case MFX_CODEC_AV1:
             if (info->ChromaFormat != MFX_CHROMAFORMAT_YUV420 &&
                 info->ChromaFormat != MFX_CHROMAFORMAT_YUV422)
@@ -324,6 +330,7 @@ mfxStatus CheckFrameInfoCodecs(mfxFrameInfo *info, mfxU32 codecId) {
     switch (codecId) {
         case MFX_CODEC_JPEG:
         case MFX_CODEC_AVC:
+        case MFX_CODEC_MPEG2:
         case MFX_CODEC_AV1:
             if (info->Width > 3840 || info->Height > 2160)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
@@ -351,6 +358,7 @@ mfxStatus CheckVideoParamCommon(mfxVideoParam *in) {
         case MFX_CODEC_AVC:
         case MFX_CODEC_HEVC:
         case MFX_CODEC_JPEG:
+        case MFX_CODEC_MPEG2:
         case MFX_CODEC_AV1:
             break;
         default:

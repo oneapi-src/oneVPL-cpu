@@ -707,6 +707,7 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
         '--enable-demuxer=ivf',
         '--enable-parser=hevc',
         '--enable-parser=mjpeg',
+        '--enable-parser=mpegvideo',
         '--enable-parser=av1',
         '--enable-decoder=mpeg2video',
         '--enable-encoder=mpeg2video',

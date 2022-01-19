@@ -30,6 +30,7 @@ mfxStatus CpuDecode::ValidateDecodeParams(mfxVideoParam *par, bool canCorrect) {
         case MFX_CODEC_HEVC:
         case MFX_CODEC_AVC:
         case MFX_CODEC_JPEG:
+        case MFX_CODEC_MPEG2:
         case MFX_CODEC_AV1:
             break;
         default:
@@ -740,6 +741,18 @@ mfxStatus CpuDecode::GetVideoParam(mfxVideoParam *par) {
         case MFX_CODEC_AV1:
             //if (profile==FF_PROFILE_AV1_MAIN)
             //if (profile==FF_PROFILE_AV1_HIGH)
+            break;
+
+        case MFX_CODEC_MPEG2:
+            if (profile == FF_PROFILE_MPEG2_MAIN)
+                par->mfx.CodecProfile = MFX_PROFILE_MPEG2_MAIN;
+            if (profile == FF_PROFILE_MPEG2_SIMPLE)
+                par->mfx.CodecProfile = MFX_PROFILE_MPEG2_SIMPLE;
+            if (profile == FF_PROFILE_MPEG2_HIGH)
+                par->mfx.CodecProfile = MFX_PROFILE_MPEG2_HIGH;
+
+            //TODO(jeff) check if true for all levels
+            par->mfx.CodecLevel = level;
             break;
 
         case MFX_CODEC_HEVC:
