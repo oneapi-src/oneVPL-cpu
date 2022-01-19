@@ -126,6 +126,30 @@ const DecProfile decProfile_c03[] = {
     },
 };
 
+const mfxU32 decColorFmt_c04_p00_m00[] = {
+    MFX_FOURCC_I420,
+};
+
+const DecMemDesc decMemDesc_c04_p00[] = {
+    {
+        MFX_RESOURCE_SYSTEM_SURFACE,
+        { 64, 4096, 8 },
+        { 64, 4096, 8 },
+        {},
+        1,
+        (mfxU32 *)decColorFmt_c04_p00_m00,
+    },
+};
+
+const DecProfile decProfile_c04[] = {
+    {
+        MFX_PROFILE_MPEG2_MAIN,
+        {},
+        1,
+        (DecMemDesc *)decMemDesc_c04_p00,
+    },
+};
+
 const DecCodec decCodec[] = {
     {
         MFX_CODEC_AV1,
@@ -155,11 +179,18 @@ const DecCodec decCodec[] = {
         1,
         (DecProfile *)decProfile_c03,
     },
+    {
+        MFX_CODEC_MPEG2,
+        {},
+        MFX_LEVEL_MPEG2_MAIN,
+        1,
+        (DecProfile *)decProfile_c04,
+    },
 };
 
 const mfxDecoderDescription decoderDesc = {
     { 0, 1 },
     {},
-    4,
+    5,
     (DecCodec *)decCodec,
 };
