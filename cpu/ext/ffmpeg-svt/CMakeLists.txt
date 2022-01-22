@@ -199,6 +199,6 @@ if(BUILD_GPL_X264)
 else()
   if(NOT MSVC)
     target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB} Threads::Threads
-    ${CMAKE_DL_LIBS})
+                                              ${CMAKE_DL_LIBS})
   endif()
 endif()

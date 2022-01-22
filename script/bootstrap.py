@@ -670,18 +670,15 @@ def build_openh264_encoder(install_dir):
         xenv=GIT_ENV)
     with pushd(f'openh264-{version}'):
         # checkout the specific commit id
-        cmd('git',
-            'checkout',
-            f'{version}',
-            xenv=GIT_ENV)
-        cmd('meson', 'build', '--prefix', os.path.join(install_dir,
-                                                       ''), '--libdir',
+        cmd('git', 'checkout', f'{version}', xenv=GIT_ENV)
+        cmd('meson', 'build', '--prefix', f'{posix_install_dir}', '--libdir',
             os.path.join(install_dir, 'lib'), '--buildtype', 'release',
             '--default-library=static')
         cmd('ninja', '-C', 'build')
         with pushd('build'):
             cmd('ninja', 'install')
-            cmd('cp', '--force', 'openh264-static.pc', f'{install_dir}/lib/pkgconfig/openh264.pc')
+            cmd('cp', '--force', 'openh264-static.pc',
+                f'{install_dir}/lib/pkgconfig/openh264.pc')
             if os.name == 'nt':
                 if os.path.isfile(
                         os.path.join(install_dir, 'lib', 'pkgconfig',
@@ -830,8 +827,9 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
         if os.name != 'nt':
             if "openh264" in pkg_list:
                 print("openh264 encoder found")
-                result.extend(['--enable-libopenh264', '--enable-encoder=libopenh264'])
-    
+                result.extend(
+                    ['--enable-libopenh264', '--enable-encoder=libopenh264'])
+
     if "SvtAv1Enc" in pkg_list:
         print("SVT-AV1 encoder found")
         result.extend(['--enable-libsvtav1', '--enable-encoder=libsvtav1'])

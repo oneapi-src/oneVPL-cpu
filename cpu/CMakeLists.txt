@@ -47,7 +47,11 @@ target_link_libraries(${TARGET} PUBLIC VPL::api)
 
 if(BUILD_GPL_X264)
   add_definitions("-DENABLE_ENCODER_X264")
-endif(BUILD_GPL_X264)
+else()
+  if(UNIX)
+    add_definitions("-DENABLE_ENCODER_OPENH264")
+  endif()
+endif()
 
 if(USE_EXPERIMENTAL_API)
   add_definitions(-DONEVPL_EXPERIMENTAL)
