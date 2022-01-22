@@ -86,10 +86,14 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
             par->mfx.BRCParamMultiplier = 0; //not supported
         if (par->mfx.NumThread)
             par->mfx.NumThread = 0; //not supported
+#ifdef ENABLE_ENCODER_OPENH264
+        if (par->mfx.TargetUsage)
+            par->mfx.TargetUsage = 0; // not supportd
+#else
         if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 || par->mfx.TargetUsage > MFX_TARGETUSAGE_7) {
             par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
         }
-
+#endif
         //GopPicSize and GopRefDist need no corrections
 
         // if GopOptFlag is set it can only be the GOP_CLOSED flag
@@ -282,13 +286,14 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
     // check codec id and the values
     switch (par->mfx.CodecId) {
         case MFX_CODEC_AVC: {
+#ifndef ENABLE_ENCODER_OPENH264
             if (!par->mfx.TargetUsage)
                 par->mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
 
             if (par->mfx.TargetUsage < MFX_TARGETUSAGE_1 ||
                 par->mfx.TargetUsage > MFX_TARGETUSAGE_7)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
-
+#endif
             if (par->mfx.FrameInfo.Width < 64 || par->mfx.FrameInfo.Width > 4096)
                 return MFX_ERR_INVALID_VIDEO_PARAM;
 
@@ -477,6 +482,57 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
         default:
             return MFX_ERR_INVALID_VIDEO_PARAM;
     }
+
+#ifdef ENABLE_ENCODER_OPENH264
+    if (par->mfx.CodecId == MFX_CODEC_AVC) {
+        if (par->mfx.TargetUsage)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        else if (canCorrect)
+            par->mfx.TargetUsage = 0; // not supported
+
+        if (par->mfx.FrameInfo.BitDepthChroma) {
+            if (par->mfx.FrameInfo.BitDepthChroma != 8)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+        else if (canCorrect) {
+            par->mfx.FrameInfo.BitDepthChroma = 8;
+        }
+
+        if (par->mfx.FrameInfo.BitDepthLuma) {
+            if (par->mfx.FrameInfo.BitDepthLuma != 8)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+        else if (canCorrect) {
+            par->mfx.FrameInfo.BitDepthLuma = 8;
+        }
+
+        if (par->mfx.FrameInfo.FourCC) {
+            if (par->mfx.FrameInfo.FourCC != MFX_FOURCC_I420)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+        else if (canCorrect) {
+            par->mfx.FrameInfo.FourCC = MFX_FOURCC_I420;
+        }
+
+        if (par->mfx.RateControlMethod) {
+            if (par->mfx.RateControlMethod != MFX_RATECONTROL_VBR)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+        else if (canCorrect) {
+            par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+        }
+
+        if (par->mfx.CodecProfile) {
+            if (par->mfx.CodecProfile != MFX_PROFILE_AVC_CONSTRAINED_BASELINE &&
+                par->mfx.CodecProfile != MFX_PROFILE_AVC_MAIN &&
+                par->mfx.CodecProfile != MFX_PROFILE_AVC_HIGH)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+        }
+        else if (canCorrect) {
+            par->mfx.CodecProfile = MFX_PROFILE_AVC_HIGH;
+        }
+    }
+#endif
 
     if (fixedIncompatible)
         return MFX_WRN_INCOMPATIBLE_VIDEO_PARAM;
@@ -796,6 +852,167 @@ mfxStatus CpuEncode::GetHEVCParams(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 
+#ifdef ENABLE_ENCODER_OPENH264
+mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
+    int ret;
+    std::stringstream value;
+    switch (par->mfx.RateControlMethod) {
+        case MFX_RATECONTROL_CQP:
+        case MFX_RATECONTROL_CBR:
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+        case MFX_RATECONTROL_VBR:
+        default:
+            par->mfx.NumSlice    = par->mfx.NumSlice ? par->mfx.NumSlice : 1;
+            par->mfx.NumRefFrame = par->mfx.NumRefFrame ? par->mfx.NumRefFrame : 1;
+
+            m_avEncContext->slices = par->mfx.NumSlice;
+            m_avEncContext->refs   = par->mfx.NumRefFrame;
+
+            m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
+
+            if (par->mfx.MaxKbps)
+                m_avEncContext->rc_max_rate = par->mfx.MaxKbps * 1000;
+            else
+                m_avEncContext->rc_max_rate = (m_avEncContext->bit_rate * 3) / 2;
+
+            if (par->mfx.BufferSizeInKB)
+                m_avEncContext->rc_buffer_size = par->mfx.BufferSizeInKB * 1000;
+            else
+                m_avEncContext->rc_buffer_size = par->mfx.TargetKbps * 1000;
+
+            //rc_mode 1=bitrate mode
+            ret = av_opt_set_int(m_avEncContext->priv_data, "rc_mode", 1, AV_OPT_SEARCH_CHILDREN);
+            if (ret)
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+
+            break;
+    }
+
+    if (par->mfx.TargetUsage) {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (par->mfx.CodecProfile) {
+        std::string profValue;
+        switch (par->mfx.CodecProfile) {
+            case MFX_PROFILE_AVC_CONSTRAINED_BASELINE:
+                profValue = "constrained_baseline";
+                break;
+            case MFX_PROFILE_AVC_MAIN:
+                profValue = "main";
+                break;
+            case MFX_PROFILE_AVC_HIGH:
+            default:
+                profValue = "high";
+                break;
+        }
+        std::stringstream profss;
+        profss << profValue;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "profile",
+                         profss.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    if (par->mfx.CodecLevel) {
+        std::string levelstr;
+        uint8_t level = par->mfx.CodecLevel & 0xFF;
+        switch (level) {
+            case MFX_LEVEL_AVC_1:
+                levelstr = "1";
+                break;
+            case MFX_LEVEL_AVC_1b:
+                levelstr = "9";
+                break;
+            case MFX_LEVEL_AVC_11:
+                levelstr = "1.1";
+                break;
+            case MFX_LEVEL_AVC_12:
+                levelstr = "1.2";
+                break;
+            case MFX_LEVEL_AVC_13:
+                levelstr = "1.3";
+                break;
+            case MFX_LEVEL_AVC_2:
+                levelstr = "2";
+                break;
+            case MFX_LEVEL_AVC_21:
+                levelstr = "2.1";
+                break;
+            case MFX_LEVEL_AVC_22:
+                levelstr = "2.2";
+                break;
+            case MFX_LEVEL_AVC_3:
+                levelstr = "3";
+                break;
+            case MFX_LEVEL_AVC_31:
+                levelstr = "3.1";
+            case MFX_LEVEL_AVC_32:
+                levelstr = "3.2";
+                break;
+            case MFX_LEVEL_AVC_4:
+                levelstr = "4";
+                break;
+            case MFX_LEVEL_AVC_41:
+                levelstr = "4.1";
+                break;
+            case MFX_LEVEL_AVC_42:
+                levelstr = "4.2";
+                break;
+            case MFX_LEVEL_AVC_5:
+                levelstr = "5";
+                break;
+            case MFX_LEVEL_AVC_51:
+                levelstr = "5.1";
+                break;
+            case MFX_LEVEL_AVC_52:
+                levelstr = "5.2";
+                break;
+            default:
+                return MFX_ERR_INVALID_VIDEO_PARAM;
+                break;
+        }
+        std::stringstream lvls;
+        lvls << levelstr;
+        ret = av_opt_set(m_avEncContext->priv_data,
+                         "level",
+                         lvls.str().c_str(),
+                         AV_OPT_SEARCH_CHILDREN);
+        if (ret)
+            return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
+    int ret;
+    int64_t optval;
+    ret = av_opt_get_int(m_avEncContext->priv_data, "rc_mode", AV_OPT_SEARCH_CHILDREN, &optval);
+    if (ret == 0) {
+        par->mfx.RateControlMethod = MFX_RATECONTROL_VBR;
+        if (m_avEncContext->bit_rate) {
+            par->mfx.TargetKbps = static_cast<mfxU16>(m_avEncContext->bit_rate / 1000);
+        }
+        if (m_avEncContext->rc_initial_buffer_occupancy) {
+            par->mfx.InitialDelayInKB = m_avEncContext->rc_initial_buffer_occupancy / 8000;
+        }
+        if (m_avEncContext->rc_buffer_size) {
+            par->mfx.BufferSizeInKB = m_avEncContext->rc_buffer_size / 1000;
+        }
+        if (m_avEncContext->rc_max_rate) {
+            par->mfx.MaxKbps = static_cast<mfxU16>(m_avEncContext->rc_max_rate / 1000);
+        }
+    }
+    else {
+        return MFX_ERR_INVALID_VIDEO_PARAM;
+    }
+
+    return MFX_ERR_NONE;
+}
+#else
 mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
     int ret;
     std::stringstream value;
@@ -814,14 +1031,14 @@ mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
 
         case MFX_RATECONTROL_VBR:
         default:
-            par->mfx.NumSlice    = par->mfx.NumSlice ? par->mfx.NumSlice : 1;
+            par->mfx.NumSlice = par->mfx.NumSlice ? par->mfx.NumSlice : 1;
             par->mfx.NumRefFrame = par->mfx.NumRefFrame ? par->mfx.NumRefFrame : 1;
 
             m_avEncContext->slices = par->mfx.NumSlice;
-            m_avEncContext->refs   = par->mfx.NumRefFrame;
+            m_avEncContext->refs = par->mfx.NumRefFrame;
 
             m_avEncContext->bit_rate = par->mfx.TargetKbps * 1000; // prop is in kbps;
-            ret                      = av_opt_set(m_avEncContext->priv_data,
+            ret = av_opt_set(m_avEncContext->priv_data,
                              "tune",
                              "zerolatency",
                              AV_OPT_SEARCH_CHILDREN);
@@ -1039,6 +1256,7 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
 
     return MFX_ERR_NONE;
 }
+#endif
 
 mfxStatus CpuEncode::InitJPEGParams(mfxVideoParam *par) {
     if (par->mfx.Quality) {

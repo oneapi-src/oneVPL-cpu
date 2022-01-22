@@ -14,7 +14,16 @@
 // only include one time in this library
 #include "./libmfxvplsw_caps_dec.h"
 #include "./libmfxvplsw_caps_vpp.h"
-#include "./libmfxvplsw_caps_enc.h"
+
+#ifdef ENABLE_ENCODER_X264
+    #include "./libmfxvplsw_caps_enc_x264.h"
+#else
+    #ifdef ENABLE_ENCODER_OPENH264
+        #include "./libmfxvplsw_caps_enc_openh264.h"
+    #else
+        #include "./libmfxvplsw_caps_enc.h"
+    #endif
+#endif
 
 // preferred entrypoint for 2.0 implementations (instead of MFXInitEx)
 mfxStatus MFXInitialize(mfxInitializationParam par, mfxSession *session) {

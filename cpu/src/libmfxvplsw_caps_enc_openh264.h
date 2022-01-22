@@ -49,7 +49,7 @@ const EncMemDesc encMemDesc_c01_p00[] = {
 };
 
 const mfxU32 encColorFmt_c01_p01_m00[] = {
-    MFX_FOURCC_I010,
+    MFX_FOURCC_I420,
 };
 
 const EncMemDesc encMemDesc_c01_p01[] = {
@@ -63,18 +63,39 @@ const EncMemDesc encMemDesc_c01_p01[] = {
     },
 };
 
+const mfxU32 encColorFmt_c01_p02_m00[] = {
+    MFX_FOURCC_I420,
+};
+
+const EncMemDesc encMemDesc_c01_p02[] = {
+    {
+        MFX_RESOURCE_SYSTEM_SURFACE,
+        { 64, 4096, 8 },
+        { 64, 4096, 8 },
+        {},
+        1,
+        (mfxU32 *)encColorFmt_c01_p02_m00,
+    },
+};
+
 const EncProfile encProfile_c01[] = {
     {
-        MFX_PROFILE_HEVC_MAIN,
+        MFX_PROFILE_AVC_CONSTRAINED_BASELINE,
         {},
         1,
         (EncMemDesc *)encMemDesc_c01_p00,
     },
     {
-        MFX_PROFILE_HEVC_MAIN10,
+        MFX_PROFILE_AVC_HIGH,
         {},
         1,
         (EncMemDesc *)encMemDesc_c01_p01,
+    },
+    {
+        MFX_PROFILE_AVC_MAIN,
+        {},
+        1,
+        (EncMemDesc *)encMemDesc_c01_p02,
     },
 };
 
@@ -93,12 +114,57 @@ const EncMemDesc encMemDesc_c02_p00[] = {
     },
 };
 
+const mfxU32 encColorFmt_c02_p01_m00[] = {
+    MFX_FOURCC_I010,
+};
+
+const EncMemDesc encMemDesc_c02_p01[] = {
+    {
+        MFX_RESOURCE_SYSTEM_SURFACE,
+        { 64, 4096, 8 },
+        { 64, 4096, 8 },
+        {},
+        1,
+        (mfxU32 *)encColorFmt_c02_p01_m00,
+    },
+};
+
 const EncProfile encProfile_c02[] = {
+    {
+        MFX_PROFILE_HEVC_MAIN,
+        {},
+        1,
+        (EncMemDesc *)encMemDesc_c02_p00,
+    },
+    {
+        MFX_PROFILE_HEVC_MAIN10,
+        {},
+        1,
+        (EncMemDesc *)encMemDesc_c02_p01,
+    },
+};
+
+const mfxU32 encColorFmt_c03_p00_m00[] = {
+    MFX_FOURCC_I420,
+};
+
+const EncMemDesc encMemDesc_c03_p00[] = {
+    {
+        MFX_RESOURCE_SYSTEM_SURFACE,
+        { 64, 4096, 8 },
+        { 64, 4096, 8 },
+        {},
+        1,
+        (mfxU32 *)encColorFmt_c03_p00_m00,
+    },
+};
+
+const EncProfile encProfile_c03[] = {
     {
         MFX_PROFILE_JPEG_BASELINE,
         {},
         1,
-        (EncMemDesc *)encMemDesc_c02_p00,
+        (EncMemDesc *)encMemDesc_c03_p00,
     },
 };
 
@@ -112,12 +178,20 @@ const EncCodec encCodec[] = {
         (EncProfile *)encProfile_c00,
     },
     {
+        MFX_CODEC_AVC,
+        MFX_LEVEL_AVC_52,
+        1,
+        {},
+        3,
+        (EncProfile *)encProfile_c01,
+    },
+    {
         MFX_CODEC_HEVC,
         MFX_LEVEL_HEVC_51,
         1,
         {},
         2,
-        (EncProfile *)encProfile_c01,
+        (EncProfile *)encProfile_c02,
     },
     {
         MFX_CODEC_JPEG,
@@ -125,13 +199,13 @@ const EncCodec encCodec[] = {
         0,
         {},
         1,
-        (EncProfile *)encProfile_c02,
+        (EncProfile *)encProfile_c03,
     },
 };
 
 const mfxEncoderDescription encoderDesc = {
     { 0, 1 },
     {},
-    3,
+    4,
     (EncCodec *)encCodec,
 };
