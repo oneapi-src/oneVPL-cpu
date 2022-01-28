@@ -29,7 +29,7 @@
 
 1. Install the following common developer tools:
 
-    - [Microsoft Visual Studio*](https://visualstudio.microsoft.com/), 2017 or newer
+    - [Microsoft Visual Studio*](https://visualstudio.microsoft.com/), 2019 or newer
     - [CMake*](https://cmake.org/)
     - [Python* 3](https://www.python.org/)
     - [Git*](https://git-scm.com/)
