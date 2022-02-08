@@ -314,7 +314,7 @@ def main():
                         '-m',
                         "--build_mode",
                         dest='build_mode',
-                        choices=['Release', 'Debug'],
+                        choices=['Release', 'Debug', 'Trace'],
                         default='Release',
                         help='Build mode/configuration')
 
@@ -499,6 +499,8 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
                 ffmpeg_configure_opts(install_dir, arch, validation))
             if build_mode == "Debug":
                 configure_opts.extend(ffmpeg_debug_configure_opts())
+            elif build_mode == "Trace":
+                configure_opts.extend(ffmpeg_trace_configure_opts())
             configure_opts.extend(
                 ffmpeg_3rdparty_configure_opts(build_dir, use_gpl))
             # run configure
@@ -804,6 +806,11 @@ def ffmpeg_debug_configure_opts():
         '--extra-cflags=-fno-omit-frame-pointer', '--enable-debug=3',
         '--extra-cflags=-fno-inline'
     ]
+
+
+def ffmpeg_trace_configure_opts():
+    """add ffmpeg configure debug flags if requested"""
+    return ['--disable-stripping']
 
 
 def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
