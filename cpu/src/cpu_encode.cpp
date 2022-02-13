@@ -544,7 +544,6 @@ mfxStatus CpuEncode::ValidateEncodeParams(mfxVideoParam *par, bool canCorrect) {
 }
 
 void CpuEncode::InitExtBuffers() {
-    puts("InitExtBuffers");
     Zero(m_extParamAll);
     CleanUpExtBuffers();
     size_t count           = 0;
@@ -554,12 +553,10 @@ void CpuEncode::InitExtBuffers() {
 }
 
 void CpuEncode::CleanUpExtBuffers() {
-    puts("CleanUpExtBuffers");
     InitExtBuffer(m_extAV1BSParam);
 }
 
 mfxStatus CpuEncode::CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtParam) {
-    puts("CheckExtBuffers");
     if (extParam == NULL)
         return MFX_ERR_NONE;
 
@@ -571,7 +568,6 @@ mfxStatus CpuEncode::CheckExtBuffers(mfxExtBuffer **extParam, int32_t numExtPara
             return MFX_ERR_NULL_PTR;
         int32_t idx = 0;
         for (; idx < numSupported; idx++) {
-            printf("%d, %d\n", m_extParamAll[idx]->BufferId, extParam[i]->BufferId);
             if (m_extParamAll[idx]->BufferId == extParam[i]->BufferId)
                 break;
         }
@@ -1479,8 +1475,8 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
             av_frame->quality = m_avEncContext->global_quality;
         }
 
-        if (surface->Data.TimeStamp)
-            av_frame->pts = surface->Data.TimeStamp;
+        if (surface->Data.TimeStamp && (surface->Data.TimeStamp != static_cast<mfxU64>(-1)))
+            av_frame->pts = static_cast<int64_t>(surface->Data.TimeStamp);
 
         err = avcodec_send_frame(m_avEncContext, av_frame);
         m_input_locker.Unlock();
