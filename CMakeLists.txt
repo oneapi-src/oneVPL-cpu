@@ -25,6 +25,8 @@ project(oneVPL-cpu VERSION ${version_txt})
 
 # Project options
 option(BUILD_TESTS "Build tests." ON)
+option(BUILD_GPL_X264 "Build GPL X264" OFF)
+option(BUILD_OPENH264 "Build openH264" OFF)
 option(USE_EXPERIMENTAL_API "Enable oneVPL Experimental API." ON)
 option(USE_ONEAPI_INSTALL_LAYOUT "Use oneAPI install layout instead of FHS" OFF)
 option(USE_MSVC_STATIC_RUNTIME
@@ -138,6 +140,8 @@ message(
   STATUS "  ONEAPI_INSTALL_FULL_PYTHONDIR  : ${ONEAPI_INSTALL_FULL_PYTHONDIR}")
 message(STATUS "Build:")
 message(STATUS "  BUILD_TESTS                        : ${BUILD_TESTS}")
+message(STATUS "  BUILD_GPL_X264                     : ${BUILD_GPL_X264}")
+message(STATUS "  BUILD_OPENH264                     : ${BUILD_OPENH264}")
 message(STATUS "  USE_EXPERIMENTAL_API               : ${USE_EXPERIMENTAL_API}")
 
 if(MSVC)

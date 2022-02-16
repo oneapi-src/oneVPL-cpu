@@ -17,12 +17,10 @@
 
 #ifdef ENABLE_ENCODER_X264
     #include "./libmfxvplsw_caps_enc_x264.h"
+#elif defined(ENABLE_ENCODER_OPENH264)
+    #include "./libmfxvplsw_caps_enc_openh264.h"
 #else
-    #ifdef ENABLE_ENCODER_OPENH264
-        #include "./libmfxvplsw_caps_enc_openh264.h"
-    #else
-        #include "./libmfxvplsw_caps_enc.h"
-    #endif
+    #include "./libmfxvplsw_caps_enc.h"
 #endif
 
 // preferred entrypoint for 2.0 implementations (instead of MFXInitEx)
@@ -73,12 +71,10 @@ static const mfxImplDescription cpuImplDesc = {
 
 #ifdef ENABLE_ENCODER_X264
     "MIT,GPL",                                      // License
-#else
-#ifdef __linux__
+#elif defined(ENABLE_ENCODER_OPENH264)
     "MIT,BSD",                                      // License
 #else
     "MIT",                                      // License
-#endif
 #endif
 
 #if defined _M_IX86

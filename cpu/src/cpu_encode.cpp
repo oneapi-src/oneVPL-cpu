@@ -1099,7 +1099,7 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
 
     return MFX_ERR_NONE;
 }
-#else
+#elif ENABLE_ENCODER_X264
 mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
     int ret;
     std::stringstream value;
@@ -1341,6 +1341,16 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
 
     av_free(presetval);
 
+    return MFX_ERR_NONE;
+}
+#else
+// placeholder for function definition
+// won't be called
+mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
+    return MFX_ERR_NONE;
+}
+
+mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
     return MFX_ERR_NONE;
 }
 #endif
