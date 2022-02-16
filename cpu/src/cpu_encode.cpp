@@ -18,7 +18,8 @@
 #define IVF_FRAME_HEADER_SIZE  12
 
 CpuEncode::CpuEncode(CpuWorkstream *session)
-        : m_bWriteIVFHeaders(false),
+        : m_cfgIVF(),
+          m_bWriteIVFHeaders(false),
           m_avEncCodec(nullptr),
           m_avEncContext(nullptr),
           m_avEncPacket(nullptr),
@@ -27,6 +28,8 @@ CpuEncode::CpuEncode(CpuWorkstream *session)
           m_bFrameEncoded(false),
           m_session(session),
           m_encSurfaces(),
+          m_extAV1BSParam(),
+          m_extParamAll(),
           m_numExtSupported(0) {}
 
 CpuEncode::~CpuEncode() {
