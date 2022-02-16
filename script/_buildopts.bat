@@ -18,6 +18,7 @@ FOR /D %%i IN ("%~dp0") DO (
 @REM Clear options
 SET "HELP_OPT="
 SET "GPL_OPT="
+SET "OPENH264_OPT="
 SET "WARNING_AS_ERROR_OPT="
 SET COFIG_OPT=Release
 SET ARCH_OPT=x86_64
@@ -54,6 +55,10 @@ SET "BOOTSTRAP_OPT="
     SET GPL_OPT=yes
   ) ELSE IF "%~1"=="gpl" (
     SET GPL_OPT=yes
+  ) ELSE IF "%~1"=="--openh264" (
+    SET OPENH264_OPT=yes
+  ) ELSE IF "%~1"=="openh264" (
+    SET OPENH264_OPT=yes
   ) ELSE IF "%~1"=="--warning_as_error" (
     SET WARNING_AS_ERROR_OPT=yes
   ) ELSE IF "%~1"=="--config" (
@@ -83,6 +88,7 @@ SET "BOOTSTRAP_OPT="
 IF DEFINED HELP_OPT (
   ECHO Usage: %ORIG_SCRIPT_NAME% [options]
   ECHO   --gpl                Include componentes using GPL licensing
+  ECHO   --openh264           Include openH264 encoder
   ECHO   --warning_as_error   Treat compiler warnings as errors
   ECHO   --config CONFIG      Build coniguration
   ECHO   -A ARCH              Target architecture
@@ -104,6 +110,8 @@ IF DEFINED HELP_OPT (
 SET "FORWARD_OPTS="
 IF DEFINED GPL_OPT (
   SET FORWARD_OPTS=%FORWARD_OPTS% --gpl
+) ELSE IF DEFINED OPENH264_OPT (
+  SET FORWARD_OPTS=%FORWARD_OPTS% --openh264
 )
 IF DEFINED WARNING_AS_ERROR_OPT (
   SET FORWARD_OPTS=%FORWARD_OPTS% --warning_as_error

@@ -9,57 +9,6 @@ set(TARGET ffmpeg-svt)
 
 add_library(${TARGET} INTERFACE)
 
-if(NOT DEFINED ENV{VPL_BUILD_DEPENDENCIES})
-  set(VPL_DEP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../_deps)
-  message(STATUS "Using default destination located at ${VPL_DEP_DIR}")
-else()
-  set(VPL_DEP_DIR $ENV{VPL_BUILD_DEPENDENCIES})
-  message(STATUS "Using VPL_BUILD_DEPENDENCIES located at ${VPL_DEP_DIR}")
-endif()
-
-option(BUILD_GPL_X264 "Build X264 with GPL License" OFF)
-
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-  set(SVTHEVCENC_LIB ${VPL_DEP_DIR}/lib/libSvtHevcEnc.a)
-  set(SVTAV1ENC_LIB ${VPL_DEP_DIR}/lib/libSvtAv1Enc.a)
-  set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
-endif()
-set(AVCODEC_LIB ${VPL_DEP_DIR}/lib/libavcodec.a)
-set(AVUTIL_LIB ${VPL_DEP_DIR}/lib/libavutil.a)
-set(AVFILTER_LIB ${VPL_DEP_DIR}/lib/libavfilter.a)
-set(SWSCALE_LIB ${VPL_DEP_DIR}/lib/libswscale.a)
-
-if(BUILD_GPL_X264)
-  set(H264_ENC_LIB ${VPL_DEP_DIR}/lib/libx264.a)
-  if(NOT EXISTS ${H264_ENC_LIB})
-    message(FATAL_ERROR "Could not find x264 libraries")
-  endif()
-else()
-  if(MSVC)
-    message(STATUS "No h264 encoder available in Windows")
-  else()
-    set(H264_ENC_LIB ${VPL_DEP_DIR}/lib/libopenh264.a)
-    if(NOT EXISTS ${H264_ENC_LIB})
-      message(FATAL_ERROR "Could not find openh264 libraries")
-    endif()
-  endif()
-endif()
-
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-  if(NOT EXISTS ${SVTHEVCENC_LIB}
-     OR NOT EXISTS ${SVTHEVCENC_LIB}
-     OR NOT EXISTS ${DAV1D_LIB})
-    message(FATAL_ERROR "Could not find expected FFmpeg libraries")
-  endif()
-endif()
-
-if(NOT EXISTS ${AVCODEC_LIB}
-   OR NOT EXISTS ${AVUTIL_LIB}
-   OR NOT EXISTS ${AVFILTER_LIB}
-   OR NOT EXISTS ${SWSCALE_LIB})
-  message(FATAL_ERROR "Could not find expected FFmpeg libraries")
-endif()
-
 if(MSVC)
   if(NOT DEFINED ENV{MSYS_ROOT})
     message(STATUS "MSYS_ROOT not defined, assuming C:/tools/msys64")
@@ -82,6 +31,28 @@ if(MSVC)
   execute_process(COMMAND ${MSYS_ROOT}/${mingw_name}/bin/gcc.exe --version
                   OUTPUT_VARIABLE gcc_version_text)
   string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" gcc_version ${gcc_version_text})
+
+  if(BUILD_OPENH264)
+    set(STDCPP_LIB
+        ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libstdc++.a
+    )
+    set(GCC_SEH_DLL ${MSYS_ROOT}/${mingw_name}/bin/libgcc_s_seh-1.dll)
+    set(STDCPP_DLL ${MSYS_ROOT}/${mingw_name}/bin/libstdc++-6.dll)
+
+    if(NOT EXISTS ${STDCPP_LIB})
+      message(
+        FATAL_ERROR "Could not find expected MinGW stdc++ runtime libraries")
+    endif()
+    if(NOT EXISTS ${GCC_SEH_DLL})
+      message(
+        FATAL_ERROR "Could not find expected MinGW GCC SEH runtime libraries")
+    endif()
+    if(NOT EXISTS ${STDCPP_DLL})
+      message(FATAL_ERROR "Could not find expected MinGW stdc++ runtime Dll")
+    endif()
+
+    target_link_libraries(${TARGET} INTERFACE ${STDCPP_LIB})
+  endif()
 
   set(GCC_LIB
       ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libgcc.a)
@@ -117,15 +88,19 @@ if(MSVC)
     message(
       FATAL_ERROR "Could not find expected MinGW PThread runtime libraries")
   endif()
-
-  target_link_libraries(
-    ${TARGET} INTERFACE ${GCC_LIB} ${GCC_EH_LIB} ${BCRYPT_LIB} ${MINGW32_LIB}
-                        ${MINGWEX_LIB})
-
   if(NOT EXISTS ${PTHREAD_IMPLIB})
     message(FATAL_ERROR "Could not find expected MinGW runtime libraries")
   endif()
-  target_link_libraries(${TARGET} INTERFACE ${PTHREAD_IMPLIB})
+
+  target_link_libraries(
+    ${TARGET}
+    INTERFACE ${GCC_LIB}
+              ${GCC_EH_LIB}
+              ${STDCPP_LIB}
+              ${BCRYPT_LIB}
+              ${MINGW32_LIB}
+              ${MINGWEX_LIB}
+              ${PTHREAD_IMPLIB})
 
   install(
     PROGRAMS ${PTHREAD_DLL}
@@ -143,6 +118,16 @@ if(MSVC)
     COMMAND ${CMAKE_COMMAND} -E copy ${PTHREAD_DLL}
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/)
 
+  if(BUILD_OPENH264)
+    add_custom_command(
+      TARGET mingw-pthread
+      COMMAND ${CMAKE_COMMAND} -E copy ${STDCPP_DLL} ${GCC_SEH_DLL}
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/)
+    install(
+      PROGRAMS ${STDCPP_DLL} ${GCC_SEH_DLL}
+      DESTINATION ${CMAKE_INSTALL_BINDIR}
+      COMPONENT runtime)
+  endif()
 endif()
 
 set_property(TARGET ${TARGET} PROPERTY INTERFACE_INCLUDE_DIRECTORIES
@@ -189,16 +174,9 @@ else()
   endif()
 endif()
 
-if(BUILD_GPL_X264)
-  if(MSVC)
-    target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB} Threads::Threads)
-  else()
-    target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB} Threads::Threads
-                                              ${CMAKE_DL_LIBS})
-  endif()
+if(MSVC)
+  target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB} Threads::Threads)
 else()
-  if(NOT MSVC)
-    target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB} Threads::Threads
-                                              ${CMAKE_DL_LIBS})
-  endif()
+  target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB} Threads::Threads
+                                            ${CMAKE_DL_LIBS})
 endif()

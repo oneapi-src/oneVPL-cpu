@@ -27,7 +27,7 @@ DAV1D_VERSION = '0.9.2'
 X264_VERSION = 'stable'
 # The latest release of openh264 is v2.1.1 but it has an issue on supporting static lib.
 # Use the tip of master at 01/10/22 until the new release is ready with the fix.
-OPENH264_VERSION = 'e3abd766e39b5337e8c6cf748d432dd287e93987'
+OPENH264_VERSION = 'v2.2.0'
 FFMPEG_VERSION = 'n4.4'
 
 # Folder this script is in
@@ -325,6 +325,13 @@ def main():
                         action="store_true",
                         help='Use GPL codecs (ex: x264)')
 
+    parser.add_argument('-openh264',
+                        "--use_openh264",
+                        "--openh264",
+                        dest='use_openh264',
+                        action="store_true",
+                        help='Use openH264 encoder')
+
     parser.add_argument(
         '-A',
         "--arch",
@@ -353,7 +360,16 @@ def main():
 
     args = parser.parse_args()
 
-    bootstrap(args.clean, args.use_gpl, args.build_mode, proj_dir, args.arch,
+    parser.add_argument(dest='h264_ip', help='Type of H264 encoder')
+
+    if args.use_gpl:
+        args.h264_ip = 'gpl'
+    elif args.use_openh264:
+        args.h264_ip = 'openh264'
+    else:
+        args.h264_ip = 'none'
+
+    bootstrap(args.clean, args.h264_ip, args.build_mode, proj_dir, args.arch,
               args.validation)
 
 
@@ -405,7 +421,7 @@ def make_git_path(mingw_path):
 
 
 #pylint: disable=too-many-arguments,too-many-branches,too-many-statements
-def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
+def bootstrap(clean, h264_ip, build_mode, proj_dir, arch, validation):
     """Bootstrap install"""
     if os.name == 'nt':
         #pylint: disable=global-statement
@@ -441,11 +457,10 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
         #build dependencies
         # build_aom_av1_decoder(install_dir)
         if arch == 'x86_64':
-            if use_gpl:
+            if h264_ip == 'gpl':
                 build_gpl_x264_encoder(install_dir)
-            else:
-                if os.name != 'nt':
-                    build_openh264_encoder(install_dir)
+            elif h264_ip == 'openh264':
+                build_openh264_encoder(install_dir)
             build_dav1d_decoder(install_dir)
             build_svt_av1_encoder(install_dir, build_mode)
             build_svt_hevc_encoder(install_dir, build_mode)
@@ -502,7 +517,7 @@ def bootstrap(clean, use_gpl, build_mode, proj_dir, arch, validation):
             elif build_mode == "Trace":
                 configure_opts.extend(ffmpeg_trace_configure_opts())
             configure_opts.extend(
-                ffmpeg_3rdparty_configure_opts(build_dir, use_gpl))
+                ffmpeg_3rdparty_configure_opts(build_dir, h264_ip))
             # run configure
             cmd('./configure', *configure_opts, shell='bash')
             # build ffmpeg
@@ -655,7 +670,6 @@ def build_gpl_x264_encoder(install_dir):
 def build_openh264_encoder(install_dir):
     """build openh264 encoder from source"""
     version = OPENH264_VERSION
-    posix_install_dir = to_posix_path(install_dir)
     if os.path.exists(f'openh264-{version}'):
         print("using existing openh264 encoder dir")
         return
@@ -666,14 +680,15 @@ def build_openh264_encoder(install_dir):
     # clone from the tip of openh264 without creating a checkout
     cmd('git',
         'clone',
-        '-n',
+        '--depth=1',
+        '-b',
+        f'{version}',
         'https://github.com/cisco/openh264.git',
         f'openh264-{version}',
         xenv=GIT_ENV)
     with pushd(f'openh264-{version}'):
-        # checkout the specific commit id
-        cmd('git', 'checkout', f'{version}', xenv=GIT_ENV)
-        cmd('meson', 'build', '--prefix', f'{posix_install_dir}', '--libdir',
+        cmd('meson', 'build', '--prefix', os.path.join(install_dir,
+                                                       ''), '--libdir',
             os.path.join(install_dir, 'lib'), '--buildtype', 'release',
             '--default-library=static')
         cmd('ninja', '-C', 'build')
@@ -813,7 +828,7 @@ def ffmpeg_trace_configure_opts():
     return ['--disable-stripping']
 
 
-def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
+def ffmpeg_3rdparty_configure_opts(build_dir, h264_ip):
     """update ffmpeg configure command line based on packages findable
     by pkg-config"""
     result = []
@@ -824,18 +839,17 @@ def ffmpeg_3rdparty_configure_opts(build_dir, use_gpl):
     if "dav1d" in pkg_list:
         print("dav1d decoder found")
         result.extend(['--enable-libdav1d', '--enable-decoder=libdav1d'])
-    if use_gpl:
+    if h264_ip == 'gpl':
         if "x264" in pkg_list:
             print("x264 encoder found")
             result.extend([
                 '--enable-gpl', '--enable-libx264', '--enable-encoder=libx264'
             ])
-    else:
-        if os.name != 'nt':
-            if "openh264" in pkg_list:
-                print("openh264 encoder found")
-                result.extend(
-                    ['--enable-libopenh264', '--enable-encoder=libopenh264'])
+    elif h264_ip == 'openh264':
+        if "openh264" in pkg_list:
+            print("openh264 encoder found")
+            result.extend(
+                ['--enable-libopenh264', '--enable-encoder=libopenh264'])
 
     if "SvtAv1Enc" in pkg_list:
         print("SVT-AV1 encoder found")
