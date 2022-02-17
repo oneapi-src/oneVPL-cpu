@@ -369,7 +369,8 @@ def main():
     else:
         args.h264_ip = 'none'
 
-    bootstrap(args.clean, args.h264_ip, args.build_mode, proj_dir, args.arch, args.validation)
+    bootstrap(args.clean, args.h264_ip, args.build_mode, proj_dir, args.arch,
+              args.validation)
 
 
 def make_mingw_path(arch):
@@ -807,7 +808,7 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
             ])
         else:
             result.extend([
-                '--disable-vaapi', '--disable-cuda-llvm', '--disable-avdevice',
+                '--disable-vaapi', '--disable-cuda-llvm',
                 '--disable-swresample'
             ])
     return result
