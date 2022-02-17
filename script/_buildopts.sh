@@ -86,10 +86,10 @@ while [ $# -gt 0 ]; do
             BOOTSTRAP_OPT=yes
             ;;
         "--validation" )
-            OPENH264_OPT=yes
+            VALIDATION_OPT=yes
             ;;
         "validation" )
-            OPENH264_OPT=yes
+            VALIDATION_OPT=yes
             ;;
         "--help" )
             HELP_OPT=yes
