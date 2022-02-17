@@ -369,8 +369,7 @@ def main():
     else:
         args.h264_ip = 'none'
 
-    bootstrap(args.clean, args.h264_ip, args.build_mode, proj_dir, args.arch,
-              args.validation)
+    bootstrap(args.clean, args.h264_ip, args.build_mode, proj_dir, args.arch, args.validation)
 
 
 def make_mingw_path(arch):

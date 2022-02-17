@@ -23,6 +23,7 @@ SET "WARNING_AS_ERROR_OPT="
 SET COFIG_OPT=Release
 SET ARCH_OPT=x86_64
 SET "BOOTSTRAP_OPT="
+SET "VALIDATION_OPT="
 
 @REM Read information about origin script before parsing command line
 :PREFIX_Loop
@@ -71,6 +72,10 @@ SET "BOOTSTRAP_OPT="
     SHIFT
   ) ELSE IF "%~1"=="--bootstrap" (
     SET BOOTSTRAP_OPT=yes
+  ) ELSE IF "%~1"=="--validation" (
+    SET VALIDATION_OPT=yes
+  ) ELSE IF "%~1"=="validation" (
+    SET VALIDATION_OPT=yes
   ) ELSE IF "%~1"=="--help" (
     SET HELP_OPT=yes
   ) ELSE IF "%~1"=="-h" (
@@ -87,12 +92,13 @@ SET "BOOTSTRAP_OPT="
 @REM Print usage message
 IF DEFINED HELP_OPT (
   ECHO Usage: %ORIG_SCRIPT_NAME% [options]
-  ECHO   --gpl                Include componentes using GPL licensing
+  ECHO   --gpl                Include components using GPL licensing
   ECHO   --openh264           Include openH264 encoder
   ECHO   --warning_as_error   Treat compiler warnings as errors
   ECHO   --config CONFIG      Build coniguration
   ECHO   -A ARCH              Target architecture
   ECHO   --bootstrap          Include bootstrap steps
+  ECHO   --validation         Include more components for validation
   ECHO   --help, -h           Show this help message
   ECHO.
   ECHO Depricated options
@@ -124,6 +130,9 @@ IF DEFINED ARCH_OPT (
 )
 IF DEFINED BOOTSTRAP_OPT (
   SET FORWARD_OPTS=%FORWARD_OPTS% --bootstrap
+)
+IF DEFINED VALIDATION_OPT (
+  SET FORWARD_OPTS=%FORWARD_OPTS% --validation
 )
 
 exit /b 0

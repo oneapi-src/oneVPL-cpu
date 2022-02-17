@@ -23,6 +23,7 @@ unset WARNING_AS_ERROR_OPT
 COFIG_OPT=Release
 unset ARCH_OPT
 unset BOOTSTRAP_OPT
+unset VALIDATION_OPT
 
 # Read information about origin script before parsing command line
 while [ $# -gt 0 ]; do
@@ -84,6 +85,12 @@ while [ $# -gt 0 ]; do
         "--bootstrap" )
             BOOTSTRAP_OPT=yes
             ;;
+        "--validation" )
+            OPENH264_OPT=yes
+            ;;
+        "validation" )
+            OPENH264_OPT=yes
+            ;;
         "--help" )
             HELP_OPT=yes
             ;;
@@ -112,6 +119,7 @@ then
   echo "  --config CONFIG      Build coniguration"
   echo "  -A ARCH              Target architecture"
   echo "  --bootstrap          Include bootstrap steps"
+  echo "  --validation         Include more components for validation"
   echo "  --help, -h           Show this help message"
   echo ""
   echo "Depricated options"
@@ -150,4 +158,7 @@ if [ -n "${BOOTSTRAP_OPT}" ]
 then
   FORWARD_OPTS="${FORWARD_OPTS} --bootstrap"
 fi
-
+if [ -n "${VALIDATION_OPT}" ]
+then
+  FORWARD_OPTS="${FORWARD_OPTS} --validation"
+fi
