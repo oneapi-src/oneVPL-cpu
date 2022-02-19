@@ -53,7 +53,7 @@ message(STATUS "Found VPL (version ${VPL_VERSION})")
 target_link_libraries(${TARGET} PUBLIC VPL::api)
 
 if(NOT DEFINED ENV{VPL_BUILD_DEPENDENCIES})
-  set(VPL_DEP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../_deps)
+  set(VPL_DEP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../_deps)
   message(STATUS "Using default destination located at ${VPL_DEP_DIR}")
 else()
   set(VPL_DEP_DIR $ENV{VPL_BUILD_DEPENDENCIES})
