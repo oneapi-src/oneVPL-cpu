@@ -25,8 +25,6 @@ SVT_HEVC_VERSION = '1.5.1'
 SVT_AV1_VERSION = 'v0.8.6'  # v0.8.7 is missing AVC support
 DAV1D_VERSION = '0.9.2'
 X264_VERSION = 'stable'
-# The latest release of openh264 is v2.1.1 but it has an issue on supporting static lib.
-# Use the tip of master at 01/10/22 until the new release is ready with the fix.
 OPENH264_VERSION = 'v2.2.0'
 FFMPEG_VERSION = 'n4.4'
 
@@ -757,7 +755,6 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
         '--enable-muxer=mjpeg',
         '--enable-muxer=hevc',
         '--enable-muxer=ivf',
-        '--enable-filter=testsrc',
         '--enable-demuxer=image2',
         '--enable-muxer=image2',
         '--enable-filter=yuvtestsrc',
@@ -790,7 +787,6 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
         result.extend([
             '--extra-cflags=-fPIC',
             '--extra-ldflags=-fPIC',
-            '--enable-filter=testsrc2',
         ])
         if arch == 'x86_64':
             result.append('--arch=x86_64')
