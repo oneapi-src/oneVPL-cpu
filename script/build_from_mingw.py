@@ -347,12 +347,6 @@ def launch_builder(build_opts, arch):
 
     set_env('CMAKE_GENERATOR', "Unix Makefiles")
 
-    if "VPL_BUILD_DEPENDENCIES" in os.environ:
-        deps_dir = environ.get("VPL_BUILD_DEPENDENCIES")
-        set_env('VPL_BUILD_DEPENDENCIES', deps_dir)
-    else:
-        raise 'VPL_BULID_DEPENDENCIES is not set'
-
     if "VPL_INSTALL_DIR" in os.environ:
         vpl_install_dir = environ.get("VPL_INSTALL_DIR")
         set_env('VPL_INSTALL_DIR', vpl_install_dir)
