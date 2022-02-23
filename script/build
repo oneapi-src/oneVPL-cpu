@@ -38,6 +38,7 @@ fi
 if [ -n "${VPL_INSTALL_DIR}" ]
 then
   mkdir -p "${VPL_INSTALL_DIR}"
+  PREFIX_PATH_CM_OPT="-DCMAKE_PREFIX_PATH=${VPL_INSTALL_DIR}"
   INSTALL_PREFIX_CM_OPT="-DCMAKE_INSTALL_PREFIX=${VPL_INSTALL_DIR}"
 fi
 
@@ -52,7 +53,7 @@ if [ "${WARNING_AS_ERROR_OPT}" == "yes" ]; then
 fi
 mkdir -p ${BUILD_DIR}
 pushd "${BUILD_DIR}"
-  cmake "${INSTALL_PREFIX_CM_OPT}" ${CMAKE_GPL_OPT} ${CMAKE_WARN_OPTS} "${COFIG_CM_OPT}" "${PROJ_DIR}"
+  cmake "${PREFIX_PATH_CM_OPT}" "${INSTALL_PREFIX_CM_OPT}" ${CMAKE_GPL_OPT} ${CMAKE_WARN_OPTS} "${COFIG_CM_OPT}" "${PROJ_DIR}"
   make -j "$(nproc)" VERBOSE=1
   cmake --build . --config "${COFIG_OPT}" --target package
 popd
