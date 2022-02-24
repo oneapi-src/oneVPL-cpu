@@ -47,7 +47,7 @@ COFIG_CM_OPT="-DCMAKE_BUILD_TYPE=${COFIG_OPT}"
 BUILD_DIR="${VPL_CPU_BUILD_DIR}"
 if [ "${GPL_OPT}" == "yes" ]; then
   H264_IP_OPT=-DBUILD_GPL_X264=ON
-elif [ "${OPENH264_OPT}" == "yes" ]; then
+else
   H264_IP_OPT=-DBUILD_OPENH264=ON
 fi
 if [ "${WARNING_AS_ERROR_OPT}" == "yes" ]; then

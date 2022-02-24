@@ -323,13 +323,6 @@ def main():
                         action="store_true",
                         help='Use GPL codecs (ex: x264)')
 
-    parser.add_argument('-openh264',
-                        "--use_openh264",
-                        "--openh264",
-                        dest='use_openh264',
-                        action="store_true",
-                        help='Use openH264 encoder')
-
     parser.add_argument(
         '-A',
         "--arch",
@@ -362,10 +355,8 @@ def main():
 
     if args.use_gpl:
         args.h264_ip = 'gpl'
-    elif args.use_openh264:
-        args.h264_ip = 'openh264'
     else:
-        args.h264_ip = 'none'
+        args.h264_ip = 'openh264'
 
     bootstrap(args.clean, args.h264_ip, args.build_mode, proj_dir, args.arch,
               args.validation)

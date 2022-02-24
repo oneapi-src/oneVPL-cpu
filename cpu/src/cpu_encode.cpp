@@ -1343,16 +1343,6 @@ mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
 
     return MFX_ERR_NONE;
 }
-#else
-// placeholder for function definition
-// won't be called
-mfxStatus CpuEncode::InitAVCParams(mfxVideoParam *par) {
-    return MFX_ERR_NONE;
-}
-
-mfxStatus CpuEncode::GetAVCParams(mfxVideoParam *par) {
-    return MFX_ERR_NONE;
-}
 #endif
 
 mfxStatus CpuEncode::InitJPEGParams(mfxVideoParam *par) {
