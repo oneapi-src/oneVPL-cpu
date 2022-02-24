@@ -53,6 +53,10 @@ else()
     add_compile_options("-fstack-protector-strong")
     set(CMAKE_CXX_FLAGS "-z relro -z now -z noexecstack")
   endif()
+  if(WIN32)
+    add_compile_options("-fno-set-stack-executable") # Windows verion of "-z
+                                                     # noexecstack"
+  endif()
   add_compile_options("-Wall")
   if(ENABLE_WARNING_AS_ERROR)
     add_compile_options("-Werror")

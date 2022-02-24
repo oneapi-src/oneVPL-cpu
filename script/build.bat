@@ -22,9 +22,9 @@ IF NOT DEFINED VPL_CPU_BUILD_DIR (
 )
 @REM ------------------------------------------------------------------------------
 
-IF DEFINED OPENH264_OPT (
+IF NOT DEFINED GPL_OPT (
   ECHO [build.bat] Calling build_from_mingw.bat...
-  %SCRIPT_DIR%/build_from_mingw.bat %FORWARD_OPTS%
+  %SCRIPT_DIR%/build_from_mingw.bat %FORWARD_OPTS% || EXIT /b 1
 ) ELSE (
   IF DEFINED BOOTSTRAP_OPT (
       ECHO Building dependencies...
@@ -35,7 +35,7 @@ IF DEFINED OPENH264_OPT (
   IF "%ARCH_OPT%"=="x86_64" (
     SET ARCH_CM_OPT=-A x64
     IF DEFINED GPL_OPT (
-      SET H264_IP_OPT=-DBUILD_GPL_X264=ON
+      SET GPL_OPTS=-DBUILD_GPL_X264=ON
     )
   ) ELSE IF "%ARCH_OPT%"=="x86_32" (
     SET ARCH_CM_OPT=-A Win32

@@ -18,7 +18,6 @@ PROJ_DIR="$( dirname "${SCRIPT_DIR}" )"
 # option is set. (ex: [ -n "$HELP_OPT" ])
 unset HELP_OPT
 unset GPL_OPT
-unset OPENH264_OPT
 unset WARNING_AS_ERROR_OPT
 COFIG_OPT=Release
 unset ARCH_OPT
@@ -60,12 +59,6 @@ while [ $# -gt 0 ]; do
             ;;
         "gpl" )
             GPL_OPT=yes
-            ;;
-        "--openh264" )
-            OPENH264_OPT=yes
-            ;;
-        "openh264" )
-            OPENH264_OPT=yes
             ;;
         "--warning_as_error" )
             WARNING_AS_ERROR_OPT=yes
@@ -114,7 +107,6 @@ if [ -n "$HELP_OPT" ]
 then
   echo "Usage: ${ORIG_SCRIPT_NAME} [options]"
   echo "  --gpl                Include componentes using GPL licensing"
-  echo "  --openh264           Include openH264 encoder"
   echo "  --warning_as_error   Treat compiler warnings as errors"
   echo "  --config CONFIG      Build coniguration"
   echo "  -A ARCH              Target architecture"
@@ -138,9 +130,6 @@ FORWARD_OPTS=
 if [ -n "${GPL_OPT}" ]
 then
   FORWARD_OPTS="${FORWARD_OPTS} --gpl"
-elif [ -n "${OPENH264_OPT}" ]
-then
-  FORWARD_OPTS="${FORWARD_OPTS} --openh264"
 fi
 if [ -n "${WARNING_AS_ERROR_OPT}" ]
 then

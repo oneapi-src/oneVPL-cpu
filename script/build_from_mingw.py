@@ -246,13 +246,6 @@ def main():
                         default='Release',
                         help='Build mode/configuration')
 
-    parser.add_argument('-openh264',
-                        "--use_openh264",
-                        "--openh264",
-                        dest='use_openh264',
-                        action="store_true",
-                        help='Use openH264 encoder')
-
     parser.add_argument('-warning_as_error',
                         "--use_warning_as_error",
                         "--warning_as_error",
