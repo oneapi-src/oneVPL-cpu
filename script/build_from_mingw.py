@@ -273,6 +273,11 @@ def main():
                         action="store_true",
                         help='Build validation binaries')
 
+    parser.add_argument('--oneapi_layout',
+                        dest='oneapi_layout',
+                        action="store_true",
+                        help='Use oneAPI install directory layout')
+
     args = parser.parse_args()
 
     build_opts = []

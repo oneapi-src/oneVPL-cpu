@@ -58,6 +58,12 @@ set(CMAKE_INSTALL_SO_NO_EXE 0)
 
 include(cmake/CompileOptions.cmake)
 
+if(NOT BUILD_GPL_X264)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(BUILD_OPENH264 ON)
+  endif()
+endif()
+
 add_subdirectory(cpu)
 
 install(
@@ -141,7 +147,6 @@ message(
 message(STATUS "Build:")
 message(STATUS "  BUILD_TESTS                        : ${BUILD_TESTS}")
 message(STATUS "  BUILD_GPL_X264                     : ${BUILD_GPL_X264}")
-message(STATUS "  BUILD_OPENH264                     : ${BUILD_OPENH264}")
 message(STATUS "  USE_EXPERIMENTAL_API               : ${USE_EXPERIMENTAL_API}")
 
 if(MSVC)

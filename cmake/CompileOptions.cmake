@@ -27,7 +27,7 @@ if(MFX_DEPRECATED_OFF)
   add_definitions(-DMFX_DEPRECATED_OFF)
 endif()
 
-if(MSVC)
+if(MSVC) # compiler options for msvc in Windows
   add_link_options("/DYNAMICBASE")
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     add_link_options("/HIGHENTROPYVA")
@@ -44,23 +44,26 @@ if(MSVC)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /SAFESEH:NO")
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /SAFESEH:NO")
   endif()
-else()
+else() # compiler options in 'mingw Windows' or 'Linux'
+  # common
   add_compile_options("-Wall")
   add_compile_options("-Wformat")
   add_compile_options("-Wformat-security")
   add_compile_options("-Werror=format-security")
   add_definitions("-D_FORTIFY_SOURCE=2")
-  if(LINUX)
-    add_compile_options("-fstack-protector-strong")
-    set(CMAKE_CXX_FLAGS "-z relro -z now -z noexecstack")
-  endif()
-  if(WIN32)
-    add_compile_options("-fPIC")
-    add_compile_options("-shared")
-    add_compile_options("-fno-set-stack-executable") # Windows verion of "-z
-                                                     # noexecstack"
-  endif()
+
+  # only when warning as error option is enabled in CI test
   if(ENABLE_WARNING_AS_ERROR)
     add_compile_options("-Werror")
+  endif()
+
+  if(LINUX) # Linux only
+    add_compile_options("-fstack-protector-strong")
+    set(CMAKE_CXX_FLAGS "-z relro -z now -z noexecstack")
+  elseif(WIN32) # mingw in Windows only
+    add_compile_options("-fPIC")
+    add_compile_options("-shared")
+    # Windows verion of "-z noexecstack"
+    add_compile_options("-fno-set-stack-executable")
   endif()
 endif()
