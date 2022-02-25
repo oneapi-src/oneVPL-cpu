@@ -23,6 +23,7 @@ COFIG_OPT=Release
 unset ARCH_OPT
 unset BOOTSTRAP_OPT
 unset VALIDATION_OPT
+unset ONEAPI_LAYOUT_OPT
 
 # Read information about origin script before parsing command line
 while [ $# -gt 0 ]; do
@@ -84,6 +85,9 @@ while [ $# -gt 0 ]; do
         "validation" )
             VALIDATION_OPT=yes
             ;;
+        "--oneapi_layout" )
+            ONEAPI_LAYOUT_OPT=yes
+            ;;
         "--help" )
             HELP_OPT=yes
             ;;
@@ -112,6 +116,7 @@ then
   echo "  -A ARCH              Target architecture"
   echo "  --bootstrap          Include bootstrap steps"
   echo "  --validation         Include more components for validation"
+  echo "  --oneapi_layout      Use oneAPI directory layout"
   echo "  --help, -h           Show this help message"
   echo ""
   echo "Depricated options"
@@ -150,4 +155,8 @@ fi
 if [ -n "${VALIDATION_OPT}" ]
 then
   FORWARD_OPTS="${FORWARD_OPTS} --validation"
+fi
+if [ -n "${ONEAPI_LAYOUT_OPT}" ]
+then
+  FORWARD_OPTS="${FORWARD_OPTS} --oneapi_layout"
 fi
