@@ -26,27 +26,28 @@ This CPU implementation includes the following features:
 - AV1 decode (using libdav1d and libavcodec)
 - MJPEG encode (using libavcodec)
 - H.265/HEVC and AV1 encode (using SVT-HEVC, SVT-AV1, and libavcodec)
-- H.264/AVC encode (using x264 and libavcodec)
+- H.264/AVC encode (using OpenH264/x264 and libavcodec)
 - VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
 
 Note: H.265/HEVC, H.264, and AV1 are not available in 32-bit builds.
 
 Codecs (+raw frame formats) supported by the CPU software implementation:
 
-|  Codec        |  Encode     | Decode     |
-|---------------|-------------|------------|
-| AVC/H.264     | 8/10 bit +  | 8/10 bit + |
-|               | 4:2:0 only  | 4:2:0 only |
-|---------------|-------------|------------|
-| HEVC/H.265    | 8/10 bit +  | 8/10 bit + |
-|               | 4:2:0 only  | 4:2:0 only |
-|---------------|-------------|------------|
-| MJPEG         | 8 bit +     | 8 bit +    |
-|               | 4:2:0 only  | 4:2:0 only |
-|---------------|-------------|------------|
-| AV1           | 8/10 bit +  | 8/10 bit + |
-|               | 4:2:0 only  | 4:2:0 only |
-|---------------|-------------|------------|
+|  Codec        |  Encode          | Decode     |
+|---------------|------------------|------------|
+| AVC/H.264     | 8 bit (OpenH264) | 8/10 bit + |             
+|               | 8/10 bit (x264)  | 4:2:0 only |
+|               | 4:2:0 only       |            |
+|---------------|------------------|------------|
+| HEVC/H.265    | 8/10 bit +       | 8/10 bit + |
+|               | 4:2:0 only       | 4:2:0 only |
+|---------------|------------------|------------|
+| MJPEG         | 8 bit +          | 8 bit +    |
+|               | 4:2:0 only       | 4:2:0 only |
+|---------------|------------------|------------|
+| AV1           | 8/10 bit +       | 8/10 bit + |
+|               | 4:2:0 only       | 4:2:0 only |
+|---------------|------------------|------------|
 
 Video processing (+raw frame formats) supported by the CPU software implementation:
 
