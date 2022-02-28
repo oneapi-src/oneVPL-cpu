@@ -80,9 +80,11 @@
         script\install
 
 
-## Optionally Enable H.264 Encode
+## H.264 Encode
 
-Add `gpl` to the build commands to enable H.264 encode capability.
+oneVPL CPU implementation supports `OpenH264` as the default H.264 encoder.
+
+Add `gpl` to enable `x264` instead.
 
 For Linux:
 
