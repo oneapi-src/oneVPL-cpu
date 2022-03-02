@@ -23,6 +23,7 @@ SET COFIG_OPT=Release
 SET ARCH_OPT=x86_64
 SET "BOOTSTRAP_OPT="
 SET "VALIDATION_OPT="
+SET "ONEAPI_LAYOUT_OPT="
 
 @REM Read information about origin script before parsing command line
 :PREFIX_Loop
@@ -71,6 +72,8 @@ SET "VALIDATION_OPT="
     SET VALIDATION_OPT=yes
   ) ELSE IF "%~1"=="validation" (
     SET VALIDATION_OPT=yes
+  ) ELSE IF "%~1"=="--oneapi_layout" (
+    SET ONEAPI_LAYOUT_OPT=yes
   ) ELSE IF "%~1"=="--help" (
     SET HELP_OPT=yes
   ) ELSE IF "%~1"=="-h" (
@@ -93,6 +96,7 @@ IF DEFINED HELP_OPT (
   ECHO   -A ARCH              Target architecture
   ECHO   --bootstrap          Include bootstrap steps
   ECHO   --validation         Include more components for validation
+  ECHO   --oneapi_layout      Use oneAPI directory layout
   ECHO   --help, -h           Show this help message
   ECHO.
   ECHO Depricated options
@@ -126,6 +130,9 @@ IF DEFINED BOOTSTRAP_OPT (
 )
 IF DEFINED VALIDATION_OPT (
   SET FORWARD_OPTS=%FORWARD_OPTS% --validation
+)
+IF DEFINED ONEAPI_LAYOUT_OPT (
+  SET FORWARD_OPTS=%FORWARD_OPTS% --oneapi_layout
 )
 
 exit /b 0
