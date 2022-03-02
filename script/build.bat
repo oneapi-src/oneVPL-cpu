@@ -18,18 +18,22 @@ IF DEFINED HELP_OPT ( EXIT /b 0 )
 @REM ------------------------------------------------------------------------------
 @REM Globals
 IF NOT DEFINED VPL_CPU_BUILD_DIR (
-    set "VPL_CPU_BUILD_DIR=%PROJ_DIR%\_build"
+    SET "VPL_CPU_BUILD_DIR=%PROJ_DIR%\_build"
 )
 @REM ------------------------------------------------------------------------------
 
 IF NOT DEFINED GPL_OPT (
-  ECHO [build.bat] Calling build_from_mingw.bat...
-  %SCRIPT_DIR%/build_from_mingw.bat %FORWARD_OPTS% || EXIT /b 1
+  ECHO [build.bat] Calling build_from_mingw.py '%FORWARD_OPTS%'
+  py -3 %SCRIPT_DIR%\build_from_mingw.py %FORWARD_OPTS% || exit /b 1
+
+  @REM Signal to CI system
+  IF DEFINED TEAMCITY_VERSION (
+      ECHO ##teamcity[publishArtifacts '%VPL_CPU_BUILD_DIR%/*-all.zip=^>']
+  )
 ) ELSE (
   IF DEFINED BOOTSTRAP_OPT (
       ECHO Building dependencies...
       %SCRIPT_DIR%/bootstrap.bat %FORWARD_OPTS%
-    )
   )
 
   IF "%ARCH_OPT%"=="x86_64" (
@@ -55,11 +59,11 @@ IF NOT DEFINED GPL_OPT (
   )
 
   SET BUILD_DIR=%VPL_CPU_BUILD_DIR%
-  MKDIR %BUILD_DIR%
-  PUSHD  %BUILD_DIR%
+  MKDIR !BUILD_DIR!
+  PUSHD  !BUILD_DIR%!
     @REM work around parallel build bug
     MKDIR %COFIG_OPT%
-    cmake %ARCH_CM_OPT% %PREFIX_PATH_CM_OPT% %INSTALL_PREFIX_CM_OPT% %COFIG_CM_OPT% %GPL_OPTS% %WARN_CM_OPTS% %PROJ_DIR% ^
+    cmake !ARCH_CM_OPT! !PREFIX_PATH_CM_OPT! !INSTALL_PREFIX_CM_OPT! !COFIG_CM_OPT! !GPL_OPTS! !WARN_CM_OPTS! %PROJ_DIR% ^
         || EXIT /b 1
     IF DEFINED NUMBER_OF_PROCESSORS (
       SET PARALLEL_OPT=-j %NUMBER_OF_PROCESSORS%
@@ -69,7 +73,7 @@ IF NOT DEFINED GPL_OPT (
 
     @REM Signal to CI system
     IF DEFINED TEAMCITY_VERSION (
-      ECHO ##teamcity[publishArtifacts '%BUILD_DIR%/*-all.zip=^>']
+      ECHO ##teamcity[publishArtifacts '!BUILD_DIR!/*-all.zip=^>']
     )
   POPD
 )
