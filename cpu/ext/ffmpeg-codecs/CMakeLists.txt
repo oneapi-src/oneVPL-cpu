@@ -3,6 +3,24 @@
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
+
+# This is WA until we have a solution to find right library location from gcc
+# output.
+#
+# findMingwLib() looks for varLibName from varMingwPath + varGccPath folder at
+# first, and if it fails then, it looks for varMingwPath + 'lib' path Because we
+# observed only 2 locations for libs so far.
+#
+function(findMingwLib varResult varMingwPath varGccPath varLibName)
+  set(fileName ${varMingwPath}/${varGccPath}/${varLibName})
+  if(NOT EXISTS ${fileName})
+    set(fileName ${varMingwPath}/lib/${varLibName})
+  endif()
+  set(${varResult}
+      ${fileName}
+      PARENT_SCOPE)
+endfunction()
+
 cmake_minimum_required(VERSION 3.10.2)
 
 set(TARGET ffmpeg-codecs)
@@ -108,7 +126,9 @@ if(WIN32)
     message(FATAL_ERROR "Cannot identify library folder")
   endif()
 
-  execute_process(COMMAND ${MSYS_ROOT}/${mingw_name}/bin/gcc.exe --version
+  set(MINGW_PATH ${MSYS_ROOT}/${mingw_name})
+
+  execute_process(COMMAND ${MINGW_PATH}/bin/gcc.exe --version
                   OUTPUT_VARIABLE gcc_version_text)
   string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" gcc_version ${gcc_version_text})
 endif()
@@ -136,9 +156,8 @@ target_link_libraries(${TARGET} INTERFACE ${H264_ENC_LIB})
 if(WIN32)
   # openH264 lib dependencies
   if(BUILD_OPENH264)
-    set(STDCPP_LIB
-        ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libstdc++.a
-    )
+    findmingwlib(STDCPP_LIB ${MINGW_PATH} lib/gcc/${gcc_name}/${gcc_version}
+                 libstdc++.a)
     if(NOT EXISTS ${STDCPP_LIB})
       message(
         FATAL_ERROR "Could not find expected MinGW stdc++ runtime libraries")
@@ -149,15 +168,15 @@ if(WIN32)
   endif()
 
   # Common libs from mingw
-  set(GCC_LIB
-      ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libgcc.a)
-  set(GCC_EH_LIB
-      ${MSYS_ROOT}/${mingw_name}/lib/gcc/${gcc_name}/${gcc_version}/libgcc_eh.a)
-  set(BCRYPT_LIB ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libbcrypt.a)
-  set(MINGW32_LIB ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libmingw32.a)
-  set(MINGWEX_LIB ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libmingwex.a)
-  set(PTHREAD_IMPLIB
-      ${MSYS_ROOT}/${mingw_name}/${gcc_name}/lib/libpthread.dll.a)
+  findmingwlib(GCC_LIB ${MINGW_PATH} lib/gcc/${gcc_name}/${gcc_version}
+               libgcc.a)
+  findmingwlib(GCC_EH_LIB ${MINGW_PATH} lib/gcc/${gcc_name}/${gcc_version}
+               libgcc_eh.a)
+
+  findmingwlib(BCRYPT_LIB ${MINGW_PATH} ${gcc_name}/lib libbcrypt.a)
+  findmingwlib(MINGW32_LIB ${MINGW_PATH} ${gcc_name}/lib libmingw32.a)
+  findmingwlib(MINGWEX_LIB ${MINGW_PATH} ${gcc_name}/lib libmingwex.a)
+  findmingwlib(PTHREAD_IMPLIB ${MINGW_PATH} ${gcc_name}/lib libpthread.dll.a)
 
   if(NOT EXISTS ${GCC_LIB})
     message(FATAL_ERROR "Could not find expected MinGW GCC runtime libraries")
@@ -188,7 +207,7 @@ if(WIN32)
                         ${MINGWEX_LIB} ${PTHREAD_IMPLIB})
 
   # libwinpthread dll
-  set(PTHREAD_DLL ${MSYS_ROOT}/${mingw_name}/bin/libwinpthread-1.dll)
+  set(PTHREAD_DLL ${MINGW_PATH}/bin/libwinpthread-1.dll)
 
   if(NOT EXISTS ${PTHREAD_DLL})
     message(
@@ -213,12 +232,12 @@ if(WIN32)
 
   # openH264 dll dependencies
   if(BUILD_OPENH264)
-    set(STDCPP_DLL ${MSYS_ROOT}/${mingw_name}/bin/libstdc++-6.dll)
+    set(STDCPP_DLL ${MINGW_PATH}/bin/libstdc++-6.dll)
 
     if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
-      set(GCC_SEH_DLL ${MSYS_ROOT}/${mingw_name}/bin/libgcc_s_seh-1.dll)
+      set(GCC_SEH_DLL ${MINGW_PATH}/bin/libgcc_s_seh-1.dll)
     elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-      set(GCC_SEH_DLL ${MSYS_ROOT}/${mingw_name}/bin/libgcc_s_dw2-1.dll)
+      set(GCC_SEH_DLL ${MINGW_PATH}/bin/libgcc_s_dw2-1.dll)
     endif()
 
     if(NOT EXISTS ${STDCPP_DLL})
