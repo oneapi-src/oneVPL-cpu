@@ -112,7 +112,7 @@ if(WIN32)
     message(STATUS "MSYS_ROOT not defined, assuming C:/tools/msys64")
     set(MSYS_ROOT C:/tools/msys64)
   else()
-    set(MSYS_ROOT $ENV{MSYS_ROOT})
+    file(TO_CMAKE_PATH "$ENV{MSYS_ROOT}" MSYS_ROOT)
   endif()
 
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")

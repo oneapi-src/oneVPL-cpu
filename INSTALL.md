@@ -19,9 +19,8 @@
 ```
 sudo apt-get update && sudo apt-get install -y --no-install-recommends \
     build-essential git pkg-config yasm nasm cmake libva-dev libva-drm2 python3 \
-    python3-setuptools python3-pip
-sudo pip3 install -U wheel
-sudo pip3 install meson ninja
+    python3-setuptools python3-pip python3-wheel
+pip3 install meson ninja
 ```
 #### 2. Update path and specify VPL Install Directory
 ```
