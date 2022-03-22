@@ -35,8 +35,8 @@ TEST(EncodeQueryIOSurf, PopulatedParamsInReturnsRequest) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -81,8 +81,8 @@ TEST(EncodeQueryIOSurf, NullRequestReturnsErrNull) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -107,8 +107,8 @@ TEST(DecodeQueryIOSurf, PopulatedParamsInReturnsRequest) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -133,8 +133,8 @@ TEST(DecodeQueryIOSurf, InvalidParamsReturnInvalidVideoParam) {
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     par.mfx.CodecId          = MFX_CODEC_HEVC;
-    par.mfx.FrameInfo.Width  = 128;
-    par.mfx.FrameInfo.Height = 96;
+    par.mfx.FrameInfo.Width  = 320;
+    par.mfx.FrameInfo.Height = 240;
     par.IOPattern            = MFX_IOPATTERN_OUT_VIDEO_MEMORY;
 
     mfxFrameAllocRequest request;
@@ -174,8 +174,8 @@ TEST(DecodeQueryIOSurf, NullRequestReturnsErrNull) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -200,8 +200,8 @@ TEST(VPPQueryIOSurf, PopulatedParamsInReturnsRequest) {
     memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     mfxVPPParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxVPPParams.mfx.FrameInfo.Width  = 128;
-    mfxVPPParams.mfx.FrameInfo.Height = 96;
+    mfxVPPParams.mfx.FrameInfo.Width  = 320;
+    mfxVPPParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -247,8 +247,8 @@ TEST(VPPQueryIOSurf, NullRequestReturnsErrNull) {
     memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
 
     mfxVPPParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxVPPParams.mfx.FrameInfo.Width  = 128;
-    mfxVPPParams.mfx.FrameInfo.Height = 96;
+    mfxVPPParams.mfx.FrameInfo.Width  = 320;
+    mfxVPPParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));

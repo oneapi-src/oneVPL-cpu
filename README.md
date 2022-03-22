@@ -109,13 +109,13 @@ All commands below assume `test/content` is the current directory.
 - Decode an an H.265 encoded video file:
 
     ```
-    sample-decode h265 -i cars_128x96.h265 -o out.i420 -sw
+    sample-decode h265 -i cars_320x240.h265 -o out.i420 -sw
     ```
 
 - Encode a raw video file to H.265:
 
     ```
-    sample-encode h265 -i cars_128x96.i420 -w 128 -h 96 -o out.h265
+    sample-encode h265 -i cars_320x240.i420 -w 320 -h 240 -o out.h265
     ```
 
 

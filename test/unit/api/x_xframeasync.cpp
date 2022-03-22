@@ -43,10 +43,10 @@ TEST(EncodeFrameAsync, ValidInputsReturnsErrNone) {
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
@@ -114,10 +114,10 @@ TEST(EncodeFrameAsync, SurfaceTimestampReturnsBitstreamTimestamp) {
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.mfx.GopPicSize              = 1;
@@ -188,10 +188,10 @@ TEST(EncodeFrameAsync, EncCtrlReturnsErrInvalidVideoParam) {
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
@@ -253,10 +253,10 @@ TEST(EncodeFrameAsync, InsufficientOutBufferReturnsNotEnoughBuffer) {
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
@@ -328,10 +328,10 @@ TEST(EncodeFrameAsync, NullSyncpReturnsNullPtr) {
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
@@ -393,10 +393,10 @@ TEST(EncodeFrameAsync, NullBitstreamReturnsErrNull) {
     mfxEncParams.mfx.CodecId                 = MFX_CODEC_JPEG;
     mfxEncParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxEncParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxEncParams.mfx.FrameInfo.FrameRateExtD = 1;
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
@@ -1121,8 +1121,8 @@ TEST(RunFrameVPPAsync, ValidInputsReturnsErrNone) {
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
     mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.In.CropW         = 128;
-    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.CropW         = 320;
+    mfxVPPParams.vpp.In.CropH         = 240;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
     mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
@@ -1182,8 +1182,8 @@ TEST(RunFrameVPPAsync, NullSurfaceOutReturnsErrNull) {
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
     mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.In.CropW         = 128;
-    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.CropW         = 320;
+    mfxVPPParams.vpp.In.CropH         = 240;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
     mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
@@ -1236,8 +1236,8 @@ TEST(RunFrameVPPAsync, NullSyncpOutReturnsErrNull) {
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
     mfxVPPParams.vpp.In.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxVPPParams.vpp.In.CropW         = 128;
-    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.CropW         = 320;
+    mfxVPPParams.vpp.In.CropH         = 240;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
     mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
@@ -1288,8 +1288,8 @@ TEST(RunFrameVPPAsync, VPPUninitializedReturnsNotInitialized) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
-    mfxVPPParams.vpp.In.CropW         = 128;
-    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.CropW         = 320;
+    mfxVPPParams.vpp.In.CropH         = 240;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
     mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
@@ -1488,8 +1488,8 @@ TEST(ProcessFrameAsync, VPPUninitializedReturnsNotInitialized) {
 
     // Input data
     mfxVPPParams.vpp.In.FourCC        = MFX_FOURCC_I420;
-    mfxVPPParams.vpp.In.CropW         = 128;
-    mfxVPPParams.vpp.In.CropH         = 96;
+    mfxVPPParams.vpp.In.CropW         = 320;
+    mfxVPPParams.vpp.In.CropH         = 240;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
     mfxVPPParams.vpp.In.Width         = mfxVPPParams.vpp.In.CropW;
