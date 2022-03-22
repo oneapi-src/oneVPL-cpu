@@ -41,8 +41,8 @@ TEST(EncodeQuery, NullParamsInReturnsConfigurable) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -65,15 +65,15 @@ TEST(EncodeQuery, PopulatedParamsInReturnsCorrected) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     sts = MFXVideoENCODE_Query(session, &mfxEncParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(128, par.mfx.FrameInfo.Width);
-    ASSERT_EQ(96, par.mfx.FrameInfo.Height);
+    ASSERT_EQ(320, par.mfx.FrameInfo.Width);
+    ASSERT_EQ(240, par.mfx.FrameInfo.Height);
     ASSERT_EQ(MFX_RATECONTROL_VBR, par.mfx.RateControlMethod);
     ASSERT_EQ(MFX_IOPATTERN_IN_SYSTEM_MEMORY, par.IOPattern);
 
@@ -108,8 +108,8 @@ TEST(EncodeQuery, IncompatibleParamsReturnIncompatibleVideoParam) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId                  = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width          = 128;
-    mfxEncParams.mfx.FrameInfo.Height         = 96;
+    mfxEncParams.mfx.FrameInfo.Width          = 320;
+    mfxEncParams.mfx.FrameInfo.Height         = 240;
     mfxEncParams.mfx.FrameInfo.BitDepthLuma   = 8;
     mfxEncParams.mfx.FrameInfo.BitDepthChroma = 10;
 
@@ -152,8 +152,8 @@ TEST(DecodeQuery, NullParamsInReturnsConfigurable) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -174,15 +174,15 @@ TEST(DecodeQuery, PopulatedParamsInReturnsCorrected) {
     mfxVideoParam mfxDecParams;
     memset(&mfxDecParams, 0, sizeof(mfxDecParams));
     mfxDecParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxDecParams.mfx.FrameInfo.Width  = 128;
-    mfxDecParams.mfx.FrameInfo.Height = 96;
+    mfxDecParams.mfx.FrameInfo.Width  = 320;
+    mfxDecParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     sts = MFXVideoDECODE_Query(session, &mfxDecParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(128, par.mfx.FrameInfo.Width);
-    ASSERT_EQ(96, par.mfx.FrameInfo.Height);
+    ASSERT_EQ(320, par.mfx.FrameInfo.Width);
+    ASSERT_EQ(240, par.mfx.FrameInfo.Height);
     ASSERT_EQ(MFX_IOPATTERN_OUT_SYSTEM_MEMORY, par.IOPattern);
 
     sts = MFXClose(session);
@@ -216,8 +216,8 @@ TEST(DecodeQuery, IncompatibleParamsReturnIncompatibleVideoParam) {
     mfxVideoParam mfxDecParams;
     memset(&mfxDecParams, 0, sizeof(mfxDecParams));
     mfxDecParams.mfx.CodecId                  = MFX_CODEC_HEVC;
-    mfxDecParams.mfx.FrameInfo.Width          = 128;
-    mfxDecParams.mfx.FrameInfo.Height         = 96;
+    mfxDecParams.mfx.FrameInfo.Width          = 320;
+    mfxDecParams.mfx.FrameInfo.Height         = 240;
     mfxDecParams.mfx.FrameInfo.BitDepthLuma   = 8;
     mfxDecParams.mfx.FrameInfo.BitDepthChroma = 10;
 
@@ -260,8 +260,8 @@ TEST(VPPQuery, NullParamsInReturnsConfigurable) {
     memset(&mfxEncParams, 0, sizeof(mfxEncParams));
 
     mfxEncParams.mfx.CodecId          = MFX_CODEC_HEVC;
-    mfxEncParams.mfx.FrameInfo.Width  = 128;
-    mfxEncParams.mfx.FrameInfo.Height = 96;
+    mfxEncParams.mfx.FrameInfo.Width  = 320;
+    mfxEncParams.mfx.FrameInfo.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
@@ -281,15 +281,15 @@ TEST(VPPQuery, PopulatedParamsInReturnsCorrected) {
 
     mfxVideoParam mfxVPPParams;
     memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
-    mfxVPPParams.vpp.In.Width  = 128;
-    mfxVPPParams.vpp.In.Height = 96;
+    mfxVPPParams.vpp.In.Width  = 320;
+    mfxVPPParams.vpp.In.Height = 240;
 
     mfxVideoParam par;
     memset(&par, 0, sizeof(par));
     sts = MFXVideoVPP_Query(session, &mfxVPPParams, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(128, par.vpp.Out.Width);
-    ASSERT_EQ(96, par.vpp.Out.Height);
+    ASSERT_EQ(320, par.vpp.Out.Width);
+    ASSERT_EQ(240, par.vpp.Out.Height);
     ASSERT_EQ(MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY, par.IOPattern);
 
     sts = MFXClose(session);
@@ -322,8 +322,8 @@ TEST(VPPQuery, IncompatibleParamsReturnIncompatibleVideoParam) {
 
     mfxVideoParam mfxVPPParams;
     memset(&mfxVPPParams, 0, sizeof(mfxVPPParams));
-    mfxVPPParams.vpp.In.Width          = 128;
-    mfxVPPParams.vpp.In.Height         = 96;
+    mfxVPPParams.vpp.In.Width          = 320;
+    mfxVPPParams.vpp.In.Height         = 240;
     mfxVPPParams.vpp.In.BitDepthLuma   = 8;
     mfxVPPParams.vpp.In.BitDepthChroma = 10;
 

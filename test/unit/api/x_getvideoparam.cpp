@@ -34,10 +34,10 @@ TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {
     mfxEncParams.mfx.FrameInfo.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxEncParams.mfx.FrameInfo.CropX         = 0;
     mfxEncParams.mfx.FrameInfo.CropY         = 0;
-    mfxEncParams.mfx.FrameInfo.CropW         = 128;
-    mfxEncParams.mfx.FrameInfo.CropH         = 96;
-    mfxEncParams.mfx.FrameInfo.Width         = 128;
-    mfxEncParams.mfx.FrameInfo.Height        = 96;
+    mfxEncParams.mfx.FrameInfo.CropW         = 320;
+    mfxEncParams.mfx.FrameInfo.CropH         = 240;
+    mfxEncParams.mfx.FrameInfo.Width         = 320;
+    mfxEncParams.mfx.FrameInfo.Height        = 240;
     mfxEncParams.IOPattern                   = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     sts = MFXVideoENCODE_Init(session, &mfxEncParams);
@@ -46,8 +46,8 @@ TEST(EncodeGetVideoParam, InitializedEncodeReturnsParams) {
     mfxVideoParam par;
     sts = MFXVideoENCODE_GetVideoParam(session, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(128, par.mfx.FrameInfo.Width);
-    ASSERT_EQ(96, par.mfx.FrameInfo.Height);
+    ASSERT_EQ(320, par.mfx.FrameInfo.Width);
+    ASSERT_EQ(240, par.mfx.FrameInfo.Height);
     ASSERT_EQ(MFX_RATECONTROL_VBR, par.mfx.RateControlMethod);
 
     sts = MFXVideoENCODE_Close(session);
@@ -101,10 +101,10 @@ TEST(DecodeGetVideoParam, InitializedDecodeReturnsParams) {
 
     mfxDecParams.mfx.FrameInfo.FourCC       = MFX_FOURCC_I420;
     mfxDecParams.mfx.FrameInfo.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
-    mfxDecParams.mfx.FrameInfo.CropW        = 128;
-    mfxDecParams.mfx.FrameInfo.CropH        = 96;
-    mfxDecParams.mfx.FrameInfo.Width        = 128;
-    mfxDecParams.mfx.FrameInfo.Height       = 96;
+    mfxDecParams.mfx.FrameInfo.CropW        = 320;
+    mfxDecParams.mfx.FrameInfo.CropH        = 240;
+    mfxDecParams.mfx.FrameInfo.Width        = 320;
+    mfxDecParams.mfx.FrameInfo.Height       = 240;
 
     sts = MFXVideoDECODE_Init(session, &mfxDecParams);
     ASSERT_EQ(sts, MFX_ERR_NONE);
@@ -163,20 +163,20 @@ TEST(VPPGetVideoParam, InitializedVPPReturnsParams) {
     mfxVPPParams.vpp.In.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxVPPParams.vpp.In.FrameRateExtN = 30;
     mfxVPPParams.vpp.In.FrameRateExtD = 1;
-    mfxVPPParams.vpp.In.CropW         = 128;
-    mfxVPPParams.vpp.In.CropH         = 96;
-    mfxVPPParams.vpp.In.Width         = 128;
-    mfxVPPParams.vpp.In.Height        = 96;
+    mfxVPPParams.vpp.In.CropW         = 320;
+    mfxVPPParams.vpp.In.CropH         = 240;
+    mfxVPPParams.vpp.In.Width         = 320;
+    mfxVPPParams.vpp.In.Height        = 240;
 
     mfxVPPParams.vpp.Out.FourCC        = MFX_FOURCC_I420;
     mfxVPPParams.vpp.Out.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
     mfxVPPParams.vpp.Out.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxVPPParams.vpp.Out.FrameRateExtN = 30;
     mfxVPPParams.vpp.Out.FrameRateExtD = 1;
-    mfxVPPParams.vpp.Out.CropW         = 320;
-    mfxVPPParams.vpp.Out.CropH         = 240;
-    mfxVPPParams.vpp.Out.Width         = 320;
-    mfxVPPParams.vpp.Out.Height        = 240;
+    mfxVPPParams.vpp.Out.CropW         = 640;
+    mfxVPPParams.vpp.Out.CropH         = 480;
+    mfxVPPParams.vpp.Out.Width         = 640;
+    mfxVPPParams.vpp.Out.Height        = 480;
 
     mfxVPPParams.IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
 
@@ -186,10 +186,10 @@ TEST(VPPGetVideoParam, InitializedVPPReturnsParams) {
     mfxVideoParam par;
     sts = MFXVideoVPP_GetVideoParam(session, &par);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(128, par.vpp.In.Width);
-    ASSERT_EQ(96, par.vpp.In.Height);
-    ASSERT_EQ(320, par.vpp.Out.Width);
-    ASSERT_EQ(240, par.vpp.Out.Height);
+    ASSERT_EQ(320, par.vpp.In.Width);
+    ASSERT_EQ(240, par.vpp.In.Height);
+    ASSERT_EQ(640, par.vpp.Out.Width);
+    ASSERT_EQ(480, par.vpp.Out.Height);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
@@ -242,10 +242,10 @@ TEST(DecodeVPPGetChannelParam, InitializedDecodeVPPReturnsParams) {
 
     mfxDecParams.mfx.FrameInfo.FourCC        = MFX_FOURCC_I420;
     mfxDecParams.mfx.FrameInfo.ChromaFormat  = MFX_CHROMAFORMAT_YUV420;
-    mfxDecParams.mfx.FrameInfo.CropW         = 128;
-    mfxDecParams.mfx.FrameInfo.CropH         = 96;
-    mfxDecParams.mfx.FrameInfo.Width         = 128;
-    mfxDecParams.mfx.FrameInfo.Height        = 96;
+    mfxDecParams.mfx.FrameInfo.CropW         = 320;
+    mfxDecParams.mfx.FrameInfo.CropH         = 240;
+    mfxDecParams.mfx.FrameInfo.Width         = 320;
+    mfxDecParams.mfx.FrameInfo.Height        = 240;
     mfxDecParams.mfx.FrameInfo.FrameRateExtN = 30;
     mfxDecParams.mfx.FrameInfo.FrameRateExtD = 1;
 
@@ -258,10 +258,10 @@ TEST(DecodeVPPGetChannelParam, InitializedDecodeVPPReturnsParams) {
     mfxVPPChParams->VPP.PicStruct     = MFX_PICSTRUCT_PROGRESSIVE;
     mfxVPPChParams->VPP.FrameRateExtN = 30;
     mfxVPPChParams->VPP.FrameRateExtD = 1;
-    mfxVPPChParams->VPP.CropW         = 320;
-    mfxVPPChParams->VPP.CropH         = 240;
-    mfxVPPChParams->VPP.Width         = 320;
-    mfxVPPChParams->VPP.Height        = 240;
+    mfxVPPChParams->VPP.CropW         = 640;
+    mfxVPPChParams->VPP.CropH         = 480;
+    mfxVPPChParams->VPP.Width         = 640;
+    mfxVPPChParams->VPP.Height        = 480;
     mfxVPPChParams->VPP.ChannelId     = 1;
     mfxVPPChParams->Protected         = 0;
     mfxVPPChParams->IOPattern   = MFX_IOPATTERN_IN_SYSTEM_MEMORY | MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
@@ -274,8 +274,8 @@ TEST(DecodeVPPGetChannelParam, InitializedDecodeVPPReturnsParams) {
     mfxVideoChannelParam par = { 0 };
     sts                      = MFXVideoDECODE_VPP_GetChannelParam(session, &par, 1);
     ASSERT_EQ(sts, MFX_ERR_NONE);
-    ASSERT_EQ(320, par.VPP.Width);
-    ASSERT_EQ(240, par.VPP.Height);
+    ASSERT_EQ(640, par.VPP.Width);
+    ASSERT_EQ(480, par.VPP.Height);
 
     sts = MFXClose(session);
     EXPECT_EQ(sts, MFX_ERR_NONE);
