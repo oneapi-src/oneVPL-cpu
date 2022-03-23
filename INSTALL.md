@@ -18,7 +18,7 @@
 
 ```
 sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-    build-essential git pkg-config yasm nasm cmake libva-dev libva-drm2 python3 \
+    build-essential git pkg-config yasm nasm cmake libva-dev libdrm-dev libva-drm2 python3 \
     python3-setuptools python3-pip meson ninja-build
 ```
 #### 2. Update path and specify VPL Install Directory
