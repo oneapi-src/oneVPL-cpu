@@ -107,6 +107,9 @@ const EncCodec encCodec[] = {
         MFX_CODEC_AV1,
         MFX_LEVEL_AV1_53,
         1,
+#ifdef ONEVPL_EXPERIMENTAL
+        0,
+#endif
         {},
         1,
         (EncProfile *)encProfile_c00,
@@ -115,6 +118,9 @@ const EncCodec encCodec[] = {
         MFX_CODEC_HEVC,
         MFX_LEVEL_HEVC_51,
         1,
+#ifdef ONEVPL_EXPERIMENTAL
+        0,
+#endif
         {},
         2,
         (EncProfile *)encProfile_c01,
@@ -123,6 +129,9 @@ const EncCodec encCodec[] = {
         MFX_CODEC_JPEG,
         MFX_LEVEL_UNKNOWN,
         0,
+#ifdef ONEVPL_EXPERIMENTAL
+        0,
+#endif
         {},
         1,
         (EncProfile *)encProfile_c02,

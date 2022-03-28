@@ -105,6 +105,11 @@ def generate_caps_encode(data, outfile):
             buf_codec += ("        %s,\n" % (row_curr[0]) )
             buf_codec += ("        %s,\n" % (row_curr[1]))
             buf_codec += ("        %s,\n" % (row_curr[2]))
+
+            buf_codec += ("#ifdef ONEVPL_EXPERIMENTAL\n")
+            buf_codec += ("        0,\n")
+            buf_codec += ("#endif\n")
+
             buf_codec += ("        {},\n")
             buf_codec += ("        %d,\n" % idx_profile)
             buf_codec += ("        (EncProfile *)encProfile_c%02d,\n" % idx_codec )
