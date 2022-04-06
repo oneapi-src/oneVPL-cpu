@@ -145,11 +145,6 @@ TEST(QueryVersion, NullSessionReturnsInvalidHandle) {
     ASSERT_EQ(sts, MFX_ERR_INVALID_HANDLE);
 }
 
-// if linking directly against the runtime, we can
-//   test functions which the dispatcher does not
-//   expose directly to the application
-#ifdef VPL_UTEST_LINK_RUNTIME
-
 TEST(Initialize, SoftwareImplReturnsErrNone) {
     mfxSession session;
     mfxInitializationParam initPar2 = {};
@@ -184,5 +179,3 @@ TEST(Initialize, NullSessionReturnsInvalidHandle) {
     mfxStatus sts = MFXInitialize(initPar2, nullptr);
     ASSERT_EQ(sts, MFX_ERR_NULL_PTR);
 }
-
-#endif // VPL_UTEST_LINK_RUNTIME

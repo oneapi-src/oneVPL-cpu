@@ -47,14 +47,14 @@ TEST(DisjoinSession, AlwaysReturnsNotImplemented) {
 }
 
 // MFXCloneSession not currently supported for 2.x RT
-TEST(CloneSession, AlwaysReturnsUnsupported) {
+TEST(CloneSession, AlwaysReturnsNotImplemented) {
     mfxVersion ver = {};
     mfxSession session, session2;
     mfxStatus sts = MFXInit(MFX_IMPL_SOFTWARE, &ver, &session);
     ASSERT_EQ(sts, MFX_ERR_NONE);
 
     sts = MFXCloneSession(session, &session2);
-    ASSERT_EQ(sts, MFX_ERR_UNSUPPORTED);
+    ASSERT_EQ(sts, MFX_ERR_NOT_IMPLEMENTED);
 
     //free internal resources
     sts = MFXClose(session);

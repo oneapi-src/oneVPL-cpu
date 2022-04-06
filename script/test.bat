@@ -22,40 +22,12 @@ IF NOT DEFINED VPL_CPU_BUILD_DIR (
 )
 @REM ------------------------------------------------------------------------------
 
-@REM Load project environment
-set VPL_INTEL_ARCH=intel64
-if "%ARCH_OPT%"=="x86_32" (
-  set VPL_INTEL_ARCH=ia32
-)
+set /A result_all=0
 
-:: do custom environment configuration if var is set.
-if defined VPL_INSTALL_DIR (
-   echo VPL_INSTALL_DIR set, assuming environment script needs to be run.
-   if exist "%VPL_INSTALL_DIR%\share\oneVPL\env" (
-      echo Using custom environment configuration from %VPL_INSTALL_DIR%\share\oneVPL\env
-      call "%VPL_INSTALL_DIR%\share\oneVPL\env\vars.bat" %VPL_INTEL_ARCH% || exit /b 1
-   ) else (
-      echo Using custom environment configuration from %VPL_INSTALL_DIR%\env
-      call "%VPL_INSTALL_DIR%\env\vars.bat" %VPL_INTEL_ARCH% || exit /b 1
-   )
-)
-
-set /A result_all = 0
 SET BUILD_DIR=%VPL_CPU_BUILD_DIR%
-PUSHD  %BUILD_DIR%
-  PUSHD %COFIG_OPT%
-    ECHO *** Running Unit Tests ***
-    CALL vpl-utest.exe --gtest_output=xml:%PROJ_DIR%\_logs\
-    IF %errorlevel%==0 GOTO unit_tests_passed
-    ECHO *** Unit Tests FAILED ***
-    SET /A result_all = 1
-    GOTO test_end
-
-    :unit_tests_passed
-    echo *** Unit Tests PASSED ***
-
-    :test_end
-  POPD
+PUSHD %BUILD_DIR%
+  ctest --output-on-failure -C %COFIG_OPT% -T test
+  SET result_all=%errorlevel%
 POPD
 
 ENDLOCAL && EXIT /B %result_all%
