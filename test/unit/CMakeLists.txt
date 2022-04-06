@@ -30,33 +30,19 @@ set(SOURCE_FILES
     api/decodeheader.cpp
     api/x_notimplemented.cpp)
 
-if(NOT DEFINED VPL_UTEST_LINK_RUNTIME)
-  list(
-    APPEND
-    SOURCE_FILES
-    api/dispatcher/smart_dispatcher_common.cpp
-    api/dispatcher/smart_dispatcher_common_multiprop.cpp
-    api/dispatcher/smart_dispatcher_sw.cpp
-    api/dispatcher/smart_dispatcher_sw_multiprop.cpp
-    api/dispatcher/smart_dispatcher_gpu.cpp
-    api/dispatcher/smart_dispatcher_util.cpp)
-endif()
-
 add_executable(${TARGET} ${SOURCE_FILES})
 set_property(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
-if(DEFINED VPL_UTEST_LINK_RUNTIME)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(STATUS "Linking vpl-utest against vplswref64")
-  add_definitions(-DVPL_UTEST_LINK_RUNTIME)
   set(DEPENDENT_LIBS vplswref64)
-else()
-  message(STATUS "Linking vpl-utest against dispatcher")
-  if(POLICY CMP0074)
-    # ignore warning of VPL_ROOT in find_package search path
-    cmake_policy(SET CMP0074 OLD)
-  endif()
-  find_package(VPL REQUIRED)
-  target_link_libraries(${TARGET} VPL::dispatcher)
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  message(STATUS "Linking vpl-utest against vplswref32")
+  set(DEPENDENT_LIBS vplswref32)
 endif()
+target_link_libraries(${TARGET} ${DEPENDENT_LIBS})
+find_package(VPL REQUIRED)
+target_link_libraries(${TARGET} VPL::api)
 
 target_link_libraries(${TARGET} gtest)
 target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/test/unit)

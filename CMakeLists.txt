@@ -84,6 +84,7 @@ include(cmake/PackageTarget.cmake)
 include(InstallRequiredSystemLibraries)
 
 if(BUILD_TESTS)
+  include(Dart)
   enable_testing()
   include(GoogleTest)
   add_subdirectory(test/unit)

@@ -31,43 +31,11 @@ fi
 
 result_all=0
 
-if [ ! -e "${VPL_BUILD_DEPENDENCIES}" ]; then
-    echo "VPL_BUILD_DEPENDENCIES not defined. Did you run bootstrap?"
-    exit 1
-fi
-
-
-# do custom environment configuration if var is set.
-if [ -n "$VPL_INSTALL_DIR" ]; then
-  echo "VPL_INSTALL_DIR set, assuming environment script needs to be run."
-  if [ -d "${VPL_INSTALL_DIR}/share/oneVPL/env" ]; then
-    echo "Using custom environment configuration from ${VPL_INSTALL_DIR}/share/oneVPL/env"
-    source "$VPL_INSTALL_DIR/share/oneVPL/env/vars.sh"
-  else
-    echo "Using custom environment configuration from ${VPL_INSTALL_DIR}/env"
-    source "$VPL_INSTALL_DIR/env/vars.sh"
-  fi
-
-fi
-
-result_all=0
-
-. ${PROJ_DIR}/test/tools/env/vars.sh
-export ffmpeg_dir="${VPL_BUILD_DEPENDENCIES}/bin"
-export PATH=${ffmpeg_dir}:${PATH}
-
 BUILD_DIR="${VPL_CPU_BUILD_DIR}"
 pushd "${BUILD_DIR}"
-  export LD_LIBRARY_PATH=${PWD}:${LD_LIBRARY_PATH}
-  echo "--- Running Unit Tests ---"
-  # using " || ret=$?" to allow fail and capture exit code with errexit set
-  ./vpl-utest "--gtest_output=xml:${PROJ_DIR}/_logs/" || ret=$?
-  if [ ${ret} -ne 0 ]; then
-      echo "--- Unit Tests FAILED ---"
-      (( result_all++ )) || true
-  else
-      echo "--- Unit Tests PASSED ---"
-  fi
+  ctest --output-on-failure -C "${COFIG_OPT}" -T test
+  result_all=$?
 popd
 
 exit "${result_all}"
+
