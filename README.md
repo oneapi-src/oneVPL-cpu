@@ -25,7 +25,7 @@ graph TD;
 
 This CPU implementation includes the following features:
 
-- H.265/HEVC, H.264/AVC, and MJPEG decode (using libavcodec)
+- H.265/HEVC, H.264/AVC, MPEG2, and MJPEG decode (using libavcodec)
 - AV1 decode (using libdav1d and libavcodec)
 - MJPEG encode (using libavcodec)
 - H.265/HEVC and AV1 encode (using SVT-HEVC, SVT-AV1, and libavcodec)
@@ -38,6 +38,8 @@ Codecs (+raw frame formats) supported by the CPU software implementation:
 
 |  Codec        |  Encode        | Decode   |
 |---------------|----------------|----------|
+| MPEG2         |                |8 bit     |
+|               |                |4:2:0 only|
 | AVC/H.264     |8 bit (OpenH264)|          |
 |               |8/10 bit (x264) |8/10 bit  |
 |               |4:2:0 only      |4:2:0 only|
