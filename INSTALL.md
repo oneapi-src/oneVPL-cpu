@@ -58,7 +58,7 @@ script/install
 #### 7. Verify build and installation was successful
 ```		
 cd $VPL_INSTALL_DIR
-source ./share/oneVPL/env/vars.sh
+source ./etc/vpl/vars.sh
 cd bin
 ./vpl-inspect
 ```
@@ -145,7 +145,7 @@ script\install
 #### 7. Verify build and installation was successful
 ```		
 cd %VPL_INSTALL_DIR%
-share\oneVPL\env\vars.bat
+etc\vpl\vars.bat
 cd bin
 vpl-inspect
 ```
