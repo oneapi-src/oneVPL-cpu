@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 ###############################################################################
 """Build oneVPL-cpu ffmpeg dependencies"""
+from hashlib import md5
 from io import BytesIO
 import sys
 import os
@@ -22,11 +23,12 @@ from contextlib import contextmanager
 
 # Component Versions
 SVT_HEVC_VERSION = '1.5.1'
-SVT_AV1_VERSION = 'v0.8.6'  # v0.8.7 is missing AVC support
+SVT_AV1_VERSION = 'v0.9.1'  # v0.8.7 is missing AVC support
 DAV1D_VERSION = '0.9.2'
-X264_VERSION = 'stable'
+X264_BRANCH = 'stable'
+X264_COMMIT = 'b684ebe04a6f80f8207a57940a1fa00e25274f81'
 OPENH264_VERSION = 'v2.2.0'
-FFMPEG_VERSION = 'n4.4'
+FFMPEG_VERSION = 'n5.0.1'
 
 # Folder this script is in
 SCRIPT_PATH = os.path.realpath(
@@ -409,7 +411,7 @@ def make_git_path(mingw_path):
     return git_path
 
 
-#pylint: disable=too-many-arguments,too-many-branches,too-many-statements
+#pylint: disable=too-many-arguments,too-many-branches,too-many-statements,too-many-locals
 def bootstrap(clean, h264_ip, build_mode, proj_dir, arch, validation):
     """Bootstrap install"""
     if os.name == 'nt':
@@ -488,6 +490,13 @@ def bootstrap(clean, h264_ip, build_mode, proj_dir, arch, validation):
             patch_path = os.path.join(SCRIPT_PATH, 'patches', 'ffmpeg')
             if os.path.exists(patch_path):
                 for patch in os.scandir(patch_path):
+                    hasher = md5()
+                    hasher.update(patch.path.encode('utf-8'))
+                    if os.path.exists(f"{hasher.hexdigest()}_patched"):
+                        continue
+                    with open(f"{hasher.hexdigest()}_patched",
+                              'w') as flag_file:
+                        flag_file.write(patch.path)
                     if patch.is_file():
                         cmd('git',
                             '-c',
@@ -628,25 +637,27 @@ def build_svt_av1_encoder(install_dir, build_mode):
 
 def build_gpl_x264_encoder(install_dir):
     """build x264 encoder from source"""
-    version = X264_VERSION
+    commit = X264_COMMIT
+    branch = X264_BRANCH
     posix_install_dir = to_posix_path(install_dir)
-    if os.path.exists(f'x264-{version}'):
+    if os.path.exists(f'x264-{commit}'):
         print("using existing x264 encoder dir")
         return
     if PREFER_CLONE:
         cmd('git',
             'clone',
-            '--depth=1',
             '-b',
-            f'{version}',
+            f"{branch}",
             'https://code.videolan.org/videolan/x264.git',
-            f'x264-{version}',
+            f'x264-{commit}',
             xenv=GIT_ENV)
+        with pushd(f'x264-{commit}'):
+            cmd('git', 'checkout', commit, xenv=GIT_ENV)
     else:
         download_archive(
-            f"https://code.videolan.org/videolan/x264/-/archive/{version}/x264-{version}.zip",
+            f"https://code.videolan.org/videolan/x264/-/archive/{commit}/x264-{commit}.zip",
             ".")
-    with pushd(f'x264-{version}'):
+    with pushd(f'x264-{commit}'):
         cmd('./configure',
             f'--prefix={posix_install_dir}',
             '--enable-static',
@@ -818,6 +829,7 @@ def ffmpeg_trace_configure_opts():
 def ffmpeg_3rdparty_configure_opts(build_dir, h264_ip):
     """update ffmpeg configure command line based on packages findable
     by pkg-config"""
+    del build_dir
     result = []
     pkg_list = capture_cmd("pkg-config", "--list-all")[0]
     if "aom" in pkg_list:
@@ -844,20 +856,6 @@ def ffmpeg_3rdparty_configure_opts(build_dir, h264_ip):
     if "SvtHevcEnc" in pkg_list:
         print("SVT-HEVC encoder found")
         result.extend(['--enable-libsvthevc', '--enable-encoder=libsvt_hevc'])
-        if os.path.isfile("svt-hevc-patched"):
-            print("SVT-HEVC patch already applied")
-        else:
-            patch = 'n4.4-0001-lavc-svt_hevc-add-libsvt-hevc-encoder-wrapper.patch'
-            cmd('git',
-                '-c',
-                'user.name=bootstrap',
-                '-c',
-                'user.email=bootstrap@localhost',
-                'am',
-                os.path.join(build_dir, f'SVT-HEVC-{SVT_HEVC_VERSION}',
-                             'ffmpeg_plugin', patch),
-                xenv=GIT_ENV)
-            cmd('touch', 'svt-hevc-patched')
     return result
 
 
