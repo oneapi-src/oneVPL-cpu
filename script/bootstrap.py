@@ -738,6 +738,7 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
         '--disable-v4l2-m2m',
         '--disable-videotoolbox',
         '--disable-sdl2',
+        '--disable-vdpau',
         '--enable-indev=lavfi',
         '--enable-protocol=file',
         '--enable-bsf=h264_mp4toannexb',
