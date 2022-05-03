@@ -70,9 +70,7 @@ static const mfxImplDescription cpuImplDesc = {
     "oneAPI VPL CPU Implementation",                // ImplName
 
 #ifdef ENABLE_ENCODER_X264
-    "MIT,GPL",                                      // License
-#elif defined(ENABLE_ENCODER_OPENH264)
-    "MIT,BSD",                                      // License
+    "GPL",                                      // License
 #else
     "MIT",                                          // License
 #endif
