@@ -43,7 +43,7 @@ if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
   set(DAV1D_LIB ${VPL_DEP_DIR}/lib/libdav1d.a)
 
   if(NOT EXISTS ${SVTHEVCENC_LIB}
-     OR NOT EXISTS ${SVTHEVCENC_LIB}
+     OR NOT EXISTS ${SVTAV1ENC_LIB}
      OR NOT EXISTS ${DAV1D_LIB})
     message(FATAL_ERROR "Could not find expected codec libraries")
   endif()
