@@ -1616,9 +1616,15 @@ mfxStatus CpuEncode::EncodeQueryIOSurf(mfxVideoParam *par, mfxFrameAllocRequest 
     //  if (sts < 0) return MFX_ERR_INVALID_VIDEO_PARAM;
     //}
 
-    request->NumFrameMin       = 3; // TO DO - calculate correctly from libav
-    request->NumFrameSuggested = 3;
-    request->Type              = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
+    request->NumFrameMin       = 4; // TO DO - calculate correctly from libav
+    request->NumFrameSuggested = 4;
+
+    if (par) {
+        request->NumFrameMin = request->NumFrameSuggested =
+            request->NumFrameSuggested + par->AsyncDepth;
+    }
+
+    request->Type = MFX_MEMTYPE_SYSTEM_MEMORY | MFX_MEMTYPE_FROM_ENCODE;
 
     return MFX_ERR_NONE;
 }
@@ -1682,7 +1688,7 @@ mfxStatus CpuEncode::EncodeQuery(mfxVideoParam *in, mfxVideoParam *out) {
 mfxStatus CpuEncode::GetEncodeSurface(mfxFrameSurface1 **surface) {
     if (!m_encSurfaces) {
         mfxFrameAllocRequest EncRequest = { 0 };
-        RET_ERROR(EncodeQueryIOSurf(nullptr, &EncRequest));
+        RET_ERROR(EncodeQueryIOSurf(&m_param, &EncRequest));
 
         auto pool = std::make_unique<CpuFramePool>();
         RET_ERROR(pool->Init(m_param.mfx.FrameInfo.FourCC,
@@ -1709,8 +1715,7 @@ mfxStatus CpuEncode::GetVideoParam(mfxVideoParam *par) {
     *par = m_param;
     //*par = { 0 };
 
-    par->IOPattern  = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
-    par->AsyncDepth = 1;
+    par->IOPattern = MFX_IOPATTERN_IN_SYSTEM_MEMORY;
 
     switch (m_avEncCodec->id) {
         case AV_CODEC_ID_H264:
