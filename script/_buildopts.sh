@@ -6,6 +6,17 @@
 ###############################################################################
 # User friendly consistant parameter parsing
 
+# Explicitly indicates that only bash is supported
+if [ "x$SHELL" != "x/bin/bash" ]; then
+    case `ps -o command -p $$` in
+        *bash*)
+            ;;
+        *)
+            echo "WARNING: Only bash is supported, use of other shell would lead to erroneous results"
+            ;;
+    esac
+fi
+
 # Set script folder
 SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 || exit 1 ; pwd -P )"
 
