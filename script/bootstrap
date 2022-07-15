@@ -6,6 +6,12 @@
 ###############################################################################
 # Build cpu dependencies.
 
+if [ -z "$BASH_VERSION" ]
+then
+  echo "This script must be run under bash"
+  exit 1
+fi
+
 # Do not set Exit on Error in scripts that will be sourced
 # set -o errexit
 
