@@ -24,6 +24,7 @@ unset ARCH_OPT
 unset BOOTSTRAP_OPT
 unset VALIDATION_OPT
 unset ONEAPI_LAYOUT_OPT
+unset OPT_ERROR
 
 # Read information about origin script before parsing command line
 while [ $# -gt 0 ]; do
@@ -43,6 +44,7 @@ while [ $# -gt 0 ]; do
         * )
             echo "Unrecognized option $1"
             HELP_OPT=yes
+            OPT_ERROR=yes
             break
             ;;
     esac
@@ -97,6 +99,7 @@ while [ $# -gt 0 ]; do
         * )
             echo "Unrecognized option $1"
             HELP_OPT=yes
+            OPT_ERROR=yes
             break
             ;;
     esac
@@ -127,7 +130,12 @@ then
   echo "ARCH may be: x86_64, x86_32"
   echo ""
   echo "${ORIG_SCRIPT_DESC}"
-  exit 0
+  if [ -n "${OPT_ERROR}" ]
+  then
+    exit 2
+  else
+    exit 0
+  fi
 fi
 
 # Equivalent parameters to what this was called with for further calls
