@@ -24,6 +24,7 @@ SET ARCH_OPT=x86_64
 SET "BOOTSTRAP_OPT="
 SET "VALIDATION_OPT="
 SET "ONEAPI_LAYOUT_OPT="
+SET "OPT_ERROR="
 
 @REM Read information about origin script before parsing command line
 :PREFIX_Loop
@@ -42,6 +43,7 @@ SET "ONEAPI_LAYOUT_OPT="
   ) ELSE (
     ECHO Unrecognized option "%~1"
     SET HELP_OPT=yes
+    SET OPT_ERROR=yes
     GOTO Continue
   )
   SHIFT
@@ -81,6 +83,7 @@ SET "ONEAPI_LAYOUT_OPT="
   ) ELSE (
     ECHO Unrecognized option "%~1"
     SET HELP_OPT=yes
+    SET OPT_ERROR=yes
     GOTO Continue
   )
   SHIFT
@@ -107,7 +110,11 @@ IF DEFINED HELP_OPT (
   ECHO ARCH may be: x86_64, x86_32
   ECHO.
   ECHO %ORIG_SCRIPT_DESC%
-  EXIT /b 0
+  IF DEFINED OPT_ERROR (
+    EXIT /b 2
+  ) ELSE (
+    EXIT /b 0
+  )
 )
 
 @REM Equivalent parameters to what this was called with for further calls
