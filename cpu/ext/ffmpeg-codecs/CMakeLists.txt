@@ -72,14 +72,14 @@ find_package(Threads REQUIRED)
 if(WIN32)
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
     target_link_libraries(
-      ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
+      ${TARGET} INTERFACE ${AVFILTER_LIB} ${AVCODEC_LIB} ${AVUTIL_LIB}
                           ${SWSCALE_LIB} Threads::Threads)
   elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     target_link_libraries(
       ${TARGET}
-      INTERFACE ${AVCODEC_LIB}
+      INTERFACE ${AVFILTER_LIB}
+                ${AVCODEC_LIB}
                 ${AVUTIL_LIB}
-                ${AVFILTER_LIB}
                 ${SWSCALE_LIB}
                 ${SVTHEVCENC_LIB}
                 ${SVTAV1ENC_LIB}
@@ -89,14 +89,14 @@ if(WIN32)
 else()
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
     target_link_libraries(
-      ${TARGET} INTERFACE ${AVCODEC_LIB} ${AVUTIL_LIB} ${AVFILTER_LIB}
+      ${TARGET} INTERFACE ${AVFILTER_LIB} ${AVCODEC_LIB} ${AVUTIL_LIB}
                           ${SWSCALE_LIB} Threads::Threads ${CMAKE_DL_LIBS})
   elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     target_link_libraries(
       ${TARGET}
-      INTERFACE ${AVCODEC_LIB}
+      INTERFACE ${AVFILTER_LIB}
+                ${AVCODEC_LIB}
                 ${AVUTIL_LIB}
-                ${AVFILTER_LIB}
                 ${SWSCALE_LIB}
                 ${SVTHEVCENC_LIB}
                 ${SVTAV1ENC_LIB}

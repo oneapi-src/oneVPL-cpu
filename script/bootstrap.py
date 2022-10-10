@@ -23,12 +23,19 @@ from contextlib import contextmanager
 
 # Component Versions
 SVT_HEVC_VERSION = '1.5.1'
-SVT_AV1_VERSION = 'v0.9.1'  # v0.8.7 is missing AVC support
-DAV1D_VERSION = '0.9.2'
+SVT_AV1_VERSION = 'v0.9.1'  # Current version is v1.2.1,
+# however that version causes some tests to fail
+# so more development is needed before we can use it.
+DAV1D_VERSION = '0.9.2'  # Current version is 1.0.0,
+# however that version causes some tests to fail
+# so more development is needed before we can use it.
 X264_BRANCH = 'stable'
-X264_COMMIT = 'b684ebe04a6f80f8207a57940a1fa00e25274f81'
-OPENH264_VERSION = 'v2.2.0'
-FFMPEG_VERSION = 'n5.0.1'
+X264_COMMIT = 'baee400fa9ced6f5481a728138fed6e867b0ff7f'
+OPENH264_VERSION = 'v2.2.0'  # Current version is 2.3.1,
+# however that version causes some build issues when
+# compiling FFMPEG. These need to be resolved before
+# we can use it.
+FFMPEG_VERSION = 'n5.1.2'
 
 # Folder this script is in
 SCRIPT_PATH = os.path.realpath(
@@ -108,17 +115,18 @@ def set_env(name, value):
 
 def replace(target, old_str, new_str):
     """replace text in a file"""
-    log_comment(f'replace "{old_str}" with "{new_str}" in {target}')
-    if os.name == 'nt':
-        log(f'powershell -Command "(gc {target}) -replace \'{old_str}\', \'{new_str}\' '
-            + f'| Out-File -encoding utf8 {target}"')
-    else:
-        log(f'sed -i \'s/{old_str}/{new_str}/\' {target}')
     with open(target, "r") as file_obj:
         content = file_obj.read()
-    content = content.replace(old_str, new_str)
-    with open(target, "w") as file_obj:
-        file_obj.write(content)
+    if old_str in content:
+        log_comment(f'replace "{old_str}" with "{new_str}" in {target}')
+        if os.name == 'nt':
+            log(f'powershell -Command "(gc {target}) -replace \'{old_str}\', \'{new_str}\' '
+                + f'| Out-File -encoding utf8 {target}"')
+        else:
+            log(f'sed -i \'s/{old_str}/{new_str}/\' {target}')
+        content = content.replace(old_str, new_str)
+        with open(target, "w") as file_obj:
+            file_obj.write(content)
 
 
 @contextmanager
@@ -295,13 +303,16 @@ def download_archive(url, path):
 
 def is_repo_root(path):
     """check if path is the root of a git working copy"""
-    output, _, result = capture_cmd('git',
-                                    'rev-parse',
-                                    "--git-dir",
-                                    xenv=GIT_ENV)
+    path = os.path.abspath(path)
+    with pushd(path):
+        output, _, result = capture_cmd('git',
+                                        'rev-parse',
+                                        "--git-dir",
+                                        xenv=GIT_ENV)
+        output = os.path.abspath(os.path.join(output, ".."))
     log(result)
     log(output)
-    return (result != 0) and os.path.samefile(os.path.join(output, ".."), path)
+    return (result == 0) and os.path.samefile(output, path)
 
 
 def main():
@@ -506,7 +517,8 @@ def bootstrap(clean, h264_ip, build_mode, proj_dir, arch, validation):
                             'am',
                             patch.path,
                             xenv=GIT_ENV)
-
+            replace('configure', 'add_ldexeflags -fPIE -pie',
+                    'add_ldexeflags -fPIE -static-pie')
             configure_opts = []
             configure_opts.extend(
                 ffmpeg_configure_opts(install_dir, arch, validation))
@@ -546,7 +558,7 @@ def build_dav1d_decoder(install_dir):
         cmd('meson', 'build', '--prefix', os.path.join(install_dir,
                                                        ''), '--libdir',
             os.path.join(install_dir, 'lib'), '--buildtype', 'release',
-            '--default-library=static', '-Denable_avx512=false')
+            '--default-library=static')
         cmd('ninja', '-C', 'build')
         with pushd('build'):
             cmd('ninja', 'install')
@@ -712,6 +724,7 @@ def ffmpeg_configure_opts(install_dir, arch, validation):
     posix_install_dir = to_posix_path(install_dir)
     result = [
         f'--prefix={posix_install_dir}',
+        '--pkg-config-flags="--static"',
         '--enable-static',
         '--disable-shared',
         '--enable-pic',

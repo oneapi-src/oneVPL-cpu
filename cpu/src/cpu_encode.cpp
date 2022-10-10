@@ -1421,6 +1421,9 @@ mfxStatus CpuEncode::GetAV1Params(mfxVideoParam *par) {
     int ret;
     int64_t optval;
     ret = av_opt_get_int(m_avEncContext->priv_data, "rc", AV_OPT_SEARCH_CHILDREN, &optval);
+    if (ret < 0) {
+        return MFX_ERR_UNKNOWN;
+    }
     if (optval == 0) {
         par->mfx.RateControlMethod = MFX_RATECONTROL_CQP;
         int64_t qpval;
