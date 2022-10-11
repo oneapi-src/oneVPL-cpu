@@ -1544,12 +1544,12 @@ mfxStatus CpuEncode::EncodeFrame(mfxFrameSurface1 *surface, mfxEncodeCtrl *ctrl,
             ++m_cfgIVF.frame_count;
 
             if (m_cfgIVF.frame_count == 1) {
-                m_cfgIVF.input_padded_width = (m_param.mfx.FrameInfo.CropW)
-                                                  ? m_param.mfx.FrameInfo.CropW
-                                                  : m_param.mfx.FrameInfo.Width;
-                m_cfgIVF.input_padded_height = (m_param.mfx.FrameInfo.CropH)
-                                                   ? m_param.mfx.FrameInfo.CropH
-                                                   : m_param.mfx.FrameInfo.Height;
+                m_cfgIVF.input_padded_width     = (m_param.mfx.FrameInfo.CropW)
+                                                      ? m_param.mfx.FrameInfo.CropW
+                                                      : m_param.mfx.FrameInfo.Width;
+                m_cfgIVF.input_padded_height    = (m_param.mfx.FrameInfo.CropH)
+                                                      ? m_param.mfx.FrameInfo.CropH
+                                                      : m_param.mfx.FrameInfo.Height;
                 m_cfgIVF.frame_rate_numerator   = m_param.mfx.FrameInfo.FrameRateExtN;
                 m_cfgIVF.frame_rate_denominator = m_param.mfx.FrameInfo.FrameRateExtD;
 

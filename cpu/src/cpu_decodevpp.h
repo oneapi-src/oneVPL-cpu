@@ -124,10 +124,10 @@ public:
         SurfArray = mfxSurfaceArrayImpl::CreateSurfaceArray();
     };
 
-    RAIISurfaceArray(const RAIISurfaceArray &) = delete;
+    RAIISurfaceArray(const RAIISurfaceArray &)            = delete;
     RAIISurfaceArray &operator=(const RAIISurfaceArray &) = delete;
     RAIISurfaceArray(RAIISurfaceArray &&)                 = default;
-    RAIISurfaceArray &operator=(RAIISurfaceArray &&) = default;
+    RAIISurfaceArray &operator=(RAIISurfaceArray &&)      = default;
 
     ~RAIISurfaceArray() {
         if (SurfArray) {

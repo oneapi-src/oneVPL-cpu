@@ -417,8 +417,8 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam *par) {
 
     m_param.vpp.In.CropW =
         (m_param.vpp.In.CropW > m_param.vpp.In.Width) ? m_param.vpp.In.Width : m_param.vpp.In.CropW;
-    m_param.vpp.In.CropH = (m_param.vpp.In.CropH > m_param.vpp.In.Height) ? m_param.vpp.In.Height
-                                                                          : m_param.vpp.In.CropH;
+    m_param.vpp.In.CropH  = (m_param.vpp.In.CropH > m_param.vpp.In.Height) ? m_param.vpp.In.Height
+                                                                           : m_param.vpp.In.CropH;
     m_param.vpp.Out.CropW = (m_param.vpp.Out.CropW > m_param.vpp.Out.Width) ? m_param.vpp.Out.Width
                                                                             : m_param.vpp.Out.CropW;
     m_param.vpp.Out.CropH = (m_param.vpp.Out.CropH > m_param.vpp.Out.Height)
