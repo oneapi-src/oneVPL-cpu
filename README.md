@@ -8,8 +8,8 @@ See the [oneVPL Specification](https://spec.oneapi.io/versions/latest/elements/o
 
 **NOTE** 
 - While the oneVPL GPU implementations are fully functional, the CPU implementation is currently for reference only and not intended to be competitive in terms of performance or features.
-- Use of this implementation requires installation of the loader provided
-as part of the [oneVPL base repository](https://github.com/oneapi-src/oneVPL).
+- This repository will only recieve critical bug fixes.  No updates to features, performance, etc. are planned. 
+- Use of this implementation requires installation of the dispatcher provided as part of the [oneVPL base repository](https://github.com/oneapi-src/oneVPL).
 
 ---
 
