@@ -22,7 +22,7 @@ SET result=%errorlevel%
 @REM Export build dependency environment
 @REM Note: this logic mirrors similar logic in bootstrap.py 
 IF DEFINED VPL_BUILD_DEPENDENCIES (
-  ENDLOCAL & SET VPL_BUILD_DEPENDENCIES=%VPL_BUILD_DEPENDENCIES% & EXIT /B %result%
+  ENDLOCAL & SET "VPL_BUILD_DEPENDENCIES=%VPL_BUILD_DEPENDENCIES%" & EXIT /B %result%
 ) ELSE (
   ENDLOCAL & EXIT /B %result%
 )
