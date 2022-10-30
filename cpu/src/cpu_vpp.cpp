@@ -20,12 +20,6 @@ CpuVPP::CpuVPP()
           m_buffersink_ctx(nullptr),
           m_input_locker(),
           m_avVppFrameOut(nullptr),
-          m_vppInFormat(MFX_FOURCC_I420),
-          m_vppInWidth(0),
-          m_vppInHeight(0),
-          m_vppOutFormat(MFX_FOURCC_I420),
-          m_vppOutWidth(0),
-          m_vppOutHeight(0),
           m_vppFunc(0),
           m_param(),
           m_vppSurfacesIn(),
@@ -453,14 +447,6 @@ mfxStatus CpuVPP::InitVPP(mfxVideoParam *par) {
     if (!m_avVppFrameOut)
         return MFX_ERR_NOT_INITIALIZED;
 
-    m_vppInFormat = m_param.vpp.In.FourCC;
-    m_vppInWidth  = m_param.vpp.In.Width;
-    m_vppInHeight = m_param.vpp.In.Height;
-
-    m_vppOutFormat = m_param.vpp.Out.FourCC;
-    m_vppOutWidth  = m_param.vpp.Out.Width;
-    m_vppOutHeight = m_param.vpp.Out.Height;
-
     return valSts;
 }
 
@@ -536,10 +522,22 @@ mfxStatus CpuVPP::ProcessFrame(mfxFrameSurface1 *surface_in,
         }
     }
 
+    // fix cropW, cropH
+    if (surface_out) {
+        surface_out->Info.CropW = (m_param.vpp.Out.CropW > m_param.vpp.Out.Width)
+                                      ? m_param.vpp.Out.Width
+                                      : m_param.vpp.Out.CropW;
+        surface_out->Info.CropH = (m_param.vpp.Out.CropH > m_param.vpp.Out.Height)
+                                      ? m_param.vpp.Out.Height
+                                      : m_param.vpp.Out.CropH;
+    }
+
     if (surface_in) {
         if (surface_in->Data.TimeStamp) {
-            surface_out->Data.TimeStamp = surface_in->Data.TimeStamp;
-            surface_out->Data.DataFlag  = MFX_FRAMEDATA_ORIGINAL_TIMESTAMP;
+            if (surface_out) {
+                surface_out->Data.TimeStamp = surface_in->Data.TimeStamp;
+                surface_out->Data.DataFlag  = MFX_FRAMEDATA_ORIGINAL_TIMESTAMP;
+            }
         }
     }
     return MFX_ERR_NONE;
@@ -701,10 +699,7 @@ mfxStatus CpuVPP::GetVPPSurface(mfxFrameSurface1 **surface) {
         VPPQueryIOSurf(nullptr, VPPRequest);
 
         auto pool = std::make_unique<CpuFramePool>();
-        RET_ERROR(pool->Init(m_vppInFormat,
-                             m_vppInWidth,
-                             m_vppInHeight,
-                             VPPRequest[0].NumFrameSuggested));
+        RET_ERROR(pool->Init(m_param.vpp.In, VPPRequest[0].NumFrameSuggested));
         m_vppSurfacesIn = std::move(pool);
     }
 
@@ -727,10 +722,7 @@ mfxStatus CpuVPP::GetVPPSurfaceOut(mfxFrameSurface1 **surface) {
         VPPQueryIOSurf(nullptr, VPPRequest);
 
         auto pool = std::make_unique<CpuFramePool>();
-        RET_ERROR(pool->Init(m_vppOutFormat,
-                             m_vppOutWidth,
-                             m_vppOutHeight,
-                             VPPRequest[1].NumFrameSuggested));
+        RET_ERROR(pool->Init(m_param.vpp.Out, VPPRequest[1].NumFrameSuggested));
         m_vppSurfacesOut = std::move(pool);
     }
 

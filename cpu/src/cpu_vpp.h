@@ -79,14 +79,6 @@ private:
     FrameLock m_input_locker;
     AVFrame *m_avVppFrameOut;
 
-    mfxU32 m_vppInFormat;
-    mfxU32 m_vppInWidth;
-    mfxU32 m_vppInHeight;
-
-    mfxU32 m_vppOutFormat;
-    mfxU32 m_vppOutWidth;
-    mfxU32 m_vppOutHeight;
-
     mfxU32 m_vppFunc;
     mfxVideoParam m_param;
     std::unique_ptr<CpuFramePool> m_vppSurfacesIn;

@@ -1694,10 +1694,7 @@ mfxStatus CpuEncode::GetEncodeSurface(mfxFrameSurface1 **surface) {
         RET_ERROR(EncodeQueryIOSurf(&m_param, &EncRequest));
 
         auto pool = std::make_unique<CpuFramePool>();
-        RET_ERROR(pool->Init(m_param.mfx.FrameInfo.FourCC,
-                             m_param.mfx.FrameInfo.Width,
-                             m_param.mfx.FrameInfo.Height,
-                             EncRequest.NumFrameSuggested));
+        RET_ERROR(pool->Init(m_param.mfx.FrameInfo, EncRequest.NumFrameSuggested));
         m_encSurfaces = std::move(pool);
     }
 

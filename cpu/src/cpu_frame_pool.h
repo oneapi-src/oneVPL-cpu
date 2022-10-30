@@ -20,7 +20,7 @@ public:
     }
 
     mfxStatus Init(mfxU32 nPoolSize);
-    mfxStatus Init(mfxU32 FourCC, mfxU32 width, mfxU32 height, mfxU32 nPoolSize);
+    mfxStatus Init(mfxFrameInfo info, mfxU32 nPoolSize);
     mfxStatus GetFreeSurface(mfxFrameSurface1 **surface);
 
     mfxU32 GetCurrentPoolSize() {

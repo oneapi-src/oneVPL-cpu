@@ -18,16 +18,14 @@ mfxStatus CpuFramePool::Init(mfxU32 nPoolSize) {
     return MFX_ERR_NONE;
 }
 
-mfxStatus CpuFramePool::Init(mfxU32 FourCC, mfxU32 width, mfxU32 height, mfxU32 nPoolSize) {
+mfxStatus CpuFramePool::Init(mfxFrameInfo info, mfxU32 nPoolSize) {
+    memcpy_s(&m_info, sizeof(mfxFrameInfo), &info, sizeof(mfxFrameInfo));
+
     for (mfxU32 i = 0; i < nPoolSize; i++) {
         auto cpu_frame = std::make_unique<CpuFrame>(&m_framePoolInterface);
-        RET_ERROR(cpu_frame->Allocate(FourCC, width, height));
+        RET_ERROR(cpu_frame->Allocate(m_info.FourCC, m_info.Width, m_info.Height));
         m_surfaces.push_back(std::move(cpu_frame));
     }
-
-    m_info.FourCC = FourCC;
-    m_info.Width  = width;
-    m_info.Height = height;
 
     return MFX_ERR_NONE;
 }
