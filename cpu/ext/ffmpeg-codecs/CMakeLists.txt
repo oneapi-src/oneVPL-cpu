@@ -86,6 +86,7 @@ if(WIN32)
                 ${DAV1D_LIB}
                 Threads::Threads)
   endif()
+  target_link_libraries(${TARGET} INTERFACE bcrypt)
 else()
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
     target_link_libraries(
