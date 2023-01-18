@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 # ##############################################################################
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.13)
 
 file(STRINGS "version.txt" version_txt)
 project(vpl VERSION ${version_txt})
@@ -68,7 +68,7 @@ target_compile_definitions(
           -DVPL_VERSION_PATCH=${PROJECT_VERSION_PATCH})
 
 if(UNIX)
-  set_target_properties(${TARGET} PROPERTIES LINK_FLAGS -Wl,-Bsymbolic,-z,defs)
+  target_link_options(${TARGET} PRIVATE "-Wl,-Bsymbolic,-z,defs")
 endif()
 
 install(

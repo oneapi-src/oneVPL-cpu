@@ -57,9 +57,10 @@ else() # compiler options in 'mingw Windows' or 'Linux'
     add_compile_options("-Werror")
   endif()
 
-  if(LINUX) # Linux only
+  if(UNIX)
     add_compile_options("-fstack-protector-strong")
-    set(CMAKE_CXX_FLAGS "-z relro -z now -z noexecstack")
+    add_link_options("-Wl,-z,relro,-z,now,-z,noexecstack")
+    add_link_options("$<$<CONFIG:Release>:-Wl,--strip-debug>")
   elseif(WIN32) # mingw in Windows only
     add_compile_options("-fPIC")
     add_compile_options("-shared")
