@@ -1,6 +1,8 @@
 # ![oneAPI](assets/oneapi-logo.png "oneAPI") Video Processing Library CPU Implementation
 
-The Video Processing Library CPU Implementation is a runtime implementation of oneVPL API for Intel CPUs. It provides video decode, encode, and processing capabilities that run on the CPU.
+The oneAPI Video Processing Library (oneVPL) CPU Implementation is a runtime
+implementation of oneVPL API for Intel CPUs. It provides video decode, encode,
+and processing capabilities that run on the CPU.
 
 See the [oneVPL Specification](https://spec.oneapi.io/versions/latest/elements/oneVPL/source/index.html) for additional information. This is part of the [oneAPI specification](https://www.oneapi.io/spec/).
 
@@ -30,7 +32,8 @@ This CPU implementation includes the following features:
 - H.265/HEVC, H.264/AVC, MPEG2, and MJPEG decode (using libavcodec)
 - AV1 decode (using libdav1d and libavcodec)
 - MJPEG encode (using libavcodec)
-- H.265/HEVC and AV1 encode (using SVT-HEVC, SVT-AV1, and libavcodec)
+- H.265/HEVC and AV1 encode (using Scalable Video Technology for HEVC, Scalable
+  Video Technology for AV1, and libavcodec)
 - H.264/AVC encode (using OpenH264/x264 and libavcodec)
 - VPP - Crop, Resize, CSC (using libavfilter/ FFmpeg filters)
 
