@@ -10,6 +10,7 @@ import argparse
 import subprocess
 import shutil
 import time
+import posixpath
 import multiprocessing
 from os import environ
 from contextlib import contextmanager
@@ -334,6 +335,20 @@ def make_git_path(mingw_path):
     return git_path
 
 
+def to_posix_path(path):
+    """convert path to posix
+    On Windows this includes adjusting it based on MinGW drive naming
+    """
+    if os.name != 'nt':
+        return path
+    if not path:
+        return path
+    parts = path.split('\\')
+    if len(parts[0]) == 2 and parts[0].endswith(":"):
+        parts[0] = "/" + parts[0][:-1].lower()
+    return posixpath.join(*parts)
+
+
 #pylint: disable=too-many-arguments,too-many-branches,too-many-statements
 def launch_builder(build_opts, arch):
     """launch build script"""
@@ -351,7 +366,9 @@ def launch_builder(build_opts, arch):
     else:
         raise 'VPL_INSTALL_DIR is not set'
 
-    cmd('./script/build', *build_opts, shell='bash')
+    cmd(to_posix_path(os.path.join(SCRIPT_PATH, 'build')),
+        *build_opts,
+        shell='bash')
 
 
 if __name__ == "__main__":
