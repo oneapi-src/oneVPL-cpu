@@ -7,7 +7,13 @@
 #include "src/cpu_workstream.h"
 #include "src/cpu_common.h"
 
-CpuWorkstream::CpuWorkstream() : m_allocator({}) {
+CpuWorkstream::CpuWorkstream()
+        : m_decode(),
+          m_encode(),
+          m_vpp(),
+          m_decvpp(),
+          m_allocator(),
+          m_handles() {
     av_log_set_level(AV_LOG_QUIET);
 }
 
