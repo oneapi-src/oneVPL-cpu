@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2023.1.3] - 2023-03-03
+
+### Fixed
+
+- Issues detected from static analysis 
+
 ## [2023.1.2] - 2023-01-27
 
 ### Changed
@@ -162,7 +168,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.0...HEAD
+[Unreleased]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.3...HEAD
+[2023.1.3]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.2...v2023.1.3
 [2023.1.2]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.1...v2023.1.2
 [2023.1.1]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.0...v2023.1.1
 [2023.1.0]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.0.0...v2023.1.0
