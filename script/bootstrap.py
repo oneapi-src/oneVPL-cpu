@@ -23,7 +23,9 @@ from contextlib import contextmanager
 
 # Component Versions
 SVT_HEVC_VERSION = '1.5.1'
-SVT_AV1_VERSION = 'v0.9.1'  # Current version is v1.2.1,
+SVT_AV1_VERSION = 'v0.9.1'
+SVT_AV1_VERSION_HASH = '9e32f42e90f174d4a4263037d5db8800c8813862'
+# The current version is v1.2.1,
 # however that version causes some tests to fail
 # so more development is needed before we can use it.
 DAV1D_VERSION = '0.9.2'  # Current version is 1.0.0,
@@ -613,23 +615,25 @@ def build_svt_hevc_encoder(install_dir, build_mode):
 def build_svt_av1_encoder(install_dir, build_mode):
     """build SVT AV1 encoder from source"""
     version = SVT_AV1_VERSION
+    version_hash = SVT_AV1_VERSION_HASH
     if os.path.exists(f'SVT-AV1-{version}'):
         print("using existing SVT-AV1 encoder dir")
         return
+    project_url = "https://gitlab.com/AOMediaCodec/SVT-AV1"
     if PREFER_CLONE:
         cmd('git',
             'clone',
             '--depth=1',
             '-b',
             f'{version}',
-            'https://gitlab.com/AOMediaCodec/SVT-AV1',
-            f'SVT-AV1-{version}',
+            project_url,
+            f'SVT-AV1-{version_hash}',
             xenv=GIT_ENV)
     else:
         download_archive(
-            f"https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/{version}/SVT-AV1-{version}.zip",
+            f"{project_url}/-/archive/{version_hash}/SVT-AV1-{version_hash}.zip",
             ".")
-    with pushd(f'SVT-AV1-{version}'):
+    with pushd(f'SVT-AV1-{version_hash}'):
         if build_mode == 'Debug':
             replace(
                 os.path.join('Source', 'Lib', 'Common', 'Codec', 'EbMalloc.h'),
