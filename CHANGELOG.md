@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2023.2.0] - 2023-04-07
+
+### Fixed
+
+- Issues related to changes in open source artifact dependencies
+
 ## [2023.1.3] - 2023-03-03
 
 ### Fixed
 
-- Issues detected from static analysis 
+- Issues detected from static analysis
 
 ## [2023.1.2] - 2023-01-27
 
@@ -167,8 +173,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AV1 encode and decode support
 
 
-
-[Unreleased]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.3...HEAD
+[Unreleased]: https://github.com/oneapi-src/oneVPL/compare/v2023.2.0...HEAD
+[2023.2.0]: https://github.com/oneapi-src/oneVPL/compare/v2023.1.3...v2023.2.0
 [2023.1.3]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.2...v2023.1.3
 [2023.1.2]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.1...v2023.1.2
 [2023.1.1]: https://github.com/oneapi-src/oneVPL-cpu/compare/v2023.1.0...v2023.1.1
