@@ -1,5 +1,16 @@
 # Contributing
 
+> This GitHub repository is no longer active.
+> 
+> Pull requests are no longer being reviewed or merged.
+> 
+> The [core project](https://github.com/oneapi-src/oneVPL) and
+> [GPU runtime](https://github.com/oneapi-src/oneVPL-intel-gpu) continues to be actively
+> maintained. For CPU video processing the recommended solution is to use software codecs
+> that are part of media frameworks such as FFMpeg and GStreamer. Intel® provides plugins
+> for frameworks to support this usage.
+
+
 The oneAPI Video Processing Library (oneVPL) CPU project welcomes community
 contributions. You can:
 

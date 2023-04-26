@@ -1,5 +1,14 @@
 # ![oneAPI](assets/oneapi-logo.png "oneAPI") Video Processing Library CPU Implementation
 
+> This GitHub repository is no longer active.
+> The [core project](https://github.com/oneapi-src/oneVPL) and
+> [GPU runtime](https://github.com/oneapi-src/oneVPL-intel-gpu) continues to be actively
+> maintained. For CPU video processing the recommended solution is to use software codecs
+> that are part of media frameworks such as FFMpeg and GStreamer. Intel® provides plugins
+> for frameworks to support this usage.
+
+---
+
 The oneAPI Video Processing Library (oneVPL) CPU Implementation is a runtime
 implementation of oneVPL API for Intel CPUs. It provides video decode, encode,
 and processing capabilities that run on the CPU.
